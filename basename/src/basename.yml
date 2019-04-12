@@ -1,0 +1,22 @@
+name: basename
+version: "0.0.0"
+author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
+about: "Print NAME with any leading directory components removed,\nIf specified, also remove a trailing SUFFIX"
+args:
+    - NAME:
+        help: Name of the file to use
+        required: true
+        index: 1
+    - multiple:
+        long: multiple
+        short: a
+        help: Support more than one argument. Treat every argument as a name.
+    - suffix:
+        long: suffix
+        short: s
+        value_name: SUFFIX
+        help: Remove a trailing suffix. This option implies the -a option.
+    - zero:
+        long: zero
+        short: z
+        help: Output a zero byte (ASCII NUL) at the end of each line, rather than a newline.
