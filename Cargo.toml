@@ -1,2 +1,5 @@
 [workspace]
-members = ["basename"]
+members = [
+"basename",
+"false",
+]
