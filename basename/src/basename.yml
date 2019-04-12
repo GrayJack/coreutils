@@ -6,7 +6,7 @@ args:
     - NAME:
         help: Name of the file to use
         required: true
-        index: 1
+        multiple: true
     - multiple:
         long: multiple
         short: a

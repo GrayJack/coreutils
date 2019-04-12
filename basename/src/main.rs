@@ -21,20 +21,31 @@ fn main() {
     } else {
         let paths = matches.values_of("NAME").unwrap();
         for path in paths {
-            print!("Base {} {}", basename(path, suffix), line_ending);
+            print!("{} {}", basename(path, suffix), line_ending);
         }
     }
 }
 
+/// Get `full_path` basename, removing the given `suffix`.
+/// **Examples:**
+/// ```rust
+/// let name = basename("~/Pictures/mypicture.jpg", "");
+/// assert_eq!("mypicture.jpg".to_string(), name);
+/// ```
+///
+/// ```rust
+/// let name = basename("~/Pictures/mypicture.jpg", ".jpg");
+/// assert_eq!("mypicture".to_string(), name);
+/// ```
 fn basename(full_path: &str, suffix: &str) -> String {
     let split_full_path: Vec<&str> = full_path.split('/').collect();
-    let path = match split_full_path.last() {
-        Some(name) => strip_suffix(name, suffix).to_owned(),
+    match split_full_path.last() {
+        Some(name) => strip_suffix(name, suffix),
         None => "".to_owned()
-    };
-    path.to_string()
+    }
 }
 
+/// Removes the given `suffix` from the `name`.
 fn strip_suffix(name: &str, suffix: &str) -> String {
     if name == suffix {
         return name.to_owned();
@@ -43,4 +54,33 @@ fn strip_suffix(name: &str, suffix: &str) -> String {
         return name[..(name.len() - suffix.len())].to_owned();
     }
     name.to_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basename_empty_suffix_file() {
+        assert_eq!("image.jpg".to_string(), basename("~/Pictures/image.jpg", ""));
+        assert_eq!("doc.pdf".to_string(), basename("~/Documents/doc.pdf", ""));
+    }
+
+    #[test]
+    fn basename_suffix_file() {
+        assert_eq!("image".to_string(), basename("~/Pictures/image.jpg", ".jpg"));
+        assert_eq!("doc".to_string(), basename("~/Documents/doc.pdf", ".pdf"));
+    }
+
+    #[test]
+    fn basename_empty_suffix_dir() {
+        assert_eq!("bin", basename("/usr/bin", ""));
+        assert_eq!("Documents", basename("~/Documents", ""));
+    }
+
+    #[test]
+    fn basename_suffix_dir() {
+        assert_eq!("b", basename("/usr/bin", "in"));
+        assert_eq!("Doc", basename("~/Documents", "uments"));
+    }
 }

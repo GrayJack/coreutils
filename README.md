@@ -5,7 +5,7 @@ A attempt to make a safe coreutils
 |   Name   | Not Started | Started | Done |
 |:--------:|:-----------:|:-------:|:----:|
 |   arch   |      X      |         |      |
-| basename |      X      |         |      |
+| basename |             |         |   X  |
 |    cat   |      X      |         |      |
 |   chcon  |      X      |         |      |
 |   chgrp  |      X      |         |      |
