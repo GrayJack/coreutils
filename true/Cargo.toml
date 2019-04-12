@@ -1,0 +1,7 @@
+[package]
+name = "true"
+version = "0.1.0"
+authors = ["GrayJack <gr41.j4ck@gmail.com>"]
+edition = "2018"
+
+[dependencies]
