@@ -63,7 +63,7 @@ A attempt to make a safe coreutils
 |   time   |      X      |         |      |
 |   touch  |      X      |         |      |
 |    tr    |      X      |         |      |
-|   true   |      X      |         |      |
+|   true   |             |         |   X  |
 |   tsort  |      X      |         |      |
 |    tty   |      X      |         |      |
 |   uname  |      X      |         |      |
