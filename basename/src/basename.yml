@@ -4,7 +4,7 @@ author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: "Print NAME with any leading directory components removed,\nIf specified, also remove a trailing SUFFIX"
 args:
     - NAME:
-        help: Name of the file to use
+        help: Name of the file to use.
         required: true
         multiple: true
     - multiple:
