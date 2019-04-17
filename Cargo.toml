@@ -1,6 +1,7 @@
 [workspace]
 members = [
-"basename",
-"false",
-"true",
+    "basename",
+    "echo",
+    "false",
+    "true",
 ]

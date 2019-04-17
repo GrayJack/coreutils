@@ -15,5 +15,5 @@ fn main() {
     app.gen_completions("basename", Shell::Fish, out_dir.clone());
     app.gen_completions("basename", Shell::Bash, out_dir.clone());
     app.gen_completions("basename", Shell::PowerShell, out_dir.clone());
-    app.gen_completions("basename", Shell::Elvish, out_dir)
+    app.gen_completions("basename", Shell::Elvish, out_dir);
 }

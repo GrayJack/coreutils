@@ -1,0 +1,29 @@
+name: echo
+version: "0.0.0"
+author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
+about: "Echo the STRING(s) to standard output.\nIf -e is in effect, the following sequences are recognized:\n\n
+\\\\      backslash\n
+\\a      alert (BEL)\n
+\\b      backspace\n
+\\c      produce no further output\n
+\\e      escape\n
+\\f      form feed\n
+\\n      new line\n
+\\r      carriage return\n
+\\t      horizontal tab\n
+\\v      vertical tab\n
+\\0NNN   byte with octal value NNN (1 to 3 digits)\n
+\\xHH    byte with hexadecimal value HH (1 to 2 digits)"
+args:
+    - STRING:
+        help: The text to be printed.
+        required: true
+        multiple: true
+    - escape:
+        long: backslash-escapes
+        short: e
+        help: Enable interpretation of backslash escapes.
+    - no_newline:
+        long: no-newline
+        short: n
+        help: Do not output the trailing newline.
