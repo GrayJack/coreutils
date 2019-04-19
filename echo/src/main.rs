@@ -1,4 +1,8 @@
-use std::io::{self, Write};
+use std::{
+    iter::Peekable,
+    io::{self, Write},
+    str::Chars,
+};
 
 use clap::{App, load_yaml};
 
@@ -34,8 +38,9 @@ fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> 
             if should_stop {
                 break;
             }
+        } else {
+            write!(output, "{}", string)?;
         }
-        write!(output, "{}", string)?;
     }
 
     if !no_newline {
@@ -43,6 +48,20 @@ fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> 
     }
 
     Ok(())
+}
+
+fn parse_code(input: &mut Peekable<Chars>, base: u32, max_digits: u32, bits_per_digit: u32) -> Option<char> {
+    use std::char::from_u32;
+
+    let mut ret = 0x8000_0000;
+    for _ in 0..max_digits {
+        match input.peek().and_then(|c| c.to_digit(base)) {
+           Some(n) => ret = (ret << bits_per_digit) | n,
+           None => break,
+        }
+       input.next();
+    }
+    from_u32(ret)
 }
 
 fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
@@ -68,6 +87,14 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
                     'r' => '\r',
                     't' => '\t',
                     'v' => '\x0b',
+                    'x' => parse_code(&mut iter, 16, 2, 4).unwrap_or_else(|| {
+                        start_at = 0;
+                        n
+                    }),
+                    '0' => parse_code(&mut iter, 8, 3, 3).unwrap_or_else(|| {
+                        start_at = 0;
+                        n
+                    }),
                     _ => {
                         start_at = 0;
                         n
