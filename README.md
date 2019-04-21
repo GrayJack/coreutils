@@ -74,5 +74,5 @@ A attempt to make a safe coreutils
 |   users  |      X      |         |      |
 |    wc    |      X      |         |      |
 |    who   |      X      |         |      |
-|  whoami  |      X      |         |      |
+|  whoami  |             |         |   X  |
 |    yes   |             |         |   X  |
