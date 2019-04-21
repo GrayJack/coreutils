@@ -20,7 +20,7 @@ A attempt to make a safe coreutils
 |    dd    |      X      |         |      |
 |    df    |      X      |         |      |
 |   diff   |      X      |         |      |
-|  dirname |      X      |         |      |
+|  dirname |             |         |   X  |
 |    du    |      X      |         |      |
 |   echo   |             |         |   X  |
 |    env   |      X      |         |      |

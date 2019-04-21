@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "basename",
+    "dirname",
     "echo",
     "false",
     "true",
