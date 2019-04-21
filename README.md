@@ -75,4 +75,4 @@ A attempt to make a safe coreutils
 |    wc    |      X      |         |      |
 |    who   |      X      |         |      |
 |  whoami  |      X      |         |      |
-|    yes   |      X      |         |      |
+|    yes   |             |         |   X  |
