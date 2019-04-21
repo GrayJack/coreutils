@@ -10,11 +10,17 @@ fn main() {
 
     let paths = matches.values_of("NAME").unwrap();
     for path in paths {
-        print!("{} {}", basedir(path), line_ending)
+        print!("{} {}", dirname(path), line_ending)
     }
 }
 
-fn basedir(path: &str) -> String {
+/// Get the directory full name of a given `path`.
+///
+/// ```rust
+/// let path = "/home/user/";
+/// assert_eq!("/home".to_string(), dirname(path));
+/// ```
+fn dirname(path: &str) -> String {
     let p = Path::new(path);
     match p.parent() {
         Some(dir) => {
@@ -31,5 +37,34 @@ fn basedir(path: &str) -> String {
                 ".".to_string()
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dirname_root_path() {
+        assert_eq!("/".to_string(), dirname("/"));
+        assert_eq!("/".to_string(), dirname("/usr"));
+    }
+
+    #[test]
+    fn dirname_absolute_path() {
+        assert_eq!(".".to_string(), dirname("doc"));
+        assert_eq!(".".to_string(), dirname("doc"));
+    }
+
+    #[test]
+    fn dirname_not_absolute_dir() {
+        assert_eq!("/home".to_string(), dirname("/home/user/"));
+        assert_eq!("somedir".to_string(), dirname("somedir/anotherdir/"));
+    }
+
+    #[test]
+    fn dirname_not_absolute_file() {
+        assert_eq!("/usr/bin".to_string(), dirname("/usr/bin/zsh"));
+        assert_eq!("dir".to_string(), dirname("dir/file"));
     }
 }

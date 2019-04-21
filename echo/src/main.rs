@@ -25,6 +25,9 @@ fn main() -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
+/// Print given `strings` to standard output.
+/// If `scape` true, it also prints the scape codes inside `strings`.
+/// If `no_newline` true, it does not print a newline after.
 fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> {
     let stdout = io::stdout();
     let mut output = stdout.lock();
@@ -50,6 +53,8 @@ fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> 
     Ok(())
 }
 
+/// Parse a `input` code from `base` code to a UTF-8 char.
+/// The `max_digits` limits how many digits the `input` code can have.
 fn parse_code(input: &mut Peekable<Chars>, base: u32, max_digits: u32, bits_per_digit: u32) -> Option<char> {
     use std::char::from_u32;
 
@@ -64,6 +69,9 @@ fn parse_code(input: &mut Peekable<Chars>, base: u32, max_digits: u32, bits_per_
     from_u32(ret)
 }
 
+/// Print the scape codes from `string`.
+/// `output` is where it is going to be printed.
+///
 fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
     let mut stop = false;
     let mut buff = ['\\'; 2];
@@ -112,3 +120,6 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
 
     Ok(stop)
 }
+
+
+// TODO: Unit testing for print_escape()

@@ -17,7 +17,7 @@ fn main() {
 
     // Got this size from manual page about getpwuid_r
     let mut buffer = [0; 16384];
-    let usr_id = get_user_uid(&mut buffer);
+    let usr_id = get_user_passwd(&mut buffer);
 
     // Check by user id first, if not found, look for USER environment variable
     let usr_name = if let Some(name) = username(usr_id) {
@@ -32,8 +32,9 @@ fn main() {
     println!("{}", usr_name);
 }
 
-fn username(usr_id: libc::passwd) -> Option<String> {
-    let usr_name = usr_id.pw_name;
+/// Get the username of a given `usr_passwd` struct
+fn username(usr_passwd: libc::passwd) -> Option<String> {
+    let usr_name = usr_passwd.pw_name;
 
     if usr_name.is_null() {
         return None;
@@ -44,7 +45,8 @@ fn username(usr_id: libc::passwd) -> Option<String> {
     Some(usr_name)
 }
 
-fn get_user_uid(buffer: &mut [c_char; 16384]) -> libc::passwd {
+/// Get the passwd struct from the user and returns it
+fn get_user_passwd(buffer: &mut [c_char; 16384]) -> libc::passwd {
     let mut pwent: libc::passwd = unsafe { mem::zeroed() };
     let mut pwentp = null_mut();
 
