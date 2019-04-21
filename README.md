@@ -22,7 +22,7 @@ A attempt to make a safe coreutils
 |   diff   |      X      |         |      |
 |  dirname |      X      |         |      |
 |    du    |      X      |         |      |
-|   echo   |      X      |         |      |
+|   echo   |             |         |   X  |
 |    env   |      X      |         |      |
 |  expand  |      X      |         |      |
 |   expr   |      X      |         |      |
