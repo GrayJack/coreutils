@@ -35,7 +35,7 @@ A attempt to make a safe coreutils
 |   join   |      X      |         |      |
 |   link   |      X      |         |      |
 |    ln    |      X      |         |      |
-|  logname |      X      |         |      |
+|  logname |             |         |   X  |
 |    ls    |      X      |         |      |
 |   mkdir  |      X      |         |      |
 |  mkfifo  |      X      |         |      |

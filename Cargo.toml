@@ -4,6 +4,7 @@ members = [
     "dirname",
     "echo",
     "false",
+    "logname",
     "true",
     "yes"
 ]

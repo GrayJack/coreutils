@@ -1,0 +1,5 @@
+name: logname
+version: "0.0.0"
+author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
+about: "Print the name of the current user."
+args:
