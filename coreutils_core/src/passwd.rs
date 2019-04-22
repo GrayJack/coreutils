@@ -1,14 +1,10 @@
 //! A module to deal more easily with UNIX passwd.
 
-use std::{
-    ffi::CStr,
-    mem,
-    ptr
-};
+use std::{ffi::CStr, mem, ptr};
 
 use crate::group::Gid;
 
-use libc::{passwd, uid_t, geteuid, getpwuid_r, getpwuid};
+use libc::{geteuid, getpwuid, getpwuid_r, passwd, uid_t};
 
 /// User ID type.
 pub type Uid = uid_t;
@@ -24,7 +20,7 @@ pub struct Passwd {
     gecos: String,
     dir: String,
     shell: String,
-    pw: *mut passwd
+    pw: *mut passwd,
 }
 
 impl Passwd {
@@ -35,13 +31,7 @@ impl Passwd {
         let mut pw_ptr = ptr::null_mut();
 
         unsafe {
-            getpwuid_r(
-                geteuid(),
-                &mut pw,
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            );
+            getpwuid_r(geteuid(), &mut pw, &mut buff[0], buff.len(), &mut pw_ptr);
         }
 
         let name = if !pw.pw_name.is_null() {
@@ -50,7 +40,7 @@ impl Passwd {
             String::new()
         };
 
-        let passwd =  if !pw.pw_passwd.is_null() {
+        let passwd = if !pw.pw_passwd.is_null() {
             unsafe { CStr::from_ptr(pw.pw_passwd).to_string_lossy().to_string() }
         } else {
             String::new()
@@ -86,7 +76,7 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            pw: &mut pw
+            pw: &mut pw,
         }
     }
 
@@ -105,7 +95,7 @@ impl Passwd {
             String::new()
         };
 
-        let passwd =  if !pw_name_ptr.is_null() {
+        let passwd = if !pw_name_ptr.is_null() {
             unsafe { CStr::from_ptr(pw_name_ptr).to_string_lossy().to_string() }
         } else {
             String::new()
@@ -141,7 +131,7 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            pw
+            pw,
         }
     }
 

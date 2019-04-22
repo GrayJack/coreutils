@@ -36,7 +36,7 @@ fn dirname(path: &str) -> String {
             } else {
                 ".".to_string()
             }
-        }
+        },
     }
 }
 

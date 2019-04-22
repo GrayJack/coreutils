@@ -2,9 +2,8 @@
 
 use std::{ffi::CStr, io, ptr};
 
-use libc::{getgrgid, getgrgid_r, getegid,getgroups, gid_t, group};
+use libc::{getegid, getgrgid, getgrgid_r, getgroups, gid_t, group};
 //  getgrnam_r, getgrouplist, not used for now
-
 
 /// Group ID type.
 pub type Gid = gid_t;
@@ -48,7 +47,7 @@ impl Group {
             name,
             id,
             passwd,
-            gr: &mut gr
+            gr: &mut gr,
         }
     }
 
@@ -74,7 +73,7 @@ impl Group {
             name,
             id,
             passwd,
-            gr
+            gr,
         }
     }
 

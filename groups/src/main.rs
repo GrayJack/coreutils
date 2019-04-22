@@ -9,23 +9,23 @@ fn main() {
     // TODO: Do the logig for NAME after a update of coreutils_core
     let _name = match matches.value_of("NAME") {
         Some(n) => n,
-        None => ""
+        None => "",
     };
 
     let groups = match get_groups() {
         Ok(gs) => gs,
-        _ => Vec::new()
+        _ => Vec::new(),
     };
 
     let id = matches.is_present("id");
     if !groups.is_empty() {
         if id {
             for group in groups {
-                print!("{}:{} ", group.name(), group.id() );
+                print!("{}:{} ", group.name(), group.id());
             }
         } else {
             for group in groups {
-                print!("{} ", group.name() );
+                print!("{} ", group.name());
             }
         }
     }
