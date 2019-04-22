@@ -1,18 +1,58 @@
+//! A module do deal more easily with UNIX groups.
+
 use std::{ffi::CStr, io, ptr};
 
-use libc::{getgrgid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, gid_t, group};
+use libc::{getgrgid, getgrgid_r, getegid,getgroups, gid_t, group};
+//  getgrnam_r, getgrouplist, not used for now
 
+
+/// Group ID type.
 pub type Gid = gid_t;
 
+/// Contains group attributes as Rust more common types.
+/// It also contains a pointer to the libc::group type for more complex manipulations.
 #[derive(Clone)]
 pub struct Group {
-    id: Gid,
     name: String,
-    passwd_name: String,
-    gr: *const group,
+    id: Gid,
+    passwd: String,
+    gr: *mut group,
 }
 
 impl Group {
+    /// Creates a new `Group` getting the user group as default.
+    pub fn new() -> Self {
+        let mut gr = unsafe { std::mem::zeroed() };
+        let mut gr_ptr = ptr::null_mut();
+        let mut buff = [0; 16384];
+
+        unsafe {
+            getgrgid_r(getegid(), &mut gr, &mut buff[0], buff.len(), &mut gr_ptr);
+        }
+
+        let name = if !gr.gr_name.is_null() {
+            unsafe { CStr::from_ptr(gr.gr_name).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        let id = gr.gr_gid;
+
+        let passwd = if !gr.gr_passwd.is_null() {
+            unsafe { CStr::from_ptr(gr.gr_passwd).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        Group {
+            name,
+            id,
+            passwd,
+            gr: &mut gr
+        }
+    }
+
+    /// Creates a `Group` using a `id` to get all attributes.
     pub fn new_from_gid(id: Gid) -> Self {
         let gr = unsafe { getgrgid(id) };
         let name_ptr = unsafe { (*gr).gr_name };
@@ -21,40 +61,57 @@ impl Group {
         let name = if !name_ptr.is_null() {
             unsafe { CStr::from_ptr(name_ptr).to_string_lossy().to_string() }
         } else {
-            "".to_string()
+            String::new()
         };
 
-        let passwd_name = if !pw_name_ptr.is_null() {
+        let passwd = if !pw_name_ptr.is_null() {
             unsafe { CStr::from_ptr(pw_name_ptr).to_string_lossy().to_string() }
         } else {
-            "".to_string()
+            String::new()
         };
 
         Group {
-            id,
             name,
-            passwd_name,
-            gr,
+            id,
+            passwd,
+            gr
         }
     }
 
+    /// Get the `Group` name.
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /// Get the `Group` id.
     pub fn id(&self) -> Gid {
         self.id
     }
 
-    pub fn passwd_name(&self) -> &str {
-        &self.passwd_name
+    /// Get the `Group` passwd.
+    pub fn passwd(&self) -> &str {
+        &self.passwd
     }
 
-    pub unsafe fn raw_ptr(&self) -> *const group {
+    /// Get a raw pointer to the group.
+    pub fn raw_ptr(&self) -> *const group {
+        self.gr
+    }
+
+    // Get a mutable raw pointer to the group.
+    // Use with caution.
+    pub unsafe fn raw_ptr_mut(&mut self) -> *mut group {
         self.gr
     }
 }
 
+impl Default for Group {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Get all `Groups` that the logged user participate.
 // Based of uutils get_groups
 pub fn get_groups() -> io::Result<Vec<Group>> {
     let num_groups = unsafe { getgroups(0, ptr::null_mut()) };
@@ -82,30 +139,3 @@ pub fn get_groups() -> io::Result<Vec<Group>> {
 
     Ok(groups)
 }
-
-fn group_name(id: gid_t) -> Option<String> {
-    let gr = unsafe { getgrgid(id) };
-    let group_name = unsafe { (*gr).gr_name };
-
-    if group_name.is_null() {
-        return None;
-    }
-
-    let group_name = unsafe { CStr::from_ptr(group_name).to_string_lossy().to_string() };
-    Some(group_name)
-}
-
-//
-// let mut gr: Group = unsafe { std::mem::zeroed() };
-// let mut gr_ptr = ptr::null_mut();
-// let mut buff = [0; 16384];
-//
-// unsafe {
-//     getgrgid_r(id, &mut gr.g, &mut buff[0], buff.len(), &mut gr_ptr);
-// }
-//
-// gr.g.gr_name = {
-//     let gr = unsafe { getgrgid(id) };
-//     unsafe{ (*gr).gr_name }
-// };
-// gr
