@@ -1,13 +1,9 @@
 use std::{
     env,
-    ffi::CStr,
-    mem,
-    os::raw::c_char,
     process,
-    ptr::null_mut
 };
 
-use libc;
+use coreutils_core::passwd::Passwd;
 
 use clap::{load_yaml, App};
 
@@ -15,50 +11,19 @@ fn main() {
     let yaml = load_yaml!("whoami.yml");
     let _matches = App::from_yaml(yaml).get_matches();
 
-    // Got this size from manual page about getpwuid_r
-    let mut buffer = [0; 16384];
-    let usr_id = get_user_passwd(&mut buffer);
+    let user = Passwd::new();
 
-    // Check by user id first, if not found, look for USER environment variable
-    let usr_name = if let Some(name) = username(usr_id) {
-        name
-    } else if let Ok(name) = env::var("USER") {
-        name
+    // If user name in Passwd is empty, check for environment variable USER.
+    let usr_name = if user.name().is_empty() {
+        if let Ok(name) = env::var("USER") {
+            name
+        } else {
+            eprintln!("User name not found.");
+            process::exit(2);
+        }
     } else {
-        eprintln!("User name found.");
-        process::exit(2);
+        user.name().to_owned()
     };
 
     println!("{}", usr_name);
-}
-
-/// Get the username of a given `usr_passwd` struct
-fn username(usr_passwd: libc::passwd) -> Option<String> {
-    let usr_name = usr_passwd.pw_name;
-
-    if usr_name.is_null() {
-        return None;
-    }
-
-    let usr_name = unsafe { CStr::from_ptr(usr_name).to_string_lossy().to_string() };
-
-    Some(usr_name)
-}
-
-/// Get the passwd struct from the user and returns it
-fn get_user_passwd(buffer: &mut [c_char; 16384]) -> libc::passwd {
-    let mut pwent: libc::passwd = unsafe { mem::zeroed() };
-    let mut pwentp = null_mut();
-
-    unsafe {
-        libc::getpwuid_r(
-            libc::geteuid(),
-            &mut pwent,
-            &mut buffer[0],
-            buffer.len(),
-            &mut pwentp,
-        );
-    }
-
-    pwent
 }
