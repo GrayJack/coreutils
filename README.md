@@ -27,7 +27,7 @@ A attempt to make a safe coreutils
 |  expand  |      X      |         |      |
 |   expr   |      X      |         |      |
 |   false  |             |         |   X  |
-|  groups  |             |    X    |      |
+|  groups  |             |         |   X  |
 |   hash   |      X      |         |      |
 |   head   |      X      |         |      |
 |    id    |      X      |         |      |

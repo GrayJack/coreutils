@@ -4,14 +4,14 @@ use std::{ffi::CStr, mem, ptr};
 
 use crate::group::Gid;
 
-use libc::{geteuid, getpwuid, getpwuid_r, passwd, uid_t};
+use libc::{geteuid, getpwuid, getpwuid_r, passwd, uid_t, getpwnam};
 
 /// User ID type.
 pub type Uid = uid_t;
 
 /// Contains passwd attributes as Rust more common types.
-/// It also contains a pointer to the libc::passwd type for more complex manipulations.
-#[derive(Clone)]
+// It also contains a pointer to the libc::passwd type for more complex manipulations.
+#[derive(Clone, Debug)]
 pub struct Passwd {
     name: String,
     passwd: String,
@@ -20,7 +20,7 @@ pub struct Passwd {
     gecos: String,
     dir: String,
     shell: String,
-    pw: *mut passwd,
+    // pw: *mut passwd,
 }
 
 impl Passwd {
@@ -76,7 +76,7 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            pw: &mut pw,
+            // pw: &mut pw,
         }
     }
 
@@ -131,7 +131,57 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            pw,
+            // pw,
+        }
+    }
+
+    pub fn new_from_name(name: &str) -> Self {
+        let pw = unsafe{ getpwnam(name.as_ptr() as *const i8) };
+        // let name_ptr = unsafe { (*pw).pw_name };
+        let pw_name_ptr = unsafe { (*pw).pw_passwd };
+        let gecos_ptr = unsafe { (*pw).pw_gecos };
+        let dir_ptr = unsafe { (*pw).pw_dir };
+        let shell_ptr = unsafe { (*pw).pw_shell };
+
+        let name = name.to_owned();
+
+        let passwd = if !pw_name_ptr.is_null() {
+            unsafe { CStr::from_ptr(pw_name_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        let user_id = unsafe { (*pw).pw_gid };
+
+        let group_id = unsafe { (*pw).pw_gid };
+
+        let gecos = if !gecos_ptr.is_null() {
+            unsafe { CStr::from_ptr(gecos_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        let dir = if !dir_ptr.is_null() {
+            unsafe { CStr::from_ptr(dir_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        let shell = if !shell_ptr.is_null() {
+            unsafe { CStr::from_ptr(shell_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        Passwd {
+            name,
+            passwd,
+            user_id,
+            group_id,
+            gecos,
+            dir,
+            shell,
+            // pw,
         }
     }
 
@@ -170,16 +220,16 @@ impl Passwd {
         &self.shell
     }
 
-    /// Get the raw pointer to the passwd.
-    pub fn raw_ptr(&self) -> *const passwd {
-        self.pw
-    }
-
-    // Get a mutable raw pointer to the passwd.
-    // Use with caution.
-    pub unsafe fn raw_ptr_mut(&mut self) -> *mut passwd {
-        self.pw
-    }
+    // /// Get the raw pointer to the passwd.
+    // pub fn raw_ptr(&self) -> *const passwd {
+    //     self.pw
+    // }
+    //
+    // // Get a mutable raw pointer to the passwd.
+    // // Use with caution.
+    // pub unsafe fn raw_ptr_mut(&mut self) -> *mut passwd {
+    //     self.pw
+    // }
 }
 
 impl Default for Passwd {

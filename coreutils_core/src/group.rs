@@ -1,5 +1,6 @@
 //! A module do deal more easily with UNIX groups.
 
+use std::iter::FromIterator;
 use std::{ffi::CStr, io, ptr};
 
 use libc::{getegid, getgrgid, getgrgid_r, getgroups, gid_t, group};
@@ -9,13 +10,14 @@ use libc::{getegid, getgrgid, getgrgid_r, getgroups, gid_t, group};
 pub type Gid = gid_t;
 
 /// Contains group attributes as Rust more common types.
-/// It also contains a pointer to the libc::group type for more complex manipulations.
-#[derive(Clone)]
+// It also contains a pointer to the libc::group type for more complex manipulations.
+#[derive(Clone, Debug)]
 pub struct Group {
     name: String,
     id: Gid,
     passwd: String,
-    gr: *mut group,
+    mem: String
+    // gr: *mut group,
 }
 
 impl Group {
@@ -43,11 +45,19 @@ impl Group {
             String::new()
         };
 
+        let aux_ptr = unsafe { *gr.gr_mem };
+        let mem = if !gr.gr_mem.is_null() && !aux_ptr.is_null() {
+            unsafe { CStr::from_ptr(aux_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
         Group {
             name,
             id,
             passwd,
-            gr: &mut gr,
+            mem
+            // gr: &mut gr,
         }
     }
 
@@ -56,6 +66,7 @@ impl Group {
         let gr = unsafe { getgrgid(id) };
         let name_ptr = unsafe { (*gr).gr_name };
         let pw_name_ptr = unsafe { (*gr).gr_passwd };
+        let mem_ptr = unsafe{ (*gr).gr_mem };
 
         let name = if !name_ptr.is_null() {
             unsafe { CStr::from_ptr(name_ptr).to_string_lossy().to_string() }
@@ -69,11 +80,19 @@ impl Group {
             String::new()
         };
 
+        let aux_ptr = unsafe { *mem_ptr };
+        let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
+            unsafe { CStr::from_ptr(*mem_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
         Group {
             name,
             id,
             passwd,
-            gr,
+            mem,
+            // gr,
         }
     }
 
@@ -92,16 +111,20 @@ impl Group {
         &self.passwd
     }
 
-    /// Get a raw pointer to the group.
-    pub fn raw_ptr(&self) -> *const group {
-        self.gr
+    pub fn mem(&self) -> &str {
+        &self.mem
     }
 
-    // Get a mutable raw pointer to the group.
-    // Use with caution.
-    pub unsafe fn raw_ptr_mut(&mut self) -> *mut group {
-        self.gr
-    }
+    // /// Get a raw pointer to the group.
+    // pub fn raw_ptr(&self) -> *const group {
+    //     self.gr
+    // }
+    //
+    // // Get a mutable raw pointer to the group.
+    // // Use with caution.
+    // pub unsafe fn raw_ptr_mut(&mut self) -> *mut group {
+    //     self.gr
+    // }
 }
 
 impl Default for Group {
