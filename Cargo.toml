@@ -1,9 +1,11 @@
 [workspace]
 members = [
+    "coreutils_core",
     "basename",
     "dirname",
     "echo",
     "false",
+    "groups",
     "logname",
     "true",
     "whoami",
