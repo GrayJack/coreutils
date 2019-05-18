@@ -10,17 +10,20 @@ fn main() {
     let id = matches.is_present("id");
 
     // TODO: Do the logig for NAME after a update of coreutils_core
-    let name = match matches.value_of("NAME") {
-        Some(n) => n,
-        None => "",
-    };
+    let name = if filter_name {
+        matches.value_of("NAME").unwrap()
+    } else { "" };
 
     let groups = match get_groups() {
         Ok(gs) => gs,
         _ => Vec::new(),
     };
 
-    let user_group = Group::new();
+    let user_group = if filter_name {
+        Group::new_from_name(name)
+    } else {
+        Group::new()
+    };
 
     if !groups.is_empty() {
         if filter_name {
