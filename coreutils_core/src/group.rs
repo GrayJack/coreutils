@@ -3,7 +3,7 @@
 use std::iter::FromIterator;
 use std::{ffi::CStr, io, ptr};
 
-use libc::{getegid, getgrgid, getgrgid_r, getgroups, gid_t, group};
+use libc::{getegid, getgrgid, getgrnam, getgrgid_r, getgroups, gid_t, group, c_char};
 //  getgrnam_r, getgrouplist, not used for now
 
 /// Group ID type.
@@ -89,6 +89,48 @@ impl Group {
 
         Group {
             name,
+            id,
+            passwd,
+            mem,
+            // gr,
+        }
+    }
+
+    /// Creates a `Group` using a `name` to get all attributes.
+    pub fn new_from_name(name: &str) -> Self {
+
+        // Push a zero termination to name
+        // we do that cause &str passed here is not zero terminated `\0`
+        // so we garantee for `CStr::from_bytes_with_nul` that it will be, so we can use `expect()`
+        // method without panicking
+        let string_name = {
+            let mut s = name.to_string();
+            s.push('\0');
+            s
+        };
+
+        let gr_name = CStr::from_bytes_with_nul(string_name.as_str().as_bytes()).expect("failed");
+        let gr = unsafe { getgrnam( (*gr_name).as_ptr() ) };
+        let pw_name_ptr = unsafe { (*gr).gr_passwd };
+        let mem_ptr = unsafe{ (*gr).gr_mem };
+
+        let id = unsafe { (*gr).gr_gid };
+
+        let passwd = if !pw_name_ptr.is_null() {
+            unsafe { CStr::from_ptr(pw_name_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        let aux_ptr = unsafe { *mem_ptr };
+        let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
+            unsafe { CStr::from_ptr(*mem_ptr).to_string_lossy().to_string() }
+        } else {
+            String::new()
+        };
+
+        Group {
+            name: name.to_owned(),
             id,
             passwd,
             mem,
