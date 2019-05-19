@@ -1,5 +1,11 @@
 # Coreutils in Rust
-A attempt to make a safe coreutils
+An attempt to make safe coreutils aiming a minimal and yet complete set of utilities, adding only features that are common between several implementations of the utility and functions that are really useful.
+
+This project has no intent to be 100% compatible with GNU's coreutils, like
+[Uutils' coreutils](https://github.com/uutils/coreutils)
+
+# Contributing
+Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contribute to the project, including issue reports, git commits messages, etc.
 
 # Tools
 |   Name   | Not Started | Started | Done |
@@ -76,3 +82,7 @@ A attempt to make a safe coreutils
 |    who   |      X      |         |      |
 |  whoami  |             |         |   X  |
 |    yes   |             |         |   X  |
+
+
+# Licensing
+This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE). If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
