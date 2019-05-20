@@ -4,21 +4,30 @@ use std::{ffi::CStr, mem, ptr};
 
 use crate::group::Gid;
 
-use libc::{geteuid, getpwuid, getpwuid_r, passwd, uid_t, getpwnam};
+use libc::{geteuid, getpwuid, getpwuid_r, uid_t, getpwnam};
 
 /// User ID type.
 pub type Uid = uid_t;
 
-/// Contains passwd attributes as Rust more common types.
+/// This struct holds the information of a user in UNIX/UNIX-like systems.
+///
+/// Contains `sys/types.h` `passwd` struct attributes as Rust more common types.
 // It also contains a pointer to the libc::passwd type for more complex manipulations.
 #[derive(Clone, Debug)]
 pub struct Passwd {
+    /// User login name.
     name: String,
+    /// User encrypted password.
     passwd: String,
+    /// User ID.
     user_id: Uid,
+    /// User Group ID.
     group_id: Gid,
+    /// User full name.
     gecos: String,
+    /// User directory.
     dir: String,
+    /// User login shell
     shell: String,
     // pw: *mut passwd,
 }
@@ -135,6 +144,7 @@ impl Passwd {
         }
     }
 
+    /// Create a new `Passwd` using a `name` to get all attributes.
     pub fn new_from_name(name: &str) -> Self {
         let pw = unsafe{ getpwnam(name.as_ptr() as *const i8) };
         // let name_ptr = unsafe { (*pw).pw_name };
@@ -185,12 +195,12 @@ impl Passwd {
         }
     }
 
-    /// Get `Passwd` name.
+    /// Get `Passwd` login name.
     pub fn name(&self) -> &str {
         &self.name
     }
 
-    /// Get `Passwd` passwd.
+    /// Get `Passwd` encrypted password.
     pub fn passwd(&self) -> &str {
         &self.passwd
     }
@@ -205,7 +215,7 @@ impl Passwd {
         self.group_id
     }
 
-    /// Get `Passwd` gecos.
+    /// Get `Passwd` full name.
     pub fn gecos(&self) -> &str {
         &self.gecos
     }

@@ -9,13 +9,19 @@ use libc::{getegid, getgrgid, getgrnam, getgrgid_r, getgroups, gid_t};
 /// Group ID type.
 pub type Gid = gid_t;
 
-/// Contains group attributes as Rust more common types.
+/// This struct holds information about a group of UNIX/UNIX-like systems.
+///
+/// Contains `sys/types.h` `group` struct attributes as Rust more common types.
 // It also contains a pointer to the libc::group type for more complex manipulations.
 #[derive(Clone, Debug)]
 pub struct Group {
+    /// Group name.
     name: String,
+    /// Group ID.
     id: Gid,
+    /// Group encrypted password
     passwd: String,
+    /// Group list of members
     mem: String
     // gr: *mut group,
 }
@@ -112,6 +118,8 @@ impl Group {
         };
 
         let aux_ptr = unsafe { *mem_ptr };
+        // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
+        // group.gr_mem is of type `**c_char`
         let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
             unsafe { CStr::from_ptr(*mem_ptr).to_string_lossy().to_string() }
         } else {
@@ -137,11 +145,12 @@ impl Group {
         self.id
     }
 
-    /// Get the `Group` passwd.
+    /// Get the `Group` encrypted password.
     pub fn passwd(&self) -> &str {
         &self.passwd
     }
 
+    /// Get the `Group` list of members.
     pub fn mem(&self) -> &str {
         &self.mem
     }
@@ -164,9 +173,12 @@ impl Default for Group {
     }
 }
 
-/// Get all `Groups` that the logged user participate.
+/// Get all `Groups` in the system.
 // Based of uutils get_groups
 pub fn get_groups() -> io::Result<Vec<Group>> {
+    // First we check if we indeed have groups.
+    // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary group
+    // IDs associated with the calling process without modifying the array pointed to by grouplist."
     let num_groups = unsafe { getgroups(0, ptr::null_mut()) };
     if num_groups == -1 {
         return Err(io::Error::last_os_error());
