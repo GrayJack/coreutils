@@ -19,7 +19,7 @@ fn main() {
     };
 
     let user_group = if filter_name {
-        Group::new_from_name(name)
+        Group::from_name(name)
     } else {
         Group::new()
     };
