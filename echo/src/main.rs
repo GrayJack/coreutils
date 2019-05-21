@@ -71,7 +71,6 @@ fn parse_code(input: &mut Peekable<Chars>, base: u32, max_digits: u32, bits_per_
 
 /// Print the scape codes from `string`.
 /// `output` is where it is going to be printed.
-///
 fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
     let mut stop = false;
     let mut buff = ['\\'; 2];
