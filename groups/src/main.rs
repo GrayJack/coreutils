@@ -9,7 +9,6 @@ fn main() {
     let filter_name = matches.is_present("NAME");
     let id = matches.is_present("id");
 
-    // TODO: Do the logig for NAME after a update of coreutils_core
     let name = if filter_name {
         matches.value_of("NAME").unwrap()
     } else { "" };
