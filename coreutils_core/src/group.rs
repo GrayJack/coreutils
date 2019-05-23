@@ -42,7 +42,7 @@ pub enum GroupError {
 
 impl Display for GroupError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
+        match self {
             GetGroupFailed(fn_name, err_code) => write!(
                 f,
                 "Failed to get group with the following error code: {}. For more info search for the {} manual",
@@ -59,8 +59,8 @@ impl Display for GroupError {
 
 impl StdError for GroupError {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        match *self {
-            GroupError::Io(err) => Some(&err),
+        match self {
+            GroupError::Io(err) => Some(err),
             _ => None,
         }
     }
@@ -193,8 +193,9 @@ impl Group {
 
     /// Creates a `Group` using a `name` to get all attributes.
     pub fn from_name(name: impl AsRef<[u8]>) -> GrResult<Self> {
-        let gr_name = BString::from_slice(name);
-        let gr = unsafe { getgrnam((*gr_name).as_ptr() as *const i8) };
+        let name = BString::from_slice(name);
+
+        let gr = unsafe { getgrnam((*name).as_ptr() as *const i8) };
         let pw_ptr = unsafe { (*gr).gr_passwd };
         let mem_ptr = unsafe { (*gr).gr_mem };
 
@@ -222,7 +223,7 @@ impl Group {
         };
 
         Ok(Group {
-            name: gr_name,
+            name,
             id,
             passwd,
             mem,
