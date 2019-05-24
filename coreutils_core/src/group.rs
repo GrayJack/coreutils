@@ -148,6 +148,9 @@ impl Group {
     }
 
     /// Creates a `Group` using a `id` to get all attributes.
+    ///
+    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
+    /// a `GroupError` wrapped in a `Err`.
     pub fn from_gid(id: Gid) -> GrResult<Self> {
         let gr = unsafe { getgrgid(id) };
         let name_ptr = unsafe { (*gr).gr_name };
@@ -192,6 +195,9 @@ impl Group {
     }
 
     /// Creates a `Group` using a `name` to get all attributes.
+    ///
+    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
+    /// a `GroupError` wrapped in a `Err`.
     pub fn from_name(name: impl AsRef<[u8]>) -> GrResult<Self> {
         let name = BString::from_slice(name);
 
@@ -264,6 +270,9 @@ impl Group {
 }
 
 /// Get all `Groups` in the system.
+///
+/// It may fail, so return a `Result`, either a vector of `Group` wrapped in a `Ok`, or
+/// a `GroupError` wrapped in a `Err`.
 // Based of uutils get_groups
 pub fn get_groups() -> GrResult<Vec<Group>> {
     // First we check if we indeed have groups.

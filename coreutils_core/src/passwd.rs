@@ -92,6 +92,9 @@ pub struct Passwd {
 
 impl Passwd {
     /// Create a new `Passwd` getting the user passwd as default.
+    ///
+    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
+    /// a `PasswdError` wrapped in a `Err`.
     pub fn new() -> PwResult<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw: libc::passwd = unsafe { mem::zeroed() };
@@ -162,7 +165,10 @@ impl Passwd {
     }
 
     /// Create a new `Passwd` using a `id` to get all attributes.
-    pub fn new_from_uid(id: Uid) -> PwResult<Self> {
+    ///
+    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
+    /// a `PasswdError` wrapped in a `Err`.
+    pub fn from_uid(id: Uid) -> PwResult<Self> {
         let pw = unsafe { getpwuid(id) };
         let name_ptr = unsafe { (*pw).pw_name };
         let passwd_ptr = unsafe { (*pw).pw_passwd };
@@ -226,7 +232,10 @@ impl Passwd {
     }
 
     /// Create a new `Passwd` using a `name` to get all attributes.
-    pub fn new_from_name(name: impl AsRef<[u8]>) -> PwResult<Self> {
+    ///
+    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
+    /// a `PasswdError` wrapped in a `Err`.
+    pub fn from_name(name: impl AsRef<[u8]>) -> PwResult<Self> {
         let name = BString::from_slice(name);
 
         let pw = unsafe { getpwnam(name.as_ptr() as *const i8) };
