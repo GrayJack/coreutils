@@ -2,7 +2,7 @@
 
 use std::{
     error::Error as StdError,
-    ffi::CString,
+    ffi::CStr,
     fmt::{self, Display},
     io::Error as IoError,
     ptr,
@@ -60,7 +60,7 @@ impl Display for GroupError {
 impl StdError for GroupError {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
-            GroupError::Io(err) => Some(err),
+            Io(err) => Some(err),
             _ => None,
         }
     }
@@ -68,7 +68,7 @@ impl StdError for GroupError {
 
 impl From<IoError> for GroupError {
     fn from(err: IoError) -> GroupError {
-        GroupError::Io(err)
+        Io(err)
     }
 }
 
@@ -99,10 +99,9 @@ impl Group {
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
-        let res: i32;
-        unsafe {
-            res = getgrgid_r(getegid(), &mut gr, &mut buff[0], buff.len(), &mut gr_ptr);
-        }
+        let res = unsafe {
+            getgrgid_r(getegid(), &mut gr, &mut buff[0], buff.len(), &mut gr_ptr)
+        };
 
         if res != 0 {
             return Err(GetGroupFailed(String::from("getgrgid_r"), res));
@@ -113,27 +112,26 @@ impl Group {
         }
 
         let name = if !gr.gr_name.is_null() {
-            let name_cstr = unsafe { CString::from_raw(gr.gr_name) };
-            BString::from_slice(name_cstr.as_bytes())
+            let name_cstr = unsafe { CStr::from_ptr(gr.gr_name) };
+            BString::from_slice(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let id = gr.gr_gid;
-
         let passwd = if !gr.gr_passwd.is_null() {
-            let passwd_cstr = unsafe { CString::from_raw(gr.gr_passwd) };
-            BString::from_slice(passwd_cstr.as_bytes())
+            let passwd_cstr = unsafe { CStr::from_ptr(gr.gr_passwd) };
+            BString::from_slice(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
         // group.gr_mem is of type `**c_char`
-        let aux_ptr = unsafe { *gr.gr_mem };
+        let aux_ptr = dbg!(unsafe { *(gr.gr_mem) });
         let mem = if !gr.gr_mem.is_null() && !aux_ptr.is_null() {
-            let mem_cstr = unsafe { CString::from_raw(aux_ptr) };
-            BString::from_slice(mem_cstr.as_bytes())
+            let mem_cstr = unsafe { CStr::from_ptr(aux_ptr) };
+            BString::from_slice(mem_cstr.to_bytes())
         } else {
             return Err(MemCheckFailed);
         };
@@ -162,15 +160,15 @@ impl Group {
         }
 
         let name = if !name_ptr.is_null() {
-            let name_cstr = unsafe { CString::from_raw(name_ptr) };
-            BString::from_slice(name_cstr.as_bytes())
+            let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
+            BString::from_slice(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let passwd = if !pw_ptr.is_null() {
-            let passwd_cstr = unsafe { CString::from_raw(pw_ptr) };
-            BString::from_slice(passwd_cstr.as_bytes())
+            let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
+            BString::from_slice(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -179,8 +177,8 @@ impl Group {
         // group.gr_mem is of type `**c_char`
         let aux_ptr = unsafe { *mem_ptr };
         let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
-            let mem_cstr = unsafe { CString::from_raw(*mem_ptr) };
-            BString::from_slice(mem_cstr.as_bytes())
+            let mem_cstr = unsafe { CStr::from_ptr(*mem_ptr) };
+            BString::from_slice(mem_cstr.to_bytes())
         } else {
             return Err(MemCheckFailed);
         };
@@ -212,8 +210,8 @@ impl Group {
         let id = unsafe { (*gr).gr_gid };
 
         let passwd = if !pw_ptr.is_null() {
-            let passwd_cstr = unsafe { CString::from_raw(pw_ptr) };
-            BString::from_slice(passwd_cstr.as_bytes())
+            let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
+            BString::from_slice(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -222,8 +220,8 @@ impl Group {
         // group.gr_mem is of type `**c_char`
         let aux_ptr = unsafe { *mem_ptr };
         let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
-            let mem_cstr = unsafe { CString::from_raw(*mem_ptr) };
-            BString::from_slice(mem_cstr.as_bytes())
+            let mem_cstr = unsafe { CStr::from_ptr(*mem_ptr) };
+            BString::from_slice(mem_cstr.to_bytes())
         } else {
             return Err(MemCheckFailed);
         };

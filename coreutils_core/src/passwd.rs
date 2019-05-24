@@ -2,7 +2,7 @@
 
 use std::{
     error::Error as StdError,
-    ffi::CString,
+    ffi::CStr,
     fmt::{self, Display},
     mem, ptr,
 };
@@ -100,10 +100,9 @@ impl Passwd {
         let mut pw: libc::passwd = unsafe { mem::zeroed() };
         let mut pw_ptr = ptr::null_mut();
 
-        let res: i32;
-        unsafe {
-            res = getpwuid_r(geteuid(), &mut pw, &mut buff[0], buff.len(), &mut pw_ptr);
-        }
+        let res = unsafe {
+            getpwuid_r(geteuid(), &mut pw, &mut buff[0], buff.len(), &mut pw_ptr)
+        };
 
         if res != 0 {
             return Err(GetPasswdFailed(String::from("getpwuid_r"), res));
@@ -114,15 +113,15 @@ impl Passwd {
         }
 
         let name = if !pw.pw_name.is_null() {
-            let name_cstr = unsafe { CString::from_raw(pw.pw_name) };
-            BString::from_slice(name_cstr.as_bytes())
+            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
+            BString::from_slice(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let passwd = if !pw.pw_passwd.is_null() {
-            let passwd_cstr = unsafe { CString::from_raw(pw.pw_passwd) };
-            BString::from_slice(passwd_cstr.as_bytes())
+            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
+            BString::from_slice(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -132,22 +131,22 @@ impl Passwd {
         let group_id = pw.pw_gid;
 
         let gecos = if !pw.pw_gecos.is_null() {
-            let gecos_cstr = unsafe { CString::from_raw(pw.pw_gecos) };
-            BString::from_slice(gecos_cstr.as_bytes())
+            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
+            BString::from_slice(gecos_cstr.to_bytes())
         } else {
             return Err(GecosCheckFailed);
         };
 
         let dir = if !pw.pw_dir.is_null() {
-            let dir_cstr = unsafe { CString::from_raw(pw.pw_dir) };
-            BString::from_slice(dir_cstr.as_bytes())
+            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
+            BString::from_slice(dir_cstr.to_bytes())
         } else {
             return Err(DirCheckFailed);
         };
 
         let shell = if !pw.pw_shell.is_null() {
-            let shell_cstr = unsafe { CString::from_raw(pw.pw_shell) };
-            BString::from_slice(shell_cstr.as_bytes())
+            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
+            BString::from_slice(shell_cstr.to_bytes())
         } else {
             return Err(ShellCheckFailed);
         };
@@ -181,15 +180,15 @@ impl Passwd {
         }
 
         let name = if !name_ptr.is_null() {
-            let name_cstr = unsafe { CString::from_raw(name_ptr) };
-            BString::from_slice(name_cstr.as_bytes())
+            let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
+            BString::from_slice(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let passwd = if !passwd_ptr.is_null() {
-            let passwd_cstr = unsafe { CString::from_raw(passwd_ptr) };
-            BString::from_slice(passwd_cstr.as_bytes())
+            let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
+            BString::from_slice(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -199,22 +198,22 @@ impl Passwd {
         let group_id = unsafe { (*pw).pw_gid };
 
         let gecos = if !gecos_ptr.is_null() {
-            let gecos_cstr = unsafe { CString::from_raw(gecos_ptr) };
-            BString::from_slice(gecos_cstr.as_bytes())
+            let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
+            BString::from_slice(gecos_cstr.to_bytes())
         } else {
             return Err(GecosCheckFailed);
         };
 
         let dir = if !dir_ptr.is_null() {
-            let dir_cstr = unsafe { CString::from_raw(dir_ptr) };
-            BString::from_slice(dir_cstr.as_bytes())
+            let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
+            BString::from_slice(dir_cstr.to_bytes())
         } else {
             return Err(DirCheckFailed);
         };
 
         let shell = if !shell_ptr.is_null() {
-            let shell_cstr = unsafe { CString::from_raw(shell_ptr) };
-            BString::from_slice(shell_cstr.as_bytes())
+            let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
+            BString::from_slice(shell_cstr.to_bytes())
         } else {
             return Err(ShellCheckFailed);
         };
@@ -245,8 +244,8 @@ impl Passwd {
         let shell_ptr = unsafe { (*pw).pw_shell };
 
         let passwd = if !passwd_ptr.is_null() {
-            let passwd_cstr = unsafe { CString::from_raw(passwd_ptr) };
-            BString::from_slice(passwd_cstr.as_bytes())
+            let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
+            BString::from_slice(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -256,22 +255,22 @@ impl Passwd {
         let group_id = unsafe { (*pw).pw_gid };
 
         let gecos = if !gecos_ptr.is_null() {
-            let gecos_cstr = unsafe { CString::from_raw(gecos_ptr) };
-            BString::from_slice(gecos_cstr.as_bytes())
+            let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
+            BString::from_slice(gecos_cstr.to_bytes())
         } else {
             return Err(GecosCheckFailed);
         };
 
         let dir = if !dir_ptr.is_null() {
-            let dir_cstr = unsafe { CString::from_raw(dir_ptr) };
-            BString::from_slice(dir_cstr.as_bytes())
+            let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
+            BString::from_slice(dir_cstr.to_bytes())
         } else {
             return Err(DirCheckFailed);
         };
 
         let shell = if !shell_ptr.is_null() {
-            let shell_cstr = unsafe { CString::from_raw(shell_ptr) };
-            BString::from_slice(shell_cstr.as_bytes())
+            let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
+            BString::from_slice(shell_cstr.to_bytes())
         } else {
             return Err(ShellCheckFailed);
         };
