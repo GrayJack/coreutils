@@ -30,8 +30,6 @@ pub enum GroupError {
     NameCheckFailed,
     /// Happens when the pointer to the `.gr_passwd` is NULL.
     PasswdCheckFailed,
-    /// Happens when the pointer to the `.gr_mem` is NULL.
-    MemCheckFailed,
     /// Happens when the pointer of `group` primitive is NULL.
     ///
     /// This can happen even if `getgrgid_r` or `getgrnam_r` return 0.
@@ -50,7 +48,6 @@ impl Display for GroupError {
             ),
             NameCheckFailed => write!(f, "Group name check failed, `.gr_name` field is null"),
             PasswdCheckFailed => write!(f, "Group passwd check failed, `.gr_passwd` is null"),
-            MemCheckFailed => write!(f, "Group mem check failed, `.gr_mem` is null"),
             GroupNotFound => write!(f, "Group was not found in the system"),
             Io(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
         }
@@ -133,7 +130,7 @@ impl Group {
             let mem_cstr = unsafe { CStr::from_ptr(aux_ptr) };
             BString::from_slice(mem_cstr.to_bytes())
         } else {
-            return Err(MemCheckFailed);
+            BString::new()
         };
 
         Ok(Group {
@@ -180,7 +177,7 @@ impl Group {
             let mem_cstr = unsafe { CStr::from_ptr(*mem_ptr) };
             BString::from_slice(mem_cstr.to_bytes())
         } else {
-            return Err(MemCheckFailed);
+            BString::new()
         };
 
         Ok(Group {
@@ -223,7 +220,7 @@ impl Group {
             let mem_cstr = unsafe { CStr::from_ptr(*mem_ptr) };
             BString::from_slice(mem_cstr.to_bytes())
         } else {
-            return Err(MemCheckFailed);
+            BString::new()
         };
 
         Ok(Group {
