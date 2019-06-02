@@ -8,21 +8,25 @@ use std::{
     ptr,
 };
 
-use libc::{getegid, getgrgid, getgrgid_r, getgrnam, getgroups, gid_t};
+use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, gid_t};
 
 use bstr::{BStr, BString};
 
-use self::GroupError::*;
+use self::Error::*;
+use crate::passwd::{Error as PwError, Passwd};
 
 /// Group ID type.
 pub type Gid = gid_t;
 
-pub type GrResult<T> = Result<T, GroupError>;
+pub type Result<T> = std::result::Result<T, Error>;
+
+/// A iterator of group members.
+pub type Members = Vec<BString>;
 
 /// Enum that holds possible errors while creating `Group` type.
 #[derive(Debug)]
-pub enum GroupError {
-    /// Happens when `getgrgid_r` or `getgrnam_r` fails.
+pub enum Error {
+    /// Happens when `getgrgid_r`, `getgrnam_r` or `getgrouplist` fails.
     ///
     /// It holds the the function that was used and a error code of the function return.
     GetGroupFailed(String, i32),
@@ -34,11 +38,13 @@ pub enum GroupError {
     ///
     /// This can happen even if `getgrgid_r` or `getgrnam_r` return 0.
     GroupNotFound,
-    /// Happen when calling `getgroups()` C function.
+    /// Happens when calling `getgroups()` or `getgrouplist()` C function.
     Io(IoError),
+    /// Happens when creating a `Passwd` fails.
+    Passwd(Box<PwError>),
 }
 
-impl Display for GroupError {
+impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             GetGroupFailed(fn_name, err_code) => write!(
@@ -50,22 +56,30 @@ impl Display for GroupError {
             PasswdCheckFailed => write!(f, "Group passwd check failed, `.gr_passwd` is null"),
             GroupNotFound => write!(f, "Group was not found in the system"),
             Io(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
+            Passwd(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
         }
     }
 }
 
-impl StdError for GroupError {
+impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
             Io(err) => Some(err),
+            Passwd(err) => Some(err),
             _ => None,
         }
     }
 }
 
-impl From<IoError> for GroupError {
-    fn from(err: IoError) -> GroupError {
+impl From<IoError> for Error {
+    fn from(err: IoError) -> Error {
         Io(err)
+    }
+}
+
+impl From<PwError> for Error {
+    fn from(err: PwError) -> Error {
+        Passwd(Box::new(err))
     }
 }
 
@@ -82,7 +96,7 @@ pub struct Group {
     /// Group encrypted password
     passwd: BString,
     /// Group list of members
-    mem: BString,
+    mem: Members,
     // gr: *mut group
 }
 
@@ -90,22 +104,20 @@ impl Group {
     /// Creates a new `Group` getting the user group as default.
     ///
     /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `GroupError` wrapped in a `Err`.
-    pub fn new() -> GrResult<Self> {
+    /// a `Error` wrapped in a `Err`.
+    pub fn new() -> Result<Self> {
         let mut gr = unsafe { std::mem::zeroed() };
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
-        let res = unsafe {
-            getgrgid_r(getegid(), &mut gr, &mut buff[0], buff.len(), &mut gr_ptr)
-        };
-
-        if res != 0 {
-            return Err(GetGroupFailed(String::from("getgrgid_r"), res));
-        }
+        let res = unsafe { getgrgid_r(getegid(), &mut gr, &mut buff[0], buff.len(), &mut gr_ptr) };
 
         if gr_ptr.is_null() {
-            return Err(GroupNotFound);
+            if res == 0 {
+                return Err(GroupNotFound);
+            } else {
+                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+            }
         }
 
         let name = if !gr.gr_name.is_null() {
@@ -125,12 +137,19 @@ impl Group {
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
         // group.gr_mem is of type `**c_char`
-        let aux_ptr = dbg!(unsafe { *(gr.gr_mem) });
-        let mem = if !gr.gr_mem.is_null() && !aux_ptr.is_null() {
-            let mem_cstr = unsafe { CStr::from_ptr(aux_ptr) };
-            BString::from_slice(mem_cstr.to_bytes())
+        let mut mem_list_ptr = gr.gr_mem;
+        let mut mem_ptr = unsafe { *mem_list_ptr };
+        let mem = if !mem_list_ptr.is_null() && !mem_ptr.is_null() {
+            let mut members: Members = Members::new();
+            while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
+                let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
+                members.push(BString::from_slice(mem_cstr.to_bytes()));
+                mem_list_ptr = unsafe { mem_list_ptr.add(1) };
+                mem_ptr = unsafe { *mem_list_ptr };
+            }
+            members
         } else {
-            BString::new()
+            Members::new()
         };
 
         Ok(Group {
@@ -145,16 +164,25 @@ impl Group {
     /// Creates a `Group` using a `id` to get all attributes.
     ///
     /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `GroupError` wrapped in a `Err`.
-    pub fn from_gid(id: Gid) -> GrResult<Self> {
-        let gr = unsafe { getgrgid(id) };
-        let name_ptr = unsafe { (*gr).gr_name };
-        let pw_ptr = unsafe { (*gr).gr_passwd };
-        let mem_ptr = unsafe { (*gr).gr_mem };
+    /// a `Error` wrapped in a `Err`.
+    pub fn from_gid(id: Gid) -> Result<Self> {
+        let mut gr = unsafe { std::mem::zeroed() };
+        let mut gr_ptr = ptr::null_mut();
+        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
-        if gr.is_null() {
-            return Err(GroupNotFound);
+        let res = unsafe { getgrgid_r(id, &mut gr, &mut buff[0], buff.len(), &mut gr_ptr) };
+
+        if gr_ptr.is_null() {
+            if res == 0 {
+                return Err(GroupNotFound);
+            } else {
+                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+            }
         }
+
+        let name_ptr = gr.gr_name;
+        let pw_ptr = gr.gr_passwd;
+        let mut mem_list_ptr = gr.gr_mem;
 
         let name = if !name_ptr.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
@@ -172,12 +200,21 @@ impl Group {
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
         // group.gr_mem is of type `**c_char`
-        let aux_ptr = unsafe { *mem_ptr };
-        let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
-            let mem_cstr = unsafe { CStr::from_ptr(*mem_ptr) };
-            BString::from_slice(mem_cstr.to_bytes())
+        let mut mem_ptr = unsafe { *mem_list_ptr };
+        let mem = if !mem_list_ptr.is_null() && !mem_ptr.is_null() {
+            let mut members: Members = Members::new();
+
+            while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
+                let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
+                members.push(BString::from_slice(mem_cstr.to_bytes()));
+
+                // Update pointers
+                mem_list_ptr = unsafe { mem_list_ptr.add(1) };
+                mem_ptr = unsafe { *mem_list_ptr };
+            }
+            members
         } else {
-            BString::new()
+            Members::new()
         };
 
         Ok(Group {
@@ -192,19 +229,36 @@ impl Group {
     /// Creates a `Group` using a `name` to get all attributes.
     ///
     /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `GroupError` wrapped in a `Err`.
-    pub fn from_name(name: impl AsRef<[u8]>) -> GrResult<Self> {
+    /// a `Error` wrapped in a `Err`.
+    pub fn from_name(name: &str) -> Result<Self> {
+        let mut gr = unsafe { std::mem::zeroed() };
+        let mut gr_ptr = ptr::null_mut();
+        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
+
         let name = BString::from_slice(name);
 
-        let gr = unsafe { getgrnam((*name).as_ptr() as *const i8) };
-        let pw_ptr = unsafe { (*gr).gr_passwd };
-        let mem_ptr = unsafe { (*gr).gr_mem };
+        let res = unsafe {
+            getgrnam_r(
+                name.as_ptr() as *const i8,
+                &mut gr,
+                &mut buff[0],
+                buff.len(),
+                &mut gr_ptr,
+            )
+        };
 
-        if gr.is_null() {
-            return Err(GroupNotFound);
+        if gr_ptr.is_null() {
+            if res == 0 {
+                return Err(GroupNotFound);
+            } else {
+                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+            }
         }
 
-        let id = unsafe { (*gr).gr_gid };
+        let pw_ptr = gr.gr_passwd;
+        let mut mem_list_ptr = gr.gr_mem;
+
+        let id = gr.gr_gid;
 
         let passwd = if !pw_ptr.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
@@ -215,12 +269,21 @@ impl Group {
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
         // group.gr_mem is of type `**c_char`
-        let aux_ptr = unsafe { *mem_ptr };
-        let mem = if !mem_ptr.is_null() && !aux_ptr.is_null() {
-            let mem_cstr = unsafe { CStr::from_ptr(*mem_ptr) };
-            BString::from_slice(mem_cstr.to_bytes())
+        let mut mem_ptr = unsafe { *mem_list_ptr };
+        let mem = if !mem_list_ptr.is_null() && !mem_ptr.is_null() {
+            let mut members: Members = Members::new();
+
+            while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
+                let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
+                members.push(BString::from_slice(mem_cstr.to_bytes()));
+
+                // Update pointers
+                mem_list_ptr = unsafe { mem_list_ptr.add(1) };
+                mem_ptr = unsafe { *mem_list_ptr };
+            }
+            members
         } else {
-            BString::new()
+            Members::new()
         };
 
         Ok(Group {
@@ -248,7 +311,7 @@ impl Group {
     }
 
     /// Get the `Group` list of members.
-    pub fn mem(&self) -> &BStr {
+    pub fn mem(&self) -> &Members {
         &self.mem
     }
 
@@ -264,39 +327,141 @@ impl Group {
     // }
 }
 
-/// Get all `Groups` in the system.
-///
-/// It may fail, so return a `Result`, either a vector of `Group` wrapped in a `Ok`, or
-/// a `GroupError` wrapped in a `Err`.
-// Based of uutils get_groups
-pub fn get_groups() -> GrResult<Vec<Group>> {
-    // First we check if we indeed have groups.
-    // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary group
-    // IDs associated with the calling process without modifying the array pointed to by grouplist."
-    let num_groups = unsafe { getgroups(0, ptr::null_mut()) };
-    if num_groups == -1 {
-        return Err(Io(IoError::last_os_error()));
+/// A collection of `Group`.
+#[derive(Debug, Clone, Default)]
+pub struct Groups {
+    iter: Vec<Group>,
+}
+
+impl Groups {
+    /// Creates a empty new `Groups`.
+    pub fn new() -> Self {
+        Groups { iter: Vec::new() }
     }
 
-    let mut groups_ids = Vec::with_capacity(num_groups as usize);
-    let num_groups = unsafe { getgroups(num_groups, groups_ids.as_mut_ptr()) };
-    if num_groups == -1 {
-        return Err(Io(IoError::last_os_error()));
-    } else {
-        unsafe {
-            groups_ids.set_len(num_groups as usize);
+    /// Get all the process caller groups
+    pub fn caller() -> Result<Self> {
+        // First we check if we indeed have groups.
+        // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary group
+        // IDs associated with the calling process without modifying the array pointed to by grouplist."
+        let num_groups = unsafe { getgroups(0, ptr::null_mut()) };
+        if num_groups == -1 {
+            return Err(Io(IoError::last_os_error()));
         }
-    }
 
-    let groups = {
-        let mut gs = Vec::with_capacity(num_groups as usize);
-        for g_id in groups_ids {
-            if let Ok(gr) = Group::from_gid(g_id) {
-                gs.push(gr);
+        let mut groups_ids = Vec::with_capacity(num_groups as usize);
+        let num_groups = unsafe { getgroups(num_groups, groups_ids.as_mut_ptr()) };
+        if num_groups == -1 {
+            return Err(Io(IoError::last_os_error()));
+        } else {
+            unsafe {
+                groups_ids.set_len(num_groups as usize);
             }
         }
-        gs
-    };
 
-    Ok(groups)
+        let groups = {
+            let mut gs = Vec::with_capacity(num_groups as usize);
+            for g_id in groups_ids {
+                if let Ok(gr) = Group::from_gid(g_id) {
+                    gs.push(gr);
+                }
+            }
+            gs
+        };
+
+        Ok(Groups { iter: groups })
+    }
+
+    /// Get all groups that `username` belongs.
+    pub fn from_username(username: &str) -> Result<Self> {
+        let mut num_gr: i32 = 8;
+        let mut groups_ids = Vec::with_capacity(num_gr as usize);
+
+        let passwd = Passwd::from_name(username)?;
+
+        let gid = passwd.gid();
+        let name = passwd.name().as_ptr() as *const i8;
+        let mut res = 0;
+        unsafe {
+            if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+                groups_ids.resize(num_gr as usize, 0);
+                res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+            }
+            groups_ids.set_len(num_gr as usize);
+        }
+
+        if res == -1 {
+            return Err(GetGroupFailed(String::from("getgrouplist"), res));
+        }
+
+        groups_ids.truncate(num_gr as usize);
+
+        let groups = {
+            let mut gs = Vec::with_capacity(num_gr as usize);
+            for gid in groups_ids {
+                let gr = Group::from_gid(gid)?;
+                gs.push(gr);
+            }
+            gs
+        };
+
+        Ok(Groups { iter: groups })
+    }
+
+    pub fn from_passwd(passwd: &Passwd) -> Result<Self> {
+        let name = passwd.name().as_ptr() as *const i8;
+        let gid = passwd.gid();
+        let mut num_gr: i32 = 8;
+        let mut groups_ids = Vec::with_capacity(num_gr as usize);
+
+        let mut res = 0;
+        unsafe {
+            if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+                groups_ids.resize(num_gr as usize, 0);
+                res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+            }
+            groups_ids.set_len(num_gr as usize);
+        }
+
+        if res == -1 {
+            return Err(GetGroupFailed(String::from("getgrouplist"), res));
+        }
+
+        groups_ids.truncate(num_gr as usize);
+
+        let groups = {
+            let mut gs = Vec::with_capacity(num_gr as usize);
+            for gid in groups_ids {
+                let gr = Group::from_gid(gid)?;
+                gs.push(gr);
+            }
+            gs
+        };
+
+        Ok(Groups { iter: groups })
+    }
+
+    /// Insert as `Group` on `Groups`.
+    pub fn push(&mut self, value: Group) {
+        self.iter.push(value);
+    }
+
+    /// Return `true` if `Groups` contains 0 elements.
+    pub fn is_empty(&self) -> bool {
+        self.iter.is_empty()
+    }
+
+    /// Transform `Groups` to a Vector of `Group`.
+    pub fn into_vec(self) -> Vec<Group> {
+        self.iter
+    }
+}
+
+impl IntoIterator for Groups {
+    type Item = Group;
+    type IntoIter = std::vec::IntoIter<Group>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter.into_iter()
+    }
 }

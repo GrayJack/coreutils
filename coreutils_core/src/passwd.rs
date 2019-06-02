@@ -7,24 +7,24 @@ use std::{
     mem, ptr,
 };
 
-use crate::group::Gid;
+use crate::group::{Error as GrError, Gid, Groups};
 
-use self::PasswdError::*;
+use self::Error::*;
 
-use libc::{geteuid, getpwnam, getpwuid, getpwuid_r, uid_t};
+use libc::{geteuid, getpwnam_r, getpwuid_r, uid_t};
 
 use bstr::{BStr, BString};
 
 /// User ID type.
 pub type Uid = uid_t;
 
-pub type PwResult<T> = Result<T, PasswdError>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// This struct holds information about a passwd of UNIX/UNIX-like systems.
 ///
 /// Contains `sys/types.h` `passwd` struct attributes as Rust more powefull types.
 #[derive(Debug)]
-pub enum PasswdError {
+pub enum Error {
     /// Happens when `getpwgid_r` or `getpwnam_r` fails.
     ///
     /// It holds the the function that was used and a error code of the function return.
@@ -41,9 +41,11 @@ pub enum PasswdError {
     ShellCheckFailed,
     /// Happens when the passwd is not found.
     PasswdNotFound,
+    /// Happens when something happens when finding what `Group` a `Passwd` belongs
+    Group(Box<GrError>),
 }
 
-impl Display for PasswdError {
+impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             GetPasswdFailed(fn_name, err_code) => write!(
@@ -57,13 +59,20 @@ impl Display for PasswdError {
             DirCheckFailed => write!(f, "Group dir check failed, `.pw_dir` is null"),
             ShellCheckFailed => write!(f, "Group shell check failed, `.pw_shell` is null"),
             PasswdNotFound => write!(f, "Passwd was not found in the system"),
+            Group(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
         }
     }
 }
 
-impl StdError for PasswdError {
+impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         None
+    }
+}
+
+impl From<GrError> for Error {
+    fn from(err: GrError) -> Error {
+        Group(Box::new(err))
     }
 }
 
@@ -94,22 +103,20 @@ impl Passwd {
     /// Create a new `Passwd` getting the user passwd as default.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `PasswdError` wrapped in a `Err`.
-    pub fn new() -> PwResult<Self> {
+    /// a `Error` wrapped in a `Err`.
+    pub fn new() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw: libc::passwd = unsafe { mem::zeroed() };
         let mut pw_ptr = ptr::null_mut();
 
-        let res = unsafe {
-            getpwuid_r(geteuid(), &mut pw, &mut buff[0], buff.len(), &mut pw_ptr)
-        };
-
-        if res != 0 {
-            return Err(GetPasswdFailed(String::from("getpwuid_r"), res));
-        }
+        let res = unsafe { getpwuid_r(geteuid(), &mut pw, &mut buff[0], buff.len(), &mut pw_ptr) };
 
         if pw_ptr.is_null() {
-            return Err(PasswdNotFound);
+            if res == 0 {
+                return Err(PasswdNotFound);
+            } else {
+                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+            }
         }
 
         let name = if !pw.pw_name.is_null() {
@@ -166,18 +173,27 @@ impl Passwd {
     /// Create a new `Passwd` using a `id` to get all attributes.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `PasswdError` wrapped in a `Err`.
-    pub fn from_uid(id: Uid) -> PwResult<Self> {
-        let pw = unsafe { getpwuid(id) };
-        let name_ptr = unsafe { (*pw).pw_name };
-        let passwd_ptr = unsafe { (*pw).pw_passwd };
-        let gecos_ptr = unsafe { (*pw).pw_gecos };
-        let dir_ptr = unsafe { (*pw).pw_dir };
-        let shell_ptr = unsafe { (*pw).pw_shell };
+    /// a `Error` wrapped in a `Err`.
+    pub fn from_uid(id: Uid) -> Result<Self> {
+        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
+        let mut pw: libc::passwd = unsafe { mem::zeroed() };
+        let mut pw_ptr = ptr::null_mut();
 
-        if pw.is_null() {
-            return Err(PasswdNotFound);
+        let res = unsafe { getpwuid_r(id, &mut pw, &mut buff[0], buff.len(), &mut pw_ptr) };
+
+        if pw_ptr.is_null() {
+            if res == 0 {
+                return Err(PasswdNotFound);
+            } else {
+                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+            }
         }
+
+        let name_ptr = pw.pw_name;
+        let passwd_ptr = pw.pw_passwd;
+        let gecos_ptr = pw.pw_gecos;
+        let dir_ptr = pw.pw_dir;
+        let shell_ptr = pw.pw_shell;
 
         let name = if !name_ptr.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
@@ -195,7 +211,7 @@ impl Passwd {
 
         let user_id = id;
 
-        let group_id = unsafe { (*pw).pw_gid };
+        let group_id = pw.pw_gid;
 
         let gecos = if !gecos_ptr.is_null() {
             let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
@@ -233,15 +249,36 @@ impl Passwd {
     /// Create a new `Passwd` using a `name` to get all attributes.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `PasswdError` wrapped in a `Err`.
-    pub fn from_name(name: impl AsRef<[u8]>) -> PwResult<Self> {
+    /// a `Error` wrapped in a `Err`.
+    pub fn from_name(name: &str) -> Result<Self> {
+        let mut pw: libc::passwd = unsafe { mem::zeroed() };
+        let mut pw_ptr = ptr::null_mut();
+        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
+
         let name = BString::from_slice(name);
 
-        let pw = unsafe { getpwnam(name.as_ptr() as *const i8) };
-        let passwd_ptr = unsafe { (*pw).pw_passwd };
-        let gecos_ptr = unsafe { (*pw).pw_gecos };
-        let dir_ptr = unsafe { (*pw).pw_dir };
-        let shell_ptr = unsafe { (*pw).pw_shell };
+        let res = unsafe {
+            getpwnam_r(
+                name.as_ptr() as *const i8,
+                &mut pw,
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            )
+        };
+
+        if pw_ptr.is_null() {
+            if res == 0 {
+                return Err(PasswdNotFound);
+            } else {
+                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+            }
+        }
+
+        let passwd_ptr = pw.pw_passwd;
+        let gecos_ptr = pw.pw_gecos;
+        let dir_ptr = pw.pw_dir;
+        let shell_ptr = pw.pw_shell;
 
         let passwd = if !passwd_ptr.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
@@ -250,9 +287,9 @@ impl Passwd {
             return Err(PasswdCheckFailed);
         };
 
-        let user_id = unsafe { (*pw).pw_gid };
+        let user_id = pw.pw_uid;
 
-        let group_id = unsafe { (*pw).pw_gid };
+        let group_id = pw.pw_gid;
 
         let gecos = if !gecos_ptr.is_null() {
             let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
@@ -320,6 +357,12 @@ impl Passwd {
     /// Get `Passwd` shell.
     pub fn shell(&self) -> &BStr {
         &self.shell
+    }
+
+    /// Get the groups that `Passwd` belongs to.
+    pub fn belongs_to(&self) -> Result<Groups> {
+        let gr = Groups::from_passwd(self)?;
+        Ok(gr)
     }
 
     // /// Get the raw pointer to the passwd.
