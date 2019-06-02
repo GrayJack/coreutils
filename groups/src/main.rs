@@ -1,6 +1,6 @@
 use coreutils_core::{
     group::{Error as GrError, Groups},
-    passwd::{Error as PwError, Passwd},
+    passwd::{Error as PwError},
 };
 
 use GrError::*;
