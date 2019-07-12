@@ -13,7 +13,7 @@ use self::Error::*;
 
 use libc::{geteuid, getpwnam_r, getpwuid_r, uid_t};
 
-use bstr::{BStr, BString};
+use bstr::{BStr, BString, ByteSlice};
 
 /// User ID type.
 pub type Uid = uid_t;
@@ -121,14 +121,14 @@ impl Passwd {
 
         let name = if !pw.pw_name.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
-            BString::from_slice(name_cstr.to_bytes())
+            BString::from(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let passwd = if !pw.pw_passwd.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
-            BString::from_slice(passwd_cstr.to_bytes())
+            BString::from(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -139,21 +139,21 @@ impl Passwd {
 
         let gecos = if !pw.pw_gecos.is_null() {
             let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
-            BString::from_slice(gecos_cstr.to_bytes())
+            BString::from(gecos_cstr.to_bytes())
         } else {
             return Err(GecosCheckFailed);
         };
 
         let dir = if !pw.pw_dir.is_null() {
             let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
-            BString::from_slice(dir_cstr.to_bytes())
+            BString::from(dir_cstr.to_bytes())
         } else {
             return Err(DirCheckFailed);
         };
 
         let shell = if !pw.pw_shell.is_null() {
             let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
-            BString::from_slice(shell_cstr.to_bytes())
+            BString::from(shell_cstr.to_bytes())
         } else {
             return Err(ShellCheckFailed);
         };
@@ -197,14 +197,14 @@ impl Passwd {
 
         let name = if !name_ptr.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
-            BString::from_slice(name_cstr.to_bytes())
+            BString::from(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let passwd = if !passwd_ptr.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
-            BString::from_slice(passwd_cstr.to_bytes())
+            BString::from(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -215,21 +215,21 @@ impl Passwd {
 
         let gecos = if !gecos_ptr.is_null() {
             let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
-            BString::from_slice(gecos_cstr.to_bytes())
+            BString::from(gecos_cstr.to_bytes())
         } else {
             return Err(GecosCheckFailed);
         };
 
         let dir = if !dir_ptr.is_null() {
             let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
-            BString::from_slice(dir_cstr.to_bytes())
+            BString::from(dir_cstr.to_bytes())
         } else {
             return Err(DirCheckFailed);
         };
 
         let shell = if !shell_ptr.is_null() {
             let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
-            BString::from_slice(shell_cstr.to_bytes())
+            BString::from(shell_cstr.to_bytes())
         } else {
             return Err(ShellCheckFailed);
         };
@@ -255,7 +255,7 @@ impl Passwd {
         let mut pw_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
 
-        let name = BString::from_slice(name);
+        let name = BString::from(name);
 
         let res = unsafe {
             getpwnam_r(
@@ -282,7 +282,7 @@ impl Passwd {
 
         let passwd = if !passwd_ptr.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
-            BString::from_slice(passwd_cstr.to_bytes())
+            BString::from(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -293,21 +293,21 @@ impl Passwd {
 
         let gecos = if !gecos_ptr.is_null() {
             let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
-            BString::from_slice(gecos_cstr.to_bytes())
+            BString::from(gecos_cstr.to_bytes())
         } else {
             return Err(GecosCheckFailed);
         };
 
         let dir = if !dir_ptr.is_null() {
             let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
-            BString::from_slice(dir_cstr.to_bytes())
+            BString::from(dir_cstr.to_bytes())
         } else {
             return Err(DirCheckFailed);
         };
 
         let shell = if !shell_ptr.is_null() {
             let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
-            BString::from_slice(shell_cstr.to_bytes())
+            BString::from(shell_cstr.to_bytes())
         } else {
             return Err(ShellCheckFailed);
         };
@@ -326,12 +326,12 @@ impl Passwd {
 
     /// Get `Passwd` login name.
     pub fn name(&self) -> &BStr {
-        &self.name
+        &self.name.as_bstr()
     }
 
     /// Get `Passwd` encrypted password.
     pub fn passwd(&self) -> &BStr {
-        &self.passwd
+        &self.passwd.as_bstr()
     }
 
     /// Get `Passwd` user ID.
@@ -346,17 +346,17 @@ impl Passwd {
 
     /// Get `Passwd` full name.
     pub fn gecos(&self) -> &BStr {
-        &self.gecos
+        &self.gecos.as_bstr()
     }
 
     /// Get `Passwd` dir.
     pub fn dir(&self) -> &BStr {
-        &self.dir
+        &self.dir.as_bstr()
     }
 
     /// Get `Passwd` shell.
     pub fn shell(&self) -> &BStr {
-        &self.shell
+        &self.shell.as_bstr()
     }
 
     /// Get the groups that `Passwd` belongs to.

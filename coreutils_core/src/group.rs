@@ -10,7 +10,7 @@ use std::{
 
 use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, gid_t};
 
-use bstr::{BStr, BString};
+use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
 use crate::passwd::{Error as PwError, Passwd};
@@ -122,7 +122,7 @@ impl Group {
 
         let name = if !gr.gr_name.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(gr.gr_name) };
-            BString::from_slice(name_cstr.to_bytes())
+            BString::from(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
@@ -130,7 +130,7 @@ impl Group {
         let id = gr.gr_gid;
         let passwd = if !gr.gr_passwd.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(gr.gr_passwd) };
-            BString::from_slice(passwd_cstr.to_bytes())
+            BString::from(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -143,7 +143,7 @@ impl Group {
             let mut members: Members = Members::new();
             while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
                 let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
-                members.push(BString::from_slice(mem_cstr.to_bytes()));
+                members.push(BString::from(mem_cstr.to_bytes()));
                 mem_list_ptr = unsafe { mem_list_ptr.add(1) };
                 mem_ptr = unsafe { *mem_list_ptr };
             }
@@ -186,14 +186,14 @@ impl Group {
 
         let name = if !name_ptr.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
-            BString::from_slice(name_cstr.to_bytes())
+            BString::from(name_cstr.to_bytes())
         } else {
             return Err(NameCheckFailed);
         };
 
         let passwd = if !pw_ptr.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
-            BString::from_slice(passwd_cstr.to_bytes())
+            BString::from(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -206,7 +206,7 @@ impl Group {
 
             while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
                 let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
-                members.push(BString::from_slice(mem_cstr.to_bytes()));
+                members.push(BString::from(mem_cstr.to_bytes()));
 
                 // Update pointers
                 mem_list_ptr = unsafe { mem_list_ptr.add(1) };
@@ -235,7 +235,7 @@ impl Group {
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
-        let name = BString::from_slice(name);
+        let name = BString::from(name);
 
         let res = unsafe {
             getgrnam_r(
@@ -262,7 +262,7 @@ impl Group {
 
         let passwd = if !pw_ptr.is_null() {
             let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
-            BString::from_slice(passwd_cstr.to_bytes())
+            BString::from(passwd_cstr.to_bytes())
         } else {
             return Err(PasswdCheckFailed);
         };
@@ -275,7 +275,7 @@ impl Group {
 
             while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
                 let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
-                members.push(BString::from_slice(mem_cstr.to_bytes()));
+                members.push(BString::from(mem_cstr.to_bytes()));
 
                 // Update pointers
                 mem_list_ptr = unsafe { mem_list_ptr.add(1) };
@@ -297,7 +297,7 @@ impl Group {
 
     /// Get the `Group` name.
     pub fn name(&self) -> &BStr {
-        &self.name
+        &self.name.as_bstr()
     }
 
     /// Get the `Group` id.
@@ -307,7 +307,7 @@ impl Group {
 
     /// Get the `Group` encrypted password.
     pub fn passwd(&self) -> &BStr {
-        &self.passwd
+        &self.passwd.as_bstr()
     }
 
     /// Get the `Group` list of members.
