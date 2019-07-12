@@ -7,6 +7,7 @@ members = [
     "false",
     "groups",
     "logname",
+    "pwd",
     "true",
     "whoami",
     "yes"
