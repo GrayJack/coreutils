@@ -53,7 +53,7 @@ Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contri
 |   paste  |      X      |         |      |
 |   patch  |      X      |         |      |
 |  printf  |      X      |         |      |
-|    pwd   |             |    X    |      |
+|    pwd   |             |         |   X  |
 |    rm    |      X      |         |      |
 |   rmdir  |      X      |         |      |
 |    sed   |      X      |         |      |
