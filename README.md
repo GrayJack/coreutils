@@ -59,7 +59,7 @@ Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contri
 |    sed   |      X      |         |      |
 |    seq   |      X      |         |      |
 |   sort   |      X      |         |      |
-|   sleep  |      X      |         |      |
+|   sleep  |             |         |   X  |
 |   split  |      X      |         |      |
 |   stat   |      X      |         |      |
 |   stty   |      X      |         |      |
