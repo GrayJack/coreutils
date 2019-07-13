@@ -97,7 +97,6 @@ pub struct Group {
     passwd: BString,
     /// Group list of members
     mem: Members,
-    // gr: *mut group
 }
 
 impl Group {
@@ -156,8 +155,7 @@ impl Group {
             name,
             id,
             passwd,
-            mem
-            // gr: &mut gr,
+            mem,
         })
     }
 
@@ -222,7 +220,6 @@ impl Group {
             id,
             passwd,
             mem,
-            // gr,
         })
     }
 
@@ -291,7 +288,6 @@ impl Group {
             id,
             passwd,
             mem,
-            // gr,
         })
     }
 
@@ -314,17 +310,6 @@ impl Group {
     pub fn mem(&self) -> &Members {
         &self.mem
     }
-
-    // /// Get a raw pointer to the group.
-    // pub fn raw_ptr(&self) -> *const group {
-    //     self.gr
-    // }
-    //
-    // // Get a mutable raw pointer to the group.
-    // // Use with caution.
-    // pub unsafe fn raw_ptr_mut(&mut self) -> *mut group {
-    //     self.gr
-    // }
 }
 
 /// A collection of `Group`.

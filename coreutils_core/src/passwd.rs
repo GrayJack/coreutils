@@ -96,7 +96,6 @@ pub struct Passwd {
     dir: BString,
     /// User login shell
     shell: BString,
-    // pw: *mut passwd,
 }
 
 impl Passwd {
@@ -166,7 +165,6 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            // pw: &mut pw,
         })
     }
 
@@ -242,7 +240,6 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            // pw,
         })
     }
 
@@ -320,7 +317,6 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            // pw,
         })
     }
 
@@ -364,15 +360,4 @@ impl Passwd {
         let gr = Groups::from_passwd(self)?;
         Ok(gr)
     }
-
-    // /// Get the raw pointer to the passwd.
-    // pub fn raw_ptr(&self) -> *const passwd {
-    //     self.pw
-    // }
-    //
-    // // Get a mutable raw pointer to the passwd.
-    // // Use with caution.
-    // pub unsafe fn raw_ptr_mut(&mut self) -> *mut passwd {
-    //     self.pw
-    // }
 }
