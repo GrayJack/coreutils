@@ -1,4 +1,4 @@
-use std::{env, process};
+use std::{env, path::PathBuf, process};
 
 use clap::{load_yaml, App};
 
@@ -7,11 +7,14 @@ fn main() {
     let matches = App::from_yaml(yaml).get_matches();
 
     let curr_dir = {
-        match env::current_dir() {
+        // The local path we get from environment variable PWD
+        match env::var("PWD") {
             Ok(dir) => {
                 if matches.is_present("logical") {
-                    dir
+                    PathBuf::from(dir)
                 } else {
+                    // If if physical, canonicalize path
+                    let dir = PathBuf::from(dir);
                     match dir.canonicalize() {
                         Ok(d) => d,
                         _ => {
@@ -20,9 +23,9 @@ fn main() {
                         }
                     }
                 }
-            },
-            Err(_) => {
-                eprintln!("Failed to get current directory.");
+            }
+            Err(e) => {
+                eprintln!("Failed to get current directory. {:#?}", e);
                 process::exit(1);
             }
         }

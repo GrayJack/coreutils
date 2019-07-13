@@ -7,7 +7,7 @@ args:
         help: Use PWD from environment, even if it contains symlinks
         long: logical
         short: l
-    - phisical:
+    - physical:
         help: Avoid all symlinks
-        long: phisical
+        long: physical
         short: p
