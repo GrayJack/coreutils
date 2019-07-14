@@ -1,4 +1,6 @@
-use std::{env, path::PathBuf, process};
+use std::process;
+
+use coreutils_core::env;
 
 use clap::{load_yaml, App};
 
@@ -8,13 +10,11 @@ fn main() {
 
     let curr_dir = {
         // The local path we get from environment variable PWD
-        match env::var("PWD") {
+        match env::current_dir_logical() {
             Ok(dir) => {
                 if matches.is_present("logical") {
-                    PathBuf::from(dir)
+                    dir
                 } else {
-                    // If if physical, canonicalize path
-                    let dir = PathBuf::from(dir);
                     match dir.canonicalize() {
                         Ok(d) => d,
                         _ => {
