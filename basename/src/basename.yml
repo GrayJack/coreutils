@@ -8,15 +8,15 @@ args:
         required: true
         multiple: true
     - multiple:
+        help: Support more than one argument. Treat every argument as a name.
         long: multiple
         short: a
-        help: Support more than one argument. Treat every argument as a name.
     - suffix:
+        help: Remove a trailing suffix. This option implies the -a option.
         long: suffix
         short: s
         value_name: SUFFIX
-        help: Remove a trailing suffix. This option implies the -a option.
     - zero:
+        help: Output a zero byte (ASCII NUL) at the end of each line, rather than a newline.
         long: zero
         short: z
-        help: Output a zero byte (ASCII NUL) at the end of each line, rather than a newline.

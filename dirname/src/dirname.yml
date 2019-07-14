@@ -8,6 +8,6 @@ args:
         required: true
         multiple: true
     - zero:
+        help: Output a zero byte (ASCII NUL) at the end of each line, rather than a newline.
         long: zero
         short: z
-        help: Output a zero byte (ASCII NUL) at the end of each line, rather than a newline.
