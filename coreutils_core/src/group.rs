@@ -5,6 +5,7 @@ use std::{
     ffi::CStr,
     fmt::{self, Display},
     io::Error as IoError,
+    mem::MaybeUninit,
     ptr,
 };
 
@@ -105,11 +106,19 @@ impl Group {
     /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
     pub fn new() -> Result<Self> {
-        let mut gr = unsafe { std::mem::zeroed() };
+        let mut gr = MaybeUninit::zeroed();
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
-        let res = unsafe { getgrgid_r(getegid(), &mut gr, &mut buff[0], buff.len(), &mut gr_ptr) };
+        let res = unsafe {
+            getgrgid_r(
+                getegid(),
+                gr.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut gr_ptr,
+            )
+        };
 
         if gr_ptr.is_null() {
             if res == 0 {
@@ -118,6 +127,9 @@ impl Group {
                 return Err(GetGroupFailed(String::from("getgrgid_r"), res));
             }
         }
+
+        // Now that pw is initialized we get it
+        let gr = unsafe { gr.assume_init() };
 
         let name = if !gr.gr_name.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(gr.gr_name) };
@@ -164,11 +176,11 @@ impl Group {
     /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
     pub fn from_gid(id: Gid) -> Result<Self> {
-        let mut gr = unsafe { std::mem::zeroed() };
+        let mut gr = MaybeUninit::zeroed();
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
-        let res = unsafe { getgrgid_r(id, &mut gr, &mut buff[0], buff.len(), &mut gr_ptr) };
+        let res = unsafe { getgrgid_r(id, gr.as_mut_ptr(), &mut buff[0], buff.len(), &mut gr_ptr) };
 
         if gr_ptr.is_null() {
             if res == 0 {
@@ -177,6 +189,9 @@ impl Group {
                 return Err(GetGroupFailed(String::from("getgrgid_r"), res));
             }
         }
+
+        // Now that pw is initialized we get it
+        let gr = unsafe { gr.assume_init() };
 
         let name_ptr = gr.gr_name;
         let pw_ptr = gr.gr_passwd;
@@ -228,7 +243,7 @@ impl Group {
     /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
     pub fn from_name(name: &str) -> Result<Self> {
-        let mut gr = unsafe { std::mem::zeroed() };
+        let mut gr = MaybeUninit::zeroed();
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
@@ -237,7 +252,7 @@ impl Group {
         let res = unsafe {
             getgrnam_r(
                 name.as_ptr() as *const i8,
-                &mut gr,
+                gr.as_mut_ptr(),
                 &mut buff[0],
                 buff.len(),
                 &mut gr_ptr,
@@ -251,6 +266,9 @@ impl Group {
                 return Err(GetGroupFailed(String::from("getgrgid_r"), res));
             }
         }
+
+        // Now that pw is initialized we get it
+        let gr = unsafe { gr.assume_init() };
 
         let pw_ptr = gr.gr_passwd;
         let mut mem_list_ptr = gr.gr_mem;

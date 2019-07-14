@@ -4,7 +4,8 @@ use std::{
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
-    mem, ptr,
+    mem::MaybeUninit,
+    ptr,
 };
 
 use crate::group::{Error as GrError, Gid, Groups};
@@ -105,10 +106,18 @@ impl Passwd {
     /// a `Error` wrapped in a `Err`.
     pub fn new() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw: libc::passwd = unsafe { mem::zeroed() };
+        let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
 
-        let res = unsafe { getpwuid_r(geteuid(), &mut pw, &mut buff[0], buff.len(), &mut pw_ptr) };
+        let res = unsafe {
+            getpwuid_r(
+                geteuid(),
+                pw.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            )
+        };
 
         if pw_ptr.is_null() {
             if res == 0 {
@@ -117,6 +126,9 @@ impl Passwd {
                 return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
             }
         }
+
+        // Now that pw is initialized we get it
+        let pw = unsafe { pw.assume_init() };
 
         let name = if !pw.pw_name.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
@@ -174,10 +186,10 @@ impl Passwd {
     /// a `Error` wrapped in a `Err`.
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw: libc::passwd = unsafe { mem::zeroed() };
+        let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
 
-        let res = unsafe { getpwuid_r(id, &mut pw, &mut buff[0], buff.len(), &mut pw_ptr) };
+        let res = unsafe { getpwuid_r(id, pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
 
         if pw_ptr.is_null() {
             if res == 0 {
@@ -186,6 +198,9 @@ impl Passwd {
                 return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
             }
         }
+
+        // Now that pw is initialized we get it
+        let pw = unsafe { pw.assume_init() };
 
         let name_ptr = pw.pw_name;
         let passwd_ptr = pw.pw_passwd;
@@ -248,7 +263,7 @@ impl Passwd {
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
     pub fn from_name(name: &str) -> Result<Self> {
-        let mut pw: libc::passwd = unsafe { mem::zeroed() };
+        let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
 
@@ -257,7 +272,7 @@ impl Passwd {
         let res = unsafe {
             getpwnam_r(
                 name.as_ptr() as *const i8,
-                &mut pw,
+                pw.as_mut_ptr(),
                 &mut buff[0],
                 buff.len(),
                 &mut pw_ptr,
@@ -271,6 +286,9 @@ impl Passwd {
                 return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
             }
         }
+
+        // Now that pw is initialized we get it
+        let pw = unsafe { pw.assume_init() };
 
         let passwd_ptr = pw.pw_passwd;
         let gecos_ptr = pw.pw_gecos;
