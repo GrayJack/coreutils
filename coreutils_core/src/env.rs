@@ -31,17 +31,23 @@ impl From<IoError> for Error {
 pub fn current_dir_logical() -> Result<PathBuf> {
     let pwd = env::var("PWD")?;
 
+    // Same as pwd, but null terminated
+    let pwd_null = {
+        let mut s = String::new();
+        s.push_str(&pwd);
+        s.push('\0');
+        s
+    };
+
     let (mut logical, mut physical) = (MaybeUninit::uninit(), MaybeUninit::uninit());
 
     // Validity check
     // if we can get both fisical and logical paths stat, check they are the same inode
     if pwd.starts_with('/') {
-        let stat1 = unsafe { dbg!(stat(pwd.as_ptr() as *const i8, logical.as_mut_ptr()) == 0) };
-        let stat2 = unsafe { dbg!(stat(".\0".as_ptr() as *const i8, physical.as_mut_ptr()) == 0) };
+        let stat1 = unsafe { stat(pwd_null.as_ptr() as *const i8, logical.as_mut_ptr()) == 0 };
+        let stat2 = unsafe { stat(".\0".as_ptr() as *const i8, physical.as_mut_ptr()) == 0 };
 
         let (logical, physical) = unsafe { (logical.assume_init(), physical.assume_init()) };
-
-        dbg!(logical, physical);
 
         if stat1 && stat2 && logical.st_ino == physical.st_ino {
             return Ok(PathBuf::from(pwd));
