@@ -37,7 +37,7 @@ pub fn current_dir_logical() -> Result<PathBuf> {
     // if we can get both fisical and logical paths stat, check they are the same inode
     if pwd.starts_with('/') {
         let stat1 = unsafe { dbg!(stat(pwd.as_ptr() as *const i8, logical.as_mut_ptr()) == 0) };
-        let stat2 = unsafe { dbg!(stat(".".as_ptr() as *const i8, physical.as_mut_ptr()) == 0) };
+        let stat2 = unsafe { dbg!(stat(".\0".as_ptr() as *const i8, physical.as_mut_ptr()) == 0) };
 
         let (logical, physical) = unsafe { (logical.assume_init(), physical.assume_init()) };
 
