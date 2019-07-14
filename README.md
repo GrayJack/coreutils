@@ -1,13 +1,21 @@
 # Coreutils in Rust
+
+[![Hits-of-Code](https://hitsofcode.com/github/GrayJack/coreutils)](https://hitsofcode.com/view/github/GrayJack/coreutils)
+
 An attempt to make safe coreutils aiming a minimal and yet complete set of utilities, adding only features that are common between several implementations of the utility and functions that are really useful.
 
 This project has no intent to be 100% compatible with GNU's coreutils, like
 [Uutils' coreutils](https://github.com/uutils/coreutils)
 
-# Contributing
+## Contributing
 Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contribute to the project, including issue reports, git commits messages, etc.
 
-# Tools
+## Minimum Rust Version Policy
+This project's minimum supported `rustc` version (MSRV) is 1.36.0.
+
+In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump any time. [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`]
+
+## Tools
 |   Name   | Not Started | Started | Done |
 |:--------:|:-----------:|:-------:|:----:|
 |   arch   |      X      |         |      |
@@ -84,5 +92,5 @@ Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contri
 |    yes   |             |         |   X  |
 
 
-# Licensing
+## Licensing
 This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE). If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
