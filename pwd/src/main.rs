@@ -31,13 +31,5 @@ fn main() {
         }
     };
 
-    let curr_dir = match curr_dir.to_str() {
-        Some(s) => s,
-        None => {
-            eprintln!("Failed to transform to str.");
-            process::exit(1);
-        }
-    };
-
-    println!("{}", curr_dir);
+    println!("{}", curr_dir.display());
 }
