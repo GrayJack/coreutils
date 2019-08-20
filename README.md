@@ -41,7 +41,7 @@ In general, this project will try to be conservative with respect to the minimum
 |  expand  |      X      |         |      |
 |   expr   |      X      |         |      |
 |   false  |             |         |   X  |
-|  groups  |             |    X    |      |
+|  groups  |             |         |   X  |
 |   hash   |      X      |         |      |
 |   head   |      X      |         |      |
 |    id    |      X      |         |      |
