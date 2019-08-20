@@ -9,7 +9,7 @@ use std::{
     ptr,
 };
 
-use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, gid_t};
+use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, gid_t, getpwnam};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -380,10 +380,11 @@ impl Groups {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
 
-        let passwd = Passwd::from_name(username)?;
+        let passwd = unsafe {getpwnam(username.as_ptr() as *const i8)};
 
-        let gid = passwd.gid();
-        let name = passwd.name().as_ptr() as *const i8;
+        let name = username.as_ptr() as *const i8;
+        let gid = unsafe { (*passwd).pw_gid };
+
         let mut res = 0;
         unsafe {
             if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
