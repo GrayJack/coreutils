@@ -29,7 +29,7 @@ In the Issues tracker, click in the button `New issue`, then select the `Bug Rep
 In the Issues tracker, click in the button `New issue`, then select the `Feature request` option. After that, add the required information about the bug in the template, and submit.
 
 ### Pull Requests
-After forking and making your changes, always make a Pull Request to the `dev` branch with a proper message saying what is changed.
+After forking and making your changes, always make a Pull Request to the `master` branch with a proper message saying what is changed.
 
 ## Styleguides
 ### Git Commit Messages
