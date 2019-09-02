@@ -9,7 +9,7 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["yaml"] }
-sugars = "^0.3.0"
+sugars = "^0.5.0"
 
 [build-dependencies]
 clap = { version = "^2.33.0", features = ["yaml"] }
