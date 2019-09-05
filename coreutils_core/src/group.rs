@@ -88,7 +88,7 @@ impl From<PwError> for Error {
 ///
 /// Contains `sys/types.h` `group` struct attributes as Rust powefull types.
 // It also contains a pointer to the libc::group type for more complex manipulations.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Group {
     /// Group name.
     name: BString,

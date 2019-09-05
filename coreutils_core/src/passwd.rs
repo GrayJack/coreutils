@@ -81,7 +81,7 @@ impl From<GrError> for Error {
 ///
 /// Contains `sys/types.h` `passwd` struct attributes as Rust more common types.
 // It also contains a pointer to the libc::passwd type for more complex manipulations.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
 pub struct Passwd {
     /// User login name.
     name: BString,
