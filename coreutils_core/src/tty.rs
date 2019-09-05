@@ -15,7 +15,7 @@ mod consts {
     pub const TTY_NAME_MAX: usize = 32;
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub enum Error {
     NotTTY,
     LibcCall(String, i32),
