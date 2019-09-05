@@ -13,7 +13,7 @@ Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contri
 ## Minimum Rust Version Policy
 This project's minimum supported `rustc` version (MSRV) is 1.36.0.
 
-In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump any time. [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`]
+In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time. [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`]
 
 ## Tools
 |   Name   | Not Started | Started | Done |
@@ -79,7 +79,7 @@ In general, this project will try to be conservative with respect to the minimum
 |    tr    |      X      |         |      |
 |   true   |             |         |   X  |
 |   tsort  |      X      |         |      |
-|    tty   |      X      |         |      |
+|    tty   |             |         |   X  |
 |   uname  |      X      |         |      |
 | unexpand |      X      |         |      |
 |   uniq   |      X      |         |      |
