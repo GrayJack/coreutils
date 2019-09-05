@@ -74,3 +74,7 @@ impl Display for TTYName {
         write!(f, "{}", self.0)
     }
 }
+
+pub fn isatty(file_descriptor: FileDescriptor) -> bool {
+    unsafe { libc::isatty(file_descriptor as i32) == 1 }
+}
