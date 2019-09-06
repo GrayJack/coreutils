@@ -12,11 +12,11 @@ fn main() {
     let yaml = load_yaml!("groups.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
-    let by_name = matches.is_present("NAME");
+    let by_name = matches.is_present("USER");
     let id = matches.is_present("id");
 
     let name = if by_name {
-        matches.value_of("NAME").unwrap()
+        matches.value_of("USER").unwrap()
     } else {
         ""
     };
