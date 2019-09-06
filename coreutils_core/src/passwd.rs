@@ -381,7 +381,11 @@ impl Passwd {
 
     /// Get the groups that `Passwd` belongs to.
     pub fn belongs_to(&self) -> Result<Groups> {
-        let name = self.name.to_string();
+        let name = {
+            let mut n = self.name.to_string();
+            n.push('\0');
+            n
+        };
         let gr = Groups::from_username(&name)?;
         Ok(gr)
     }
