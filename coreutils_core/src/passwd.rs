@@ -267,11 +267,17 @@ impl Passwd {
         let mut pw_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
 
+        let name_null = {
+            let mut n = BString::from(name);
+            n.push(b'\0');
+            n
+        };
+
         let name = BString::from(name);
 
         let res = unsafe {
             getpwnam_r(
-                name.as_ptr() as *const i8,
+                name_null.as_ptr() as *const i8,
                 pw.as_mut_ptr(),
                 &mut buff[0],
                 buff.len(),
@@ -375,7 +381,8 @@ impl Passwd {
 
     /// Get the groups that `Passwd` belongs to.
     pub fn belongs_to(&self) -> Result<Groups> {
-        let gr = Groups::from_passwd(self)?;
+        let name = self.name.to_string();
+        let gr = Groups::from_username(&name)?;
         Ok(gr)
     }
 }
