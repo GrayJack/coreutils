@@ -44,7 +44,7 @@ In general, this project will try to be conservative with respect to the minimum
 |  groups  |             |         |   X  |
 |   hash   |      X      |         |      |
 |   head   |      X      |         |      |
-|    id    |      X      |         |      |
+|    id    |             |    X    |      |
 |  install |      X      |         |      |
 |   join   |      X      |         |      |
 |   link   |      X      |         |      |

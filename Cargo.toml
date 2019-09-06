@@ -6,6 +6,7 @@ members = [
     "echo",
     "false",
     "groups",
+    "id",
     "logname",
     "pwd",
     "sleep",
