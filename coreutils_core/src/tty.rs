@@ -10,9 +10,12 @@ use crate::file_descriptor::FileDescriptor;
 
 use bstr::BString;
 
+/// Possible errors while trying to get a TTY name
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub enum Error {
+    /// Not a TTY error
     NotTTY,
+    /// Any other error
     LibcCall(String, i32),
 }
 
@@ -35,10 +38,13 @@ impl StdError for Error {
     }
 }
 
+/// A struct that holds the name of a TTY with a `Display` trait implementation
+/// to be easy to print
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct TTYName(BString);
 
 impl TTYName {
+    /// Create a `TTYName` from a `FileDescriptor`
     pub fn new(file_descriptor: FileDescriptor) -> Result<Self, Error> {
         let name = unsafe { ttyname(file_descriptor as i32) };
 
@@ -59,6 +65,13 @@ impl Display for TTYName {
     }
 }
 
+/// Check if the given `FileDescriptor` is a TTY
+/// ## Example
+/// ```
+/// # fn main() {
+/// let istty = isatty(FileDescriptor::StdIn);
+/// #}
+/// ```
 pub fn isatty(file_descriptor: FileDescriptor) -> bool {
     unsafe { libc::isatty(file_descriptor as i32) == 1 }
 }
