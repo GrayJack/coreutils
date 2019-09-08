@@ -5,6 +5,7 @@ use std::{
     ffi::CStr,
     fmt::{self, Display},
     mem::MaybeUninit,
+    os::raw::c_char,
     ptr,
 };
 
@@ -277,7 +278,7 @@ impl Passwd {
 
         let res = unsafe {
             getpwnam_r(
-                name_null.as_ptr() as *const i8,
+                name_null.as_ptr() as *const c_char,
                 pw.as_mut_ptr(),
                 &mut buff[0],
                 buff.len(),

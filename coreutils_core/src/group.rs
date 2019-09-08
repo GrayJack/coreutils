@@ -6,10 +6,11 @@ use std::{
     fmt::{self, Display},
     io::Error as IoError,
     mem::MaybeUninit,
+    os::raw::c_char,
     ptr,
 };
 
-use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, gid_t, getpwnam};
+use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam, gid_t};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -251,7 +252,7 @@ impl Group {
 
         let res = unsafe {
             getgrnam_r(
-                name.as_ptr() as *const i8,
+                name.as_ptr() as *const c_char,
                 gr.as_mut_ptr(),
                 &mut buff[0],
                 buff.len(),
@@ -380,9 +381,9 @@ impl Groups {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
 
-        let passwd = unsafe {getpwnam(username.as_ptr() as *const i8)};
+        let passwd = unsafe { getpwnam(username.as_ptr() as *const c_char) };
 
-        let name = username.as_ptr() as *const i8;
+        let name = username.as_ptr() as *const c_char;
         let gid = unsafe { (*passwd).pw_gid };
 
         let mut res = 0;

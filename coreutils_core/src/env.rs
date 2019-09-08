@@ -3,6 +3,7 @@ use std::{
     env::{self, VarError},
     io::Error as IoError,
     mem::MaybeUninit,
+    os::raw::c_char,
     path::PathBuf,
 };
 
@@ -44,8 +45,8 @@ pub fn current_dir_logical() -> Result<PathBuf> {
     // Validity check
     // if we can get both fisical and logical paths stat, check they are the same inode
     if pwd.starts_with('/') {
-        let stat1 = unsafe { stat(pwd_null.as_ptr() as *const i8, logical.as_mut_ptr()) == 0 };
-        let stat2 = unsafe { stat(".\0".as_ptr() as *const i8, physical.as_mut_ptr()) == 0 };
+        let stat1 = unsafe { stat(pwd_null.as_ptr() as *const c_char, logical.as_mut_ptr()) == 0 };
+        let stat2 = unsafe { stat(".\0".as_ptr() as *const c_char, physical.as_mut_ptr()) == 0 };
 
         let (logical, physical) = unsafe { (logical.assume_init(), physical.assume_init()) };
 
