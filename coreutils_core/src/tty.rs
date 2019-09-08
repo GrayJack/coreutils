@@ -2,6 +2,7 @@ use std::{
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
+    os::raw::c_int,
 };
 
 use libc::ttyname;
@@ -46,7 +47,7 @@ pub struct TTYName(BString);
 impl TTYName {
     /// Create a `TTYName` from a `FileDescriptor`
     pub fn new(file_descriptor: FileDescriptor) -> Result<Self, Error> {
-        let name = unsafe { ttyname(file_descriptor as i32) };
+        let name = unsafe { ttyname(file_descriptor as c_int) };
 
         let name = if !name.is_null() {
             let name_cstr = unsafe { CStr::from_ptr(name) };
@@ -73,5 +74,5 @@ impl Display for TTYName {
 /// #}
 /// ```
 pub fn isatty(file_descriptor: FileDescriptor) -> bool {
-    unsafe { libc::isatty(file_descriptor as i32) == 1 }
+    unsafe { libc::isatty(file_descriptor as c_int) == 1 }
 }

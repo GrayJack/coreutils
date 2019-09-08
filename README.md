@@ -18,10 +18,10 @@ In general, this project will try to be conservative with respect to the minimum
 ## Tools
 |   Name   | Not Started | Started | Done |
 |:--------:|:-----------:|:-------:|:----:|
-|   arch   |      X      |         |      |
+<!-- |   arch   |      X      |         |      | -->
 | basename |             |         |   X  |
 |    cat   |      X      |         |      |
-|   chcon  |      X      |         |      |
+<!-- |   chcon  |      X      |         |      | -->
 |   chgrp  |      X      |         |      |
 |   chmod  |      X      |         |      |
 |   chown  |      X      |         |      |
