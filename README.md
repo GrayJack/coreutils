@@ -1,6 +1,7 @@
 # Coreutils in Rust
 
 [![Hits-of-Code](https://hitsofcode.com/github/GrayJack/coreutils)](https://hitsofcode.com/view/github/GrayJack/coreutils)
+[![Build Status](https://api.travis-ci.com/GrayJack/coreutils.svg?branch=master)](https://travis-ci.com/GrayJack/coreutils)
 
 An attempt to make safe coreutils aiming a minimal and yet complete set of utilities, adding only features that are common between several implementations of the utility and functions that are really useful.
 
