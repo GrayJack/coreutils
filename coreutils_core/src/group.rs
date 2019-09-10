@@ -10,15 +10,12 @@ use std::{
     ptr,
 };
 
-use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam, gid_t};
+use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam};
 
 use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
-use crate::passwd::{Error as PwError, Passwd};
-
-/// Group ID type.
-pub type Gid = gid_t;
+use crate::{types::Gid, passwd::{Error as PwError, Passwd}};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
