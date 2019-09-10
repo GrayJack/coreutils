@@ -11,7 +11,7 @@ This project has no intent to be 100% compatible with GNU's coreutils, like
 Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contribute to the project, including issue reports, git commits messages, etc.
 
 ## Minimum Rust Version Policy
-This project's minimum supported `rustc` version (MSRV) is 1.36.0.
+This project's minimum supported `rustc` version (MSRV) is 1.37.0.
 
 In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time. [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`]
 
