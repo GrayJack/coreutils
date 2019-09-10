@@ -6,7 +6,7 @@ args:
     - USER:
         help: Name of a user.
     - group:
-        help: Print only the effective group ID.
+        help: Print only the effective group ID as number.
         long: group
         short: g
         conflicts_with:
@@ -20,11 +20,11 @@ args:
             - group
             - user
     - name:
-        help: Print a name instead of a number, only with group, groups or user flags.
+        help: Display the name of the user or group ID for the -G, -g and -u options instead of the number.
         long: name
         short: n
     - user:
-        help: Print only the effective user ID.
+        help: Print only the effective user ID as number.
         long: user
         short: u
         conflicts_with:
@@ -34,3 +34,11 @@ args:
         help: "Delimit entries with NULL characters, not whitespace;\n\tNot permitted in default format."
         long: zero
         short: z
+    - pretty:
+        help: Make the output human-readable.
+        long: pretty
+        short: p
+    - human:
+        help: Make the output human-readable.
+        long: human-readable
+        short: H

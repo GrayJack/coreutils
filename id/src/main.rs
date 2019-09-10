@@ -14,6 +14,7 @@ fn main() {
     let user_flag = matches.is_present("user");
     let name_flag = matches.is_present("name");
     let zero_flag = matches.is_present("zero");
+    let pretty_flag = matches.is_present("pretty") || matches.is_present("human");
     let by_name = matches.is_present("USER");
 
     let mut sep = '\n';
@@ -54,6 +55,22 @@ fn main() {
             process::exit(1);
         }
     };
+
+    if pretty_flag {
+        let groups = match passwd.belongs_to() {
+            Ok(gs) => gs,
+            Err(err) => {
+                eprintln!("{}", err);
+                process::exit(1);
+            }
+        };
+
+        print!("uid\t\t{}{}groups\t", passwd.name(), sep);
+        groups.into_iter().for_each(|g| print!("{} ", g.name()));
+        print!("{}", sep);
+
+        process::exit(0);
+    }
 
     if user_flag {
         if name_flag {
