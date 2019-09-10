@@ -10,7 +10,7 @@ matrix:
   fast_finish: true
 cache: cargo
 before_script:
-  - rustup target add x86_64-unknown-netbsd x86_64-unknown-freebsd x86_64-unknown-openbsd x86_64-unknown-dragonflybsd
+  - rustup target add x86_64-unknown-netbsd x86_64-unknown-freebsd
 script:
   - cargo build --verbose --all
   - cargo test --verbose --all
@@ -18,7 +18,3 @@ script:
   - cargo test --verbose --all --target x86_64-unknown-freebsd
   - cargo build --verbose --all --target x86_64-unknown-netbsd
   - cargo test --verbose --all --target x86_64-unknown-netbsd
-  - cargo build --verbose --all --target x86_64-unknown-openbsd
-  - cargo test --verbose --all --target x86_64-unknown-openbsd
-  - cargo build --verbose --all --target x86_64-unknown-dragonflybsd
-  - cargo test --verbose --all --target x86_64-unknown-dragonflybsd
