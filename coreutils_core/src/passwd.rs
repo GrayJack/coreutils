@@ -382,7 +382,7 @@ impl Passwd {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
         } else {
-            return Err(ShellCheckFailed);
+            return Err(ClassCheckFailed);
         };
 
         Ok(Passwd {
@@ -554,7 +554,7 @@ impl Passwd {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
         } else {
-            return Err(ShellCheckFailed);
+            return Err(ClassCheckFailed);
         };
 
         let fields = pw.pw_fields;
@@ -655,7 +655,7 @@ impl Passwd {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
         } else {
-            return Err(ShellCheckFailed);
+            return Err(ClassCheckFailed);
         };
 
         Ok(Passwd {
@@ -843,7 +843,7 @@ impl Passwd {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
         } else {
-            return Err(ShellCheckFailed);
+            return Err(ClassCheckFailed);
         };
 
         let fields = pw.pw_fields;
@@ -952,7 +952,7 @@ impl Passwd {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
         } else {
-            return Err(ShellCheckFailed);
+            return Err(ClassCheckFailed);
         };
 
         Ok(Passwd {
