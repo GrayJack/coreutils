@@ -375,6 +375,7 @@ impl Groups {
     }
 
     /// Get all groups that `username` belongs.
+    #[cfg(not(any(target_os = "macos")))]
     pub fn from_username(username: &str) -> Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
@@ -386,12 +387,7 @@ impl Groups {
 
         let mut res = 0;
         unsafe {
-            if cfg!(target_os = "macos") {
-                if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
-                    groups_ids.resize(num_gr as usize, 0);
-                    res = getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr);
-                }
-            } else if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+            if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
                 res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
             }
@@ -416,22 +412,22 @@ impl Groups {
         Ok(Groups { iter: groups })
     }
 
-    pub fn from_passwd(passwd: &Passwd) -> Result<Self> {
-        let name = passwd.name().as_ptr() as *const i8;
-        let gid = passwd.gid();
+    /// Get all groups that `username` belongs.
+    #[cfg(any(target_os = "macos"))]
+    pub fn from_username(username: &str) -> Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
 
+        let passwd = unsafe { getpwnam(username.as_ptr() as *const c_char) };
+
+        let name = username.as_ptr() as *const c_char;
+        let gid = unsafe { (*passwd).pw_gid };
+
         let mut res = 0;
         unsafe {
-            if cfg!(target_os = "macos") {
-                if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
-                    groups_ids.resize(num_gr as usize, 0);
-                    res = getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr);
-                }
-            } else if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+            if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
-                res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+                res = getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr);
             }
             groups_ids.set_len(num_gr as usize);
         }
