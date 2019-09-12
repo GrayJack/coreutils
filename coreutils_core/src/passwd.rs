@@ -45,6 +45,8 @@ pub enum Error {
     DirCheckFailed,
     /// Happens when the pointer to the `.pw_shell` is NULL.
     ShellCheckFailed,
+    /// Happens when the pointer to the `.pw_class` is NULL.
+    ClassCheckFailed,
     /// Happens when the passwd is not found.
     PasswdNotFound,
     /// Happens when something happens when finding what `Group` a `Passwd` belongs
@@ -56,14 +58,15 @@ impl Display for Error {
         match self {
             GetPasswdFailed(fn_name, err_code) => write!(
                 f,
-                "Failed to get group with the following error code: {}. For more info search for the {} manual",
+                "Failed to get passwd with the following error code: {}. For more info search for the {} manual",
                 err_code, fn_name
             ),
-            NameCheckFailed => write!(f, "Group name check failed, `.pw_name` field is null"),
-            PasswdCheckFailed => write!(f, "Group passwd check failed, `.pw_passwd` is null"),
-            GecosCheckFailed => write!(f, "Group gecos check failed, `.pw_gecos` is null"),
-            DirCheckFailed => write!(f, "Group dir check failed, `.pw_dir` is null"),
-            ShellCheckFailed => write!(f, "Group shell check failed, `.pw_shell` is null"),
+            NameCheckFailed => write!(f, "Passwd name check failed, `.pw_name` field is null"),
+            PasswdCheckFailed => write!(f, "Passwd passwd check failed, `.pw_passwd` is null"),
+            GecosCheckFailed => write!(f, "Passwd gecos check failed, `.pw_gecos` is null"),
+            DirCheckFailed => write!(f, "Passwd dir check failed, `.pw_dir` is null"),
+            ShellCheckFailed => write!(f, "Passwd shell check failed, `.pw_shell` is null"),
+            ClassCheckFailed => write!(f, "Passwd class check failed, `.pw_class` is null"),
             PasswdNotFound => write!(f, "Passwd was not found in the system"),
             Group(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
         }
@@ -276,7 +279,7 @@ impl Passwd {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
         } else {
-            return Err(ShellCheckFailed);
+            return Err(ClassCheckFailed);
         };
 
         let fields = pw.pw_fields;
@@ -300,7 +303,12 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "freebsd", target_os = "dreagonflybsd")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "freebsd",
+        target_os = "dreagonflybsd"
+    )))]
     pub fn new() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -570,7 +578,12 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "freebsd", target_os = "dreagonflybsd")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "freebsd",
+        target_os = "dreagonflybsd"
+    )))]
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -854,7 +867,12 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "freebsd", target_os = "dreagonflybsd")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "freebsd",
+        target_os = "dreagonflybsd"
+    )))]
     pub fn from_name(name: &str) -> Result<Self> {
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
@@ -1019,5 +1037,34 @@ impl Passwd {
         };
         let gr = Groups::from_username(&name)?;
         Ok(gr)
+    }
+}
+
+impl Display for Passwd {
+    #[cfg(any(target_os = "linux", target_os = "haiku"))]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}:{}:{}:{}:{}:{}:{}",
+            self.name, self.passwd, self.user_id, self.group_id, self.gecos, self.dir, self.shell
+        )
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "haiku")))]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}:{}:{}:{}:{}:{}:{}:{}:{}:{}",
+            self.name,
+            self.passwd,
+            self.user_id,
+            self.group_id,
+            self.class,
+            self.change,
+            self.expire,
+            self.gecos,
+            self.dir,
+            self.shell
+        )
     }
 }
