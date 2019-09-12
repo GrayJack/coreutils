@@ -20,7 +20,7 @@ use crate::{
 
 use self::Error::*;
 
-use libc::{geteuid, getpwnam_r, getpwuid_r};
+use libc::{geteuid, getpwnam_r, getpwuid_r, getuid};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -126,7 +126,7 @@ impl Passwd {
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
     #[cfg(any(target_os = "linux", target_os = "haiku"))]
-    pub fn new() -> Result<Self> {
+    pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
@@ -208,7 +208,7 @@ impl Passwd {
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
     #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
-    pub fn new() -> Result<Self> {
+    pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
@@ -312,7 +312,7 @@ impl Passwd {
         target_os = "freebsd",
         target_os = "dreagonflybsd"
     )))]
-    pub fn new() -> Result<Self> {
+    pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
@@ -386,6 +386,288 @@ impl Passwd {
             BString::from(class_cstr.to_bytes())
         } else {
             return Err(ClassCheckFailed);
+        };
+
+        Ok(Passwd {
+            name,
+            passwd,
+            user_id,
+            group_id,
+            gecos,
+            dir,
+            shell,
+            change,
+            class,
+            expire,
+        })
+    }
+
+    /// Create a new `Passwd` getting the current process user passwd as default using the
+    /// real user id.
+    ///
+    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
+    /// a `Error` wrapped in a `Err`.
+    #[cfg(any(target_os = "linux", target_os = "haiku"))]
+    pub fn real() -> Result<Self> {
+        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
+        let mut pw = MaybeUninit::zeroed();
+        let mut pw_ptr = ptr::null_mut();
+
+        let res = unsafe {
+            getpwuid_r(
+                getuid(),
+                pw.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            )
+        };
+
+        if pw_ptr.is_null() {
+            if res == 0 {
+                return Err(PasswdNotFound);
+            } else {
+                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+            }
+        }
+
+        // Now that pw is initialized we get it
+        let pw = unsafe { pw.assume_init() };
+
+        let name = if !pw.pw_name.is_null() {
+            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
+            BString::from(name_cstr.to_bytes())
+        } else {
+            return Err(NameCheckFailed);
+        };
+
+        let passwd = if !pw.pw_passwd.is_null() {
+            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
+            BString::from(passwd_cstr.to_bytes())
+        } else {
+            return Err(PasswdCheckFailed);
+        };
+
+        let user_id = pw.pw_uid;
+
+        let group_id = pw.pw_gid;
+
+        let gecos = if !pw.pw_gecos.is_null() {
+            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
+            BString::from(gecos_cstr.to_bytes())
+        } else {
+            return Err(GecosCheckFailed);
+        };
+
+        let dir = if !pw.pw_dir.is_null() {
+            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
+            BString::from(dir_cstr.to_bytes())
+        } else {
+            return Err(DirCheckFailed);
+        };
+
+        let shell = if !pw.pw_shell.is_null() {
+            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
+            BString::from(shell_cstr.to_bytes())
+        } else {
+            return Err(ShellCheckFailed);
+        };
+
+        Ok(Passwd {
+            name,
+            passwd,
+            user_id,
+            group_id,
+            gecos,
+            dir,
+            shell,
+        })
+    }
+
+    /// Create a new `Passwd` getting the current process user passwd as default using the
+    /// real user id.
+    ///
+    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
+    /// a `Error` wrapped in a `Err`.
+    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    pub fn real() -> Result<Self> {
+        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
+        let mut pw = MaybeUninit::zeroed();
+        let mut pw_ptr = ptr::null_mut();
+
+        let res = unsafe {
+            getpwuid_r(
+                getuid(),
+                pw.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            )
+        };
+
+        if pw_ptr.is_null() {
+            if res == 0 {
+                return Err(PasswdNotFound);
+            } else {
+                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+            }
+        }
+
+        // Now that pw is initialized we get it
+        let pw = unsafe { pw.assume_init() };
+
+        let name = if !pw.pw_name.is_null() {
+            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
+            BString::from(name_cstr.to_bytes())
+        } else {
+            return Err(NameCheckFailed);
+        };
+
+        let passwd = if !pw.pw_passwd.is_null() {
+            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
+            BString::from(passwd_cstr.to_bytes())
+        } else {
+            return Err(PasswdCheckFailed);
+        };
+
+        let user_id = pw.pw_uid;
+
+        let group_id = pw.pw_gid;
+
+        let gecos = if !pw.pw_gecos.is_null() {
+            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
+            BString::from(gecos_cstr.to_bytes())
+        } else {
+            return Err(GecosCheckFailed);
+        };
+
+        let dir = if !pw.pw_dir.is_null() {
+            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
+            BString::from(dir_cstr.to_bytes())
+        } else {
+            return Err(DirCheckFailed);
+        };
+
+        let shell = if !pw.pw_shell.is_null() {
+            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
+            BString::from(shell_cstr.to_bytes())
+        } else {
+            return Err(ShellCheckFailed);
+        };
+
+        let change = pw.pw_change;
+
+        let expire = pw.pw_expire;
+
+        let class = if !pw.pw_class.is_null() {
+            let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
+            BString::from(class_cstr.to_bytes())
+        } else {
+            return Err(ClassCheckFailed);
+        };
+
+        let fields = pw.pw_fields;
+
+        Ok(Passwd {
+            name,
+            passwd,
+            user_id,
+            group_id,
+            gecos,
+            dir,
+            shell,
+            change,
+            class,
+            expire,
+            fields,
+        })
+    }
+
+    /// Create a new `Passwd` getting the current process user passwd as default using the
+    /// real user id.
+    ///
+    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
+    /// a `Error` wrapped in a `Err`.
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "freebsd",
+        target_os = "dreagonflybsd"
+    )))]
+    pub fn real() -> Result<Self> {
+        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
+        let mut pw = MaybeUninit::zeroed();
+        let mut pw_ptr = ptr::null_mut();
+
+        let res = unsafe {
+            getpwuid_r(
+                getuid(),
+                pw.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            )
+        };
+
+        if pw_ptr.is_null() {
+            if res == 0 {
+                return Err(PasswdNotFound);
+            } else {
+                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+            }
+        }
+
+        // Now that pw is initialized we get it
+        let pw = unsafe { pw.assume_init() };
+
+        let name = if !pw.pw_name.is_null() {
+            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
+            BString::from(name_cstr.to_bytes())
+        } else {
+            return Err(NameCheckFailed);
+        };
+
+        let passwd = if !pw.pw_passwd.is_null() {
+            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
+            BString::from(passwd_cstr.to_bytes())
+        } else {
+            return Err(PasswdCheckFailed);
+        };
+
+        let user_id = pw.pw_uid;
+
+        let group_id = pw.pw_gid;
+
+        let gecos = if !pw.pw_gecos.is_null() {
+            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
+            BString::from(gecos_cstr.to_bytes())
+        } else {
+            return Err(GecosCheckFailed);
+        };
+
+        let dir = if !pw.pw_dir.is_null() {
+            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
+            BString::from(dir_cstr.to_bytes())
+        } else {
+            return Err(DirCheckFailed);
+        };
+
+        let shell = if !pw.pw_shell.is_null() {
+            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
+            BString::from(shell_cstr.to_bytes())
+        } else {
+            return Err(ShellCheckFailed);
+        };
+
+        let change = pw.pw_change;
+
+        let expire = pw.pw_expire;
+
+        let class = if !pw.pw_class.is_null() {
+            let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
+            BString::from(class_cstr.to_bytes())
+        } else {
+            return Err(ShellCheckFailed);
         };
 
         Ok(Passwd {
