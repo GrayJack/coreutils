@@ -1,12 +1,13 @@
 //! A module do deal more easily with UNIX groups.
 
 use std::{
+    convert::TryInto,
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
     io::Error as IoError,
     mem::MaybeUninit,
-    os::raw::c_char,
+    os::raw::{c_char, c_int},
     ptr,
 };
 
@@ -385,7 +386,12 @@ impl Groups {
 
         let mut res = 0;
         unsafe {
-            if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+            if cfg!(target_os = "macos") {
+                if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+                    groups_ids.resize(num_gr as usize, 0);
+                    res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+                }
+            } else if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
                 res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
             }
@@ -418,7 +424,12 @@ impl Groups {
 
         let mut res = 0;
         unsafe {
-            if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+            if cfg!(target_os = "macos") {
+                if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+                    groups_ids.resize(num_gr as usize, 0);
+                    res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+                }
+            } else if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
                 res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
             }
