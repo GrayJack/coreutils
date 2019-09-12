@@ -8,7 +8,7 @@ fn main() {
     let yaml = load_yaml!("whoami.yml");
     let _matches = App::from_yaml(yaml).get_matches();
 
-    let user = match Passwd::new() {
+    let user = match Passwd::effective() {
         Ok(pw) => pw,
         Err(_) => {
             eprintln!("Failed to get user");
