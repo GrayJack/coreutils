@@ -7,7 +7,7 @@ use std::{
     fmt::{self, Display},
     io::Error as IoError,
     mem::MaybeUninit,
-    os::raw::{c_char, c_int},
+    os::raw::c_char,
     ptr,
 };
 
@@ -16,7 +16,7 @@ use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam};
 use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
-use crate::{types::Gid, passwd::{Error as PwError, Passwd}};
+use crate::{types::Gid, passwd::Error as PwError};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -441,7 +441,7 @@ impl Groups {
         let groups = {
             let mut gs = Vec::with_capacity(num_gr as usize);
             for gid in groups_ids {
-                let gr = Group::from_gid(gid)?;
+                let gr = Group::from_gid(gid.try_into().unwrap())?;
                 gs.push(gr);
             }
             gs
