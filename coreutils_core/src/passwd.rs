@@ -120,7 +120,8 @@ pub struct Passwd {
 }
 
 impl Passwd {
-    /// Create a new `Passwd` getting the user passwd as default.
+    /// Create a new `Passwd` getting the current process user passwd as default using the
+    /// effective user id.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
@@ -201,7 +202,8 @@ impl Passwd {
         })
     }
 
-    /// Create a new `Passwd` getting the user passwd as default.
+    /// Create a new `Passwd` getting the current process user passwd as default using the
+    /// effective user id.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
@@ -299,7 +301,8 @@ impl Passwd {
         })
     }
 
-    /// Create a new `Passwd` getting the user passwd as default.
+    /// Create a new `Passwd` getting the current process user passwd as default using the
+    /// effective user id.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
