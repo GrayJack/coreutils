@@ -14,14 +14,15 @@ fn main() {
     let user_flag = matches.is_present("user");
     let name_flag = matches.is_present("name");
     let zero_flag = matches.is_present("zero");
+    let file_flag = matches.is_present("file");
     let pretty_flag = matches.is_present("pretty") || matches.is_present("human");
     let by_name = matches.is_present("USER");
 
     let mut sep = '\n';
 
     if zero_flag {
-        if let (false, false, false) = (group_flag, groups_flag, user_flag) {
-            eprintln!("id: Option --zero not permitted in default format");
+        if let (false, false, false, false) = (group_flag, groups_flag, user_flag, file_flag) {
+            eprintln!("id: Option --zero not permitted in pretty or default format");
             process::exit(1);
         } else {
             sep = '\0'
@@ -55,6 +56,11 @@ fn main() {
             process::exit(1);
         }
     };
+
+    if file_flag {
+        print!("{}{}", passwd, sep);
+        process::exit(0);
+    }
 
     if pretty_flag {
         let groups = match passwd.belongs_to() {
@@ -131,8 +137,13 @@ fn main() {
         passwd.gid(),
         groups[0].name()
     );
-    groups
-        .iter()
-        .for_each(|g| print!("{}({}),", g.id(), g.name()));
+    let final_pos = groups.len() - 1;
+    for (i, group) in groups.into_iter().enumerate() {
+        if i == final_pos {
+            print!("{}({})", group.id(), group.name());
+        } else {
+            print!("{}({}),", group.id(), group.name());
+        }
+    }
     print!("{}", sep);
 }

@@ -12,6 +12,9 @@ args:
         conflicts_with:
             - groups
             - user
+            - pretty
+            - human
+            - file
     - groups:
         help: Print all group IDs.
         long: groups
@@ -19,10 +22,9 @@ args:
         conflicts_with:
             - group
             - user
-    - name:
-        help: Display the name of the user or group ID for the -G, -g and -u options instead of the number.
-        long: name
-        short: n
+            - pretty
+            - human
+            - file
     - user:
         help: Print only the effective user ID as number.
         long: user
@@ -30,6 +32,17 @@ args:
         conflicts_with:
             - groups
             - group
+            - pretty
+            - human
+            - file
+    - name:
+        help: Display the name of the user or group ID for the -G, -g and -u options instead of the number.
+        long: name
+        short: n
+        conflicts_with:
+            - pretty
+            - human
+            - file
     - zero:
         help: "Delimit entries with NULL characters, not whitespace;\n\tNot permitted in default format."
         long: zero
@@ -38,7 +51,30 @@ args:
         help: Make the output human-readable.
         long: pretty
         short: p
+        conflicts_with:
+            - group
+            - groups
+            - user
+            - name
+            - file
     - human:
         help: Make the output human-readable.
         long: human-readable
         short: H
+        conflicts_with:
+            - group
+            - groups
+            - user
+            - name
+            - file
+    - file:
+        help: Display the id as a password file entry.
+        long: file
+        short: P
+        conflicts_with:
+            - group
+            - groups
+            - user
+            - name
+            - pretty
+            - human
