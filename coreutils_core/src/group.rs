@@ -389,7 +389,7 @@ impl Groups {
             if cfg!(target_os = "macos") {
                 if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                     groups_ids.resize(num_gr as usize, 0);
-                    res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+                    res = getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr);
                 }
             } else if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
@@ -427,7 +427,7 @@ impl Groups {
             if cfg!(target_os = "macos") {
                 if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                     groups_ids.resize(num_gr as usize, 0);
-                    res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
+                    res = getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr);
                 }
             } else if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
