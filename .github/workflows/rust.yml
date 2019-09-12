@@ -14,8 +14,8 @@ jobs:
     - uses: actions/checkout@v1
     - uses: hecrj/setup-rust-action@v1
       with:
-        rust-version: ${{ matrix.rust }
-        components: ${{ matrix.components }
+        rust-version: ${{ matrix.rust }}
+        components: ${{ matrix.components }}
     - name: Build
       run: cargo build --verbose
     - name: Run tests
