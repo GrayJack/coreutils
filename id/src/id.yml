@@ -43,6 +43,15 @@ args:
             - pretty
             - human
             - file
+    - real:
+        help: Display the real ID for the -g and -u options instead of the effective ID.
+        long: real
+        short: r
+        conflicts_with:
+            - pretty
+            - human
+            - file
+            - groups
     - zero:
         help: "Delimit entries with NULL characters, not whitespace;\n\tNot permitted in default format."
         long: zero
