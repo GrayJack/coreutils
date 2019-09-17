@@ -1,7 +1,6 @@
 //! A module do deal more easily with UNIX groups.
 
 use std::{
-    convert::TryInto,
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
@@ -10,6 +9,9 @@ use std::{
     os::raw::c_char,
     ptr,
 };
+
+#[cfg(target_os = "macos")]
+use std::convert::TryInto;
 
 use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam};
 
