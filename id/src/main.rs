@@ -8,6 +8,7 @@ fn main() {
     let yaml = load_yaml!("id.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
+    let audit_flag = matches.is_present("audit");
     let group_flag = matches.is_present("group");
     let groups_flag = matches.is_present("groups");
     let user_flag = matches.is_present("user");
@@ -19,6 +20,10 @@ fn main() {
     let by_name = matches.is_present("USER");
 
     let mut sep = '\n';
+
+    if audit_flag && cgf!(target_os = "freebsd") {
+        coreutils_core::audit::auditid();
+    }
 
     // Checks if zero_flag is being used as expected
     if zero_flag {
@@ -178,5 +183,16 @@ fn pretty_logic(passwd: &Passwd, sep: char) {
     groups.into_iter().for_each(|g| print!("{} ", g.name()));
     print!("{}", sep);
 
+    process::exit(0);
+}
+
+#[cfg(not(target_os = "freebsd"))]
+fn audit_logic() {
+    process::exit(0);
+}
+
+#[cfg(target_os = "freebsd")]
+fn audit_logic() {
+    coreutils_core::audit::auditid();
     process::exit(0);
 }

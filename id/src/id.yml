@@ -5,6 +5,10 @@ about: "Print user and group information for the specified USER,\n or (when USER
 args:
     - USER:
         help: Name of a user.
+    - audit:
+        help:
+        long: audit
+        short: Display the process audit user ID and other process audit proper-ties, which requires privilege.
     - group:
         help: Print only the effective group ID as number.
         long: group
