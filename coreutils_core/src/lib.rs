@@ -5,3 +5,6 @@ pub mod group;
 pub mod passwd;
 pub mod tty;
 pub mod types;
+
+#[cfg(target_os = "freebsd")]
+pub mod audit;
