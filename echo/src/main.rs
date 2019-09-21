@@ -28,7 +28,7 @@ fn main() {
     ) {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("Failed to write to stdout.\n{}", e);
+            eprintln!("echo: Failed to write to stdout.\n{}", e);
             process::exit(1);
         }
     };
@@ -133,5 +133,3 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
 
     Ok(stop)
 }
-
-// TODO: Unit testing for print_escape()
