@@ -8,3 +8,6 @@ pub mod types;
 
 #[cfg(any(target_os = "freebsd", target_os = "macos"))]
 pub mod audit;
+
+#[cfg(target_os = "openbsd")]
+pub mod routing_table;
