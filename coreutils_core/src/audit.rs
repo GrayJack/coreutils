@@ -7,7 +7,7 @@ use std::{
     mem::MaybeUninit,
 };
 
-use libc::{c_int, c_uint, dev_t, pid_t, uid_t};
+use libc::{c_int, c_uint, pid_t, uid_t};
 
 /// Struct for errors that happens on calls to `C` audit functions
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -33,9 +33,9 @@ pub type AuditUserId = uid_t;
 /// ¹Same as `au_asid_t`
 pub type AuditSessionId = pid_t;
 
-pub type AuditEvent = c_uint;
-pub type AuditEmod = c_uint;
-pub type AuditClass = c_int;
+pub type AuditEvent = u16;
+pub type AuditEmod = u16;
+pub type AuditClass = u32;
 
 /// This struct defines the bit mask for auditing successful and failed events out of the
 /// predefined list of event classes.
@@ -54,7 +54,7 @@ pub struct AuditMask {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 #[repr(C)]
 pub struct AuditTerminalId {
-    pub port: dev_t,
+    pub port: u32,
     pub machine: u32,
 }
 
@@ -65,7 +65,7 @@ pub struct AuditTerminalId {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 #[repr(C)]
 pub struct AuditTerminalIdAddr {
-    pub at_port: dev_t,
+    pub at_port: u32,
     pub at_type: u32,
     pub at_addr: [u32; 4],
 }
@@ -84,8 +84,6 @@ pub struct AuditInfo {
     pub ai_termid: AuditTerminalId,
     /// Audit session ID.
     pub ai_asid: AuditSessionId,
-    /// Audit session flags
-    pub ai_flags: u64,
 }
 
 impl Display for AuditInfo {
