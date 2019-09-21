@@ -9,6 +9,10 @@ args:
         help: Display the process audit user ID and other process audit proper-ties, which requires privilege. (FreeBSD and MacOS only, ignored otherwise)
         long: audit
         short: A
+    - rtable:
+        help: Display the routing table of the current process. (OpenBSD only, ignored otherwise)
+        long: rtable
+        short: R
     - group:
         help: Print only the effective group ID as number.
         long: group

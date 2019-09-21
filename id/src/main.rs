@@ -16,6 +16,7 @@ fn main() {
     let zero_flag = matches.is_present("zero");
     let file_flag = matches.is_present("file");
     let real_flag = matches.is_present("real");
+    let rtable_flag = matches.is_present("rtable");
     let pretty_flag = matches.is_present("pretty") || matches.is_present("human");
     let by_name = matches.is_present("USER");
 
@@ -23,6 +24,10 @@ fn main() {
 
     if audit_flag && (cfg!(target_os = "freebsd") || cfg!(target_os = "macos")) {
         audit_logic();
+    }
+
+    if rtable_flag && cfg!(target_os = "openbsd") {
+        rtable_logic();
     }
 
     // Checks if zero_flag is being used as expected
@@ -198,4 +203,14 @@ fn audit_logic() {
             process::exit(1);
         }
     };
+}
+
+#[cfg(not(target_os = "openbsd"))]
+fn rtable_logic() {}
+
+#[cfg(target_os = "openbsd")]
+fn rtable_logic() {
+    use coreutils_core::routing_table::get_routing_table;
+    println!("{}", get_routing_table());
+    process::exit(0);
 }
