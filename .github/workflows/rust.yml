@@ -40,17 +40,17 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
 
-  check_openbsd:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        rust: [1.37.0, stable, beta, nightly]
-    steps:
-    - uses: actions/checkout@v1
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ matrix.rust }}
-    - run: rustup target add x86_64-unknown-openbsd
-    - name: Check OpenBSD
-      run: cargo check --verbose --target x86_64-unknown-openbsd
+  # check_openbsd:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #       rust: [1.37.0, stable, beta, nightly]
+  #   steps:
+  #   - uses: actions/checkout@v1
+  #   - uses: hecrj/setup-rust-action@v1
+  #     with:
+  #       rust-version: ${{ matrix.rust }}
+  #   - run: rustup target add x86_64-unknown-openbsd
+  #   - name: Check OpenBSD
+  #     run: cargo check --verbose --target x86_64-unknown-openbsd
