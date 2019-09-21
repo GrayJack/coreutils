@@ -1,9 +1,14 @@
 //! Module for safe API for
 
-use std::{error::Error as StdError, io::Error as IOError, os::raw::c_int, fmt::{self, Display}};
+use std::{
+    error::Error as StdError,
+    fmt::{self, Display},
+    io::Error as IOError,
+    os::raw::c_int,
+};
 
-use libc::{getpriority, setpriority};
 pub use libc::PRIO_PROCESS;
+use libc::{getpriority, setpriority};
 
 #[cfg(not(any(target_os = "freebsd", target_os = "dragonflybsd")))]
 use libc::id_t;
@@ -21,8 +26,16 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::SetPriority(ioerr) => write!(f, "setpriority: failed to set priority with error: {}", ioerr),
-            Self::GetPriority(ioerr) => write!(f, "getpriority: failed to get priority with error: {}", ioerr)
+            Self::SetPriority(ioerr) => write!(
+                f,
+                "setpriority: failed to set priority with error: {}",
+                ioerr
+            ),
+            Self::GetPriority(ioerr) => write!(
+                f,
+                "getpriority: failed to get priority with error: {}",
+                ioerr
+            ),
         }
     }
 }
