@@ -26,16 +26,16 @@ fn main() {
             Ok(g) => g,
             Err(Passwd(box_err)) => match Box::leak(box_err) {
                 PasswdNotFound => {
-                    eprintln!("Unknown user {}", name);
+                    eprintln!("groups: Unknown user {}", name);
                     std::process::exit(1);
                 }
                 a => {
-                    eprintln!("{}", a);
+                    eprintln!("groups: {}", a);
                     std::process::exit(1);
                 }
             },
             Err(err) => {
-                eprintln!("{}", err);
+                eprintln!("groups: {}", err);
                 std::process::exit(1);
             }
         }
@@ -43,7 +43,7 @@ fn main() {
         match Groups::caller() {
             Ok(g) => g,
             Err(err) => {
-                eprintln!("{}", err);
+                eprintln!("groups: {}", err);
                 std::process::exit(1);
             }
         }
