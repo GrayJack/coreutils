@@ -21,7 +21,7 @@ fn main() {
 
     let mut sep = '\n';
 
-    if audit_flag {
+    if audit_flag && cfg!(target_os = "freebsd") {
         audit_logic();
     }
 
