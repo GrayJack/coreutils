@@ -187,9 +187,7 @@ fn pretty_logic(passwd: &Passwd, sep: char) {
 }
 
 #[cfg(not(target_os = "freebsd"))]
-fn audit_logic() {
-    process::exit(0);
-}
+fn audit_logic() {}
 
 #[cfg(target_os = "freebsd")]
 fn audit_logic() {
