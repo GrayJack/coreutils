@@ -21,8 +21,8 @@ fn main() {
 
     let mut sep = '\n';
 
-    if audit_flag && cgf!(target_os = "freebsd") {
-        coreutils_core::audit::auditid();
+    if audit_flag {
+        audit_logic();
     }
 
     // Checks if zero_flag is being used as expected
