@@ -1,4 +1,4 @@
-use clap::{App, load_yaml};
+use clap::{load_yaml, App};
 
 fn main() {
     let yaml = load_yaml!("basename.yml");
@@ -13,7 +13,11 @@ fn main() {
         ""
     };
 
-    let line_ending = if matches.is_present("zero") { '\0' } else { '\n' };
+    let line_ending = if matches.is_present("zero") {
+        '\0'
+    } else {
+        '\n'
+    };
 
     if !multiple_paths {
         let path = matches.value_of("NAME").unwrap();
@@ -41,7 +45,7 @@ fn basename(full_path: &str, suffix: &str) -> String {
     let split_full_path: Vec<&str> = full_path.split('/').collect();
     match split_full_path.last() {
         Some(name) => strip_suffix(name, suffix),
-        None => "".to_owned()
+        None => "".to_owned(),
     }
 }
 
@@ -62,13 +66,19 @@ mod tests {
 
     #[test]
     fn basename_empty_suffix_file() {
-        assert_eq!("image.jpg".to_string(), basename("~/Pictures/image.jpg", ""));
+        assert_eq!(
+            "image.jpg".to_string(),
+            basename("~/Pictures/image.jpg", "")
+        );
         assert_eq!("doc.pdf".to_string(), basename("~/Documents/doc.pdf", ""));
     }
 
     #[test]
     fn basename_suffix_file() {
-        assert_eq!("image".to_string(), basename("~/Pictures/image.jpg", ".jpg"));
+        assert_eq!(
+            "image".to_string(),
+            basename("~/Pictures/image.jpg", ".jpg")
+        );
         assert_eq!("doc".to_string(), basename("~/Documents/doc.pdf", ".pdf"));
     }
 

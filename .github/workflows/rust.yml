@@ -1,0 +1,41 @@
+name: Rust
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [1.37.0, stable, beta, nightly]
+    steps:
+    - uses: actions/checkout@v1
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - run: rustup target add x86_64-unknown-freebsd x86_64-unknown-netbsd
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Check FreeBSD
+      run: cargo check --verbose --target x86_64-unknown-freebsd
+    - name: Check NetBSD
+      run: cargo check --verbose --target x86_64-unknown-netbsd
+
+  build_macos:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macOS-latest]
+        rust: [1.37.0, stable, beta, nightly]
+    steps:
+    - uses: actions/checkout@v1
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose

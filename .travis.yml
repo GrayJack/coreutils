@@ -1,0 +1,18 @@
+language: rust
+rust:
+  - 1.37.0
+  - stable
+  - beta
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
+cache: cargo
+before_script:
+  - rustup target add x86_64-unknown-netbsd x86_64-unknown-freebsd
+script:
+  - cargo build --verbose --all
+  - cargo test --verbose --all
+  - cargo check --verbose --all --target x86_64-unknown-freebsd
+  - cargo check --verbose --all --target x86_64-unknown-netbsd

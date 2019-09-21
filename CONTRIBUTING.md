@@ -29,7 +29,7 @@ In the Issues tracker, click in the button `New issue`, then select the `Bug Rep
 In the Issues tracker, click in the button `New issue`, then select the `Feature request` option. After that, add the required information about the bug in the template, and submit.
 
 ### Pull Requests
-After forking and making your changes, always make a Pull Request to the `dev` branch with a proper message saying what is changed.
+After forking and making your changes, always make a Pull Request to the `master` branch with a proper message saying what is changed.
 
 ## Styleguides
 ### Git Commit Messages
@@ -54,7 +54,7 @@ Core: Groups: Blablabla bla bla
 
 ### Rust Styleguide
 * Don't use nightly only features.
-* The code must be formatted with default `rustfmt`.
+* The code must be formatted with this repository `rustfmt` configuration `rustfmt.toml`.
 * Documentation should always be included when needed, for both functions, methods, modules, etc.
 * Tests should always be included/updated with your changes.
 * Always comment what you're doing if it's not obvious, should be before the code that need explaining.

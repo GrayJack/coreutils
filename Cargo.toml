@@ -6,8 +6,12 @@ members = [
     "echo",
     "false",
     "groups",
+    "id",
     "logname",
+    "pwd",
+    "sleep",
     "true",
     "whoami",
+    "tty",
     "yes"
 ]

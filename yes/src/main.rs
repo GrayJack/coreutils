@@ -1,4 +1,4 @@
-use clap::{App, load_yaml};
+use clap::{load_yaml, App};
 
 fn main() {
     let yaml = load_yaml!("yes.yml");

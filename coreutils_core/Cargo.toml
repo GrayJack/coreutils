@@ -5,4 +5,5 @@ authors = ["GrayJack <gr41.j4ck@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-libc = "^0.2.51"
+libc = { version = "^0.2.62", features = ["extra_traits"] }
+bstr = "^0.2.8"

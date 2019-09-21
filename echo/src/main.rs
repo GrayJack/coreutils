@@ -1,12 +1,13 @@
 use std::{
-    iter::Peekable,
     io::{self, Write},
+    iter::Peekable,
+    process,
     str::Chars,
 };
 
-use clap::{App, load_yaml};
+use clap::{load_yaml, App};
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() {
     let yaml = load_yaml!("echo.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
@@ -20,9 +21,17 @@ fn main() -> Result<(), Box<std::error::Error>> {
         v
     };
 
-    echo(strings, matches.is_present("escape"), matches.is_present("no_newline"))?;
-
-    Ok(())
+    match echo(
+        strings,
+        matches.is_present("escape"),
+        matches.is_present("no_newline"),
+    ) {
+        Ok(_) => (),
+        Err(e) => {
+            eprintln!("Failed to write to stdout.\n{}", e);
+            process::exit(1);
+        }
+    };
 }
 
 /// Print given `strings` to standard output.
@@ -55,23 +64,27 @@ fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> 
 
 /// Parse a `input` code from `base` code to a UTF-8 char.
 /// The `max_digits` limits how many digits the `input` code can have.
-fn parse_code(input: &mut Peekable<Chars>, base: u32, max_digits: u32, bits_per_digit: u32) -> Option<char> {
+fn parse_code(
+    input: &mut Peekable<Chars>,
+    base: u32,
+    max_digits: u32,
+    bits_per_digit: u32,
+) -> Option<char> {
     use std::char::from_u32;
 
     let mut ret = 0x8000_0000;
     for _ in 0..max_digits {
         match input.peek().and_then(|c| c.to_digit(base)) {
-           Some(n) => ret = (ret << bits_per_digit) | n,
-           None => break,
+            Some(n) => ret = (ret << bits_per_digit) | n,
+            None => break,
         }
-       input.next();
+        input.next();
     }
     from_u32(ret)
 }
 
 /// Print the scape codes from `string`.
 /// `output` is where it is going to be printed.
-///
 fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
     let mut stop = false;
     let mut buff = ['\\'; 2];
@@ -87,8 +100,8 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
                     'b' => '\x08',
                     'c' => {
                         stop = true;
-                        break
-                    },
+                        break;
+                    }
                     'e' => '\x1b',
                     'f' => '\x0c',
                     'n' => '\n',
@@ -120,6 +133,5 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
 
     Ok(stop)
 }
-
 
 // TODO: Unit testing for print_escape()

@@ -1,7 +1,4 @@
-use std::{
-    env,
-    process,
-};
+use std::{env, process};
 
 use coreutils_core::passwd::Passwd;
 
@@ -11,7 +8,13 @@ fn main() {
     let yaml = load_yaml!("whoami.yml");
     let _matches = App::from_yaml(yaml).get_matches();
 
-    let user = Passwd::new();
+    let user = match Passwd::effective() {
+        Ok(pw) => pw,
+        Err(_) => {
+            eprintln!("Failed to get user");
+            process::exit(1);
+        }
+    };
 
     // If user name in Passwd is empty, check for environment variable USER.
     let usr_name = if user.name().is_empty() {
@@ -19,10 +22,10 @@ fn main() {
             name
         } else {
             eprintln!("User name not found.");
-            process::exit(2);
+            process::exit(1);
         }
     } else {
-        user.name().to_owned()
+        user.name().to_string()
     };
 
     println!("{}", usr_name);
