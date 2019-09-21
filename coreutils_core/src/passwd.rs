@@ -75,7 +75,10 @@ impl Display for Error {
 
 impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        None
+        match self {
+            Group(err) => Some(err),
+            _ => None
+        }
     }
 }
 

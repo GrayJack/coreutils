@@ -3,6 +3,7 @@ pub mod env;
 pub mod file_descriptor;
 pub mod group;
 pub mod passwd;
+pub mod priority;
 pub mod tty;
 pub mod types;
 

@@ -7,6 +7,7 @@ use std::{
 }
 
 pub mod syscall {
+    //! Expose publically the syscalls, use with caution
     extern "C" {
         /// Returns the routing table of the current process
         pub fn getrtable() -> c_int;
