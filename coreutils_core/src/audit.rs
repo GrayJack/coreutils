@@ -8,6 +8,8 @@ use std::{
 };
 
 use libc::{c_int, c_uint, pid_t, uid_t};
+#[cfg(target_os = "macos")]
+use libc::dev_t;
 
 /// Struct for errors that happens on calls to `C` audit functions
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -54,7 +56,10 @@ pub struct AuditMask {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 #[repr(C)]
 pub struct AuditTerminalId {
+    #[cfg(target_os = "freebsd")]
     pub port: u32,
+    #[cfg(target_os = "macos")]
+    pub port: dev_t,
     pub machine: u32,
 }
 
@@ -65,7 +70,10 @@ pub struct AuditTerminalId {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 #[repr(C)]
 pub struct AuditTerminalIdAddr {
+    #[cfg(target_os = "freebsd")]
     pub at_port: u32,
+    #[cfg(target_os = "macos")]
+    pub at_port: dev_t,
     pub at_type: u32,
     pub at_addr: [u32; 4],
 }

@@ -6,5 +6,5 @@ pub mod passwd;
 pub mod tty;
 pub mod types;
 
-#[cfg(target_os = "freebsd")]
+#[cfg(any(target_os = "freebsd", target_os = "macos"))]
 pub mod audit;
