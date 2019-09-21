@@ -9,7 +9,7 @@ fn main() {
     let login_name = if let Ok(name) = env::var("LOGNAME") {
         name
     } else {
-        eprintln!("No login name found.");
+        eprintln!("logname: No login name found.");
         process::exit(2);
     };
 
