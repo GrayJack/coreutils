@@ -11,7 +11,7 @@ fn main() {
     let user = match Passwd::effective() {
         Ok(pw) => pw,
         Err(_) => {
-            eprintln!("Failed to get user");
+            eprintln!("whoami: Failed to get user");
             process::exit(1);
         }
     };
@@ -21,7 +21,7 @@ fn main() {
         if let Ok(name) = env::var("USER") {
             name
         } else {
-            eprintln!("User name not found.");
+            eprintln!("whoami: User name not found.");
             process::exit(1);
         }
     } else {
