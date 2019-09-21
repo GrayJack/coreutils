@@ -18,14 +18,14 @@ fn main() {
                     match dir.canonicalize() {
                         Ok(d) => d,
                         _ => {
-                            eprintln!("Failed to get absolute current directory.");
+                            eprintln!("pwd: Failed to get absolute current directory.");
                             process::exit(1);
                         }
                     }
                 }
             }
             Err(e) => {
-                eprintln!("Failed to get current directory. {:#?}", e);
+                eprintln!("pwd: Failed to get current directory. {:#?}", e);
                 process::exit(1);
             }
         }
