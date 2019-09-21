@@ -193,6 +193,11 @@ fn audit_logic() {
 
 #[cfg(target_os = "freebsd")]
 fn audit_logic() {
-    coreutils_core::audit::auditid();
-    process::exit(0);
+    match coreutils_core::audit::auditid() {
+        Ok(_) => process::exit(0),
+        Err(err) => {
+            println!("id: {}", err);
+            process::exit(1);
+        }
+    };
 }
