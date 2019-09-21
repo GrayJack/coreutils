@@ -2,6 +2,8 @@
 
 [![Hits-of-Code](https://hitsofcode.com/github/GrayJack/coreutils)](https://hitsofcode.com/view/github/GrayJack/coreutils)
 [![Build Status](https://api.travis-ci.com/GrayJack/coreutils.svg?branch=master)](https://travis-ci.com/GrayJack/coreutils)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_shield)
+
 
 An attempt to make safe coreutils aiming a minimal and yet complete set of utilities, adding only features that are common between several implementations of the utility and functions that are really useful.
 
@@ -93,3 +95,6 @@ In general, this project will try to be conservative with respect to the minimum
 
 ## Licensing
 This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE). If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_large)
