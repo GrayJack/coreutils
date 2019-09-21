@@ -6,7 +6,7 @@ args:
     - USER:
         help: Name of a user.
     - audit:
-        help: Display the process audit user ID and other process audit proper-ties, which requires privilege. (FreeBSD only, ignored otherwise)
+        help: Display the process audit user ID and other process audit proper-ties, which requires privilege. (FreeBSD and MacOS only, ignored otherwise)
         long: audit
         short: A
     - group:

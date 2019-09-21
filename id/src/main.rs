@@ -21,7 +21,7 @@ fn main() {
 
     let mut sep = '\n';
 
-    if audit_flag && cfg!(target_os = "freebsd") {
+    if audit_flag && (cfg!(target_os = "freebsd") || cfg!(target_os = "macos")) {
         audit_logic();
     }
 
