@@ -1,6 +1,9 @@
 use std::process;
 
-use coreutils_core::{tty::{isatty, TTYName, Error::*}, file_descriptor::FileDescriptor};
+use coreutils_core::{
+    file_descriptor::FileDescriptor,
+    tty::{isatty, Error::*, TTYName},
+};
 
 use clap::{load_yaml, App};
 
@@ -16,8 +19,11 @@ fn main() {
     if !silent_flag {
         match res {
             Ok(tty) => println!("{}", tty),
-            Err(ref err) if err == &NotTTY => println!("{}", err),
-            _ => process::exit(1)
+            Err(err @ NotTTY) => eprintln!("tty: {}", err),
+            Err(err) => {
+                eprintln!("tty: {}", err);
+                process::exit(1)
+            }
         }
     }
 
