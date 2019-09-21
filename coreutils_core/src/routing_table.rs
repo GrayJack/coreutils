@@ -1,8 +1,12 @@
 //! Module for abstractions for routing table system calls on OpenBSD
 
-use std::os::raw::c_int
+use std::{
+    error::Error as StdError,
+    fmt::{self, Display},
+    os::raw::c_int
+}
 
-mod syscall {
+pub mod syscall {
     extern "C" {
         /// Returns the routing table of the current process
         pub fn getrtable() -> c_int;
@@ -12,7 +16,35 @@ mod syscall {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Error {
+    err: String
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.err)
+    }
+}
+
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
+    }
+}
+
 /// Get the routing table of the current process
 pub fn get_routing_table() -> c_int {
-    unsafe { getrtable() }
+    unsafe { syscall::getrtable() }
+}
+
+/// Set the routing table of `rtableid`
+pub fn set_routing_table(rtableid: c_int) -> Result<(), Error> {
+    let res = unsafe { syscall::setrtable(rtableid) };
+
+    if res < 0 {
+        return Err(Error{err: "setrtable: failed to set routing table".to_string()});
+    }
+
+    Ok(())
 }
