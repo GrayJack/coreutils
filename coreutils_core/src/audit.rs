@@ -1,7 +1,7 @@
 //! Module of audit session compability for FreeBSD (I think it's the only one)
 //!
 //! I got the info from FreeBSD man pages `GETAUDIT(2)`
-//! the names defined on GETAUDIT(2) will have a '¹' on them.
+//! the names defined on `GETAUDIT(2)` will have a '¹' on them.
 use std::{
     fmt::{self, Display},
     mem::MaybeUninit,

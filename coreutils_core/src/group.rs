@@ -1,4 +1,4 @@
-//! A module do deal more easily with UNIX groups.
+//! Module to deal more easily with UNIX groups.
 
 use std::{
     error::Error as StdError,

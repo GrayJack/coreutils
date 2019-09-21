@@ -1,3 +1,5 @@
+//! Module for environments abstractions.
+
 use std::{
     convert::From,
     env::{self, VarError},
@@ -11,6 +13,7 @@ use libc::stat;
 
 type Result<T> = std::result::Result<T, Error>;
 
+/// Possible errors when calling this module functions
 #[derive(Debug)]
 pub enum Error {
     Var(VarError),
@@ -29,6 +32,8 @@ impl From<IoError> for Error {
     }
 }
 
+/// Get the logical path of the current directory wrapped on a `Ok` if successful, returns a Err
+/// holding the error that occurred.
 pub fn current_dir_logical() -> Result<PathBuf> {
     let pwd = env::var("PWD")?;
 

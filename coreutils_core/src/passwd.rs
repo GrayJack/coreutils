@@ -1,4 +1,4 @@
-//! A module to deal more easily with UNIX passwd.
+//! Module to deal more easily with UNIX passwd.
 
 use std::{
     error::Error as StdError,

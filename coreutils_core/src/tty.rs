@@ -1,3 +1,5 @@
+//! Module for TTY abstractions
+
 use std::{
     error::Error as StdError,
     ffi::CStr,
