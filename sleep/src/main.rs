@@ -10,7 +10,7 @@ fn main() {
     let numbers = match matches.values_of("NUMBER") {
         Some(values) => values,
         None => {
-            eprintln!("Missing operand.\nTry 'sleep --help' for more information.");
+            eprintln!("sleep: Missing operand.\nTry 'sleep --help' for more information.");
             process::exit(1);
         }
     };
@@ -31,7 +31,7 @@ fn main() {
             sleep!(total min)
         }
         _ => {
-            eprintln!("Invalid suffix value. It must be 'sec', 'min', 'hour', 's', 'm' or 'h'.\nFor more information, try 'sleep --help'.");
+            eprintln!("sleep: Invalid suffix value. It must be 'sec', 'min', 'hour', 's', 'm' or 'h'.\nFor more information, try 'sleep --help'.");
             process::exit(1);
         }
     }
