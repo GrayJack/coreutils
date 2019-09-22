@@ -1,7 +1,7 @@
 name: basename
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Print NAME with any leading directory components removed,\nIf specified, also remove a trailing SUFFIX"
+about: "Display NAME with any leading directory components removed,\nIf specified, also remove a trailing SUFFIX"
 args:
     - NAME:
         help: Name of the file to use.

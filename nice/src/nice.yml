@@ -2,7 +2,7 @@ name: nice
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: "Run COMMAND with an adjusted niceness, which affects process scheduling.
-With no COMMAND, print the current niceness.  Niceness values range from at
+With no COMMAND, display the current niceness.  Niceness values range from at
 least -20 (most favorable to the process) to 19 (least favorable to the
 process)."
 args:

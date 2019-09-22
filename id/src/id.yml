@@ -14,7 +14,7 @@ args:
         long: rtable
         short: R
     - group:
-        help: Print only the effective group ID as number.
+        help: Display only the effective group ID as number.
         long: group
         short: g
         conflicts_with:
@@ -24,7 +24,7 @@ args:
             - human
             - file
     - groups:
-        help: Print all group IDs.
+        help: Display all group IDs.
         long: groups
         short: G
         conflicts_with:
@@ -34,7 +34,7 @@ args:
             - human
             - file
     - user:
-        help: Print only the effective user ID as number.
+        help: Display only the effective user ID as number.
         long: user
         short: u
         conflicts_with:

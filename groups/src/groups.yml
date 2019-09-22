@@ -1,7 +1,7 @@
 name: groups
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Displays the current group names or ID values. If the value does not have a corresponding entry in /etc/group, the value will be displayed as the numerical group value. The
+about: "Display the current group names or ID values. If the value does not have a corresponding entry in /etc/group, the value will be displayed as the numerical group value. The
        optional user parameter will display the groups for the named user."
 args:
     - USER:
