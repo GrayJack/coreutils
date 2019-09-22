@@ -26,7 +26,7 @@ impl Display for AuditError {
 }
 
 impl Error for AuditError {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
     }
 }
