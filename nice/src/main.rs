@@ -1,10 +1,12 @@
 use std::{
     os::{
-        raw::{c_int, c_uint},
+        raw::c_int,
         unix::process::CommandExt,
     },
     process::{self, Command},
 };
+#[cfg(target_os = "linux")]
+use std::os::raw::c_uint;
 
 use coreutils_core::priority::{get_priority, set_priority, PRIO_PROCESS};
 
