@@ -6,6 +6,7 @@ pub mod passwd;
 pub mod priority;
 pub mod tty;
 pub mod types;
+pub mod utsname;
 
 #[cfg(any(target_os = "freebsd", target_os = "macos"))]
 pub mod audit;
