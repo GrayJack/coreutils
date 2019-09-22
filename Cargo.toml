@@ -8,6 +8,7 @@ members = [
     "groups",
     "id",
     "logname",
+    "nice",
     "pwd",
     "sleep",
     "true",

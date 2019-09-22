@@ -55,7 +55,7 @@ In general, this project will try to be conservative with respect to the minimum
 |   mkdir  |      X      |         |      |
 |  mkfifo  |      X      |         |      |
 |    mv    |      X      |         |      |
-|   nice   |      X      |         |      |
+|   nice   |             |         |   X  |
 |    nl    |      X      |         |      |
 |   nohup  |      X      |         |      |
 |    od    |      X      |         |      |
