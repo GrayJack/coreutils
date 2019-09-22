@@ -1,10 +1,10 @@
 //! Module for environments abstractions.
 
 use std::{
-    error::Error as StdError,
-    fmt::{self, Display},
     convert::From,
     env::{self, VarError},
+    error::Error as StdError,
+    fmt::{self, Display},
     io::Error as IoError,
     mem::MaybeUninit,
     os::raw::c_char,

@@ -18,7 +18,7 @@ use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam};
 use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
-use crate::{types::Gid, passwd::Error as PwError};
+use crate::{passwd::Error as PwError, types::Gid};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -427,9 +427,20 @@ impl Groups {
 
         let mut res = 0;
         unsafe {
-            if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
+            if getgrouplist(
+                name,
+                gid.try_into().unwrap(),
+                groups_ids.as_mut_ptr(),
+                &mut num_gr,
+            ) == -1
+            {
                 groups_ids.resize(num_gr as usize, 0);
-                res = getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr);
+                res = getgrouplist(
+                    name,
+                    gid.try_into().unwrap(),
+                    groups_ids.as_mut_ptr(),
+                    &mut num_gr,
+                );
             }
             groups_ids.set_len(num_gr as usize);
         }

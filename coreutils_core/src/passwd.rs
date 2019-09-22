@@ -77,7 +77,7 @@ impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
             Group(err) => Some(err),
-            _ => None
+            _ => None,
         }
     }
 }

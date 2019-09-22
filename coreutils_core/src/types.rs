@@ -1,4 +1,4 @@
-//! Module for more widelly used types in this crate and helper functions related to these times. 
+//! Module for more widelly used types in this crate and helper functions related to these times.
 
 #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
 use libc::c_int;

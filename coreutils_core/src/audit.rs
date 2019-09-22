@@ -9,9 +9,9 @@ use std::{
     mem::MaybeUninit,
 };
 
-use libc::{c_int, c_uint, pid_t, uid_t};
 #[cfg(target_os = "macos")]
 use libc::dev_t;
+use libc::{c_int, c_uint, pid_t, uid_t};
 
 /// Struct for errors that happens on calls to `C` audit functions
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
