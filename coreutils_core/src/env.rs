@@ -1,6 +1,8 @@
 //! Module for environments abstractions.
 
 use std::{
+    error::Error as StdError,
+    fmt::{self, Display},
     convert::From,
     env::{self, VarError},
     io::Error as IoError,
@@ -20,6 +22,15 @@ pub enum Error {
     Io(IoError),
 }
 
+impl Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Var(err) => write!(f, "Failed to get var with error: {}", err),
+            Self::Io(err) => write!(f, "IO error: {}", err),
+        }
+    }
+}
+
 impl From<VarError> for Error {
     fn from(err: VarError) -> Error {
         Error::Var(err)
@@ -29,6 +40,15 @@ impl From<VarError> for Error {
 impl From<IoError> for Error {
     fn from(err: IoError) -> Error {
         Error::Io(err)
+    }
+}
+
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        match self {
+            Self::Var(err) => Some(err),
+            Self::Io(err) => Some(err),
+        }
     }
 }
 

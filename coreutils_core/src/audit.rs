@@ -4,6 +4,7 @@
 //! the names defined on `GETAUDIT(2)` will have a '¹' on them.
 
 use std::{
+    error::Error,
     fmt::{self, Display},
     mem::MaybeUninit,
 };
@@ -21,6 +22,12 @@ pub struct AuditError {
 impl Display for AuditError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.err)
+    }
+}
+
+impl Error for AuditError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
     }
 }
 
