@@ -1,5 +1,5 @@
 //! Module for system informayion
-use std::{ffi::CStr, io, mem::MaybeUninit};
+use std::{ffi::CStr, io, mem::MaybeUninit, fmt::{self, Display}};
 
 use bstr::{BStr, BString, ByteSlice};
 use libc::{uname, utsname};
@@ -98,5 +98,11 @@ impl UtsName {
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
     pub fn domain_name(&self) -> &BStr {
         self.domainname.as_bstr()
+    }
+}
+
+impl Display for UtsName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {} {} {} {}", self.sysname, self.nodename, self.release, self.version, self.machine)
     }
 }
