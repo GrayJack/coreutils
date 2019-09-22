@@ -1,6 +1,6 @@
 //! Module for more widelly used types in this crate and helper functions related to these times.
 
-#[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+#[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use libc::c_int;
 use libc::{getegid, geteuid, getgid, getuid, gid_t, time_t, uid_t};
 
@@ -34,5 +34,5 @@ pub fn get_real_uid() -> Uid {
 pub type Time = time_t;
 
 /// `Passwd` field type
-#[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+#[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 pub type Fields = c_int;

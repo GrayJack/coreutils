@@ -10,7 +10,7 @@ use std::{
 pub use libc::PRIO_PROCESS;
 use libc::{getpriority, setpriority};
 
-#[cfg(not(any(target_os = "freebsd", target_os = "dragonflybsd")))]
+#[cfg(not(any(target_os = "freebsd", target_os = "dragonfly")))]
 use libc::id_t;
 
 #[cfg(target_os = "linux")]
@@ -51,7 +51,7 @@ impl StdError for Error {
 
 /// This function returns the highest priority (lowest numerical value) enjoyed by any of
 /// the specified processes if successful.
-#[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+#[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 pub fn get_priority(which: c_int, who: c_int) -> Result<c_int, Error> {
     let res = unsafe { getpriority(which, who) };
 
@@ -64,7 +64,7 @@ pub fn get_priority(which: c_int, who: c_int) -> Result<c_int, Error> {
 
 /// This function returns the highest priority (lowest numerical value) enjoyed by any of
 /// the specified processes if successful.
-#[cfg(not(any(target_os = "freebsd", target_os = "dragonflybsd", target_os = "linux")))]
+#[cfg(not(any(target_os = "freebsd", target_os = "dragonfly", target_os = "linux")))]
 pub fn get_priority(which: c_int, who: id_t) -> Result<c_int, Error> {
     let res = unsafe { getpriority(which, who) };
 
@@ -89,7 +89,7 @@ pub fn get_priority(which: c_uint, who: id_t) -> Result<c_int, Error> {
 }
 
 /// Set the priority of a specified process.
-#[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+#[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 pub fn set_priority(which: c_int, who: c_int, prio: c_int) -> Result<(), Error> {
     let res = unsafe { setpriority(which, who, prio) };
 
@@ -101,7 +101,7 @@ pub fn set_priority(which: c_int, who: c_int, prio: c_int) -> Result<(), Error> 
 }
 
 /// Set the priority of a specified process.
-#[cfg(not(any(target_os = "freebsd", target_os = "dragonflybsd", target_os = "linux")))]
+#[cfg(not(any(target_os = "freebsd", target_os = "dragonfly", target_os = "linux")))]
 pub fn set_priority(which: c_int, who: id_t, prio: c_int) -> Result<(), Error> {
     let res = unsafe { setpriority(which, who, prio) };
 

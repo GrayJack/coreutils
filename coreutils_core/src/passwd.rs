@@ -9,7 +9,7 @@ use std::{
     ptr,
 };
 
-#[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+#[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use crate::types::Fields;
 #[cfg(not(target_os = "linux"))]
 use crate::types::Time;
@@ -118,7 +118,7 @@ pub struct Passwd {
     #[cfg(not(target_os = "linux"))]
     expire: Time,
     /// Fields filled in
-    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     fields: Fields,
 }
 
@@ -210,7 +210,7 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -492,7 +492,7 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn real() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -770,7 +770,7 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -1051,7 +1051,7 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn from_name(name: &str) -> Result<Self> {
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
@@ -1311,7 +1311,7 @@ impl Passwd {
     }
 
     /// Get `Passwd`  fields filled in
-    #[cfg(any(target_os = "freebsd", target_os = "dragonflybsd"))]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn fields(&self) -> Fields {
         self.fields
     }
