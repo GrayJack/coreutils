@@ -13,6 +13,7 @@ members = [
     "sleep",
     "true",
     "whoami",
+    "uname",
     "tty",
     "yes"
 ]
