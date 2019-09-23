@@ -427,7 +427,8 @@ impl Groups {
                 #[cfg(not(target_os = "macos"))]
                 let gr = Group::from_gid(gid)?;
                 #[cfg(target_os = "macos")]
-                let gr = Group::from_gid(gid as i32)?;
+                let gr = Group::from_gid(gid as u32)?;
+
                 gs.push(gr);
             }
             gs
