@@ -377,7 +377,6 @@ impl Groups {
     }
 
     /// Get all groups that `username` belongs.
-    #[cfg(not(any(target_os = "macos")))]
     pub fn from_username(username: &str) -> Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
@@ -388,6 +387,7 @@ impl Groups {
         let gid = unsafe { (*passwd).pw_gid };
 
         let mut res = 0;
+        #[cfg(not(target_os = "macos"))]
         unsafe {
             if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
@@ -395,37 +395,7 @@ impl Groups {
             }
             groups_ids.set_len(num_gr as usize);
         }
-
-        if res == -1 {
-            return Err(GetGroupFailed(String::from("getgrouplist"), res));
-        }
-
-        groups_ids.truncate(num_gr as usize);
-
-        let groups = {
-            let mut gs = Vec::with_capacity(num_gr as usize);
-            for gid in groups_ids {
-                let gr = Group::from_gid(gid)?;
-                gs.push(gr);
-            }
-            gs
-        };
-
-        Ok(Groups { iter: groups })
-    }
-
-    /// Get all groups that `username` belongs.
-    #[cfg(any(target_os = "macos"))]
-    pub fn from_username(username: &str) -> Result<Self> {
-        let mut num_gr: i32 = 8;
-        let mut groups_ids = Vec::with_capacity(num_gr as usize);
-
-        let passwd = unsafe { getpwnam(username.as_ptr() as *const c_char) };
-
-        let name = username.as_ptr() as *const c_char;
-        let gid = unsafe { (*passwd).pw_gid };
-
-        let mut res = 0;
+        #[cfg(target_os = "macos")]
         unsafe {
             if getgrouplist(
                 name,
@@ -454,7 +424,7 @@ impl Groups {
         let groups = {
             let mut gs = Vec::with_capacity(num_gr as usize);
             for gid in groups_ids {
-                let gr = Group::from_gid(gid.try_into().unwrap())?;
+                let gr = Group::from_gid(gid)?;
                 gs.push(gr);
             }
             gs

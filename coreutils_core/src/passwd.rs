@@ -128,7 +128,6 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "linux", target_os = "haiku"))]
     pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -194,92 +193,13 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-        })
-    }
-
-    /// Create a new `Passwd` getting the current process user passwd as default using the
-    /// effective user id.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    pub fn effective() -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-
-        let res = unsafe {
-            getpwuid_r(
-                geteuid(),
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let name = if !pw.pw_name.is_null() {
-            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
-            BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
-        };
-
-        let passwd = if !pw.pw_passwd.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = pw.pw_uid;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !pw.pw_gecos.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !pw.pw_dir.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !pw.pw_shell.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let change = pw.pw_change;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let expire = pw.pw_expire;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -287,6 +207,7 @@ impl Passwd {
             return Err(ClassCheckFailed);
         };
 
+        #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
         let fields = pw.pw_fields;
 
         Ok(Passwd {
@@ -297,111 +218,14 @@ impl Passwd {
             gecos,
             dir,
             shell,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             change,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             class,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             expire,
+            #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
-        })
-    }
-
-    /// Create a new `Passwd` getting the current process user passwd as default using the
-    /// effective user id.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(
-        target_os = "linux",
-        target_os = "haiku",
-        target_os = "freebsd",
-        target_os = "dreagonflybsd"
-    )))]
-    pub fn effective() -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-
-        let res = unsafe {
-            getpwuid_r(
-                geteuid(),
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let name = if !pw.pw_name.is_null() {
-            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
-            BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
-        };
-
-        let passwd = if !pw.pw_passwd.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = pw.pw_uid;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !pw.pw_gecos.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !pw.pw_dir.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !pw.pw_shell.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
-        let change = pw.pw_change;
-
-        let expire = pw.pw_expire;
-
-        let class = if !pw.pw_class.is_null() {
-            let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
-            BString::from(class_cstr.to_bytes())
-        } else {
-            return Err(ClassCheckFailed);
-        };
-
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-            change,
-            class,
-            expire,
         })
     }
 
@@ -410,7 +234,6 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "linux", target_os = "haiku"))]
     pub fn real() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -476,92 +299,13 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-        })
-    }
-
-    /// Create a new `Passwd` getting the current process user passwd as default using the
-    /// real user id.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    pub fn real() -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-
-        let res = unsafe {
-            getpwuid_r(
-                getuid(),
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let name = if !pw.pw_name.is_null() {
-            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
-            BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
-        };
-
-        let passwd = if !pw.pw_passwd.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = pw.pw_uid;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !pw.pw_gecos.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !pw.pw_dir.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !pw.pw_shell.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let change = pw.pw_change;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let expire = pw.pw_expire;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -569,6 +313,7 @@ impl Passwd {
             return Err(ClassCheckFailed);
         };
 
+        #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
         let fields = pw.pw_fields;
 
         Ok(Passwd {
@@ -579,119 +324,21 @@ impl Passwd {
             gecos,
             dir,
             shell,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             change,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             class,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             expire,
+            #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
         })
     }
 
-    /// Create a new `Passwd` getting the current process user passwd as default using the
-    /// real user id.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(
-        target_os = "linux",
-        target_os = "haiku",
-        target_os = "freebsd",
-        target_os = "dreagonflybsd"
-    )))]
-    pub fn real() -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-
-        let res = unsafe {
-            getpwuid_r(
-                getuid(),
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let name = if !pw.pw_name.is_null() {
-            let name_cstr = unsafe { CStr::from_ptr(pw.pw_name) };
-            BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
-        };
-
-        let passwd = if !pw.pw_passwd.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(pw.pw_passwd) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = pw.pw_uid;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !pw.pw_gecos.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(pw.pw_gecos) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !pw.pw_dir.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(pw.pw_dir) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !pw.pw_shell.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(pw.pw_shell) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
-        let change = pw.pw_change;
-
-        let expire = pw.pw_expire;
-
-        let class = if !pw.pw_class.is_null() {
-            let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
-            BString::from(class_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-            change,
-            class,
-            expire,
-        })
-    }
-
     /// Create a new `Passwd` using a `id` to get all attributes.
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "linux", target_os = "haiku"))]
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::zeroed();
@@ -755,89 +402,13 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-        })
-    }
-
-    /// Create a new `Passwd` using a `id` to get all attributes.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    pub fn from_uid(id: Uid) -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-
-        let res = unsafe { getpwuid_r(id, pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let name_ptr = pw.pw_name;
-        let passwd_ptr = pw.pw_passwd;
-        let gecos_ptr = pw.pw_gecos;
-        let dir_ptr = pw.pw_dir;
-        let shell_ptr = pw.pw_shell;
-
-        let name = if !name_ptr.is_null() {
-            let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
-            BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
-        };
-
-        let passwd = if !passwd_ptr.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = id;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !gecos_ptr.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !dir_ptr.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !shell_ptr.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let change = pw.pw_change;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let expire = pw.pw_expire;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -845,6 +416,7 @@ impl Passwd {
             return Err(ClassCheckFailed);
         };
 
+        #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
         let fields = pw.pw_fields;
 
         Ok(Passwd {
@@ -855,108 +427,14 @@ impl Passwd {
             gecos,
             dir,
             shell,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             change,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             class,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             expire,
+            #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
-        })
-    }
-
-    /// Create a new `Passwd` using a `id` to get all attributes.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(
-        target_os = "linux",
-        target_os = "haiku",
-        target_os = "freebsd",
-        target_os = "dreagonflybsd"
-    )))]
-    pub fn from_uid(id: Uid) -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-
-        let res = unsafe { getpwuid_r(id, pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let name_ptr = pw.pw_name;
-        let passwd_ptr = pw.pw_passwd;
-        let gecos_ptr = pw.pw_gecos;
-        let dir_ptr = pw.pw_dir;
-        let shell_ptr = pw.pw_shell;
-
-        let name = if !name_ptr.is_null() {
-            let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
-            BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
-        };
-
-        let passwd = if !passwd_ptr.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = id;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !gecos_ptr.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !dir_ptr.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !shell_ptr.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
-        let change = pw.pw_change;
-
-        let expire = pw.pw_expire;
-
-        let class = if !pw.pw_class.is_null() {
-            let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
-            BString::from(class_cstr.to_bytes())
-        } else {
-            return Err(ClassCheckFailed);
-        };
-
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-            change,
-            class,
-            expire,
         })
     }
 
@@ -964,7 +442,6 @@ impl Passwd {
     ///
     /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
     /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "linux", target_os = "haiku"))]
     pub fn from_name(name: &str) -> Result<Self> {
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
@@ -1036,97 +513,13 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-        })
-    }
-
-    /// Create a new `Passwd` using a `name` to get all attributes.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    pub fn from_name(name: &str) -> Result<Self> {
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-
-        let name_null = {
-            let mut n = BString::from(name);
-            n.push(b'\0');
-            n
-        };
-
-        let name = BString::from(name);
-
-        let res = unsafe {
-            getpwnam_r(
-                name_null.as_ptr() as *const c_char,
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let passwd_ptr = pw.pw_passwd;
-        let gecos_ptr = pw.pw_gecos;
-        let dir_ptr = pw.pw_dir;
-        let shell_ptr = pw.pw_shell;
-
-        let passwd = if !passwd_ptr.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = pw.pw_uid;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !gecos_ptr.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !dir_ptr.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !shell_ptr.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let change = pw.pw_change;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let expire = pw.pw_expire;
 
+        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -1134,6 +527,7 @@ impl Passwd {
             return Err(ClassCheckFailed);
         };
 
+        #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
         let fields = pw.pw_fields;
 
         Ok(Passwd {
@@ -1144,116 +538,14 @@ impl Passwd {
             gecos,
             dir,
             shell,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             change,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             class,
+            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
             expire,
+            #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
-        })
-    }
-
-    /// Create a new `Passwd` using a `name` to get all attributes.
-    ///
-    /// It may fail, so return a `Result`, either the `Passwd` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    #[cfg(not(any(
-        target_os = "linux",
-        target_os = "haiku",
-        target_os = "freebsd",
-        target_os = "dreagonflybsd"
-    )))]
-    pub fn from_name(name: &str) -> Result<Self> {
-        let mut pw = MaybeUninit::zeroed();
-        let mut pw_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-
-        let name_null = {
-            let mut n = BString::from(name);
-            n.push(b'\0');
-            n
-        };
-
-        let name = BString::from(name);
-
-        let res = unsafe {
-            getpwnam_r(
-                name_null.as_ptr() as *const c_char,
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
-
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
-            } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        let passwd_ptr = pw.pw_passwd;
-        let gecos_ptr = pw.pw_gecos;
-        let dir_ptr = pw.pw_dir;
-        let shell_ptr = pw.pw_shell;
-
-        let passwd = if !passwd_ptr.is_null() {
-            let passwd_cstr = unsafe { CStr::from_ptr(passwd_ptr) };
-            BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
-        };
-
-        let user_id = pw.pw_uid;
-
-        let group_id = pw.pw_gid;
-
-        let gecos = if !gecos_ptr.is_null() {
-            let gecos_cstr = unsafe { CStr::from_ptr(gecos_ptr) };
-            BString::from(gecos_cstr.to_bytes())
-        } else {
-            return Err(GecosCheckFailed);
-        };
-
-        let dir = if !dir_ptr.is_null() {
-            let dir_cstr = unsafe { CStr::from_ptr(dir_ptr) };
-            BString::from(dir_cstr.to_bytes())
-        } else {
-            return Err(DirCheckFailed);
-        };
-
-        let shell = if !shell_ptr.is_null() {
-            let shell_cstr = unsafe { CStr::from_ptr(shell_ptr) };
-            BString::from(shell_cstr.to_bytes())
-        } else {
-            return Err(ShellCheckFailed);
-        };
-
-        let change = pw.pw_change;
-
-        let expire = pw.pw_expire;
-
-        let class = if !pw.pw_class.is_null() {
-            let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
-            BString::from(class_cstr.to_bytes())
-        } else {
-            return Err(ClassCheckFailed);
-        };
-
-        Ok(Passwd {
-            name,
-            passwd,
-            user_id,
-            group_id,
-            gecos,
-            dir,
-            shell,
-            change,
-            class,
-            expire,
         })
     }
 
@@ -1293,19 +585,19 @@ impl Passwd {
     }
 
     /// Get `Passwd` access class.
-    #[cfg(any(not(target_os = "linux")))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     pub fn class(&self) -> &BStr {
         &self.class.as_bstr()
     }
 
     /// Get `Passwd` password change time
-    #[cfg(any(not(target_os = "linux")))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     pub fn password_change(&self) -> Time {
         self.change
     }
 
     /// Get `Passwd` expiration time
-    #[cfg(any(not(target_os = "linux")))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     pub fn expire(&self) -> Time {
         self.expire
     }
