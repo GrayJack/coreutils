@@ -424,7 +424,10 @@ impl Groups {
         let groups = {
             let mut gs = Vec::with_capacity(num_gr as usize);
             for gid in groups_ids {
+                #[cfg(not(target_os = "macos"))]
                 let gr = Group::from_gid(gid)?;
+                #[cfg(target_os = "macos")]
+                let gr = Group::from_gid(gid as i32)?;
                 gs.push(gr);
             }
             gs
