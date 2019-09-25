@@ -74,6 +74,7 @@ impl Display for Error {
 }
 
 impl StdError for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
             Group(err) => Some(err),
@@ -83,6 +84,7 @@ impl StdError for Error {
 }
 
 impl From<GrError> for Error {
+    #[inline]
     fn from(err: GrError) -> Error {
         Group(Box::new(err))
     }
@@ -550,59 +552,70 @@ impl Passwd {
     }
 
     /// Get `Passwd` login name.
+    #[inline]
     pub fn name(&self) -> &BStr {
         &self.name.as_bstr()
     }
 
     /// Get `Passwd` encrypted password.
+    #[inline]
     pub fn passwd(&self) -> &BStr {
         &self.passwd.as_bstr()
     }
 
     /// Get `Passwd` user ID.
+    #[inline]
     pub fn uid(&self) -> Uid {
         self.user_id
     }
 
     /// Get `Passwd` group ID.
+    #[inline]
     pub fn gid(&self) -> Gid {
         self.group_id
     }
 
     /// Get `Passwd` full name.
+    #[inline]
     pub fn gecos(&self) -> &BStr {
         &self.gecos.as_bstr()
     }
 
     /// Get `Passwd` dir.
+    #[inline]
     pub fn dir(&self) -> &BStr {
         &self.dir.as_bstr()
     }
 
     /// Get `Passwd` shell.
+    #[inline]
     pub fn shell(&self) -> &BStr {
         &self.shell.as_bstr()
     }
 
     /// Get `Passwd` access class.
+    #[inline]
     #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     pub fn class(&self) -> &BStr {
         &self.class.as_bstr()
     }
 
     /// Get `Passwd` password change time
+    #[inline]
     #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     pub fn password_change(&self) -> Time {
         self.change
     }
 
     /// Get `Passwd` expiration time
+    #[inline]
     #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     pub fn expire(&self) -> Time {
         self.expire
     }
 
-    /// Get `Passwd`  fields filled in
+    /// Get `Passwd` fields filled in
+    #[inline]
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn fields(&self) -> Fields {
         self.fields

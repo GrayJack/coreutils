@@ -23,18 +23,21 @@ pub struct Error {
 }
 
 impl Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.err)
     }
 }
 
 impl StdError for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         None
     }
 }
 
 /// Get the routing table of the current process
+#[inline]
 pub fn get_routing_table() -> c_int {
     unsafe { syscall::getrtable() }
 }

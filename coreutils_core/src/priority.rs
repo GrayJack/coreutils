@@ -41,6 +41,7 @@ impl Display for Error {
 }
 
 impl StdError for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
             Self::SetPriority(ioerr) => Some(ioerr),

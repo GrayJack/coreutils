@@ -8,11 +8,13 @@ use libc::{getegid, geteuid, getgid, getuid, gid_t, time_t, uid_t};
 pub type Gid = gid_t;
 
 /// Get the current running process user effective group id.
+#[inline]
 pub fn get_effective_gid() -> Uid {
     unsafe { getegid() }
 }
 
 /// Get the current running process user real group id.
+#[inline]
 pub fn get_real_gid() -> Uid {
     unsafe { getgid() }
 }
@@ -21,11 +23,13 @@ pub fn get_real_gid() -> Uid {
 pub type Uid = uid_t;
 
 /// Get the current running process user effective user id.
+#[inline]
 pub fn get_effective_uid() -> Uid {
     unsafe { geteuid() }
 }
 
 /// Get the current running process user real user id.
+#[inline]
 pub fn get_real_uid() -> Uid {
     unsafe { getuid() }
 }

@@ -311,21 +311,25 @@ impl Group {
     }
 
     /// Get the `Group` name.
+    #[inline]
     pub fn name(&self) -> &BStr {
         &self.name.as_bstr()
     }
 
     /// Get the `Group` id.
+    #[inline]
     pub fn id(&self) -> Gid {
         self.id
     }
 
     /// Get the `Group` encrypted password.
+    #[inline]
     pub fn passwd(&self) -> &BStr {
         &self.passwd.as_bstr()
     }
 
     /// Get the `Group` list of members.
+    #[inline]
     pub fn mem(&self) -> &Members {
         &self.mem
     }
@@ -339,6 +343,7 @@ pub struct Groups {
 
 impl Groups {
     /// Creates a empty new `Groups`.
+    #[inline]
     pub fn new() -> Self {
         Groups { iter: Vec::new() }
     }
@@ -438,16 +443,19 @@ impl Groups {
     }
 
     /// Insert as `Group` on `Groups`.
+    #[inline]
     pub fn push(&mut self, value: Group) {
         self.iter.push(value);
     }
 
     /// Return `true` if `Groups` contains 0 elements.
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.iter.is_empty()
     }
 
     /// Transform `Groups` to a Vector of `Group`.
+    #[inline]
     pub fn into_vec(self) -> Vec<Group> {
         self.iter
     }
@@ -457,6 +465,7 @@ impl IntoIterator for Groups {
     type Item = Group;
     type IntoIter = std::vec::IntoIter<Group>;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.iter.into_iter()
     }

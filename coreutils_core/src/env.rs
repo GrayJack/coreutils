@@ -23,6 +23,7 @@ pub enum Error {
 }
 
 impl Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Var(err) => write!(f, "Failed to get var with error: {}", err),
@@ -32,18 +33,21 @@ impl Display for Error {
 }
 
 impl From<VarError> for Error {
+    #[inline]
     fn from(err: VarError) -> Error {
         Error::Var(err)
     }
 }
 
 impl From<IoError> for Error {
+    #[inline]
     fn from(err: IoError) -> Error {
         Error::Io(err)
     }
 }
 
 impl StdError for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
             Self::Var(err) => Some(err),

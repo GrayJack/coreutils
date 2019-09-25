@@ -36,6 +36,7 @@ impl Display for Error {
 }
 
 impl StdError for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         None
     }
@@ -63,6 +64,7 @@ impl TTYName {
 }
 
 impl Display for TTYName {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -76,6 +78,7 @@ impl Display for TTYName {
 /// let istty = isatty(FileDescriptor::StdIn);
 /// # }
 /// ```
+#[inline]
 pub fn isatty(file_descriptor: FileDescriptor) -> bool {
     unsafe { libc::isatty(file_descriptor as c_int) == 1 }
 }
