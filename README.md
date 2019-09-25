@@ -18,6 +18,25 @@ This project's minimum supported `rustc` version (MSRV) is 1.37.0.
 
 In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time. [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`]
 
+## Compilation tests guarantees
+The compilations is tested for Rust x86_64 Unix/Unix-like platforms, with exception of redox target, with Github Actions.
+
+The Tier1 platforms are tested on MSRV, stable, beta and nightly Rust, while Tier2 and Tier3 platforms are tested on MSRV and stable only since they are no guarantees to be available in beta and nightly Rust.
+
+Also note that Tier3 Rust Platform will probably fail before hits the compilation check, since my only options is to use a Linux OS, add the target and do `cargo check --target`, and they often are not available as a target for any Tier1 platforms. If you use one of these platforms and have the right MSRV requirements and it build successfully, let me know, if it fails, open a issue with the compilation error.
+
+|   Platform    |  Tier  |                                                                 Status                                                                   |
+|:-------------:|:------:|:----------------------------------------------------------------------------------------------------------------------------------------:|
+|  Linux        | Tier1  | [![Linux](https://github.com/GrayJack/coreutils/workflows/Linux/badge.svg)](https://github.com/GrayJack/coreutils/actions)               |
+|  MacOS        | Tier1  | [![MacOS](https://github.com/GrayJack/coreutils/workflows/MacOS/badge.svg)](https://github.com/GrayJack/coreutils/actions)               |
+|  FreeBSD      | Tier2  | [![FreeBSD](https://github.com/GrayJack/coreutils/workflows/FreeBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           |
+|  NetBSD       | Tier2  | [![NetBSD](https://github.com/GrayJack/coreutils/workflows/NetBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)             |
+|  Fuchsia      | Tier2  | [![Fuchsia](https://github.com/GrayJack/coreutils/workflows/Fuchsia/badge.svg)](https://github.com/GrayJack/coreutils/actions)           |
+|  Solaris      | Tier2  | [![Solaris](https://github.com/GrayJack/coreutils/workflows/Solaris/badge.svg)](https://github.com/GrayJack/coreutils/actions)           |
+|  OpenBSD      | Tier3  | [![OpenBSD](https://github.com/GrayJack/coreutils/workflows/OpenBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           |
+|  DragonflyBSD | Tier3  | [![DragonflyBSD](https://github.com/GrayJack/coreutils/workflows/DragonflyBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions) |
+|  Haiku        | Tier3  | [![Haiku](https://github.com/GrayJack/coreutils/workflows/Haiku/badge.svg)](https://github.com/GrayJack/coreutils/actions)               |
+
 ## Tools
 |   Name   | Not Started | Started | Done |
 |:--------:|:-----------:|:-------:|:----:|
@@ -81,7 +100,7 @@ In general, this project will try to be conservative with respect to the minimum
 |   true   |             |         |   X  |
 |   tsort  |      X      |         |      |
 |    tty   |             |         |   X  |
-|   uname  |      X      |         |      |
+|   uname  |             |         |   X  |
 | unexpand |      X      |         |      |
 |   uniq   |      X      |         |      |
 |  unlink  |      X      |         |      |
