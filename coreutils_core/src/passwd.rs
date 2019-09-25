@@ -11,7 +11,7 @@ use std::{
 
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use crate::types::Fields;
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
 use crate::types::Time;
 use crate::{
     group::{Error as GrError, Groups},
@@ -111,13 +111,13 @@ pub struct Passwd {
     /// User login shell
     shell: BString,
     /// Password change time
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     change: Time,
     /// User access class
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     class: BString,
     /// Account expiration
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     expire: Time,
     /// Fields filled in
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
@@ -634,7 +634,7 @@ impl Passwd {
 }
 
 impl Display for Passwd {
-    #[cfg(any(target_os = "linux", target_os = "haiku"))]
+    #[cfg(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris"))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -643,7 +643,7 @@ impl Display for Passwd {
         )
     }
 
-    #[cfg(not(any(target_os = "linux", target_os = "haiku")))]
+    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
