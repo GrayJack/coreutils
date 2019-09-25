@@ -1,4 +1,4 @@
-name: FreeBSD
+name: DragonflyBSD
 
 on: [push]
 
@@ -15,6 +15,6 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
     - name: Install target
-      run: rustup target add x86_64-unknown-freebsd
-    - name: Check FreeBSD
-      run: cargo check --verbose --target x86_64-unknown-freebsd
+      run: rustup target add x86_64-unknown-dragonfly
+    - name: Check DragonflyBSD
+      run: cargo check --verbose --target x86_64-unknown-dragonfly

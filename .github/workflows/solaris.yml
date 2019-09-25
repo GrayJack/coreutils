@@ -14,6 +14,7 @@ jobs:
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: ${{ matrix.rust }}
-    - run: rustup target add x86_64-sun-solaris
+    - name: Install target
+      run: rustup target add x86_64-sun-solaris
     - name: Check Solaris
       run: cargo check --verbose --target x86_64-sun-solaris
