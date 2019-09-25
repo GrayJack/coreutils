@@ -1,0 +1,19 @@
+name: NetBSD
+
+on: [push]
+
+jobs:
+  check:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [1.37.0, stable]
+    steps:
+    - uses: actions/checkout@v1
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - run: rustup target add x86_64-unknown-netbsd
+    - name: Check NetBSD
+      run: cargo check --verbose --target x86_64-unknown-netbsd
