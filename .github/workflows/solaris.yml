@@ -1,0 +1,19 @@
+name: Solaris
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [1.37.0, stable]
+    steps:
+    - uses: actions/checkout@v1
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - run: rustup target add x86_64-sun-solaris
+    - name: Check Solaris
+      run: cargo check --verbose --target x86_64-sun-solaris
