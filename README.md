@@ -5,10 +5,9 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_shield)
 
 
-An attempt to make safe coreutils aiming a minimal and yet complete set of utilities, adding only features that are common between several implementations of the utility and functions that are really useful.
+An attempt to make safe coreutils aiming a minimal and yet complete set of utilities. This project aims to have **at least** the common features between several implementations of the utility.
 
-This project has no intent to be 100% compatible with GNU's coreutils, like
-[Uutils' coreutils](https://github.com/uutils/coreutils)
+This project has no intent to be 100% compatible with GNU's coreutils, like [Uutils' coreutils](https://github.com/uutils/coreutils), but if happens to be, that's ok too.
 
 ## Contributing
 Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contribute to the project, including issue reports, git commits messages, etc.
@@ -21,7 +20,7 @@ In general, this project will try to be conservative with respect to the minimum
 ## Compilation tests guarantees
 The compilations is tested for Rust x86_64 Unix/Unix-like platforms, with exception of redox target, with Github Actions.
 
-The Tier1 platforms are tested on MSRV, stable, beta and nightly Rust, while Tier2 and Tier3 platforms are tested on MSRV and stable only since they are no guarantees to be available in beta and nightly Rust.
+The Tier1 platforms are tested on MSRV, stable, beta and nightly Rust, while Tier2 and Tier3 platforms are tested on MSRV and stable only, since they are no guarantees to be available in beta and nightly Rust.
 
 Also note that Tier3 Rust Platform will probably fail before hits the compilation check, since my only options is to use a Linux OS, add the target and do `cargo check --target`, and they often are not available as a target for any Tier1 platforms. If you use one of these platforms and have the right MSRV requirements and it build successfully, let me know, if it fails, open a issue with the compilation error.
 
