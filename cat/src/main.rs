@@ -7,12 +7,12 @@ use std::fs::File;
 use clap::{load_yaml, App};
 
 struct CatArgs {
-    number_nonblank: bool,
-    number: bool,
-    show_ends: bool,
-    squeeze_blank: bool,
-    show_tabs: bool,
-    show_nonprinting: bool
+    number_nonblank: bool, // done
+    number: bool, // done
+    show_ends: bool, // done
+    squeeze_blank: bool, // done
+    show_tabs: bool, // done
+    show_nonprinting: bool // TODO
 }
 
 impl Default for CatArgs {
@@ -101,7 +101,11 @@ fn cat(file: &PathBuf, args: &CatArgs) -> io::Result<()> {
     let mut line_no = 1;
 
     while let Some(line) = lines.next() {
-        let line = line?;
+        let mut line = line?;
+
+        if args.squeeze_blank && line == "" {
+            continue;
+        }
 
         if args.number && !args.number_nonblank {
             print!("{:6} ", line_no);
@@ -109,6 +113,10 @@ fn cat(file: &PathBuf, args: &CatArgs) -> io::Result<()> {
         } else if args.number_nonblank && line != "" {
             print!("{:6} ", line_no);
             line_no += 1;
+        }
+
+        if args.show_tabs {
+            line = line.replace("\t", "^I");
         }
 
         println!("{}{}", line, if args.show_ends { "$" } else { "" });
