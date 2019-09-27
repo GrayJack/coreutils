@@ -1,0 +1,42 @@
+name: cat
+version: "0.0.0"
+author: Edu Renesto <edure95@gmail.com>
+about: "Concatenate FILE(s) to standard output.\n
+\ With no FILE, or when FILE is -, read standard input."
+args:
+    - FILE:
+        help: The files to be concatenated.
+        required: false 
+        multiple: true
+    - show_all:
+        long: show-all
+        short: A
+        help: equivalent to -vET
+    - number_nonblank:
+        long: number-nonblank
+        short: b
+        help: number nonempty output lines, overrides -n
+    - show_ends_nonprinting:
+        short: e
+        help: equivalent to -vE
+    - show_ends:
+        long: show-ends
+        short: E
+        help: display $ at end of each line
+    - number:
+        long: number
+        short: n
+        help: number all output lines
+    - squeeze_blank:
+        long: squeeze-blank
+        short: s
+    - show_tabs_nonprinting:
+        short: t
+        help: equivalent to -vT
+    - show_tabs:
+        long: show-tabs
+        short: T
+    - show_nonprinting:
+        long: show-nonprinting
+        short: v
+        help: use ^ and M- notation, except for LFD and TAB
