@@ -24,10 +24,12 @@ fn main() {
 
     if audit_flag && (cfg!(target_os = "freebsd") || cfg!(target_os = "macos")) {
         audit_logic();
+        return
     }
 
     if rtable_flag && cfg!(target_os = "openbsd") {
         rtable_logic();
+        return
     }
 
     // Checks if zero_flag is being used as expected
@@ -81,23 +83,27 @@ fn main() {
 
     if user_flag {
         user_logic(&passwd, name_flag, sep);
+        return
     }
 
     if group_flag {
         group_logic(&passwd, name_flag, sep);
+        return
     }
 
     if groups_flag {
         groups_logic(&passwd, name_flag, sep);
+        return
     }
 
     if pretty_flag {
         pretty_logic(&passwd, sep);
+        return
     }
 
     if file_flag {
         print!("{}{}", passwd, sep);
-        process::exit(0);
+        return
     }
 
     default_logic(&passwd, sep);
@@ -141,19 +147,17 @@ fn group_logic(passwd: &Passwd, name_flag: bool, sep: char) {
             }
         };
         print!("{}{}", group.name(), sep);
-        process::exit(0);
+        return
     }
     print!("{}{}", passwd.gid(), sep);
-    process::exit(0);
 }
 
 fn user_logic(passwd: &Passwd, name_flag: bool, sep: char) {
     if name_flag {
         print!("{}{}", passwd.name(), sep);
-        process::exit(0);
+        return
     }
     print!("{}{}", passwd.uid(), sep);
-    process::exit(0);
 }
 
 fn groups_logic(passwd: &Passwd, name_flag: bool, sep: char) {
@@ -168,11 +172,10 @@ fn groups_logic(passwd: &Passwd, name_flag: bool, sep: char) {
     if name_flag {
         groups.into_iter().for_each(|g| print!("{} ", g.name()));
         print!("{}", sep);
-        process::exit(0);
+        return
     }
     groups.into_iter().for_each(|g| print!("{} ", g.id()));
     print!("{}", sep);
-    process::exit(0);
 }
 
 fn pretty_logic(passwd: &Passwd, sep: char) {
@@ -187,8 +190,6 @@ fn pretty_logic(passwd: &Passwd, sep: char) {
     print!("uid\t\t{}{}groups\t", passwd.name(), sep);
     groups.into_iter().for_each(|g| print!("{} ", g.name()));
     print!("{}", sep);
-
-    process::exit(0);
 }
 
 #[cfg(not(target_os = "freebsd"))]
@@ -197,7 +198,7 @@ fn audit_logic() {}
 #[cfg(target_os = "freebsd")]
 fn audit_logic() {
     match coreutils_core::audit::auditid() {
-        Ok(_) => process::exit(0),
+        Ok(_) => (),
         Err(err) => {
             println!("id: {}", err);
             process::exit(1);
@@ -212,5 +213,4 @@ fn rtable_logic() {}
 fn rtable_logic() {
     use coreutils_core::routing_table::get_routing_table;
     println!("{}", get_routing_table());
-    process::exit(0);
 }
