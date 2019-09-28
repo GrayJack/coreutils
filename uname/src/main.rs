@@ -39,12 +39,12 @@ fn main() {
         processor_flag,
     ) {
         println!("{}", uts_name.system_name());
-        process::exit(0);
+        return
     }
 
     if all_flag {
         println!("{} {}", uts_name, HOST_OS);
-        process::exit(0);
+        return
     }
 
     if sysname_flag {
