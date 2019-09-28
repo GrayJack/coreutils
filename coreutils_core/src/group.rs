@@ -1,5 +1,7 @@
 //! Module to deal more easily with UNIX groups.
 
+#[cfg(target_os = "solaris")]
+use std::os::raw::c_int;
 use std::{
     error::Error as StdError,
     ffi::CStr,
@@ -13,12 +15,24 @@ use std::{
 #[cfg(target_os = "macos")]
 use std::convert::TryInto;
 
-use libc::{getegid, getgrgid_r, getgrnam_r, getgrouplist, getgroups, getpwnam};
+use libc::{getegid, getgrgid_r, getgrnam_r, getgroups};
+#[cfg(not(target_os = "solaris"))]
+use libc::{getgrouplist, getpwnam};
 
 use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
 use crate::{passwd::Error as PwError, types::Gid};
+
+#[cfg(target_os = "solaris")]
+extern "C" {
+    fn _getgroupsbymember(
+        username: *const c_char,
+        glist: *mut Gid,
+        maxids: c_int,
+        numgids: c_int,
+    ) -> c_int;
+}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -386,14 +400,15 @@ impl Groups {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
 
-        let passwd = unsafe { getpwnam(username.as_ptr() as *const c_char) };
-
         let name = username.as_ptr() as *const c_char;
-        let gid = unsafe { (*passwd).pw_gid };
 
         let mut res = 0;
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "solaris")))]
         unsafe {
+            let passwd = getpwnam(username.as_ptr() as *const c_char);
+
+            let gid = (*passwd).pw_gid;
+
             if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
                 res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
@@ -402,6 +417,10 @@ impl Groups {
         }
         #[cfg(target_os = "macos")]
         unsafe {
+            let passwd = getpwnam(username.as_ptr() as *const c_char);
+
+            let gid = (*passwd).pw_gid;
+
             if getgrouplist(
                 name,
                 gid.try_into().unwrap(),
@@ -419,8 +438,22 @@ impl Groups {
             }
             groups_ids.set_len(num_gr as usize);
         }
+        #[cfg(target_os = "solaris")]
+        unsafe {
+            if _getgroupsbymember(name, groups_ids.as_mut_ptr(), num_gr, 0) == -1 {
+                // TODO: How to get the max number of groups on Solaris system;
+                // That's a tricky one, if we fail the first time, we just set the max number
+                // of groups to 10 and expect to work, but one can be in more than 10 groups
+                num_gr += 2;
+                groups_ids.resize(num_gr as usize, 0);
+                res = _getgroupsbymember(name, groups_ids.as_mut_ptr(), num_gr, 0);
+            }
+            groups_ids.set_len(num_gr as usize);
+        }
 
-        if res == -1 {
+        if res == -1 && cfg!(target_os = "solaris") {
+            return Err(GetGroupFailed(String::from("_getgroupsbymember"), res));
+        } else if res == -1 {
             return Err(GetGroupFailed(String::from("getgrouplist"), res));
         }
 

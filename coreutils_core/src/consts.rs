@@ -1,5 +1,6 @@
 //! CFG constants
 
+// TODO: Add illumos target once it's done
 #[cfg(target_os = "linux")]
 pub const HOST_OS: &str = "Linux";
 #[cfg(target_os = "freebsd")]
@@ -10,6 +11,8 @@ pub const HOST_OS: &str = "NetBSD";
 pub const HOST_OS: &str = "OpenBSD";
 #[cfg(target_os = "dragonfly")]
 pub const HOST_OS: &str = "DragonflyBSD";
+#[cfg(target_os = "solaris")]
+pub const HOST_OS: &str = "Solaris";
 #[cfg(target_os = "macos")]
 pub const HOST_OS: &str = "Darwin";
 #[cfg(target_os = "haiku")]
