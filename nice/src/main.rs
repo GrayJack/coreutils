@@ -45,6 +45,7 @@ fn main() {
         Ok(nice) => nice,
         Err(err) => {
             eprintln!("nice: {}", err);
+            drop(args);
             process::exit(125);
         }
     };
@@ -53,6 +54,7 @@ fn main() {
 
     if let Err(err) = set_priority(P_PROCESS, 0, niceness) {
         eprintln!("nice: {}", err);
+        drop(args);
         process::exit(125);
     }
 
