@@ -22,6 +22,7 @@ fn main() {
             name
         } else {
             eprintln!("whoami: User name not found.");
+            drop(user);
             process::exit(1);
         }
     } else {
