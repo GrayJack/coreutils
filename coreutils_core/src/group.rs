@@ -16,6 +16,8 @@ use std::{
 use std::convert::TryInto;
 
 use libc::{getegid, getgrgid_r, getgrnam_r, getgroups};
+#[cfg(target_os = "solaris")]
+use libc::{sysconf, _SC_NGROUPS_MAX};
 #[cfg(not(target_os = "solaris"))]
 use libc::{getgrouplist, getpwnam};
 
@@ -441,10 +443,8 @@ impl Groups {
         #[cfg(target_os = "solaris")]
         unsafe {
             if _getgroupsbymember(name, groups_ids.as_mut_ptr(), num_gr, 0) == -1 {
-                // TODO: How to get the max number of groups on Solaris system;
-                // That's a tricky one, if we fail the first time, we just set the max number
-                // of groups to 10 and expect to work, but one can be in more than 10 groups
-                num_gr += 2;
+                // Fist we tried with the pre-defined one, now we get the true max
+                num_gr = sysconf(_SC_NGROUPS_MAX) as c_int;
                 groups_ids.resize(num_gr as usize, 0);
                 res = _getgroupsbymember(name, groups_ids.as_mut_ptr(), num_gr, 0);
             }
