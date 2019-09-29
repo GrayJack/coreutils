@@ -1,0 +1,21 @@
+name: seq
+version: "0.0.0"
+author:
+  - Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
+  - Francis Murillo <francisavmurillo@gmail.com>
+about: "Suspends execution for a NUMBER of SUFFIX time.\nSUFFIX can be 'sec' or 's' for seconds, 'min' or 'm' for minutes, 'hour' or 'h' for hours."
+args:
+    - LAST:
+        help: Number to set the sleep. If more than one, will sleep the sum of the numbers.
+        required: true
+    - FIRST:
+        help: Number to set the sleep. If more than one, will sleep the sum of the numbers.
+        required: false
+    - INCREMENT:
+        help: Number to set the sleep. If more than one, will sleep the sum of the numbers.
+        required: false
+    - suffix:
+        help: A optional parameter to set the time measurement to be used. The default is seconds.
+        long: suffix
+        short: s
+        value_name: SUFFIX
