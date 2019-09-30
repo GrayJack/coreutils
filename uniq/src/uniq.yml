@@ -1,0 +1,5 @@
+name: uniq
+version: "0.0.0"
+author: Vaibhav Yenamandra <yvvaibhav@gmail.com>
+about: "Report or fitler out duplicated lines from a file or stream"
+args:

@@ -12,8 +12,9 @@ members = [
     "pwd",
     "sleep",
     "true",
+    "tty",
     "whoami",
     "uname",
-    "tty",
+    "uniq",
     "yes"
 ]

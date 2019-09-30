@@ -1,0 +1,13 @@
+[package]
+name = "uniq"
+version = "0.0.1"
+authors = ["Vaibhav Yenamandra <yvvaibhav@gmail.com>"]
+build = "build.rs"
+edition = "2019"
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+coreutils_core = { path = "../coreutils_core" }
+
+[build-dependencies]
+clap = { version = "^2.33.0", features = ["yaml"] }
