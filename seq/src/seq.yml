@@ -1,21 +1,45 @@
 name: seq
 version: "0.0.0"
-author:
-  - Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-  - Francis Murillo <francisavmurillo@gmail.com>
-about: "Suspends execution for a NUMBER of SUFFIX time.\nSUFFIX can be 'sec' or 's' for seconds, 'min' or 'm' for minutes, 'hour' or 'h' for hours."
+author: Francis Murillo <francisavmurillo@gmail.com>
+about: "Print a sequence of numbers"
+long_about: >
+  Print numbers from FIRST to LAST, in steps of INCREMENT.
+usage: >
+
+  [OPTIONS] <LAST>
+
+  [OPTIONS] <FIRST> <LAST>
+
+  [OPTIONS] <FIRST> <INCREMENT> <LAST>
 args:
-    - LAST:
-        help: Number to set the sleep. If more than one, will sleep the sum of the numbers.
-        required: true
     - FIRST:
-        help: Number to set the sleep. If more than one, will sleep the sum of the numbers.
-        required: false
+        help: >
+          The initial number to start the sequence.
+        long_help: >
+          The initial number to start the sequence.
+
+
+          This must not be NaN. If omitted, defaults to 1.
     - INCREMENT:
-        help: Number to set the sleep. If more than one, will sleep the sum of the numbers.
-        required: false
-    - suffix:
-        help: A optional parameter to set the time measurement to be used. The default is seconds.
-        long: suffix
-        short: s
-        value_name: SUFFIX
+        help: >
+          The step/increment added after each preceeding number in the
+          sequence.
+        long_help: >
+          The step/increment added after each preceeding number in the
+          sequence.
+
+
+          If FIRST is greater than LAST, this should be a positive
+          number; if less than, this should be a negative number. This
+          must not be 0 or NaN. If omitted, defaults to 1 even if FIRST
+          is greater than LAST.
+    - LAST:
+        help: >
+          The limit of the sequence.
+        long_help: >
+          The limit of the sequence.
+
+
+          If the next number in a sequence exceeds above or falls below
+          LAST whether STEP is positive or negative respectively, the
+          sequence ends. This must not be NaN.
