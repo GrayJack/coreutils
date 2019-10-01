@@ -101,6 +101,10 @@ fn wc<R: Read>(stream: R, flags: u8) -> Result<WcResult, io::Error> {
 }
 
 fn print_result(filename: &str, result: &WcResult) {
+    println!("{}", get_formatted_result(filename, result));
+}
+
+fn get_formatted_result(filename: &str, result: &WcResult) -> String {
     let flags = result.flags;
     let mut s = String::with_capacity(64);
 
@@ -126,9 +130,10 @@ fn print_result(filename: &str, result: &WcResult) {
         s.push(' ');
     }
 
-    s.push_str(filename);
-
-    println!("{}", s);
+    if filename != "-" {
+        s.push_str(filename);
+    }
+    s
 }
 
 fn parse_flags(matches: &ArgMatches<'_>) -> u8 {
@@ -154,5 +159,49 @@ fn parse_flags(matches: &ArgMatches<'_>) -> u8 {
         DEFAULT_FLAGS
     } else {
         flags
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct TestReader<'a> {
+        buf: &'a str,
+        i: usize,
+    }
+
+    impl<'a> TestReader<'a> {
+        pub fn new(s: &'a str) -> Self {
+            TestReader { buf: s, i: 0 }
+        }
+    }
+
+    impl Read for TestReader<'_> {
+        fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
+            let i = self.i;
+            let n = out.len().min(self.buf.len() - i);
+            let buf_ptr = self.buf.as_ptr();
+            let out_ptr = out.as_mut_ptr();
+            unsafe {
+                buf_ptr.copy_to(out_ptr, n);
+            }
+            self.i += n;
+            Ok(n)
+        }
+    }
+
+    #[test]
+    fn wc_stdin() {
+        let test_str = TestReader::new("This is a test string");
+        let res = get_formatted_result(
+            "-",
+            &wc(
+                test_str,
+                PRINT_BYTES | PRINT_CHARS | PRINT_LINES | PRINT_WORDS | PRINT_MAX_LINE_LEN,
+            )
+            .unwrap(),
+        );
+        assert_eq!(res, String::from("1 5 22 22 21 "));
     }
 }
