@@ -45,17 +45,15 @@ fn main() {
         match result {
             Err(err) => eprintln!("wc: {}: {}", filename, err),
             Ok(result) => {
-                print_result(filename, &result);
+                println!("{}", get_formatted_result(filename, &result));
                 total_result = total_result.combine(result);
             }
         }
     }
 
     if filenames.len() > 1 {
-        print_result("total", &total_result);
+        println!("{}", get_formatted_result("total", &total_result));
     }
-
-    process::exit(0);
 }
 
 #[derive(Default)]
@@ -119,10 +117,6 @@ fn wc<R: Read>(stream: R, flags: u8) -> Result<WcResult, io::Error> {
     }
 
     Ok(result)
-}
-
-fn print_result(filename: &str, result: &WcResult) {
-    println!("{}", get_formatted_result(filename, result));
 }
 
 fn get_formatted_result(filename: &str, result: &WcResult) -> String {
