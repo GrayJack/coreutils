@@ -2,7 +2,7 @@ extern crate chrono;
 
 use std::{
     io::{self, Write},
-    process
+    process,
 };
 
 use chrono::{DateTime, Local};
