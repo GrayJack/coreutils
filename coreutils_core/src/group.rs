@@ -16,10 +16,10 @@ use std::{
 use std::convert::TryInto;
 
 use libc::{getegid, getgrgid_r, getgrnam_r, getgroups};
+#[cfg(not(target_os = "solaris"))]
+use libc::{getgrouplist, getpwnam_r};
 #[cfg(target_os = "solaris")]
 use libc::{sysconf, _SC_NGROUPS_MAX};
-#[cfg(not(target_os = "solaris"))]
-use libc::{getgrouplist, getpwnam};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -407,9 +407,32 @@ impl Groups {
         let mut res = 0;
         #[cfg(not(any(target_os = "macos", target_os = "solaris")))]
         unsafe {
-            let passwd = getpwnam(username.as_ptr() as *const c_char);
+            let mut passwd = MaybeUninit::zeroed();
+            let mut pw_ptr = ptr::null_mut();
+            let mut buff = [0; 16384];
 
-            let gid = (*passwd).pw_gid;
+            let res_pwnam = getpwnam_r(
+                name,
+                passwd.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            );
+
+            if pw_ptr.is_null() {
+                if res == 0 {
+                    return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                } else {
+                    return Err(Passwd(Box::new(PwError::GetPasswdFailed(
+                        String::from("getpwnam_r"),
+                        res_pwnam,
+                    ))));
+                }
+            }
+
+            let passwd = passwd.assume_init();
+
+            let gid = passwd.pw_gid;
 
             if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
@@ -419,9 +442,32 @@ impl Groups {
         }
         #[cfg(target_os = "macos")]
         unsafe {
-            let passwd = getpwnam(username.as_ptr() as *const c_char);
+            let mut passwd = MaybeUninit::zeroed();
+            let mut pw_ptr = ptr::null_mut();
+            let mut buff = [0; 16384];
 
-            let gid = (*passwd).pw_gid;
+            let res_pwnam = getpwnam_r(
+                name,
+                passwd.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut pw_ptr,
+            );
+
+            if pw_ptr.is_null() {
+                if res == 0 {
+                    return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                } else {
+                    return Err(Passwd(Box::new(PwError::GetPasswdFailed(
+                        String::from("getpwnam_r"),
+                        res_pwnam,
+                    ))));
+                }
+            }
+
+            let passwd = passwd.assume_init();
+
+            let gid = passwd.pw_gid;
 
             if getgrouplist(
                 name,
