@@ -10,6 +10,7 @@ members = [
     "logname",
     "nice",
     "pwd",
+    "rmdir",
     "sleep",
     "true",
     "whoami",
