@@ -1,0 +1,5 @@
+name: date
+version: "0.0.0"
+author: "Jonas Geschke <mail@yonny.de>"
+about: "Display the current date and time."
+args:

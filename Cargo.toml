@@ -3,6 +3,7 @@ members = [
     "coreutils_core",
     "basename",
     "dirname",
+    "date",
     "echo",
     "false",
     "groups",
