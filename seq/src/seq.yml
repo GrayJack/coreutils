@@ -2,8 +2,7 @@ name: seq
 version: "0.0.0"
 author: Francis Murillo <francisavmurillo@gmail.com>
 about: "Print a sequence of numbers"
-long_about: >
-  Print numbers from FIRST to LAST, in steps of INCREMENT.
+long_about: "Print numbers from FIRST to LAST, in steps of INCREMENT."
 usage: >
 
   [OPTIONS] <LAST>
@@ -13,17 +12,15 @@ usage: >
   [OPTIONS] <FIRST> <INCREMENT> <LAST>
 args:
     - FIRST:
-        help: >
-          The initial number to start the sequence.
+        help: "The initial number to start the sequence."
         long_help: >
           The initial number to start the sequence.
 
 
           This must not be NaN. If omitted, defaults to 1.
-    - INCREMENT:
-        help: >
-          The step/increment added after each preceeding number in the
-          sequence.
+        required: true
+    - SECOND:
+        help: "The step/increment added after each preceeding number in the sequence."
         long_help: >
           The step/increment added after each preceeding number in the
           sequence.
@@ -33,9 +30,9 @@ args:
           number; if less than, this should be a negative number. This
           must not be 0 or NaN. If omitted, defaults to 1 even if FIRST
           is greater than LAST.
-    - LAST:
-        help: >
-          The limit of the sequence.
+        required: false
+    - THIRD:
+        help: "The limit of the sequence."
         long_help: >
           The limit of the sequence.
 
@@ -43,3 +40,4 @@ args:
           If the next number in a sequence exceeds above or falls below
           LAST whether STEP is positive or negative respectively, the
           sequence ends. This must not be NaN.
+        required: false

@@ -1,6 +1,6 @@
 use std::env;
 
-use clap::{ App, Shell, load_yaml };
+use clap::{load_yaml, App, Shell};
 
 fn main() {
     let yaml = load_yaml!("src/seq.yml");
