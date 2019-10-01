@@ -27,4 +27,8 @@ args:
         long: words
         short: w
         help: Display the word counts
+    - pretty:
+        long: pretty
+        short: p
+        help: Output results in a more human readable format
 

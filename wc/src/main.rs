@@ -1,16 +1,16 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
-use std::process;
 
 use clap::{load_yaml, App, ArgMatches};
 
-const PRINT_LINES: u8 = 0x1;
-const PRINT_WORDS: u8 = 0x2;
-const PRINT_CHARS: u8 = 0x4;
-const PRINT_BYTES: u8 = 0x8;
-const PRINT_MAX_LINE_LEN: u8 = 0x10;
-const DEFAULT_FLAGS: u8 = PRINT_LINES | PRINT_WORDS | PRINT_CHARS;
+const F_PRINT_LINES: u8 = 0x1;
+const F_PRINT_WORDS: u8 = 0x2;
+const F_PRINT_CHARS: u8 = 0x4;
+const F_PRINT_BYTES: u8 = 0x8;
+const F_PRINT_MAX_LINE_LEN: u8 = 0x10;
+const F_PRETTY_PRINT: u8 = 0x20;
+const DEFAULT_FLAGS: u8 = F_PRINT_LINES | F_PRINT_WORDS | F_PRINT_CHARS;
 
 fn main() {
     let yaml = load_yaml!("wc.yml");
@@ -123,29 +123,47 @@ fn get_formatted_result(filename: &str, result: &WcResult) -> String {
     let flags = result.flags;
     let mut s = String::with_capacity(64);
 
-    // Order is: newline, word, character, byte, maximum line length.
-    if (flags & PRINT_LINES) != 0 {
-        s.push_str(&result.lines.to_string());
-        s.push(' ');
-    }
-    if (flags & PRINT_WORDS) != 0 {
-        s.push_str(&result.words.to_string());
-        s.push(' ');
-    }
-    if (flags & PRINT_CHARS) != 0 {
-        s.push_str(&result.chars.to_string());
-        s.push(' ');
-    }
-    if (flags & PRINT_BYTES) != 0 {
-        s.push_str(&result.bytes.to_string());
-        s.push(' ');
-    }
-    if (flags & PRINT_MAX_LINE_LEN) != 0 {
-        s.push_str(&result.max_line_len.to_string());
-        s.push(' ');
+    fn push_unpretty_res<T: ToString>(_name: &str, out: &mut String, result: T) {
+        out.push_str(&result.to_string());
+        out.push(' ');
     }
 
-    if filename != "-" {
+    fn push_pretty_res<T: ToString>(name: &str, out: &mut String, result: T) {
+        out.push_str("\n  ");
+        out.push_str(name);
+        out.push_str(": ");
+        out.push_str(&result.to_string());
+    }
+
+    let pretty_print = (flags & F_PRETTY_PRINT) != 0;
+
+    let push = if pretty_print {
+        push_pretty_res
+    } else {
+        push_unpretty_res
+    };
+
+    if pretty_print {
+        s.push_str(if filename == "-" { "(stdin)" } else { filename });
+    }
+
+    if (flags & F_PRINT_LINES) != 0 {
+        push("lines", &mut s, result.lines);
+    }
+    if (flags & F_PRINT_WORDS) != 0 {
+        push("words", &mut s, result.words);
+    }
+    if (flags & F_PRINT_CHARS) != 0 {
+        push("characters", &mut s, result.chars);
+    }
+    if (flags & F_PRINT_BYTES) != 0 {
+        push("bytes", &mut s, result.bytes);
+    }
+    if (flags & F_PRINT_MAX_LINE_LEN) != 0 {
+        push("max line length", &mut s, result.max_line_len.into());
+    }
+
+    if filename != "-" && !pretty_print {
         s.push_str(filename);
     }
     s
@@ -155,26 +173,28 @@ fn parse_flags(matches: &ArgMatches<'_>) -> u8 {
     let mut flags = 0;
 
     if matches.is_present("bytes") {
-        flags |= PRINT_BYTES;
+        flags |= F_PRINT_BYTES;
     }
     if matches.is_present("chars") {
-        flags |= PRINT_CHARS;
+        flags |= F_PRINT_CHARS;
     }
     if matches.is_present("lines") {
-        flags |= PRINT_LINES;
+        flags |= F_PRINT_LINES;
     }
     if matches.is_present("max-line-length") {
-        flags |= PRINT_MAX_LINE_LEN;
+        flags |= F_PRINT_MAX_LINE_LEN;
     }
     if matches.is_present("words") {
-        flags |= PRINT_WORDS;
+        flags |= F_PRINT_WORDS;
     }
 
-    if flags == 0 {
-        DEFAULT_FLAGS
-    } else {
-        flags
+    flags = if flags == 0 { DEFAULT_FLAGS } else { flags };
+
+    if matches.is_present("pretty") {
+        flags |= F_PRETTY_PRINT;
     }
+
+    flags
 }
 
 #[cfg(test)]
@@ -213,10 +233,31 @@ mod tests {
             "-",
             &wc(
                 test_str,
-                PRINT_BYTES | PRINT_CHARS | PRINT_LINES | PRINT_WORDS | PRINT_MAX_LINE_LEN,
+                F_PRINT_BYTES
+                    | F_PRINT_CHARS
+                    | F_PRINT_LINES
+                    | F_PRINT_WORDS
+                    | F_PRINT_MAX_LINE_LEN,
             )
             .unwrap(),
         );
         assert_eq!(res, String::from("1 5 22 22 21 "));
+    }
+
+    #[test]
+    fn wc_pretty_print() {
+        let test_str = TestReader::new("This is a test string");
+        let res = get_formatted_result(
+            "test",
+            &wc(test_str, F_PRINT_BYTES | F_PRINT_LINES | F_PRETTY_PRINT).unwrap(),
+        );
+        assert_eq!(
+            res,
+            String::from(
+                "test
+  lines: 1
+  bytes: 22"
+            )
+        );
     }
 }
