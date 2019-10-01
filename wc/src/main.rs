@@ -30,6 +30,7 @@ fn main() {
 
     let flags = parse_flags(&matches);
 
+    let mut total_result = WcResult::default();
     for filename in &filenames {
         let result = if filename == "-" {
             let stdin = io::stdin();
@@ -43,8 +44,15 @@ fn main() {
 
         match result {
             Err(err) => eprintln!("wc: {}: {}", filename, err),
-            Ok(result) => print_result(filename, &result),
+            Ok(result) => {
+                print_result(filename, &result);
+                total_result = total_result.combine(result);
+            }
         }
+    }
+
+    if filenames.len() > 1 {
+        print_result("total", &total_result);
     }
 
     process::exit(0);
@@ -58,6 +66,19 @@ struct WcResult {
     pub bytes: u64,
     pub max_line_len: u32,
     pub flags: u8,
+}
+
+impl WcResult {
+    pub fn combine(self, other: WcResult) -> WcResult {
+        WcResult {
+            lines: self.lines + other.lines,
+            words: self.words + other.words,
+            chars: self.chars + other.chars,
+            bytes: self.bytes + other.bytes,
+            max_line_len: self.max_line_len.max(other.max_line_len),
+            flags: self.flags | other.flags,
+        }
+    }
 }
 
 fn wc<R: Read>(stream: R, flags: u8) -> Result<WcResult, io::Error> {
