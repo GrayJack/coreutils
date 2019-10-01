@@ -15,5 +15,6 @@ members = [
     "whoami",
     "uname",
     "tty",
+    "wc",
     "yes"
 ]
