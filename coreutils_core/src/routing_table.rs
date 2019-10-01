@@ -3,11 +3,13 @@
 use std::{
     error::Error as StdError,
     fmt::{self, Display},
-    os::raw::c_int
+    os::raw::c_int,
 };
 
 pub mod syscall {
     //! Expose publically the syscalls, use with caution
+    use std::os::raw::c_int;
+
     extern "C" {
         /// Returns the routing table of the current process
         pub fn getrtable() -> c_int;
