@@ -1,30 +1,30 @@
 name: echo
 version: "0.0.0"
 author: Giacomo Parolini <silverweed1991@gmail.com>
-about: "Print newline, word and byte counts for each FILE, and a total line if more than one FILE is specified. A word is a non-zero-length sequence of characters delimited by white space.\n\nWith no FILE, or when FILE is -, read standard input."
+about: "Display newline, word and byte counts for each FILE, and a total line if more than one FILE is specified. A word is a non-zero-length sequence of characters delimited by white space.\n\nWith no FILE, or when FILE is -, read standard input."
 args:
     - FILE:
         help: One or more file names.
-        required: false 
+        required: false
         multiple: true
     - bytes:
         long: bytes
         short: c
-        help: print the byte counts
+        help: Display the byte counts
     - chars:
         long: chars
         short: m
-        help: print the character counts
+        help: Display the character counts
     - lines:
         long: lines
         short: l
-        help: print the newline counts
+        help: Display the newline counts
     - max-line-length:
         long: max-line-length
         short: L
-        help: print the maximum display width
+        help: Display the maximum display width
     - words:
         long: words
         short: w
-        help: print the word counts
+        help: Display the word counts
 
