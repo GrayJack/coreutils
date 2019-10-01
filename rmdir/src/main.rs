@@ -31,6 +31,7 @@ fn main() {
         }
     }
 
+    drop(directories);
     process::exit(ret_val);
 }
 

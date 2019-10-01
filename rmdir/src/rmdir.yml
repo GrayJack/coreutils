@@ -9,12 +9,12 @@ args:
         multiple: true
     - ignore-fail-nonempty:
         long: ignore-fail-on-nonempty
-        help: ignore each failure that is solely because a directory is non-empty
+        help: Ignore each failure that is solely because a directory is non-empty
     - parents: 
         long: parents
         short: p
-        help: remove DIRECTORY and its ancestors.
+        help: Remove DIRECTORY and its ancestors.
     - verbose:
         long: verbose
         short: v
-        help: output a diagnostic for every directory processed
+        help: Output a diagnostic for every directory processed
