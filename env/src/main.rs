@@ -1,8 +1,7 @@
 use std::{
     collections::HashMap,
-    process,
-    env, 
-    io
+    env, io,
+    process::{self, Command},
 };
 
 use clap::{load_yaml, App};
@@ -10,8 +9,10 @@ use clap::{load_yaml, App};
 fn main() {
     let yaml = load_yaml!("env.yml");
     let matches = App::from_yaml(yaml).get_matches();
+
     let mut kv = HashMap::new();
     let mut cmd = Vec::new();
+
     if let Some(m) = matches.values_of("OPTIONS") {
         for word in m {
             let word_str: String = word.to_owned();
@@ -26,7 +27,9 @@ fn main() {
             }
         }
     };
+
     let mut unset_keys = Vec::new();
+
     if let Some(keys) = matches.values_of("UNSET") {
         keys.for_each(|k| unset_keys.push(k.to_owned()));
     };
@@ -43,7 +46,7 @@ fn main() {
             eprintln!("echo: Failed to write to stdout.\n{}", e);
             process::exit(1);
         }
-    };
+    }
 }
 
 // run `man env`
@@ -54,8 +57,8 @@ fn env(
     mut cmd: Vec<String>,
     unset_keys: Vec<String>,
 ) -> io::Result<()> {
-
     let mut env_vars = HashMap::new();
+
     for (key, value) in env::vars() {
         if !unset_keys.contains(&key) {
             env_vars.insert(key, value);
@@ -70,26 +73,27 @@ fn env(
         env_vars.insert(key, value);
     }
 
-    if cmd.len() > 0 {
+    if !cmd.is_empty() {
         let cmd_name = cmd.remove(0);
         println!("{} ", cmd_name);
-        process::Command::new(cmd_name.clone())
+
+        Command::new(cmd_name.clone())
             .env_clear()
             .args(cmd)
             .envs(&env_vars)
             .status()
-            .expect(&format!("{} failed to start.", cmd_name));
+            .unwrap_or_else(|_| panic!("{} failed to start.", cmd_name));
     } else {
-        for (key, value) in env_vars.iter() {
+        for (key, value) in env_vars {
             print!("{}={}", key, value);
             if !null_eol {
-                println!("");
+                println!();
             }
         }
 
         if !null_eol {
             // Let's be polite, and let the shell prompt start on a new line
-            println!("")
+            println!()
         }
     }
 
