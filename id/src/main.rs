@@ -2,39 +2,29 @@ use std::process;
 
 use coreutils_core::{group::Group, passwd::Passwd};
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, ArgMatches};
 
 fn main() {
     let yaml = load_yaml!("id.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
-    let audit_flag = matches.is_present("audit");
-    let group_flag = matches.is_present("group");
-    let groups_flag = matches.is_present("groups");
-    let user_flag = matches.is_present("user");
-    let name_flag = matches.is_present("name");
-    let zero_flag = matches.is_present("zero");
-    let file_flag = matches.is_present("file");
-    let real_flag = matches.is_present("real");
-    let rtable_flag = matches.is_present("rtable");
-    let pretty_flag = matches.is_present("pretty") || matches.is_present("human");
-    let by_name = matches.is_present("USER");
+    let flags = IdFlags::from_matches(&matches);
 
     let mut sep = '\n';
 
-    if audit_flag && (cfg!(target_os = "freebsd") || cfg!(target_os = "macos")) {
+    if flags.audit && (cfg!(target_os = "freebsd") || cfg!(target_os = "macos")) {
         audit_logic();
-        return
+        return;
     }
 
-    if rtable_flag && cfg!(target_os = "openbsd") {
+    if flags.rtable && cfg!(target_os = "openbsd") {
         rtable_logic();
-        return
+        return;
     }
 
     // Checks if zero_flag is being used as expected
-    if zero_flag {
-        if let (false, false, false, false) = (group_flag, groups_flag, user_flag, file_flag) {
+    if flags.zero {
+        if !flags.is_zero_valid() {
             eprintln!("id: Option --zero not permitted in pretty or default format");
             process::exit(1);
         } else {
@@ -43,31 +33,26 @@ fn main() {
     }
 
     // Checks if name_flag is being used as expected
-    if name_flag {
-        // If `--name` doesn't occour with `--group` or `groups` or `user`, it errors out
-        if let (false, false, false) = (group_flag, groups_flag, user_flag) {
-            eprintln!("id: Cannot print only names or real IDs in default format");
-            process::exit(1);
-        }
+    if !flags.is_name_valid() {
+        eprintln!("id: Cannot print only names or real IDs in default format");
+        process::exit(1);
     }
 
     // Checks if real_flag is being used as expected
-    if real_flag {
-        if let (false, false) = (group_flag, user_flag) {
-            eprintln!("id: Cannot print only names or real IDs in default format");
-            process::exit(1);
-        }
+    if flags.is_real_valid() {
+        eprintln!("id: Cannot print only names or real IDs in default format");
+        process::exit(1);
     }
 
-    let name = if by_name {
+    let name = if flags.by_name {
         matches.value_of("USER").unwrap()
     } else {
         ""
     };
 
-    let passwd = if by_name {
+    let passwd = if flags.by_name {
         Passwd::from_name(&name)
-    } else if (user_flag || group_flag) && real_flag {
+    } else if (flags.user || flags.group) && flags.real {
         Passwd::real()
     } else {
         Passwd::effective()
@@ -81,32 +66,90 @@ fn main() {
         }
     };
 
-    if user_flag {
-        user_logic(&passwd, name_flag, sep);
-        return
+    if flags.user {
+        user_logic(&passwd, flags, sep);
+        return;
     }
 
-    if group_flag {
-        group_logic(&passwd, name_flag, sep);
-        return
+    if flags.group {
+        group_logic(&passwd, flags, sep);
+        return;
     }
 
-    if groups_flag {
-        groups_logic(&passwd, name_flag, sep);
-        return
+    if flags.groups {
+        groups_logic(&passwd, flags, sep);
+        return;
     }
 
-    if pretty_flag {
+    if flags.pretty {
         pretty_logic(&passwd, sep);
-        return
+        return;
     }
 
-    if file_flag {
+    if flags.file {
         print!("{}{}", passwd, sep);
-        return
+        return;
     }
 
     default_logic(&passwd, sep);
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+struct IdFlags {
+    audit: bool,
+    by_name: bool,
+    file: bool,
+    group: bool,
+    groups: bool,
+    pretty: bool,
+    name: bool,
+    real: bool,
+    rtable: bool,
+    user: bool,
+    zero: bool,
+}
+
+impl IdFlags {
+    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+        IdFlags {
+            audit: matches.is_present("audit"),
+            by_name: matches.is_present("USER"),
+            file: matches.is_present("file"),
+            group: matches.is_present("group"),
+            groups: matches.is_present("groups"),
+            name: matches.is_present("name"),
+            pretty: matches.is_present("pretty") || matches.is_present("human"),
+            real: matches.is_present("real"),
+            rtable: matches.is_present("rtable"),
+            user: matches.is_present("user"),
+            zero: matches.is_present("zero"),
+        }
+    }
+
+    /// Check if `--zero` doesn't occour with `--group` or `--groups` or `--user` or `--file`
+    fn is_zero_valid(&self) -> bool {
+        if self.zero && !(self.group | self.groups | self.user | self.file) {
+            return false;
+        }
+        true
+    }
+
+    /// Check if `--name` doesn't occour with `--group` or `--groups` or `--user`
+    fn is_name_valid(&self) -> bool {
+        if self.name && !(self.group | self.groups | self.user) {
+            return false;
+        }
+        true
+    }
+
+    /// Check if `--real` doesn't occour with `--group` or `--user`
+    fn is_real_valid(&self) -> bool {
+        // If real = true and both group and user are false at the same time
+        if self.real && !(self.group | self.user) {
+            return false;
+        }
+        true
+    }
 }
 
 fn default_logic(passwd: &Passwd, sep: char) {
@@ -137,8 +180,8 @@ fn default_logic(passwd: &Passwd, sep: char) {
     print!("{}", sep);
 }
 
-fn group_logic(passwd: &Passwd, name_flag: bool, sep: char) {
-    if name_flag {
+fn group_logic(passwd: &Passwd, flags: IdFlags, sep: char) {
+    if flags.name {
         let group = match Group::from_gid(passwd.gid()) {
             Ok(g) => g,
             Err(err) => {
@@ -147,20 +190,20 @@ fn group_logic(passwd: &Passwd, name_flag: bool, sep: char) {
             }
         };
         print!("{}{}", group.name(), sep);
-        return
+        return;
     }
     print!("{}{}", passwd.gid(), sep);
 }
 
-fn user_logic(passwd: &Passwd, name_flag: bool, sep: char) {
-    if name_flag {
+fn user_logic(passwd: &Passwd, flags: IdFlags, sep: char) {
+    if flags.name {
         print!("{}{}", passwd.name(), sep);
-        return
+        return;
     }
     print!("{}{}", passwd.uid(), sep);
 }
 
-fn groups_logic(passwd: &Passwd, name_flag: bool, sep: char) {
+fn groups_logic(passwd: &Passwd, flags: IdFlags, sep: char) {
     let groups = match passwd.belongs_to() {
         Ok(gs) => gs,
         Err(err) => {
@@ -169,10 +212,10 @@ fn groups_logic(passwd: &Passwd, name_flag: bool, sep: char) {
         }
     };
 
-    if name_flag {
+    if flags.name {
         groups.into_iter().for_each(|g| print!("{} ", g.name()));
         print!("{}", sep);
-        return
+        return;
     }
     groups.into_iter().for_each(|g| print!("{} ", g.id()));
     print!("{}", sep);
