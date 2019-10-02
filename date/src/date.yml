@@ -4,11 +4,11 @@ author: "Jonas Geschke <mail@yonny.de>"
 about: "Display the current date and time."
 args:
   - utc:
-      help: print or set Coordinated Universal Time (UTC)
+      help: Display Coordinated Universal Time (UTC)
       long: universal
       short: u
   - date:
-      help: display time described by STRING [MMDDhhmmYYYY], not 'now'
+      help: Display time described by STRING [MMDDhhmmYYYY], not 'now'
       long: date
       short: d
       value_name: STRING
