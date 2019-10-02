@@ -1,7 +1,9 @@
-use std::collections::HashMap;
-use std::process;
-use std::process::Command;
-use std::{env, io};
+use std::{
+    collections::HashMap,
+    process,
+    env, 
+    io
+};
 
 use clap::{load_yaml, App};
 
@@ -10,7 +12,7 @@ fn main() {
     let matches = App::from_yaml(yaml).get_matches();
     let mut kv = HashMap::new();
     let mut cmd = Vec::new();
-    matches.values_of("OPTIONS").map(|m| {
+    if let Some(m) = matches.values_of("OPTIONS") {
         for word in m {
             let word_str: String = word.to_owned();
             match word_str.find('=') {
@@ -23,15 +25,16 @@ fn main() {
                 }
             }
         }
-    });
+    };
     let mut unset_keys = Vec::new();
-    matches.values_of("REMOVE_VAR").map(|keys| {
+    if let Some(keys) = matches.values_of("UNSET") {
         keys.for_each(|k| unset_keys.push(k.to_owned()));
-    });
+    };
+
     match env(
         kv,
         matches.is_present("IGNORE_ENVIRONMENT"),
-        matches.is_present("NULL_EOL"),
+        matches.is_present("NULL"),
         cmd,
         unset_keys,
     ) {
@@ -51,7 +54,7 @@ fn env(
     mut cmd: Vec<String>,
     unset_keys: Vec<String>,
 ) -> io::Result<()> {
-    // Prints each argument on a separate line
+
     let mut env_vars = HashMap::new();
     for (key, value) in env::vars() {
         if !unset_keys.contains(&key) {
@@ -68,21 +71,19 @@ fn env(
     }
 
     if cmd.len() > 0 {
-        println!("Spawning program");
         let cmd_name = cmd.remove(0);
         println!("{} ", cmd_name);
-        Command::new(cmd_name.clone())
+        process::Command::new(cmd_name.clone())
             .env_clear()
             .args(cmd)
             .envs(&env_vars)
             .status()
             .expect(&format!("{} failed to start.", cmd_name));
-        println!("done spawining..");
     } else {
         for (key, value) in env_vars.iter() {
             print!("{}={}", key, value);
             if !null_eol {
-                print!("\n");
+                println!("");
             }
         }
 
