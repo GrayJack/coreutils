@@ -4,6 +4,7 @@ members = [
     "basename",
     "dirname",
     "echo",
+	"env",
     "false",
     "groups",
     "id",

@@ -1,0 +1,12 @@
+[package]
+name = "env"
+version = "0.0.1"
+authors = ["Federico Ponzi <federico.ponzi92@gmail.com>"]
+build = "build.rs"
+edition = "2018"
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+
+[build-dependencies]
+clap = { version = "^2.33.0", features = ["yaml"] }
