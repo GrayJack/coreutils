@@ -4,40 +4,40 @@ author: "Gab David <g.bianchetdavid@gmail.com>"
 about: remove files or directories
 args:
   - force:
-      help: ignore nonexistent files, never prompt
+      help: Ignore nonexistent files, never prompt
       short: f
       long: force
   - interactive:
-      help: prompt before every removal
+      help: Prompt before every removal
       short: i
       long: interactive
   - interactiveBatch:
-      help: prompt once before removing more than three files, or when removing recursively; less intrusive than -i, while still giving protection against most mistakes
+      help: Prompt once before removing more than three files, or when removing recursively; less intrusive than -i, while still giving protection against most mistakes
       short: I
       long: interactive-batch
   - noPreserveRoot:
-      help: do not treat '/' specially
+      help: Do not treat '/' specially
       short: n
       long: no-preserve-root
   - preserveRoot:
-      help: do not remove '/' (default)
+      help: Do not remove '/' (default)
       short: p
       long: preserve-root
       conflicts_with:
         - noPreserveRoot
   - recursive:
-      help: remove directories and their contents recursively
+      help: Remove directories and their contents recursively
       short: r
       long: recursive
   - directories:
-      help: remove empty directories
+      help: Remove empty directories
       short: d
       long: dir
   - verbose:
-      help: explain what is being done
+      help: Explain what is being done
       short: v
       long: verbose
   - FILE:
-      help: files to be deleted; to remove a file whose name starts with a '-', for example '-foo', use 'rm -- -foo'
+      help: Files to be deleted; to remove a file whose name starts with a '-', for example '-foo', use 'rm -- -foo'
       required: true
       multiple: true
