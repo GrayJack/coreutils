@@ -20,10 +20,10 @@ fn main() {
                 Some(index) => {
                     let (k, v) = word_str.split_at(index);
                     kv.insert(k.to_owned(), v.get(1..).unwrap_or("").to_owned());
-                }
+                },
                 None => {
                     cmd.push(word_str);
-                }
+                },
             }
         }
     };
@@ -45,18 +45,16 @@ fn main() {
         Err(e) => {
             eprintln!("echo: Failed to write to stdout.\n{}", e);
             process::exit(1);
-        }
+        },
     }
 }
 
 // run `man env`
 fn env(
-    kv: HashMap<String, String>,
-    ignore_environemnt: bool,
-    null_eol: bool,
-    mut cmd: Vec<String>,
+    kv: HashMap<String, String>, ignore_environemnt: bool, null_eol: bool, mut cmd: Vec<String>,
     unset_keys: Vec<String>,
-) -> io::Result<()> {
+) -> io::Result<()>
+{
     let mut env_vars = HashMap::new();
 
     for (key, value) in env::vars() {

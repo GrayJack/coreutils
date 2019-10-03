@@ -23,7 +23,7 @@ fn main() {
             Err(err) => {
                 eprintln!("tty: {}", err);
                 process::exit(1)
-            }
+            },
         }
     }
 

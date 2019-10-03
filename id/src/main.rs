@@ -44,11 +44,7 @@ fn main() {
         process::exit(1);
     }
 
-    let name = if flags.by_name {
-        matches.value_of("USER").unwrap()
-    } else {
-        ""
-    };
+    let name = if flags.by_name { matches.value_of("USER").unwrap() } else { "" };
 
     let passwd = if flags.by_name {
         Passwd::from_name(&name)
@@ -63,7 +59,7 @@ fn main() {
         Err(err) => {
             eprintln!("id: {}", err);
             process::exit(1);
-        }
+        },
     };
 
     if flags.user {
@@ -96,37 +92,38 @@ fn main() {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 struct IdFlags {
-    audit: bool,
+    audit:   bool,
     by_name: bool,
-    file: bool,
-    group: bool,
-    groups: bool,
-    pretty: bool,
-    name: bool,
-    real: bool,
-    rtable: bool,
-    user: bool,
-    zero: bool,
+    file:    bool,
+    group:   bool,
+    groups:  bool,
+    pretty:  bool,
+    name:    bool,
+    real:    bool,
+    rtable:  bool,
+    user:    bool,
+    zero:    bool,
 }
 
 impl IdFlags {
     fn from_matches(matches: &ArgMatches<'_>) -> Self {
         IdFlags {
-            audit: matches.is_present("audit"),
+            audit:   matches.is_present("audit"),
             by_name: matches.is_present("USER"),
-            file: matches.is_present("file"),
-            group: matches.is_present("group"),
-            groups: matches.is_present("groups"),
-            name: matches.is_present("name"),
-            pretty: matches.is_present("pretty") || matches.is_present("human"),
-            real: matches.is_present("real"),
-            rtable: matches.is_present("rtable"),
-            user: matches.is_present("user"),
-            zero: matches.is_present("zero"),
+            file:    matches.is_present("file"),
+            group:   matches.is_present("group"),
+            groups:  matches.is_present("groups"),
+            name:    matches.is_present("name"),
+            pretty:  matches.is_present("pretty") || matches.is_present("human"),
+            real:    matches.is_present("real"),
+            rtable:  matches.is_present("rtable"),
+            user:    matches.is_present("user"),
+            zero:    matches.is_present("zero"),
         }
     }
 
-    /// Check if `--zero` doesn't occour with `--group` or `--groups` or `--user` or `--file`
+    /// Check if `--zero` doesn't occour with `--group` or `--groups` or `--user` or
+    /// `--file`
     fn is_zero_valid(&self) -> bool {
         if self.zero && !(self.group | self.groups | self.user | self.file) {
             return false;
@@ -158,7 +155,7 @@ fn default_logic(passwd: &Passwd, sep: char) {
         Err(err) => {
             eprintln!("id: {}", err);
             process::exit(1);
-        }
+        },
     }
     .into_vec();
 
@@ -187,7 +184,7 @@ fn group_logic(passwd: &Passwd, flags: IdFlags, sep: char) {
             Err(err) => {
                 eprintln!("id: {}", err);
                 process::exit(1);
-            }
+            },
         };
         print!("{}{}", group.name(), sep);
         return;
@@ -209,7 +206,7 @@ fn groups_logic(passwd: &Passwd, flags: IdFlags, sep: char) {
         Err(err) => {
             eprintln!("id: {}", err);
             process::exit(1);
-        }
+        },
     };
 
     if flags.name {
@@ -227,7 +224,7 @@ fn pretty_logic(passwd: &Passwd, sep: char) {
         Err(err) => {
             eprintln!("id: {}", err);
             process::exit(1);
-        }
+        },
     };
 
     print!("uid\t\t{}{}groups\t", passwd.name(), sep);
@@ -245,7 +242,7 @@ fn audit_logic() {
         Err(err) => {
             println!("id: {}", err);
             process::exit(1);
-        }
+        },
     };
 }
 

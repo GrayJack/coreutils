@@ -1,6 +1,7 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::{self, BufReader};
+use std::{
+    fs::File,
+    io::{self, prelude::*, BufReader},
+};
 
 use clap::{load_yaml, App, ArgMatches};
 
@@ -47,7 +48,7 @@ fn main() {
             Ok(result) => {
                 println!("{}", get_formatted_result(filename, &result));
                 total_result = total_result.combine(result);
-            }
+            },
         }
     }
 
@@ -82,10 +83,7 @@ impl WcResult {
 fn wc<R: Read>(stream: R, flags: u8) -> Result<WcResult, io::Error> {
     let reader = BufReader::new(stream);
 
-    let mut result = WcResult {
-        flags,
-        ..Default::default()
-    };
+    let mut result = WcResult { flags, ..Default::default() };
 
     for line in reader.lines() {
         let line = line?;
@@ -137,11 +135,7 @@ fn get_formatted_result(filename: &str, result: &WcResult) -> String {
 
     let pretty_print = (flags & F_PRETTY_PRINT) != 0;
 
-    let push = if pretty_print {
-        push_pretty_res
-    } else {
-        push_unpretty_res
-    };
+    let push = if pretty_print { push_pretty_res } else { push_unpretty_res };
 
     if pretty_print {
         s.push_str(if filename == "-" { "(stdin)" } else { filename });
@@ -203,13 +197,11 @@ mod tests {
 
     struct TestReader<'a> {
         buf: &'a str,
-        i: usize,
+        i:   usize,
     }
 
     impl<'a> TestReader<'a> {
-        pub fn new(s: &'a str) -> Self {
-            TestReader { buf: s, i: 0 }
-        }
+        pub fn new(s: &'a str) -> Self { TestReader { buf: s, i: 0 } }
     }
 
     impl Read for TestReader<'_> {

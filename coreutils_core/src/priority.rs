@@ -26,16 +26,12 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::SetPriority(ioerr) => write!(
-                f,
-                "setpriority: failed to set priority with error: {}",
-                ioerr
-            ),
-            Self::GetPriority(ioerr) => write!(
-                f,
-                "getpriority: failed to get priority with error: {}",
-                ioerr
-            ),
+            Self::SetPriority(ioerr) => {
+                write!(f, "setpriority: failed to set priority with error: {}", ioerr)
+            },
+            Self::GetPriority(ioerr) => {
+                write!(f, "getpriority: failed to get priority with error: {}", ioerr)
+            },
         }
     }
 }
