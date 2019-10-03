@@ -16,9 +16,6 @@ args:
         long: number-nonblank
         short: b
         help: number nonempty output lines, overrides -n
-    - show_ends_nonprinting:
-        short: e
-        help: equivalent to -vE
     - show_ends:
         long: show-ends
         short: E
@@ -30,13 +27,8 @@ args:
     - squeeze_blank:
         long: squeeze-blank
         short: s
-    - show_tabs_nonprinting:
-        short: t
-        help: equivalent to -vT
+        help: collapse blank lines
     - show_tabs:
         long: show-tabs
         short: T
-    - show_nonprinting:
-        long: show-nonprinting
-        short: v
-        help: use ^ and M- notation, except for LFD and TAB
+        help: show tab characters

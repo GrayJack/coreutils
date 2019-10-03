@@ -1,18 +1,18 @@
-use std::path::PathBuf;
-use std::io;
-use std::io::BufReader;
-use std::io::BufRead;
-use std::fs::File;
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader, Read},
+    path::PathBuf,
+};
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, ArgMatches};
 
+#[derive(Copy, Clone)]
 struct CatArgs {
     number_nonblank: bool, // done
-    number: bool, // done
-    show_ends: bool, // done
-    squeeze_blank: bool, // done
-    show_tabs: bool, // done
-    show_nonprinting: bool // TODO
+    number: bool,          // done
+    show_ends: bool,       // done
+    squeeze_blank: bool,   // done
+    show_tabs: bool,       // done
 }
 
 impl Default for CatArgs {
@@ -23,9 +23,20 @@ impl Default for CatArgs {
             show_ends: false,
             squeeze_blank: false,
             show_tabs: false,
-            show_nonprinting: false
         }
-    } 
+    }
+}
+
+impl CatArgs {
+    pub fn from(matches: &ArgMatches) -> CatArgs {
+        CatArgs {
+            number_nonblank: matches.is_present("number_nonblank"),
+            number: matches.is_present("number"),
+            show_ends: matches.is_present("show_all") || matches.is_present("show_ends"),
+            squeeze_blank: matches.is_present("squeeze_blank"),
+            show_tabs: matches.is_present("show_all") || matches.is_present("show_tabs"),
+        }
+    }
 }
 
 fn main() {
@@ -40,60 +51,29 @@ fn main() {
         }
     };
 
-    let mut args: CatArgs = CatArgs::default();
+    let args = CatArgs::from(&matches);
 
-    if matches.is_present("show_all") {
-        args.show_nonprinting = true;
-        args.show_ends = true;
-        args.show_tabs = true;
-    }
-
-    if matches.is_present("number_nonblank") {
-        args.number_nonblank = true;
-    }
-
-    if matches.is_present("show_ends_nonprinting") {
-        args.show_ends = true;
-        args.show_nonprinting = true;
-    }
-
-    if matches.is_present("show_ends") {
-        args.show_ends = true;
-    }
-
-    if matches.is_present("number") {
-        args.number = true;
-    }
-
-    if matches.is_present("squeeze_blank") {
-        args.squeeze_blank = true;
-    }
-
-    if matches.is_present("show_tabs_nonprinting") {
-        args.show_tabs = true;
-        args.show_nonprinting = true;
-    }
-
-    if matches.is_present("show_tabs") {
-        args.show_tabs = true;
-    }
-
-    if matches.is_present("show_nonprinting") {
-        args.show_nonprinting = true;
-    }
-
-    for file in files {
-        match cat(&file, &args) {
-            Ok(_) => (),
-            Err(e) => {
-                eprintln!("cat: Failed to read from {:?}.\n{}", file, e);
+    for file in &files {
+        let result = {
+            if *file == PathBuf::from("-") {
+                let stdin = io::stdin();
+                cat(stdin.lock(), args)
+            } else {
+                match File::open(file) {
+                    Ok(file) => cat(file, args),
+                    Err(e) => Err(e),
+                }
             }
+        };
+
+        match result {
+            Ok(_) => {},
+            Err(e) => eprintln!("cat: Failed to read from {:?}.\n{}", file, e),
         }
     }
 }
 
-fn cat(file: &PathBuf, args: &CatArgs) -> io::Result<()> {  
-    let file = File::open(file)?;
+fn cat<R: Read>(file: R, args: CatArgs) -> io::Result<()> {
     let reader = BufReader::new(file);
 
     let mut lines = reader.lines();
