@@ -30,14 +30,14 @@ fn main() {
 
     let mut unset_keys = Vec::new();
 
-    if let Some(keys) = matches.values_of("UNSET") {
+    if let Some(keys) = matches.values_of("unset") {
         keys.for_each(|k| unset_keys.push(k.to_owned()));
     };
 
     match env(
         kv,
-        matches.is_present("IGNORE_ENVIRONMENT"),
-        matches.is_present("NULL"),
+        matches.is_present("ignore_environment"),
+        matches.is_present("null"),
         cmd,
         unset_keys,
     ) {
