@@ -1,7 +1,7 @@
 name: rm
 version: "0.1"
 author: "Gab David <g.bianchetdavid@gmail.com>"
-about: remove files or directories
+about: Remove files or directories
 args:
   - force:
       help: Ignore nonexistent files, never prompt
