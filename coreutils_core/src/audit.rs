@@ -20,15 +20,11 @@ pub struct AuditError {
 }
 
 impl Display for AuditError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.err)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.err) }
 }
 
 impl Error for AuditError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        None
-    }
+    fn source(&self) -> Option<&(dyn Error + 'static)> { None }
 }
 
 /// This type contains the audit identifier which is recorded in the audit log for each
@@ -164,9 +160,7 @@ pub fn auditid() -> Result<(), AuditError> {
     let address = auditinfo.as_mut_ptr() as *mut AuditInfo;
 
     if unsafe { getaudit(address) } < 0 {
-        return Err(AuditError {
-            err: "getaudit: Operation not permitted".to_string(),
-        });
+        return Err(AuditError { err: "getaudit: Operation not permitted".to_string() });
     }
 
     let auditinfo = unsafe { auditinfo.assume_init() };

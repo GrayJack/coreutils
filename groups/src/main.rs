@@ -15,11 +15,7 @@ fn main() {
     let by_name = matches.is_present("USER");
     let id = matches.is_present("id");
 
-    let name = if by_name {
-        matches.value_of("USER").unwrap()
-    } else {
-        ""
-    };
+    let name = if by_name { matches.value_of("USER").unwrap() } else { "" };
 
     let groups = if by_name {
         match Groups::from_username(name) {
@@ -28,16 +24,16 @@ fn main() {
                 PasswdNotFound => {
                     eprintln!("groups: Unknown user {}", name);
                     std::process::exit(1);
-                }
+                },
                 a => {
                     eprintln!("groups: {}", a);
                     std::process::exit(1);
-                }
+                },
             },
             Err(err) => {
                 eprintln!("groups: {}", err);
                 std::process::exit(1);
-            }
+            },
         }
     } else {
         match Groups::caller() {
@@ -45,7 +41,7 @@ fn main() {
             Err(err) => {
                 eprintln!("groups: {}", err);
                 std::process::exit(1);
-            }
+            },
         }
     };
 

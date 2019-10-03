@@ -23,13 +23,11 @@ fn main() {
             Err(err) => {
                 eprintln!("tty: {}", err);
                 process::exit(1)
-            }
+            },
         }
     }
 
-    if isatty(desc_stdin) {
-        process::exit(0);
-    } else {
+    if !isatty(desc_stdin) {
         process::exit(1);
     }
 }

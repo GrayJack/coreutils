@@ -21,16 +21,12 @@ fn main() {
         v
     };
 
-    match echo(
-        strings,
-        matches.is_present("escape"),
-        matches.is_present("no_newline"),
-    ) {
+    match echo(strings, matches.is_present("escape"), matches.is_present("no_newline")) {
         Ok(_) => (),
         Err(e) => {
             eprintln!("echo: Failed to write to stdout.\n{}", e);
             process::exit(1);
-        }
+        },
     };
 }
 
@@ -65,10 +61,7 @@ fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> 
 /// Parse a `input` code from `base` code to a UTF-8 char.
 /// The `max_digits` limits how many digits the `input` code can have.
 fn parse_code(
-    input: &mut Peekable<Chars>,
-    base: u32,
-    max_digits: u32,
-    bits_per_digit: u32,
+    input: &mut Peekable<Chars>, base: u32, max_digits: u32, bits_per_digit: u32,
 ) -> Option<char> {
     use std::char::from_u32;
 
@@ -101,7 +94,7 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
                     'c' => {
                         stop = true;
                         break;
-                    }
+                    },
                     'e' => '\x1b',
                     'f' => '\x0c',
                     'n' => '\n',
@@ -119,7 +112,7 @@ fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
                     _ => {
                         start_at = 0;
                         n
-                    }
+                    },
                 }
             }
         }

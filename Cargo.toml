@@ -5,6 +5,7 @@ members = [
     "dirname",
     "cat",
     "echo",
+    "env",
     "false",
     "groups",
     "id",
@@ -16,5 +17,6 @@ members = [
     "whoami",
     "uname",
     "tty",
+    "wc",
     "yes"
 ]

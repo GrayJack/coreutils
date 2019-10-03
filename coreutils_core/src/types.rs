@@ -1,4 +1,5 @@
-//! Module for more widelly used types in this crate and helper functions related to these times.
+//! Module for more widelly used types in this crate and helper functions related to these
+//! times.
 
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use libc::c_int;
@@ -9,30 +10,22 @@ pub type Gid = gid_t;
 
 /// Get the current running process user effective group id.
 #[inline]
-pub fn get_effective_gid() -> Uid {
-    unsafe { getegid() }
-}
+pub fn get_effective_gid() -> Uid { unsafe { getegid() } }
 
 /// Get the current running process user real group id.
 #[inline]
-pub fn get_real_gid() -> Uid {
-    unsafe { getgid() }
-}
+pub fn get_real_gid() -> Uid { unsafe { getgid() } }
 
 /// User ID type.
 pub type Uid = uid_t;
 
 /// Get the current running process user effective user id.
 #[inline]
-pub fn get_effective_uid() -> Uid {
-    unsafe { geteuid() }
-}
+pub fn get_effective_uid() -> Uid { unsafe { geteuid() } }
 
 /// Get the current running process user real user id.
 #[inline]
-pub fn get_real_uid() -> Uid {
-    unsafe { getuid() }
-}
+pub fn get_real_uid() -> Uid { unsafe { getuid() } }
 
 /// `Passwd` time type
 pub type Time = time_t;
