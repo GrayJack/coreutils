@@ -1,4 +1,4 @@
-//! Module for system informayion
+//! Module for system information
 use std::{
     ffi::CStr,
     fmt::{self, Display},
