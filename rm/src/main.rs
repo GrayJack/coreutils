@@ -24,7 +24,7 @@ impl Flags {
             interactive: matches.is_present("interactive"),
             interactive_batch: matches.is_present("interactiveBatch"),
             preserve_root: !matches.is_present("noPreserveRoot"),
-            recursive: matches.is_present("recursive"),
+            recursive: matches.is_present("recursive") | matches.is_present("recursive_compat"),
             dirs: matches.is_present("directories"),
             verbose: matches.is_present("verbose"),
         };
@@ -164,21 +164,19 @@ fn remove_dir_all_recursive(path: &Path, flags: &Flags) -> io::Result<()> {
         let child = child?;
         if child.file_type()?.is_dir() {
             remove_dir_all_recursive(&child.path(), flags)?;
-        } else {
-            if ask_if_interactive(&child.path(), flags, true) {
-                match fs::remove_file(&child.path()) {
-                    Ok(()) => {
-                        if flags.verbose {
-                            println!("removed {}", child.path().display());
-                        }
+        } else if ask_if_interactive(&child.path(), flags, true) {
+            match fs::remove_file(&child.path()) {
+                Ok(()) => {
+                    if flags.verbose {
+                        println!("removed {}", child.path().display());
                     }
-                    Err(err) => eprintln!(
-                        "rm: cannot remove regular file '{}': {}",
-                        child.path().display(),
-                        err
-                    )
-                };
-            }
+                }
+                Err(err) => eprintln!(
+                    "rm: cannot remove regular file '{}': {}",
+                    child.path().display(),
+                    err
+                )
+            };
         }
     }
 
@@ -209,7 +207,7 @@ fn ask_if_interactive(file: &Path, flags: &Flags, is_file: bool) -> bool {
                 file.display()
             );
         }
-        
+
         io::stdout().lock().flush().expect("rm: Could not flush stdout");
 
         input_affirmative()
