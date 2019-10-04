@@ -1,0 +1,43 @@
+name: rm
+version: "0.1"
+author: "Gab David <g.bianchetdavid@gmail.com>"
+about: Remove files or directories
+args:
+  - force:
+      help: Ignore nonexistent files, never prompt
+      short: f
+      long: force
+  - interactive:
+      help: Prompt before every removal
+      short: i
+      long: interactive
+  - interactiveBatch:
+      help: Prompt once before removing more than three files, or when removing recursively; less intrusive than -i, while still giving protection against most mistakes
+      short: I
+      long: interactive-batch
+  - noPreserveRoot:
+      help: Do not treat '/' specially
+      short: n
+      long: no-preserve-root
+  - preserveRoot:
+      help: Do not remove '/' (default)
+      short: p
+      long: preserve-root
+      conflicts_with:
+        - noPreserveRoot
+  - recursive:
+      help: Remove directories and their contents recursively
+      short: r
+      long: recursive
+  - directories:
+      help: Remove empty directories
+      short: d
+      long: dir
+  - verbose:
+      help: Explain what is being done
+      short: v
+      long: verbose
+  - FILE:
+      help: Files to be deleted; to remove a file whose name starts with a '-', for example '-foo', use 'rm -- -foo'
+      required: true
+      multiple: true

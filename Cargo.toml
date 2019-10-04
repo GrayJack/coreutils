@@ -11,6 +11,7 @@ members = [
     "logname",
     "nice",
     "pwd",
+    "rm",
     "sleep",
     "true",
     "whoami",
