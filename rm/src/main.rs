@@ -1,13 +1,61 @@
-use clap::{load_yaml, App, ArgMatches};
-use std::env::current_dir;
-use std::fs;
-use std::io;
-use std::io::prelude::*;
-use std::path::{Path, PathBuf};
-use std::process::exit;
+use std::{
+    env::current_dir,
+    fs::{self, FileType, Permissions},
+    io::{self, BufRead, Write},
+    path::PathBuf,
+    process,
+};
 
-#[derive(Debug, Clone)]
-struct Flags {
+use clap::{load_yaml, App, ArgMatches};
+
+fn main() {
+    let yaml = load_yaml!("rm.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+
+    let flags = RmFlags::from_matches(&matches);
+
+    let cwd = match current_dir() {
+        Ok(path) => path,
+        Err(err) => {
+            eprintln!("rm: error reading current working directory: {}", err);
+            process::exit(1);
+        },
+    };
+
+    let files_relative: Vec<String> =
+        matches.values_of("FILE").unwrap().map(String::from).collect();
+
+    // Safe to unwrap since we said it is required on clap yaml
+    let files: Vec<PathBuf> =
+        matches.values_of("FILE").unwrap().map(|s| cwd.join(s.to_owned())).collect();
+
+    if flags.preserve_root && files.contains(&PathBuf::from("/")) {
+        eprintln!(
+            "rm: it is dangerous to operate on '/', use --no-preserve-root to override this \
+             failsafe."
+        );
+        process::exit(1);
+    }
+
+    if flags.interactive_batch && (files.len() > 3 || flags.recursive) {
+        let input = Input::with_msg("rm: are you sure you want to do this deletion? [Y/n]: ");
+
+        if !input.is_affirmative() {
+            process::exit(1);
+        }
+    }
+
+    match rm(files, files_relative, flags) {
+        Ok(()) => {},
+        Err(msg) => {
+            eprintln!("rm: {}", msg);
+            process::exit(1);
+        },
+    };
+}
+
+#[derive(Debug, Clone, Copy)]
+struct RmFlags {
     pub force: bool,
     pub interactive: bool,
     pub interactive_batch: bool,
@@ -17,9 +65,9 @@ struct Flags {
     pub verbose: bool,
 }
 
-impl Flags {
-    pub fn from_matches(matches: &ArgMatches) -> Flags {
-        let mut flags = Flags {
+impl RmFlags {
+    pub fn from_matches(matches: &ArgMatches) -> Self {
+        let mut flags = RmFlags {
             force: matches.is_present("force"),
             interactive: matches.is_present("interactive"),
             interactive_batch: matches.is_present("interactiveBatch"),
@@ -38,204 +86,299 @@ impl Flags {
     }
 }
 
-fn main() {
-    let yaml = load_yaml!("rm.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+#[derive(Debug)]
+struct Input(String);
 
-    let cwd = match current_dir() {
-        Ok(path) => path,
-        Err(err) => {
-            eprintln!("rm: Error reading current working directory: {}", err);
-            exit(1);
-        }
-    };
+impl Input {
+    fn new() -> Self {
+        let mut line = String::new();
+        match io::stdin().lock().read_line(&mut line) {
+            Ok(_) => {},
+            Err(err) => {
+                eprintln!("rm: cannot read input: {}", err);
+                process::exit(1);
+            },
+        };
 
-    let files: Vec<PathBuf> = {
-        // Safe to unwrap since we said it is required on clap yaml
-        let values = matches.values_of("FILE").unwrap();
-        let mut v = Vec::new();
-        for value in values {
-            v.push(cwd.join(value.to_owned()));
-        }
-        v
-    };
-
-    let flags = Flags::from_matches(&matches);
-
-    if flags.preserve_root && files.contains(&PathBuf::from("/")) {
-        println!(
-            "rm: It is dangerous to operate on '/'; use --no-preserve-root to override this failsafe."
-        );
-        exit(1);
+        Input(line)
     }
 
-    if flags.interactive_batch && (files.len() > 3 || flags.recursive) {
-        print!("rm: Are you sure you want to do this deletion? [Y/n]: ");
-        io::stdout().lock().flush().expect("rm: Could not flush stdout");
-        if !input_affirmative() {
-            exit(1);
+    fn with_msg(msg: &str) -> Self {
+        print!("{}", msg);
+
+        if let Err(err) = io::stdout().lock().flush() {
+            eprintln!("rm: could not flush stdout: {}", err);
+            process::exit(1);
         }
+
+        Self::new()
     }
 
-    match rm(files, &flags) {
-        Ok(()) => {}
-        Err(msg) => {
-            eprintln!("rm: {}", msg);
-            exit(1);
+    fn ask(
+        filetype: FileType, permissions: &Permissions, filename: &str, flags: RmFlags,
+    ) -> Result<Self, ()> {
+        if !flags.interactive && permissions.readonly() {
+            if filetype.is_file() {
+                let msg =
+                    format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
+                return Ok(Self::with_msg(&msg));
+            } else if filetype.is_dir() {
+                let msg = format!("rm: delete write_protected dir file '{}'? [Y/n]: ", filename);
+                return Ok(Self::with_msg(&msg));
+            }
         }
-    };
+
+        if flags.interactive {
+            if filetype.is_file() && permissions.readonly() {
+                let msg =
+                    format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
+                return Ok(Self::with_msg(&msg));
+            } else if filetype.is_file() && !permissions.readonly() {
+                let msg = format!("rm: delete regular file '{}'? [Y/n]: ", filename);
+                return Ok(Self::with_msg(&msg));
+            } else if filetype.is_dir() && permissions.readonly() {
+                let msg =
+                    format!("rm: delete write_protected directory file '{}'? [Y/n]: ", filename);
+                return Ok(Self::with_msg(&msg));
+            } else if filetype.is_dir() && !permissions.readonly() {
+                let msg = format!("rm: delete directory file '{}'? [Y/n]: ", filename);
+                return Ok(Self::with_msg(&msg));
+            }
+        }
+
+        Err(())
+    }
+
+    fn is_affirmative(&self) -> bool {
+        let input = self.0.trim().to_uppercase();
+
+        input == "Y" || input == "YES" || input == "1"
+    }
 }
 
-fn rm(files: Vec<PathBuf>, flags: &Flags) -> Result<(), String> {
-    for file in files {
-        if file.is_file() {
-            if ask_if_interactive(&file, flags, true) {
+fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<()> {
+    for (index, file) in files.iter().enumerate() {
+        let metadata = file.metadata()?;
+        let permissions = metadata.permissions();
+        let filetype = metadata.file_type();
+
+        if filetype.is_file() {
+            if !flags.force && (flags.interactive ^ permissions.readonly()) {
+                let input = match Input::ask(filetype, &permissions, &relative[index], flags) {
+                    Ok(i) => i,
+                    Err(_) => {
+                        eprintln!("rm: failed to get input when interactive of write protected");
+                        process::exit(1);
+                    },
+                };
+
+                if input.is_affirmative() {
+                    match fs::remove_file(&file) {
+                        Ok(()) => {
+                            if flags.verbose {
+                                println!("removed {}", file.display());
+                            }
+                        },
+                        Err(err) => eprintln!(
+                            "rm: cannot remove regular file '{}', {}",
+                            relative[index], err
+                        ),
+                    }
+                }
+            } else {
                 match fs::remove_file(&file) {
                     Ok(()) => {
                         if flags.verbose {
                             println!("removed {}", file.display());
                         }
-                    }
-                    Err(err) => eprintln!("rm: cannot remove '{}', {}", file.display(), err)
-                };
+                    },
+                    Err(err) => {
+                        eprintln!("rm: cannot remove regular file '{}', {}", relative[index], err)
+                    },
+                }
             }
-        } else if file.is_dir() {
+        } else if filetype.is_dir() {
             if flags.recursive {
-                match remove_dir_all(&file, flags) {
-                    Ok(()) => {}
-                    Err(err) => return Err(err.to_string())
-                };
+                return rm_dir_all(&file, &relative[index], filetype, &permissions, flags);
             } else if flags.dirs {
-                if ask_if_interactive(&file, flags, false) {
+                if !flags.force && (flags.interactive ^ permissions.readonly()) {
+                    let input = match Input::ask(filetype, &permissions, &relative[index], flags) {
+                        Ok(i) => i,
+                        Err(_) => {
+                            eprintln!(
+                                "rm: failed to get input when interactive of write protected"
+                            );
+                            process::exit(1);
+                        },
+                    };
+
+                    if input.is_affirmative() {
+                        match fs::remove_dir(&file) {
+                            Ok(()) => {
+                                if flags.verbose {
+                                    println!("removed {}", file.display());
+                                }
+                            },
+                            Err(err) => eprintln!(
+                                "rm: cannot remove directory file '{}': {}",
+                                relative[index], err
+                            ),
+                        };
+                    }
+                } else {
                     match fs::remove_dir(&file) {
                         Ok(()) => {
                             if flags.verbose {
                                 println!("removed {}", file.display());
                             }
-                        }
-                        Err(err) => eprintln!("rm: cannot remove '{}': {}", file.display(), err)
+                        },
+                        Err(err) => eprintln!(
+                            "rm: cannot remove directory file '{}': {}",
+                            relative[index], err
+                        ),
                     };
                 }
             } else {
-                eprintln!("rm: cannot remove '{}', it is a directory", file.display());
+                eprintln!("rm: cannot remove '{}': it is a directory", relative[index]);
             }
         } else {
-            eprintln!(
-                "rm: cannot remove '{}', no such file or directory",
-                file.display()
-            );
+            eprintln!("rm: cannot remove '{}': no such file or directory", relative[index]);
         }
     }
-
     Ok(())
 }
 
-fn remove_dir_all(path: &Path, flags: &Flags) -> io::Result<()> {
-    let filetype = fs::symlink_metadata(path)?.file_type();
-    if filetype.is_symlink() {
-        if ask_if_interactive(path, flags, true) {
-            match fs::remove_file(path) {
-                Ok(()) => {
-                    if flags.verbose {
-                        println!("removed {}", path.display());
-                    }
-                }
-                Err(err) => eprintln!("rm: cannot remove regular file '{}': {}", path.display(), err)
+fn rm_dir_all(
+    file: &PathBuf, relative: &str, filetype: FileType, permissions: &Permissions, flags: RmFlags,
+) -> io::Result<()> {
+    let file_type = fs::symlink_metadata(file)?.file_type();
+    if file_type.is_symlink() {
+        if !flags.force && (flags.interactive ^ permissions.readonly()) {
+            let input = match Input::ask(filetype, &permissions, &relative, flags) {
+                Ok(i) => i,
+                Err(_) => {
+                    eprintln!("rm: failed to get input when interactive of write protected");
+                    process::exit(1);
+                },
             };
 
+            if input.is_affirmative() {
+                match fs::remove_file(file.as_path()) {
+                    Ok(()) => {
+                        if flags.verbose {
+                            println!("removed {}", file.display());
+                        }
+                    },
+                    Err(err) => eprintln!("rm: cannot remove regular file '{}': {}", relative, err),
+                }
+            }
             Ok(())
         } else {
+            match fs::remove_file(file) {
+                Ok(()) => {
+                    if flags.verbose {
+                        println!("removed {}", file.display());
+                    }
+                },
+                Err(err) => eprintln!("rm: cannot remove regular file '{}': {}", relative, err),
+            };
             Ok(())
         }
     } else {
-        remove_dir_all_recursive(path, flags)
+        rm_dir_all_recursive(&file, &relative, filetype, &permissions, flags)
     }
 }
 
-fn remove_dir_all_recursive(path: &Path, flags: &Flags) -> io::Result<()> {
+fn rm_dir_all_recursive(
+    file: &PathBuf, relative: &str, filetype: FileType, permissions: &Permissions, flags: RmFlags,
+) -> io::Result<()> {
     if flags.interactive {
-        print!("rm: Descend into directory '{}'? [Y/n]:", path.display());
-        io::stdout().lock().flush().expect("rm: Could not flush stdout");
-        if !input_affirmative() {
-            exit(1);
+        let msg = format!("rm: Descend into directory '{}'? [Y/n]: ", relative);
+        let input = Input::with_msg(&msg);
+
+        if !input.is_affirmative() {
+            return Ok(());
         }
     }
-    for child in fs::read_dir(path)? {
+
+    for child in fs::read_dir(&file)? {
         let child = child?;
-        if child.file_type()?.is_dir() {
-            remove_dir_all_recursive(&child.path(), flags)?;
-        } else if ask_if_interactive(&child.path(), flags, true) {
+        let child_permissions = child.metadata()?.permissions();
+        let child_type = child.file_type()?;
+        let child_relative = format!("{}/{}", relative, child.file_name().to_string_lossy());
+
+        if child_type.is_dir() {
+            rm_dir_all_recursive(
+                &child.path(),
+                &child_relative,
+                child_type,
+                &child_permissions,
+                flags,
+            )?
+        } else if !flags.force && (flags.interactive || child_permissions.readonly()) {
+            let input = match Input::ask(child_type, &child_permissions, &child_relative, flags) {
+                Ok(i) => i,
+                Err(_) => {
+                    eprintln!("rm: failed to get input when interactive of write protected");
+                    process::exit(1);
+                },
+            };
+
+            if input.is_affirmative() {
+                match fs::remove_file(&child.path()) {
+                    Ok(()) => {
+                        if flags.verbose {
+                            println!("removed {}", child.path().display());
+                        }
+                    },
+                    Err(err) => {
+                        eprintln!("rm: cannot remove regular file '{}': {}", child_relative, err)
+                    },
+                }
+            }
+        } else {
             match fs::remove_file(&child.path()) {
                 Ok(()) => {
                     if flags.verbose {
                         println!("removed {}", child.path().display());
                     }
-                }
-                Err(err) => eprintln!(
-                    "rm: cannot remove regular file '{}': {}",
-                    child.path().display(),
-                    err
-                )
-            };
+                },
+                Err(err) => {
+                    eprintln!("rm: cannot remove regular file '{}': {}", child_relative, err)
+                },
+            }
         }
     }
 
-    if ask_if_interactive(path, flags, false) {
-        match fs::remove_dir(path) {
+    if !flags.force && (flags.interactive ^ permissions.readonly()) {
+        let input = match Input::ask(filetype, &permissions, &relative, flags) {
+            Ok(i) => i,
+            Err(_) => {
+                eprintln!("rm: failed to get input when interactive of write protected");
+                process::exit(1);
+            },
+        };
+
+        if input.is_affirmative() {
+            match fs::remove_dir(&file) {
+                Ok(()) => {
+                    if flags.verbose {
+                        println!("removed {}", file.display());
+                    }
+                },
+                Err(err) => eprintln!("rm: cannot remove directory file '{}': {}", relative, err),
+            }
+        }
+    } else {
+        match fs::remove_dir(&file) {
             Ok(()) => {
                 if flags.verbose {
-                    println!("removed {}", path.display());
+                    println!("removed {}", file.display());
                 }
-            }
-            Err(err) => eprintln!("rm: cannot remove {}: {}", path.display(), err)
-        };
+            },
+            Err(err) => eprintln!("rm: cannot remove directory file '{}': {}", relative, err),
+        }
     }
 
     Ok(())
-}
-
-fn ask_if_interactive(file: &Path, flags: &Flags, is_file: bool) -> bool {
-    if flags.interactive {
-        if is_file {
-            print!(
-                "rm: Are you sure to delete regular file '{}'? [Y/n]: ",
-                file.display()
-            );
-        } else {
-            print!(
-                "rm: Are you sure to delete directory file '{}'? [Y/n]: ",
-                file.display()
-            );
-        }
-
-        io::stdout().lock().flush().expect("rm: Could not flush stdout");
-
-        input_affirmative()
-    } else {
-        true
-    }
-}
-
-fn input_affirmative() -> bool {
-    let input = match get_input() {
-        Ok(res) => res,
-        Err(msg) => {
-            eprintln!("rm: Can not read input: {}", msg);
-            exit(1);
-        }
-    };
-
-    let input = input.trim().to_uppercase();
-
-    input == "Y" || input == "YES" || input == "1"
-}
-
-fn get_input() -> Result<String, String> {
-    let mut line = String::new();
-    match io::stdin().lock().read_line(&mut line) {
-        Ok(_) => {}
-        Err(msg) => return Err(msg.to_string()),
-    };
-
-    Ok(line)
 }
