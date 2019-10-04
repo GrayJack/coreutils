@@ -81,7 +81,7 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |   patch  |      X      |         |      |
 |  printf  |      X      |         |      |
 |    pwd   |             |         |   X  |
-|    rm    |      X      |         |      |
+|    rm    |             |         |   x  |
 |   rmdir  |      X      |         |      |
 |    sed   |      X      |         |      |
 |    seq   |      X      |         |      |
