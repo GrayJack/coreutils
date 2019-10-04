@@ -45,8 +45,8 @@ fn main() {
     let cwd = match current_dir() {
         Ok(path) => path,
         Err(err) => {
-            eprintln!("Error: {}", err);
-            exit(-1);
+            eprintln!("rm: Error reading current working directory: {}", err);
+            exit(1);
         }
     };
 
@@ -64,24 +64,24 @@ fn main() {
 
     if flags.preserve_root && files.contains(&PathBuf::from("/")) {
         println!(
-            "It is dangerous to operate on '/'; use --no-preserve-root to override this failsafe."
+            "rm: It is dangerous to operate on '/'; use --no-preserve-root to override this failsafe."
         );
-        exit(-1);
+        exit(1);
     }
 
     if flags.interactive_batch && (files.len() > 3 || flags.recursive) {
-        print!("Are you sure you want to do this deletion? [Y/n]: ");
-        io::stdout().lock().flush().expect("Could not flush stdout");
+        print!("rm: Are you sure you want to do this deletion? [Y/n]: ");
+        io::stdout().lock().flush().expect("rm: Could not flush stdout");
         if !input_affirmative() {
-            exit(-1);
+            exit(1);
         }
     }
 
     match rm(files, &flags) {
         Ok(()) => {}
         Err(msg) => {
-            eprintln!("Error: {}", msg);
-            exit(-1);
+            eprintln!("rm: {}", msg);
+            exit(1);
         }
     };
 }
@@ -89,53 +89,41 @@ fn main() {
 fn rm(files: Vec<PathBuf>, flags: &Flags) -> Result<(), String> {
     for file in files {
         if file.is_file() {
-            if ask_if_interactive(&file, flags) {
+            if ask_if_interactive(&file, flags, true) {
                 match fs::remove_file(&file) {
                     Ok(()) => {
                         if flags.verbose {
                             println!("removed {}", file.display());
                         }
                     }
-                    Err(err) => {
-                        if !flags.force {
-                            eprintln!("cannot remove {}, {}", file.display(), err);
-                        }
-                    }
+                    Err(err) => eprintln!("rm: cannot remove '{}', {}", file.display(), err)
                 };
             }
         } else if file.is_dir() {
             if flags.recursive {
                 match remove_dir_all(&file, flags) {
                     Ok(()) => {}
-                    Err(err) => {
-                        if !flags.force {
-                            return Err(err.to_string());
-                        }
-                    }
+                    Err(err) => return Err(err.to_string())
                 };
             } else if flags.dirs {
-                if ask_if_interactive(&file, flags) {
+                if ask_if_interactive(&file, flags, false) {
                     match fs::remove_dir(&file) {
                         Ok(()) => {
                             if flags.verbose {
                                 println!("removed {}", file.display());
                             }
                         }
-                        Err(_) => {}
+                        Err(err) => eprintln!("rm: cannot remove '{}': {}", file.display(), err)
                     };
                 }
             } else {
-                if !flags.force {
-                    eprintln!("cannot delete {}, it is a directory", file.display());
-                }
+                eprintln!("rm: cannot remove '{}', it is a directory", file.display());
             }
         } else {
-            if !flags.force {
-                eprintln!(
-                    "cannot remove '{}', no such file or directory",
-                    file.display()
-                );
-            }
+            eprintln!(
+                "rm: cannot remove '{}', no such file or directory",
+                file.display()
+            );
         }
     }
 
@@ -145,18 +133,14 @@ fn rm(files: Vec<PathBuf>, flags: &Flags) -> Result<(), String> {
 fn remove_dir_all(path: &Path, flags: &Flags) -> io::Result<()> {
     let filetype = fs::symlink_metadata(path)?.file_type();
     if filetype.is_symlink() {
-        if ask_if_interactive(path, flags) {
+        if ask_if_interactive(path, flags, true) {
             match fs::remove_file(path) {
                 Ok(()) => {
                     if flags.verbose {
                         println!("removed {}", path.display());
                     }
                 }
-                Err(err) => {
-                    if !flags.force {
-                        eprintln!("cannot remove {}, {}", path.display(), err);
-                    }
-                }
+                Err(err) => eprintln!("rm: cannot remove regular file '{}': {}", path.display(), err)
             };
 
             Ok(())
@@ -169,53 +153,64 @@ fn remove_dir_all(path: &Path, flags: &Flags) -> io::Result<()> {
 }
 
 fn remove_dir_all_recursive(path: &Path, flags: &Flags) -> io::Result<()> {
+    if flags.interactive {
+        print!("rm: Descend into directory '{}'? [Y/n]:", path.display());
+        io::stdout().lock().flush().expect("rm: Could not flush stdout");
+        if !input_affirmative() {
+            exit(1);
+        }
+    }
     for child in fs::read_dir(path)? {
         let child = child?;
         if child.file_type()?.is_dir() {
             remove_dir_all_recursive(&child.path(), flags)?;
         } else {
-            if ask_if_interactive(path, flags) {
+            if ask_if_interactive(&child.path(), flags, true) {
                 match fs::remove_file(&child.path()) {
                     Ok(()) => {
                         if flags.verbose {
                             println!("removed {}", child.path().display());
                         }
                     }
-                    Err(err) => {
-                        if !flags.force {
-                            eprintln!("cannot remove {}, {}", path.display(), err);
-                        }
-                    }
+                    Err(err) => eprintln!(
+                        "rm: cannot remove regular file '{}': {}",
+                        child.path().display(),
+                        err
+                    )
                 };
             }
         }
     }
 
-    if ask_if_interactive(path, flags) {
+    if ask_if_interactive(path, flags, false) {
         match fs::remove_dir(path) {
             Ok(()) => {
                 if flags.verbose {
                     println!("removed {}", path.display());
                 }
             }
-            Err(err) => {
-                if !flags.force {
-                    eprintln!("cannot remove {}, {}", path.display(), err);
-                }
-            }
+            Err(err) => eprintln!("rm: cannot remove {}: {}", path.display(), err)
         };
     }
 
     Ok(())
 }
 
-fn ask_if_interactive(file: &Path, flags: &Flags) -> bool {
+fn ask_if_interactive(file: &Path, flags: &Flags, is_file: bool) -> bool {
     if flags.interactive {
-        print!(
-            "Are you sure you want to delete {}? [Y/n]: ",
-            file.display()
-        );
-        io::stdout().lock().flush().expect("Could not flush stdout");
+        if is_file {
+            print!(
+                "rm: Are you sure to delete regular file '{}'? [Y/n]: ",
+                file.display()
+            );
+        } else {
+            print!(
+                "rm: Are you sure to delete directory file '{}'? [Y/n]: ",
+                file.display()
+            );
+        }
+        
+        io::stdout().lock().flush().expect("rm: Could not flush stdout");
 
         input_affirmative()
     } else {
@@ -227,8 +222,8 @@ fn input_affirmative() -> bool {
     let input = match get_input() {
         Ok(res) => res,
         Err(msg) => {
-            eprintln!("Can not read input: {}", msg);
-            exit(-1);
+            eprintln!("rm: Can not read input: {}", msg);
+            exit(1);
         }
     };
 
