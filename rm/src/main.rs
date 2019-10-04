@@ -24,7 +24,7 @@ impl Flags {
             interactive: matches.is_present("interactive"),
             interactive_batch: matches.is_present("interactiveBatch"),
             preserve_root: !matches.is_present("noPreserveRoot"),
-            recursive: matches.is_present("recursive") | matches.is_present("recursive_compat"),
+            recursive: matches.is_present("recursive") || matches.is_present("recursive_compat"),
             dirs: matches.is_present("directories"),
             verbose: matches.is_present("verbose"),
         };
