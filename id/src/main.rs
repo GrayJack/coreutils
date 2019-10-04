@@ -114,7 +114,7 @@ impl IdFlags {
             group:   matches.is_present("group"),
             groups:  matches.is_present("groups"),
             name:    matches.is_present("name"),
-            pretty:  matches.is_present("pretty") || matches.is_present("human"),
+            pretty:  matches.is_present("pretty") | matches.is_present("human"),
             real:    matches.is_present("real"),
             rtable:  matches.is_present("rtable"),
             user:    matches.is_present("user"),
