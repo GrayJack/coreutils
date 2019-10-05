@@ -199,7 +199,7 @@ fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<
             }
         } else if filetype.is_dir() {
             if flags.recursive {
-                return rm_dir_all(&file, &relative[index], filetype, &permissions, flags);
+                rm_dir_all(&file, &relative[index], filetype, &permissions, flags)?;
             } else if flags.dirs {
                 if !flags.force && (flags.interactive ^ permissions.readonly()) {
                     let input = match Input::ask(filetype, &permissions, &relative[index], flags) {
