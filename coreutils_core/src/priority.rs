@@ -76,6 +76,10 @@ pub fn get_priority(which: c_int, who: id_t) -> Result<c_int, Error> {
 /// the specified processes.
 #[cfg(target_os = "linux")]
 pub fn get_priority(which: c_uint, who: id_t) -> Result<c_int, Error> {
+    #[cfg(target_env = "musl")]
+    let res = unsafe { getpriority(which as c_int, who) };
+
+    #[cfg(not(target_env = "musl"))]
     let res = unsafe { getpriority(which, who) };
 
     if IOError::last_os_error().raw_os_error().unwrap() != 0 {
@@ -112,6 +116,10 @@ pub fn set_priority(which: c_int, who: id_t, prio: c_int) -> Result<(), Error> {
 /// Set the priority of a specified process.
 #[cfg(target_os = "linux")]
 pub fn set_priority(which: c_uint, who: id_t, prio: c_int) -> Result<(), Error> {
+    #[cfg(target_env = "musl")]
+    let res = unsafe { setpriority(which as c_int, who, prio) };
+
+    #[cfg(not(target_env = "musl"))]
     let res = unsafe { setpriority(which, who, prio) };
 
     if res < 0 {
