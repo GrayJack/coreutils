@@ -45,6 +45,7 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |   chmod  |      X      |         |      |
 |   chown  |      X      |         |      |
 |  chroot  |      X      |         |      |
+|   clear  |             |         |   X  |
 |   comm   |      X      |         |      |
 |    cp    |      X      |         |      |
 |  csplit  |      X      |         |      |
@@ -56,7 +57,7 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |  dirname |             |         |   X  |
 |    du    |      X      |         |      |
 |   echo   |             |         |   X  |
-|    env   |      X      |         |      |
+|    env   |             |         |   X  |
 |  expand  |      X      |         |      |
 |   expr   |      X      |         |      |
 |   false  |             |         |   X  |
