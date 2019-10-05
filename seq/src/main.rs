@@ -26,7 +26,6 @@ impl Add for Number {
 
     fn add(self, other: Self) -> Self {
         match (self, other) {
-            (NaN, _) | (_, NaN) => NaN,
             (Num(left), Num(right)) => match left.checked_add(right) {
                 Some(next_dec) => Num(next_dec),
                 None => {
@@ -39,9 +38,9 @@ impl Add for Number {
                     }
                 },
             },
+            (NaN, _) | (_, NaN) | (PosInf, NegInf) | (NegInf, PosInf) => NaN,
             (PosInf, PosInf) | (PosInf, Num(_)) | (Num(_), PosInf) => PosInf,
-            (NegInf, NegInf) | (NegInf, Num(_)) | (Num(_), NegInf) => NegInf,
-            (PosInf, NegInf) | (NegInf, PosInf) => NaN
+            (NegInf, NegInf) | (NegInf, Num(_)) | (Num(_), NegInf) => NegInf
         }
     }
 }
@@ -54,8 +53,9 @@ impl PartialOrd for Number {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match (self, other) {
             (Num(left_dec), Num(right_dec)) => Some(left_dec.cmp(right_dec)),
-            (PosInf, PosInf) | (NegInf, NegInf) | (NaN, NaN) => Some(Equal),
+            (NaN, NaN) => Some(Equal),
             (NaN, _) | (_, NaN) => None,
+            (PosInf, PosInf) | (NegInf, NegInf) => Some(Equal),
             (NegInf, PosInf) | (Num(_), PosInf) | (NegInf, Num(_)) => Some(Less),
             (PosInf, NegInf) | (PosInf, Num(_)) | (Num(_), NegInf) => Some(Greater)
         }
@@ -138,6 +138,7 @@ fn argument_error(field: &str) -> impl Fn(()) -> f64 + '_ {
 
 const DEFAULT_FIRST: &str = "1";
 const DEFAULT_INCREMENT: &str = "1";
+const DEFAULT_SEPARATOR: &str = "\n";
 
 fn main() {
     let yaml = load_yaml!("seq.yml");
@@ -159,6 +160,8 @@ fn main() {
         }
     };
 
+    let separator = matches.value_of("SEPARATOR").unwrap_or(DEFAULT_SEPARATOR);
+
     let first = parse_number(raw_first)
         .and_then(check_nan)
         .unwrap_or_else(argument_error("FIRST"));
@@ -172,13 +175,18 @@ fn main() {
         .and_then(check_zero)
         .unwrap_or_else(argument_error("INCREMENT"));
 
-    let iter = Seq {
+    let mut iter = (Seq {
         current: Number::from(first),
         stop:    Number::from(last),
         step:    Number::from(increment)
-    };
+    })
+    .peekable();
 
-    for index in iter {
-        println!("{}", index);
+    while let Some(index) = iter.next() {
+        if *&iter.peek().is_some() {
+            print!("{}{}", index, separator);
+        } else {
+            println!("{}", index);
+        }
     }
 }

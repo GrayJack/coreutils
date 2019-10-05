@@ -11,6 +11,22 @@ usage: >
 
   [OPTIONS] <FIRST> <INCREMENT> <LAST>
 args:
+    - FORMAT:
+        short: "f"
+        long: "format"
+        help: "Use printf style floating-point FORMAT"
+        takes_value: true
+    - SEPARATOR:
+        short: "s"
+        long: "separator"
+        help: "Use STRING to separate numbers"
+        default_value: "\n"
+        takes_value: true
+    - WIDTH:
+        short: "w"
+        long: "equal-width"
+        help: "Equalize width by padding with leading zeroes"
+        takes_value: false
     - FIRST:
         help: "The initial number to start the sequence."
         long_help: >
