@@ -20,14 +20,14 @@ fn main() {
                         _ => {
                             eprintln!("pwd: Failed to get absolute current directory.");
                             process::exit(1);
-                        }
+                        },
                     }
                 }
-            }
+            },
             Err(e) => {
                 eprintln!("pwd: Failed to get current directory. {:#?}", e);
                 process::exit(1);
-            }
+            },
         }
     };
 

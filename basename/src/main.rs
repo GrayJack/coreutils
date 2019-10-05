@@ -13,11 +13,7 @@ fn main() {
         ""
     };
 
-    let line_ending = if matches.is_present("zero") {
-        '\0'
-    } else {
-        '\n'
-    };
+    let line_ending = if matches.is_present("zero") { '\0' } else { '\n' };
 
     if !multiple_paths {
         let path = matches.value_of("NAME").unwrap();
@@ -66,19 +62,13 @@ mod tests {
 
     #[test]
     fn basename_empty_suffix_file() {
-        assert_eq!(
-            "image.jpg".to_string(),
-            basename("~/Pictures/image.jpg", "")
-        );
+        assert_eq!("image.jpg".to_string(), basename("~/Pictures/image.jpg", ""));
         assert_eq!("doc.pdf".to_string(), basename("~/Documents/doc.pdf", ""));
     }
 
     #[test]
     fn basename_suffix_file() {
-        assert_eq!(
-            "image".to_string(),
-            basename("~/Pictures/image.jpg", ".jpg")
-        );
+        assert_eq!("image".to_string(), basename("~/Pictures/image.jpg", ".jpg"));
         assert_eq!("doc".to_string(), basename("~/Documents/doc.pdf", ".pdf"));
     }
 

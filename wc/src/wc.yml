@@ -1,0 +1,34 @@
+name: echo
+version: "0.0.0"
+author: Giacomo Parolini <silverweed1991@gmail.com>
+about: "Display newline, word and byte counts for each FILE, and a total line if more than one FILE is specified. A word is a non-zero-length sequence of characters delimited by white space.\n\nWith no FILE, or when FILE is -, read standard input."
+args:
+    - FILE:
+        help: One or more file names.
+        required: false
+        multiple: true
+    - bytes:
+        long: bytes
+        short: c
+        help: Display the byte counts
+    - chars:
+        long: chars
+        short: m
+        help: Display the character counts
+    - lines:
+        long: lines
+        short: l
+        help: Display the newline counts
+    - max-line-length:
+        long: max-line-length
+        short: L
+        help: Display the maximum display width
+    - words:
+        long: words
+        short: w
+        help: Display the word counts
+    - pretty:
+        long: pretty
+        short: p
+        help: Output results in a more human readable format
+

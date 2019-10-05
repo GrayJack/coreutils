@@ -16,10 +16,10 @@ use std::{
 use std::convert::TryInto;
 
 use libc::{getegid, getgrgid_r, getgrnam_r, getgroups};
+#[cfg(not(target_os = "solaris"))]
+use libc::{getgrouplist, getpwnam_r};
 #[cfg(target_os = "solaris")]
 use libc::{sysconf, _SC_NGROUPS_MAX};
-#[cfg(not(target_os = "solaris"))]
-use libc::{getgrouplist, getpwnam};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -29,10 +29,7 @@ use crate::{passwd::Error as PwError, types::Gid};
 #[cfg(target_os = "solaris")]
 extern "C" {
     fn _getgroupsbymember(
-        username: *const c_char,
-        glist: *mut Gid,
-        maxids: c_int,
-        numgids: c_int,
+        username: *const c_char, glist: *mut Gid, maxids: c_int, numgids: c_int,
     ) -> c_int;
 }
 
@@ -67,14 +64,19 @@ impl Display for Error {
         match self {
             GetGroupFailed(fn_name, err_code) => write!(
                 f,
-                "Failed to get group with the following error code: {}. For more info search for the {} manual",
+                "Failed to get group with the following error code: {}. For more info search for \
+                 the {} manual",
                 err_code, fn_name
             ),
             NameCheckFailed => write!(f, "Group name check failed, `.gr_name` field is null"),
             PasswdCheckFailed => write!(f, "Group passwd check failed, `.gr_passwd` is null"),
             GroupNotFound => write!(f, "Group was not found in the system"),
-            Io(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
-            Passwd(err) => write!(f, "The following error hapenned trying to get all `Groups`: {}", err),
+            Io(err) => {
+                write!(f, "The following error hapenned trying to get all `Groups`: {}", err)
+            },
+            Passwd(err) => {
+                write!(f, "The following error hapenned trying to get all `Groups`: {}", err)
+            },
         }
     }
 }
@@ -90,15 +92,11 @@ impl StdError for Error {
 }
 
 impl From<IoError> for Error {
-    fn from(err: IoError) -> Error {
-        Io(err)
-    }
+    fn from(err: IoError) -> Error { Io(err) }
 }
 
 impl From<PwError> for Error {
-    fn from(err: PwError) -> Error {
-        Passwd(Box::new(err))
-    }
+    fn from(err: PwError) -> Error { Passwd(Box::new(err)) }
 }
 
 /// This struct holds information about a group of UNIX/UNIX-like systems.
@@ -128,13 +126,7 @@ impl Group {
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
         let res = unsafe {
-            getgrgid_r(
-                getegid(),
-                gr.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut gr_ptr,
-            )
+            getgrgid_r(getegid(), gr.as_mut_ptr(), &mut buff[0], buff.len(), &mut gr_ptr)
         };
 
         if gr_ptr.is_null() {
@@ -180,12 +172,7 @@ impl Group {
             Members::new()
         };
 
-        Ok(Group {
-            name,
-            id,
-            passwd,
-            mem,
-        })
+        Ok(Group { name, id, passwd, mem })
     }
 
     /// Creates a `Group` using a `id` to get all attributes.
@@ -247,12 +234,7 @@ impl Group {
             Members::new()
         };
 
-        Ok(Group {
-            name,
-            id,
-            passwd,
-            mem,
-        })
+        Ok(Group { name, id, passwd, mem })
     }
 
     /// Creates a `Group` using a `name` to get all attributes.
@@ -318,37 +300,24 @@ impl Group {
             Members::new()
         };
 
-        Ok(Group {
-            name,
-            id,
-            passwd,
-            mem,
-        })
+        Ok(Group { name, id, passwd, mem })
     }
 
     /// Get the `Group` name.
     #[inline]
-    pub fn name(&self) -> &BStr {
-        &self.name.as_bstr()
-    }
+    pub fn name(&self) -> &BStr { &self.name.as_bstr() }
 
     /// Get the `Group` id.
     #[inline]
-    pub fn id(&self) -> Gid {
-        self.id
-    }
+    pub fn id(&self) -> Gid { self.id }
 
     /// Get the `Group` encrypted password.
     #[inline]
-    pub fn passwd(&self) -> &BStr {
-        &self.passwd.as_bstr()
-    }
+    pub fn passwd(&self) -> &BStr { &self.passwd.as_bstr() }
 
     /// Get the `Group` list of members.
     #[inline]
-    pub fn mem(&self) -> &Members {
-        &self.mem
-    }
+    pub fn mem(&self) -> &Members { &self.mem }
 }
 
 /// A collection of `Group`.
@@ -360,15 +329,14 @@ pub struct Groups {
 impl Groups {
     /// Creates a empty new `Groups`.
     #[inline]
-    pub fn new() -> Self {
-        Groups { iter: Vec::new() }
-    }
+    pub fn new() -> Self { Groups { iter: Vec::new() } }
 
     /// Get all the process caller groups
     pub fn caller() -> Result<Self> {
         // First we check if we indeed have groups.
-        // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary group
-        // IDs associated with the calling process without modifying the array pointed to by grouplist."
+        // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary
+        // group IDs associated with the calling process without modifying the array
+        // pointed to by grouplist."
         let num_groups = unsafe { getgroups(0, ptr::null_mut()) };
         if num_groups == -1 {
             return Err(Io(IoError::last_os_error()));
@@ -407,9 +375,27 @@ impl Groups {
         let mut res = 0;
         #[cfg(not(any(target_os = "macos", target_os = "solaris")))]
         unsafe {
-            let passwd = getpwnam(username.as_ptr() as *const c_char);
+            let mut passwd = MaybeUninit::zeroed();
+            let mut pw_ptr = ptr::null_mut();
+            let mut buff = [0; 16384];
 
-            let gid = (*passwd).pw_gid;
+            let res_pwnam =
+                getpwnam_r(name, passwd.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr);
+
+            if pw_ptr.is_null() {
+                if res == 0 {
+                    return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                } else {
+                    return Err(Passwd(Box::new(PwError::GetPasswdFailed(
+                        String::from("getpwnam_r"),
+                        res_pwnam,
+                    ))));
+                }
+            }
+
+            let passwd = passwd.assume_init();
+
+            let gid = passwd.pw_gid;
 
             if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
@@ -419,16 +405,30 @@ impl Groups {
         }
         #[cfg(target_os = "macos")]
         unsafe {
-            let passwd = getpwnam(username.as_ptr() as *const c_char);
+            let mut passwd = MaybeUninit::zeroed();
+            let mut pw_ptr = ptr::null_mut();
+            let mut buff = [0; 16384];
 
-            let gid = (*passwd).pw_gid;
+            let res_pwnam =
+                getpwnam_r(name, passwd.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr);
 
-            if getgrouplist(
-                name,
-                gid.try_into().unwrap(),
-                groups_ids.as_mut_ptr(),
-                &mut num_gr,
-            ) == -1
+            if pw_ptr.is_null() {
+                if res == 0 {
+                    return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                } else {
+                    return Err(Passwd(Box::new(PwError::GetPasswdFailed(
+                        String::from("getpwnam_r"),
+                        res_pwnam,
+                    ))));
+                }
+            }
+
+            let passwd = passwd.assume_init();
+
+            let gid = passwd.pw_gid;
+
+            if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr)
+                == -1
             {
                 groups_ids.resize(num_gr as usize, 0);
                 res = getgrouplist(
@@ -477,29 +477,21 @@ impl Groups {
 
     /// Insert as `Group` on `Groups`.
     #[inline]
-    pub fn push(&mut self, value: Group) {
-        self.iter.push(value);
-    }
+    pub fn push(&mut self, value: Group) { self.iter.push(value); }
 
     /// Return `true` if `Groups` contains 0 elements.
     #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.iter.is_empty()
-    }
+    pub fn is_empty(&self) -> bool { self.iter.is_empty() }
 
     /// Transform `Groups` to a Vector of `Group`.
     #[inline]
-    pub fn into_vec(self) -> Vec<Group> {
-        self.iter
-    }
+    pub fn into_vec(self) -> Vec<Group> { self.iter }
 }
 
 impl IntoIterator for Groups {
-    type Item = Group;
     type IntoIter = std::vec::IntoIter<Group>;
+    type Item = Group;
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter.into_iter()
-    }
+    fn into_iter(self) -> Self::IntoIter { self.iter.into_iter() }
 }

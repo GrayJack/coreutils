@@ -1,20 +1,24 @@
 [workspace]
 members = [
+    "clear",
     "coreutils_core",
     "basename",
     "dirname",
     "date",
     "echo",
+    "env",
     "false",
     "groups",
     "id",
     "logname",
     "nice",
     "pwd",
+    "rm",
     "sleep",
     "true",
     "whoami",
     "uname",
     "tty",
-    "yes"
+    "wc",
+    "yes",
 ]

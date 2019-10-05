@@ -13,7 +13,7 @@ fn main() {
         Err(_) => {
             eprintln!("whoami: Failed to get user");
             process::exit(1);
-        }
+        },
     };
 
     // If user name in Passwd is empty, check for environment variable USER.

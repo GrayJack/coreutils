@@ -25,7 +25,7 @@ fn main() {
         Err(err) => {
             eprintln!("uname: {}", err);
             process::exit(1);
-        }
+        },
     };
 
     if let (false, false, false, false, false, false, false, false) = (
@@ -39,12 +39,12 @@ fn main() {
         processor_flag,
     ) {
         println!("{}", uts_name.system_name());
-        return
+        return;
     }
 
     if all_flag {
         println!("{} {}", uts_name, HOST_OS);
-        return
+        return;
     }
 
     if sysname_flag {

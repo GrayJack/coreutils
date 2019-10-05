@@ -34,16 +34,12 @@ impl Display for Error {
 
 impl From<VarError> for Error {
     #[inline]
-    fn from(err: VarError) -> Error {
-        Error::Var(err)
-    }
+    fn from(err: VarError) -> Error { Error::Var(err) }
 }
 
 impl From<IoError> for Error {
     #[inline]
-    fn from(err: IoError) -> Error {
-        Error::Io(err)
-    }
+    fn from(err: IoError) -> Error { Error::Io(err) }
 }
 
 impl StdError for Error {
@@ -56,8 +52,8 @@ impl StdError for Error {
     }
 }
 
-/// Get the logical path of the current directory wrapped on a `Ok` if successful, returns a Err
-/// holding the error that occurred.
+/// Get the logical path of the current directory wrapped on a `Ok` if successful, returns
+/// a Err holding the error that occurred.
 pub fn current_dir_logical() -> Result<PathBuf> {
     let pwd = env::var("PWD")?;
 
