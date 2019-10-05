@@ -9,6 +9,7 @@ args:
         multiple: true
     - ignore-fail-nonempty:
         long: ignore-fail-on-nonempty
+        short: I
         help: Ignore each failure that is solely because a directory is non-empty
     - parents: 
         long: parents
