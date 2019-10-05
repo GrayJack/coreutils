@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+rust_decimal = "^1.0.3"
 
 [build-dependencies]
 clap = { version = "^2.33.0", features = ["yaml"] }
