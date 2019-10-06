@@ -1,12 +1,9 @@
-use std::{
-    os::{
-        raw::c_int,
-        unix::process::CommandExt,
-    },
-    process::{self, Command},
-};
 #[cfg(target_os = "linux")]
 use std::os::raw::c_uint;
+use std::{
+    os::{raw::c_int, unix::process::CommandExt},
+    process::{self, Command},
+};
 
 use coreutils_core::priority::{get_priority, set_priority, PRIO_PROCESS};
 
@@ -28,7 +25,7 @@ fn main() {
             Err(err) => {
                 eprintln!(r"{} is not a valid number. Err: {}", str_n, err);
                 process::exit(125);
-            }
+            },
         }
     } else {
         10
@@ -47,7 +44,7 @@ fn main() {
             eprintln!("nice: {}", err);
             drop(args);
             process::exit(125);
-        }
+        },
     };
 
     niceness += adjustment;
@@ -60,7 +57,9 @@ fn main() {
 
     let err = Command::new(command).args(args).exec();
 
-    if err.raw_os_error().unwrap() as c_int == 2 /*ENOENT*/ {
+    if err.raw_os_error().unwrap() as c_int == 2
+    // ENOENT
+    {
         eprintln!("nice: '{}': {}", command, err);
         process::exit(127);
     } else {

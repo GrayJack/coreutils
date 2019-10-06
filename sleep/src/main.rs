@@ -12,16 +12,13 @@ fn main() {
         None => {
             eprintln!("sleep: Missing operand.\nTry 'sleep --help' for more information.");
             process::exit(1);
-        }
+        },
     };
 
     let total: u64 = numbers.filter_map(|s| s.parse::<u64>().ok()).sum();
 
-    let suffix = if matches.is_present("suffix") {
-        matches.value_of("suffix").unwrap()
-    } else {
-        "s"
-    };
+    let suffix =
+        if matches.is_present("suffix") { matches.value_of("suffix").unwrap() } else { "s" };
 
     match suffix {
         "s" | "sec" => sleep!(total sec),
@@ -29,10 +26,13 @@ fn main() {
         "h" | "hour" => {
             let total = 60 * total;
             sleep!(total min)
-        }
+        },
         _ => {
-            eprintln!("sleep: Invalid suffix value. It must be 'sec', 'min', 'hour', 's', 'm' or 'h'.\nFor more information, try 'sleep --help'.");
+            eprintln!(
+                "sleep: Invalid suffix value. It must be 'sec', 'min', 'hour', 's', 'm' or \
+                 'h'.\nFor more information, try 'sleep --help'."
+            );
             process::exit(1);
-        }
+        },
     }
 }

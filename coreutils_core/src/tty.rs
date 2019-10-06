@@ -26,20 +26,16 @@ impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::NotTTY => write!(f, "Not a TTY"),
-            Self::LibcCall(fn_name, err_code) => write!(
-                f,
-                "Failed calling {} with this error code: {}",
-                fn_name, err_code
-            ),
+            Self::LibcCall(fn_name, err_code) => {
+                write!(f, "Failed calling {} with this error code: {}", fn_name, err_code)
+            },
         }
     }
 }
 
 impl StdError for Error {
     #[inline]
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        None
-    }
+    fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
 }
 
 /// A struct that holds the name of a TTY with a `Display` trait implementation
@@ -65,9 +61,7 @@ impl TTYName {
 
 impl Display for TTYName {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 /// Check if the given `FileDescriptor` is a TTY
