@@ -1,0 +1,21 @@
+name: rmdir 
+version: "0.0.0"
+author: Giacomo Parolini <silverweed1991@gmail.com>
+about: "Remove empty directories\n\n"
+args:
+    - DIRECTORY:
+        help: The directory(ies) to be removed
+        required: true
+        multiple: true
+    - ignore-fail-nonempty:
+        long: ignore-fail-on-nonempty
+        short: I
+        help: Ignore each failure that is solely because a directory is non-empty
+    - parents: 
+        long: parents
+        short: p
+        help: Remove DIRECTORY and its ancestors.
+    - verbose:
+        long: verbose
+        short: v
+        help: Output a diagnostic for every directory processed
