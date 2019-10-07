@@ -1,83 +1,133 @@
-use std::io;
-use std::process;
+use std::{
+    env::current_dir,
+    fs, io,
+    path::{Path, PathBuf},
+    process,
+};
 
 use clap::{load_yaml, App, ArgMatches};
-
-const F_IGNORE_FAIL_ON_NONEMPTY: u8 = 0x1;
-const F_PARENTS: u8 = 0x2;
-const F_VERBOSE: u8 = 0x4;
 
 fn main() {
     let yaml = load_yaml!("rmdir.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
-    let directories: Vec<String> = {
-        // Safe to unwrap since we said it is required on clap yaml
-        let values = matches.values_of("DIRECTORY").unwrap();
-        let mut v = Vec::new();
-        for value in values {
-            v.push(value.to_owned());
-        }
-        v
+    let pwd = match current_dir() {
+        Ok(path) => path,
+        Err(err) => {
+            eprintln!("rmdir: error reading current working directory: {}", err);
+            process::exit(1);
+        },
     };
 
-    let flags = parse_flags(&matches);
+    let dirs: Vec<PathBuf> = matches.values_of("DIRECTORY").unwrap().map(PathBuf::from).collect();
+
+    let flags = RmDirFlags::from_matches(&matches);
     let mut ret_val = 0;
 
-    for dir in &directories {
-        if let Err(err) = rmdir(dir, flags) {
-            eprintln!("rmdir: failed to remove '{}': {}", dir, err);
+    for dir in dirs {
+        if rmdir(&dir, &pwd, flags).is_err(){
             ret_val = 1;
-        }
+        };
     }
 
-    drop(directories);
     process::exit(ret_val);
 }
 
-fn parse_flags(matches: &ArgMatches<'_>) -> u8 {
-    let mut flags = 0;
-
-    if matches.is_present("ignore-fail-nonempty") {
-        flags |= F_IGNORE_FAIL_ON_NONEMPTY;
-    }
-
-    if matches.is_present("parents") {
-        flags |= F_PARENTS;
-    }
-
-    if matches.is_present("verbose") {
-        flags |= F_VERBOSE;
-    }
-
-    flags
+#[derive(Clone, Copy, Debug)]
+struct RmDirFlags {
+    verbose: bool,
+    parents: bool,
+    ignore:  bool,
 }
 
-fn rmdir(dirname: &str, flags: u8) -> io::Result<()> {
-    use std::fs;
-    use std::path::PathBuf;
-
-    if (flags & F_VERBOSE) != 0 {
-        eprintln!("rmdir: removing directory, '{}'", dirname);
+impl RmDirFlags {
+    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+        RmDirFlags {
+            verbose: matches.is_present("verbose"),
+            parents: matches.is_present("parents"),
+            ignore:  matches.is_present("ignore-fail-nonempty"),
+        }
     }
+}
 
-    let mut path = PathBuf::from(dirname);
-
-    if (flags & F_IGNORE_FAIL_ON_NONEMPTY) != 0 {
-        fs::remove_dir_all(&path)?;
-    } else {
-        fs::remove_dir(&path)?;
-    }
-
-    if (flags & F_PARENTS) != 0 {
+fn rmdir(dir: &PathBuf, pwd: &PathBuf, flags: RmDirFlags) -> io::Result<()> {
+    if flags.parents {
+        let empty_path = Path::new("");
+        let mut path = dir.clone();
         loop {
-            if !path.pop() {
-                break; // there are no more parents
+            if path == empty_path {
+                return Ok(()); // there are no more parents
             }
 
-            if let Err(err) = fs::remove_dir(&path) {
-                return Err(err);
+            // For verbose we display the full path
+            if flags.verbose {
+                println!("rmdir: removing directory '{}'", pwd.join(&path).display());
             }
+
+            if flags.ignore {
+                match fs::remove_dir_all(&path) {
+                    Ok(_) => {
+                        if flags.verbose {
+                            println!(
+                                "rmdir: removed all {} directory content",
+                                pwd.join(&path).display()
+                            );
+                        }
+                    },
+                    Err(err) => {
+                        eprintln!("rmdir: failed to remove '{}': {}", pwd.join(&path).display(), err);
+                        return Err(err);
+                    },
+                }
+            } else {
+                match fs::remove_dir(&path) {
+                    Ok(_) => {
+                        if flags.verbose {
+                            println!("rmdir: removed directory {}", pwd.join(&path).display());
+                        }
+                    },
+                    Err(err) => {
+                        eprintln!("rmdir: failed to remove '{}': {}", pwd.join(&path).display(), err);
+                        return Err(err)
+                    },
+                }
+            }
+
+            if !path.pop() {
+                return Ok(()); // there are no more parents
+            }
+        }
+    } else if !flags.parents && flags.ignore {
+        if flags.verbose {
+            println!("rmdir: removing directory '{}'", pwd.join(dir).display());
+        }
+
+        match fs::remove_dir_all(&dir) {
+            Ok(_) => {
+                if flags.verbose {
+                    println!("rmdir: removed all {} directory content", pwd.join(dir).display());
+                }
+            },
+            Err(err) => {
+                eprintln!("rmdir: failed to remove '{}': {}", pwd.join(&dir).display(), err);
+                return Err(err)
+            },
+        }
+    } else {
+        if flags.verbose {
+            println!("rmdir: removing directory '{}'", pwd.join(dir).display());
+        }
+
+        match fs::remove_dir(&dir) {
+            Ok(_) => {
+                if flags.verbose {
+                    println!("rmdir: removed directory {}", pwd.join(dir).display());
+                }
+            },
+            Err(err) => {
+                eprintln!("rmdir: failed to remove '{}': {}", pwd.join(&dir).display(), err);
+                return Err(err)
+            },
         }
     }
 
