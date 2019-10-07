@@ -5,14 +5,6 @@ use std::{
 
 use clap::{load_yaml, App, ArgMatches};
 
-const F_PRINT_LINES: u8 = 0x1;
-const F_PRINT_WORDS: u8 = 0x2;
-const F_PRINT_CHARS: u8 = 0x4;
-const F_PRINT_BYTES: u8 = 0x8;
-const F_PRINT_MAX_LINE_LEN: u8 = 0x10;
-const F_PRETTY_PRINT: u8 = 0x20;
-const DEFAULT_FLAGS: u8 = F_PRINT_LINES | F_PRINT_WORDS | F_PRINT_CHARS;
-
 fn main() {
     let yaml = load_yaml!("wc.yml");
     let matches = App::from_yaml(yaml).get_matches();
@@ -29,16 +21,16 @@ fn main() {
         }
     };
 
-    let flags = parse_flags(&matches);
+    let flags = WcFlags::from_matches(&matches);
 
     let mut total_result = WcResult::default();
     for filename in &filenames {
         let result = if filename == "-" {
             let stdin = io::stdin();
-            wc(stdin.lock(), flags)
+            wc(stdin.lock())
         } else {
             match File::open(filename) {
-                Ok(file) => wc(file, flags),
+                Ok(file) => wc(file),
                 Err(err) => Err(err),
             }
         };
@@ -46,14 +38,58 @@ fn main() {
         match result {
             Err(err) => eprintln!("wc: {}: {}", filename, err),
             Ok(result) => {
-                println!("{}", get_formatted_result(filename, &result));
+                println!("{}", get_formatted_result(filename, &result, flags));
                 total_result = total_result.combine(result);
             },
         }
     }
 
     if filenames.len() > 1 {
-        println!("{}", get_formatted_result("total", &total_result));
+        println!("{}", get_formatted_result("total", &total_result, flags));
+    }
+}
+
+#[derive(Default, Copy, Clone)]
+struct WcFlags {
+    print_bytes: bool,
+    print_chars: bool,
+    print_lines: bool,
+    print_words: bool,
+    print_max_line_len: bool,
+    pretty: bool,
+}
+
+impl WcFlags {
+    fn new() -> Self {
+        WcFlags {
+            print_bytes: false,
+            print_chars: true,
+            print_lines: true,
+            print_words: true,
+            print_max_line_len: false,
+            pretty: false,
+        }
+    }
+
+    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+        let print_bytes = matches.is_present("bytes");
+        let print_chars = matches.is_present("chars");
+        let print_lines = matches.is_present("lines");
+        let print_words = matches.is_present("words");
+        let print_max_line_len = matches.is_present("max-line-length");
+        let pretty = matches.is_present("pretty");
+
+        if !print_bytes
+            && !print_chars
+            && !print_lines
+            && !print_words
+            && !print_max_line_len
+            && !pretty
+        {
+            return Self::new();
+        }
+
+        WcFlags { print_bytes, print_chars, print_lines, print_words, print_max_line_len, pretty }
     }
 }
 
@@ -64,26 +100,24 @@ struct WcResult {
     chars: u64,
     bytes: u64,
     max_line_len: u32,
-    flags: u8,
 }
 
 impl WcResult {
-    fn combine(self, other: WcResult) -> WcResult {
+    fn combine(self, other: WcResult) -> Self {
         WcResult {
             lines: self.lines + other.lines,
             words: self.words + other.words,
             chars: self.chars + other.chars,
             bytes: self.bytes + other.bytes,
             max_line_len: self.max_line_len.max(other.max_line_len),
-            flags: self.flags | other.flags,
         }
     }
 }
 
-fn wc<R: Read>(stream: R, flags: u8) -> Result<WcResult, io::Error> {
+fn wc<R: Read>(stream: R) -> Result<WcResult, io::Error> {
     let reader = BufReader::new(stream);
 
-    let mut result = WcResult { flags, ..Default::default() };
+    let mut result = WcResult::default();
 
     for line in reader.lines() {
         let line = line?;
@@ -117,8 +151,7 @@ fn wc<R: Read>(stream: R, flags: u8) -> Result<WcResult, io::Error> {
     Ok(result)
 }
 
-fn get_formatted_result(filename: &str, result: &WcResult) -> String {
-    let flags = result.flags;
+fn get_formatted_result(filename: &str, result: &WcResult, flags: WcFlags) -> String {
     let mut s = String::with_capacity(64);
 
     fn push_unpretty_res<T: ToString>(_name: &str, out: &mut String, result: T) {
@@ -133,62 +166,32 @@ fn get_formatted_result(filename: &str, result: &WcResult) -> String {
         out.push_str(&result.to_string());
     }
 
-    let pretty_print = (flags & F_PRETTY_PRINT) != 0;
+    let push = if flags.pretty { push_pretty_res } else { push_unpretty_res };
 
-    let push = if pretty_print { push_pretty_res } else { push_unpretty_res };
-
-    if pretty_print {
+    if flags.pretty {
         s.push_str(if filename == "-" { "(stdin)" } else { filename });
     }
 
-    if (flags & F_PRINT_LINES) != 0 {
+    if flags.print_lines {
         push("lines", &mut s, result.lines);
     }
-    if (flags & F_PRINT_WORDS) != 0 {
+    if flags.print_words {
         push("words", &mut s, result.words);
     }
-    if (flags & F_PRINT_CHARS) != 0 {
+    if flags.print_chars {
         push("characters", &mut s, result.chars);
     }
-    if (flags & F_PRINT_BYTES) != 0 {
+    if flags.print_bytes {
         push("bytes", &mut s, result.bytes);
     }
-    if (flags & F_PRINT_MAX_LINE_LEN) != 0 {
+    if flags.print_max_line_len {
         push("max line length", &mut s, result.max_line_len.into());
     }
 
-    if filename != "-" && !pretty_print {
+    if filename != "-" && !flags.pretty {
         s.push_str(filename);
     }
     s
-}
-
-fn parse_flags(matches: &ArgMatches<'_>) -> u8 {
-    let mut flags = 0;
-
-    if matches.is_present("bytes") {
-        flags |= F_PRINT_BYTES;
-    }
-    if matches.is_present("chars") {
-        flags |= F_PRINT_CHARS;
-    }
-    if matches.is_present("lines") {
-        flags |= F_PRINT_LINES;
-    }
-    if matches.is_present("max-line-length") {
-        flags |= F_PRINT_MAX_LINE_LEN;
-    }
-    if matches.is_present("words") {
-        flags |= F_PRINT_WORDS;
-    }
-
-    flags = if flags == 0 { DEFAULT_FLAGS } else { flags };
-
-    if matches.is_present("pretty") {
-        flags |= F_PRETTY_PRINT;
-    }
-
-    flags
 }
 
 #[cfg(test)]
@@ -221,28 +224,30 @@ mod tests {
     #[test]
     fn wc_stdin() {
         let test_str = TestReader::new("This is a test string");
-        let res = get_formatted_result(
-            "-",
-            &wc(
-                test_str,
-                F_PRINT_BYTES
-                    | F_PRINT_CHARS
-                    | F_PRINT_LINES
-                    | F_PRINT_WORDS
-                    | F_PRINT_MAX_LINE_LEN,
-            )
-            .unwrap(),
-        );
+        let flags = WcFlags {
+            print_bytes: true,
+            print_chars: true,
+            print_lines: true,
+            print_words: true,
+            print_max_line_len: true,
+            pretty: false,
+        };
+        let res = get_formatted_result("-", &wc(test_str).unwrap(), flags);
         assert_eq!(res, String::from("1 5 22 22 21 "));
     }
 
     #[test]
     fn wc_pretty_print() {
         let test_str = TestReader::new("This is a test string");
-        let res = get_formatted_result(
-            "test",
-            &wc(test_str, F_PRINT_BYTES | F_PRINT_LINES | F_PRETTY_PRINT).unwrap(),
-        );
+        let flags = WcFlags {
+            print_bytes: true,
+            print_chars: false,
+            print_lines: true,
+            print_words: false,
+            print_max_line_len: false,
+            pretty: true,
+        };
+        let res = get_formatted_result("test", &wc(test_str).unwrap(), flags);
         assert_eq!(
             res,
             String::from(
