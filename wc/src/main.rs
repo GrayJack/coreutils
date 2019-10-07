@@ -59,16 +59,16 @@ fn main() {
 
 #[derive(Default)]
 struct WcResult {
-    pub lines: u64,
-    pub words: u64,
-    pub chars: u64,
-    pub bytes: u64,
-    pub max_line_len: u32,
-    pub flags: u8,
+    lines: u64,
+    words: u64,
+    chars: u64,
+    bytes: u64,
+    max_line_len: u32,
+    flags: u8,
 }
 
 impl WcResult {
-    pub fn combine(self, other: WcResult) -> WcResult {
+    fn combine(self, other: WcResult) -> WcResult {
         WcResult {
             lines: self.lines + other.lines,
             words: self.words + other.words,
@@ -201,7 +201,7 @@ mod tests {
     }
 
     impl<'a> TestReader<'a> {
-        pub fn new(s: &'a str) -> Self { TestReader { buf: s, i: 0 } }
+        fn new(s: &'a str) -> Self { TestReader { buf: s, i: 0 } }
     }
 
     impl Read for TestReader<'_> {
