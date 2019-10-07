@@ -47,13 +47,9 @@ fn main() {
 
     if !groups.is_empty() {
         if id {
-            for group in groups {
-                print!("{}:{} ", group.name(), group.id());
-            }
+            groups.iter().for_each(|g| print!("{}:{} ", g.name(), g.id()));
         } else {
-            for group in groups {
-                print!("{} ", group.name());
-            }
+            groups.iter().for_each(|g| print!("{} ", g.name()));
         }
     }
     println!();
