@@ -9,6 +9,8 @@ pub mod tty;
 pub mod types;
 pub mod utsname;
 
+// Remove after libc supports utmpx for these plataforms
+#[cfg(not(any(target_os = "netbsd", target_os = "solaris")))]
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
 pub mod utmpx;
 

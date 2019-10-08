@@ -259,6 +259,8 @@ impl UtmpxSet {
         UtmpxSet(set)
     }
 
+    pub fn is_empty(&self) -> bool { self.0.is_empty() }
+
     pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
 }
 
