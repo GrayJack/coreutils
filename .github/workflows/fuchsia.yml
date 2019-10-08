@@ -17,4 +17,6 @@ jobs:
     - name: Install target
       run: rustup target add x86_64-fuchsia
     - name: Check Fuchsia
-      run: cargo check --verbose --target x86_64-fuchsia
+      run: |
+      cp Fuchsia.toml Cargo.toml
+      cargo check --verbose --target x86_64-fuchsia

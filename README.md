@@ -36,6 +36,27 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |  DragonflyBSD | Tier3  | [![DragonflyBSD](https://github.com/GrayJack/coreutils/workflows/DragonflyBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions) | Passing (DragonflyBSD 5.6.2 - 2019-10-01) (202fa79) |
 |  Haiku        | Tier3  | [![Haiku](https://github.com/GrayJack/coreutils/workflows/Haiku/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | - |
 
+## Compilation
+Since not all targets provides full Unix API coverage (cause they aren't Unix) one can provide a manifest that have all utilities that would work on the target
+
+### On UNIX/UNIX-like
+```
+cp Unix.toml Cargo.toml
+cargo build
+```
+
+### On Fuchsia
+```
+cp Fuchsia.toml Cargo.toml
+cargo build
+```
+
+### On Haiku
+```
+cp Haiku.toml Cargo.toml
+cargo build --manifest-path Haiku.toml
+```
+
 ## Tools
 |   Name   | Not Started | Started | Done |
 |:--------:|:-----------:|:-------:|:----:|
@@ -83,7 +104,7 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |  printf  |      X      |         |      |
 |    pwd   |             |         |   X  |
 |    rm    |             |         |   x  |
-|   rmdir  |      X      |         |      |
+|   rmdir  |             |         |   X  |
 |    sed   |      X      |         |      |
 |    seq   |      X      |         |      |
 |   sort   |      X      |         |      |

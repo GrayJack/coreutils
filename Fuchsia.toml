@@ -18,7 +18,6 @@ members = [
     "true",
     "whoami",
     "uname",
-    "users",
     "tty",
     "wc",
     "yes",
