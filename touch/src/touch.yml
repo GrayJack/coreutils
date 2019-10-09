@@ -2,41 +2,35 @@ name: touch
 version: "0.0.0"
 author: Michel Kansou <michel.kansou@outlook.fr>
 about: "Update the access and modification times of each FILE to the current
-  time.
+    time.
 
-  A FILE argument that does not exist is created empty, unless -c or -h
-  is supplied.
+    A FILE argument that does not exist is created empty, unless -c or -h
+    is supplied.
 
-  A FILE argument string of - is handled specially and causes touch to
-  change the times of the file associated with standard output."
+    A FILE argument string of - is handled specially and causes touch to
+    change the times of the file associated with standard output."
 args:
-  - FILE:
-      help: A name of a file to create empty if it does not exist, unless -c or -h is supplied.
-      multiple: true
-      required: true
-  - accesstime:
-      help: Change only the access time
-      short: a
-  - nocreate:
-      help: Do not create any files
-      long: no-create
-      short: c
-  - modification:
-      help: Change only the modification time
-      short: m
-  - time:
-      help:
-        Change the specified WORD to atime to update access time or use equivalent to -a,
-        to update modification time use mtime or equivalent to -m
-      long: time
-      value_name: "WORD"
-  - date:
-      help: Parse STRING and use it instead of current time
-      long: date
-      short: d
-      value_name: STRING
-  - reference:
-      help: Use this file's times instead of current time
-      long: reference
-      short: r
-      value_name: FILE
+    - FILE:
+          help: A name of a file to create empty if it does not exist, unless -c or -h is supplied.
+          multiple: true
+          required: true
+    - accesstime:
+          help: Change only the access time
+          short: a
+    - nocreate:
+          help: Do not create any files
+          long: no-create
+          short: c
+    - modification:
+          help: Change only the modification time
+          short: m
+    - time:
+          help: Change the specified WORD to atime to update access time or use equivalent to -a,
+              to update modification time use mtime or equivalent to -m
+          long: time
+          value_name: "WORD"
+    - date:
+          help: Parse STRING (date format [Y-m-d H:M:S]) and use it instead of current time
+          long: date
+          short: d
+          value_name: STRING
