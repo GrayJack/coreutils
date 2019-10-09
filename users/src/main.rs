@@ -32,7 +32,7 @@ fn main() {
 
     if !uts.is_empty() {
         uts.iter()
-            .filter(|u| u.utmpx_type() == UtmpxType::UserProcess)
+            .filter(|u| u.utype() == UtmpxType::UserProcess)
             .for_each(|u| print!("{} ", u.user()));
 
         println!();

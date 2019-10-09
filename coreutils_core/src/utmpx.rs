@@ -17,6 +17,7 @@ use libc::{endutxent, getutxent, setutxent, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
 
+/// Possible types of a `Utmpx` instance
 #[repr(u16)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum UtmpxType {
@@ -98,6 +99,8 @@ impl From<u16> for UtmpxType {
     }
 }
 
+/// A struct that represents a __user__ account, where user can be humam users or other
+/// parts of the system that requires the usage of account structure, like some daemons
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmpx {
     /// User login name
@@ -116,8 +119,10 @@ pub struct Utmpx {
     timeval: TimeVal, // tv
     #[cfg(target_os = "linux")]
     exit: __exit_status,
+    /// Session ID (used for windowing)
     #[cfg(target_os = "linux")]
     session: i32,
+    /// Session ID (used for windowing)
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     session: u16,
     #[cfg(target_os = "linux")]
@@ -125,6 +130,7 @@ pub struct Utmpx {
 }
 
 impl Utmpx {
+    /// Creates a new `Utmpx` entry from the `C` version of the structure
     pub fn from_c_utmpx(utm: utmpx) -> Self {
         let user = {
             let cstr: String =
@@ -182,23 +188,32 @@ impl Utmpx {
         }
     }
 
+    /// Get user name
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
+    /// Get host name
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
 
+    /// Get the process ID
     pub fn process_id(&self) -> Pid { self.pid }
 
+    /// Get the record ID
     pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
+    /// Get the device name of the entry (usually a tty or console)
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
-    pub fn utmpx_type(&self) -> UtmpxType { self.ut_type }
+    /// Get the type kind if the entry
+    pub fn utype(&self) -> UtmpxType { self.ut_type }
 
+    /// Get the time where the entry was created
     pub fn timeval(&self) -> TimeVal { self.timeval }
 
+    /// Get the session ID
     #[cfg(target_os = "linux")]
     pub fn session(&self) -> i32 { self.session }
 
+    /// Get the session ID
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     pub fn session(&self) -> u16 { self.session }
 
@@ -206,10 +221,12 @@ impl Utmpx {
     pub fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
 }
 
+/// A collection of Utmpx entries
 #[derive(Debug)]
 pub struct UtmpxSet(HashSet<Utmpx>);
 
 impl UtmpxSet {
+    /// Creates a new collection over a utmpx entry binary file
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn from_file(file: &CStr) -> io::Result<Self> {
         let mut set = HashSet::new();
@@ -237,6 +254,7 @@ impl UtmpxSet {
         Ok(UtmpxSet(set))
     }
 
+    /// Creates a new collection geting all entries from the running system
     pub fn system() -> Self {
         let mut set = HashSet::new();
 
@@ -259,8 +277,10 @@ impl UtmpxSet {
         UtmpxSet(set)
     }
 
+    /// Check if collection is empty
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
+    /// Creates a iterator over it's entries
     pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
 }
 
