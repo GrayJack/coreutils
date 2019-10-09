@@ -1,3 +1,4 @@
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::{ffi::CString, process};
 
 use coreutils_core::utmpx::{UtmpxSet, UtmpxType};
@@ -6,11 +7,11 @@ use clap::{load_yaml, App};
 
 fn main() {
     let yaml = load_yaml!("users.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let _matches = App::from_yaml(yaml).get_matches();
 
     #[cfg(any(target_os = "linux", target_os = "macos"))]
-    let uts = if matches.is_present("FILE") {
-        let file = matches.value_of("FILE").unwrap();
+    let uts = if _matches.is_present("FILE") {
+        let file = _matches.value_of("FILE").unwrap();
         let file = match CString::new(file) {
             Ok(s) => s,
             Err(err) => {

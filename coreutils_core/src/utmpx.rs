@@ -1,9 +1,7 @@
 //! Extended account database module
-use std::{
-    collections::{hash_set, HashSet},
-    ffi::CStr,
-    io,
-};
+use std::collections::{hash_set, HashSet};
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use std::{io, ffi::CStr};
 
 use crate::types::{Pid, TimeVal};
 
@@ -49,26 +47,43 @@ pub enum UtmpxType {
     Invalid,
 }
 
-#[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
+#[cfg(target_os = "freebsd")]
 impl From<c_short> for UtmpxType {
     fn from(num: c_short) -> Self {
-        use libc::*;
         match num {
-            EMPTY => Self::Empty,
-            RUN_LVL => Self::RunLevel,
-            BOOT_TIME => Self::BootTime,
-            NEW_TIME => Self::NewTime,
-            OLD_TIME => Self::OldTime,
-            INIT_PROCESS => Self::InitProcess,
-            LOGIN_PROCESS => Self::LoginProcess,
-            USER_PROCESS => Self::UserProcess,
-            DEAD_PROCESS => Self::DeadProcess,
+            0 => Self::Empty,
+            1 => Self::BootTime,
+            2 => Self::OldTime,
+            3 => Self::NewTime,
+            4 => Self::UserProcess,
+            5 => Self::InitProcess,
+            6 => Self::LoginProcess,
+            7 => Self::DeadProcess,
+            8 => Self::ShutdownProcess,
+            _ => Self::Invalid,
+        }
+    }
+}
+
+#[cfg(not(any(target_os = "netbsd", target_os = "dragonfly", target_os = "freebsd")))]
+impl From<c_short> for UtmpxType {
+    fn from(num: c_short) -> Self {
+        match num {
+            0 => Self::Empty,
+            1 => Self::RunLevel,
+            2 => Self::BootTime,
+            3 => Self::NewTime,
+            4 => Self::OldTime,
+            5 => Self::InitProcess,
+            6 => Self::LoginProcess,
+            7 => Self::UserProcess,
+            8 => Self::DeadProcess,
             #[cfg(any(target_os = "linux", target_os = "macos"))]
-            ACCOUNTING => Self::Accounting,
-            #[cfg(any(target_os = "freebsd", target_os = "macos"))]
-            SHUTDOWN_TIME => Self::ShutdownProcess,
+            9 => Self::Accounting,
             #[cfg(target_os = "macos")]
-            SIGNATURE => Self::Signature,
+            10 => Self::Signature,
+            #[cfg(target_os = "macos")]
+            11 => Self::ShutdownProcess,
             _ => Self::Invalid,
         }
     }
@@ -77,23 +92,16 @@ impl From<c_short> for UtmpxType {
 #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
 impl From<u16> for UtmpxType {
     fn from(num: u16) -> Self {
-        use libc::*;
         match num {
-            EMPTY => Self::Empty,
-            RUN_LVL => Self::RunLevel,
-            BOOT_TIME => Self::BootTime,
-            NEW_TIME => Self::NewTime,
-            OLD_TIME => Self::OldTime,
-            INIT_PROCESS => Self::InitProcess,
-            LOGIN_PROCESS => Self::LoginProcess,
-            USER_PROCESS => Self::UserProcess,
-            DEAD_PROCESS => Self::DeadProcess,
-            #[cfg(any(target_os = "linux", target_os = "macos"))]
-            ACCOUNTING => Self::Accounting,
-            #[cfg(any(target_os = "freebsd", target_os = "macos"))]
-            SHUTDOWN_TIME => Self::ShutdownProcess,
-            #[cfg(target_os = "macos")]
-            SIGNATURE => Self::Signature,
+            0 => Self::Empty,
+            1 => Self::RunLevel,
+            2 => Self::BootTime,
+            3 => Self::NewTime,
+            4 => Self::OldTime,
+            5 => Self::InitProcess,
+            6 => Self::LoginProcess,
+            7 => Self::UserProcess,
+            8 => Self::DeadProcess,
             _ => Self::Invalid,
         }
     }
