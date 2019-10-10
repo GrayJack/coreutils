@@ -18,14 +18,14 @@ fn main() {
     };
 
     if files.len() > 0 {
-        touch(&matches, files).unwrap();
+        touch(&matches, &files).unwrap();
     } else {
         eprintln!("touch: a file name is required.\n");
         process::exit(1);
     }
 }
 
-fn touch(matches: &ArgMatches, files: Vec<&str>) -> Result<()> {
+fn touch(matches: &ArgMatches, files: &Vec<&str>) -> Result<()> {
     for filename in files {
         // if file already exist in the current directory
         let file_metadata = metadata(&filename);
@@ -33,7 +33,7 @@ fn touch(matches: &ArgMatches, files: Vec<&str>) -> Result<()> {
         if file_metadata.is_err() && no_create {
             match File::create(&filename) {
                 Ok(_) => (),
-                Err(e) => eprintln!("touch: Failed to create file {} : {}", filename, e),
+                Err(e) => eprintln!("touch: Failed to create file {} : {}", &filename, e),
             }
         } else {
             let date = matches.is_present("date");
@@ -99,91 +99,102 @@ mod tests {
         let matches = ArgMatches::new();
         let files = vec!["file1.rs", "file2.rs"];
 
-        touch(&matches, files).unwrap();
+        match touch(&matches, &files) {
+            Ok(_) => (),
+            Err(e) => eprintln!("touch: Failed to create file {}", e),
+        };
 
         assert_eq!(metadata("file1.rs").is_ok(), true);
         assert_eq!(metadata("file2.rs").is_ok(), true);
-
-        remove_test_files().unwrap();
+        remove_test_files(&files).unwrap();
     }
 
     #[test]
     fn touch_update_existing_files() {
         let matches = ArgMatches::new();
-        let files = vec!["file1.rs", "file2.rs"];
+        let files = vec!["file3.rs", "file4.rs"];
 
-        File::create("file1.rs").unwrap();
-
-        let mut file1_metadata = metadata("file1.rs").unwrap();
+        File::create("file3.rs").unwrap();
+        let file1_metadata = metadata("file3.rs").unwrap();
         let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
         let file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
-        //update file1 and create file2
-        touch(&matches, files).unwrap();
+        //update and create files
+        match touch(&matches, &files) {
+            Ok(_) => (),
+            Err(e) => eprintln!("touch: Failed to create file {}", e),
+        };
 
-        file1_metadata = metadata("file1.rs").unwrap();
-        let new_file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
-        let new_file1_atime = FileTime::from_last_access_time(&file1_metadata);
+        let new_file1_metadata = metadata("file3.rs").unwrap();
+        let new_file1_mtime = FileTime::from_last_modification_time(&new_file1_metadata);
+        let new_file1_atime = FileTime::from_last_access_time(&new_file1_metadata);
         // check that file1 modification time has changed
         assert_ne!(file1_mtime, new_file1_mtime);
 
         //check that file1 access time has changed
         assert_ne!(file1_atime, new_file1_atime);
-        remove_test_files().unwrap();
+
+        remove_test_files(&files).unwrap();
     }
 
     #[test]
     fn touch_update_only_access_time() {
         let yaml = load_yaml!("touch.yml");
-        let matches = App::from_yaml(yaml).get_matches_from(vec!["touch", "-a", "file1.rs"]);
+        let matches =
+            App::from_yaml(yaml).get_matches_from(vec!["touch", "-a", "file5.rs", "file6.rs"]);
 
-        let files = vec!["file1.rs", "file2.rs"];
+        let files = if matches.is_present("FILE") {
+            matches.values_of("FILE").unwrap().collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
 
-        File::create("file1.rs").unwrap();
+        File::create(&files[0]).unwrap();
 
-        let mut file1_metadata = metadata("file1.rs").unwrap();
-        let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
+        let mut file1_metadata = metadata(&files[0]).unwrap();
         let file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
-        //update file1 and create file2
-        touch(&matches, files).unwrap();
+        //update and create files
+        match touch(&matches, &files) {
+            Ok(_) => (),
+            Err(e) => eprintln!("touch: Failed to create file {}", e),
+        };
 
-        file1_metadata = metadata("file1.rs").unwrap();
-        let new_file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
+        file1_metadata = metadata(&files[0]).unwrap();
         let new_file1_atime = FileTime::from_last_access_time(&file1_metadata);
-        // check that file1 modification time didn't changed
-        assert_eq!(file1_mtime, new_file1_mtime);
 
-        //check that file1 access time has changed
+        //check that first file access time has changed
         assert_ne!(file1_atime, new_file1_atime);
-        remove_test_files().unwrap();
+        remove_test_files(&files).unwrap();
     }
 
     #[test]
     fn touch_update_only_modification_time() {
         let yaml = load_yaml!("touch.yml");
-        let matches = App::from_yaml(yaml).get_matches_from(vec!["touch", "-m", "file1.rs"]);
+        let matches =
+            App::from_yaml(yaml).get_matches_from(vec!["touch", "-m", "file7.rs", "file8.rs"]);
 
-        let files = vec!["file1.rs", "file2.rs"];
+        let files = if matches.is_present("FILE") {
+            matches.values_of("FILE").unwrap().collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
 
-        File::create("file1.rs").unwrap();
+        File::create(&files[0]).unwrap();
 
-        let mut file1_metadata = metadata("file1.rs").unwrap();
+        let mut file1_metadata = metadata(&files[0]).unwrap();
         let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
-        let file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
-        //update file1 and create file2
-        touch(&matches, files).unwrap();
+        //update and create files
+        touch(&matches, &files).unwrap();
 
-        file1_metadata = metadata("file1.rs").unwrap();
+        file1_metadata = metadata(&files[0]).unwrap();
         let new_file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
-        let new_file1_atime = FileTime::from_last_access_time(&file1_metadata);
-        // check that file1 modification time has chang
+
+        // check that first file modification time has changed
         assert_ne!(file1_mtime, new_file1_mtime);
 
-        //check that file1 access time didn't changed
-        assert_eq!(file1_atime, new_file1_atime);
-        remove_test_files().unwrap();
+        remove_test_files(&files).unwrap();
     }
 
     #[test]
@@ -192,32 +203,38 @@ mod tests {
         let matches = App::from_yaml(yaml).get_matches_from(vec![
             "touch",
             "-d=2009-01-03 03:13:00",
-            "file1.rs",
+            "file9.rs",
+            "file10.rs",
         ]);
 
-        let files = vec!["file1.rs", "file2.rs"];
+        let files = if matches.is_present("FILE") {
+            matches.values_of("FILE").unwrap().collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
 
-        File::create("file1.rs").unwrap();
+        File::create(&files[0]).unwrap();
 
-        //update file1 and create file2
-        touch(&matches, files).unwrap();
+        //update and create files
+        touch(&matches, &files).unwrap();
 
-        let file1_metadata = metadata("file1.rs").unwrap();
+        let file1_metadata = metadata(&files[0]).unwrap();
         let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
         let time =
             NaiveDateTime::from_timestamp(file1_mtime.unix_seconds(), file1_mtime.nanoseconds());
+
         // check modification and access time is equal 2009-01-03 03:13:00
         assert_eq!(
             time,
             NaiveDateTime::parse_from_str("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S").unwrap()
         );
-        remove_test_files().unwrap();
+        remove_test_files(&files).unwrap();
     }
-
-    fn remove_test_files() -> Result<()> {
-        remove_file("file1.rs")?;
-        remove_file("file2.rs")?;
+    fn remove_test_files(files: &Vec<&str>) -> Result<()> {
+        for filename in files {
+            remove_file(&filename)?;
+        }
         Ok(())
     }
 }
