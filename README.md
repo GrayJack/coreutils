@@ -50,7 +50,7 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |    cp    |      X      |         |      |
 |  csplit  |      X      |         |      |
 |    cut   |      X      |         |      |
-|   date   |      X      |         |      |
+|   date   |             |    X    |      |
 |    dd    |      X      |         |      |
 |    df    |      X      |         |      |
 |   diff   |      X      |         |      |
