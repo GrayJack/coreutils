@@ -16,6 +16,7 @@ args:
           required: true
     - accesstime:
           help: Change only the access time
+          long: atime
           short: a
     - nocreate:
           help: Do not create any files
@@ -23,11 +24,13 @@ args:
           short: c
     - modification:
           help: Change only the modification time
+          long: mtime
           short: m
     - time:
           help: Change the specified WORD to atime to update access time or use equivalent to -a,
               to update modification time use mtime or equivalent to -m
           long: time
+          short: t
           value_name: "WORD"
     - date:
           help: Parse STRING (date format [Y-m-d H:M:S]) and use it instead of current time
