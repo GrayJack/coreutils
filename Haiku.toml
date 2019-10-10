@@ -8,6 +8,7 @@ members = [
     "env",
     "false",
     "groups",
+    "head",
     "id",
     "logname",
     "nice",
