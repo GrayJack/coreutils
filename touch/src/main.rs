@@ -1,10 +1,12 @@
 use chrono::NaiveDateTime;
 use clap::{load_yaml, App, ArgMatches};
 use filetime::{set_file_atime, set_file_mtime, FileTime};
-use std::fs::{metadata, File};
-use std::io::Result;
-use std::process;
-use std::time::SystemTime;
+use std::{
+    fs::{metadata, File},
+    io::Result,
+    process,
+    time::SystemTime,
+};
 
 fn main() {
     let yaml = load_yaml!("touch.yml");
@@ -17,7 +19,7 @@ fn main() {
         Vec::new()
     };
 
-    if files.len() > 0 {
+    if !files.is_empty() {
         touch(&matches, &files).unwrap();
     } else {
         eprintln!("touch: a file name is required.\n");
@@ -39,8 +41,11 @@ fn touch(matches: &ArgMatches, files: &Vec<&str>) -> Result<()> {
             let date = matches.is_present("date");
             if date {
                 let date_value = matches.value_of("date").unwrap();
-                let native_date =
-                    NaiveDateTime::parse_from_str(&date_value, "%Y-%m-%d %H:%M:%S").unwrap();
+                let native_date = NaiveDateTime::parse_from_str(&date_value, "%Y-%m-%d %H:%M:%S")
+                    .unwrap_or_else(|err| {
+                        eprintln!("Problem parsing date arguments: {}", err);
+                        process::exit(1);
+                    });
                 let newfile_time = FileTime::from_unix_time(
                     native_date.timestamp(),
                     native_date.timestamp_subsec_millis(),
@@ -59,11 +64,15 @@ fn update_time(matches: &ArgMatches, path: &str, filetime: FileTime) {
     let access_time = matches.is_present("accesstime");
     let modification = matches.is_present("modification");
     let time = matches.is_present("time");
-    let time_value = matches.value_of("time");
+    let time_value = if time {
+        matches.value_of("time").unwrap()
+    } else {
+        ""
+    };
 
-    if access_time || time && time_value.unwrap() == "atime" {
+    if access_time || time_value == "atime" {
         update_access_time(&path, filetime);
-    } else if modification || time && time_value.unwrap() == "mtime" {
+    } else if modification || time_value == "mtime" {
         update_modification_time(&path, filetime);
     } else {
         update_access_time(&path, filetime);
