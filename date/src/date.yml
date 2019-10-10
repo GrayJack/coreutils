@@ -7,27 +7,39 @@ args:
       help: Display Coordinated Universal Time (UTC)
       long: universal
       short: u
+  - date:
+      help: Should be of value [[[[[cc]yy]mm]dd]HH]MM[.ss]
+      value_name: date
+      takes_value: true
+      conflicts_with:
+        - read
   - format:
-      help: Use input_fmt as the format string	to parse the new_date provided rather than using the default [[[[[cc]yy]mm]dd]HH]MM[.ss] format. Parsing is	done using strptime(3).
+      help: Use input_fmt as the format string to parse the new_date provided rather than using the default [[[[[cc]yy]mm]dd]HH]MM[.ss] format.
       short: f
       long: format
+      value_names:
+        - input_fmt
+        - new_date
   - RFC2822:
-      help: Use RFC 2822 date and time	output format.	This is	equivalent to using "%a,	%d %b %Y %T %z"	as output_fmt while LC_TIME is set to the "C" locale.
+      help: Use RFC 2822 date and time output format. This is equivalent to using "%a, %d %b %Y %T %z" as output_fmt while LC_TIME is set to the "C" locale.
       short: R
       long: rfc2822
-  - r:
-      help: Display the date and	time represented by seconds, where seconds is the number	of seconds since the Epoch (00:00:00 UTC, January 1, 1970; see time(3)), and can be specified in decimal, octal, or hex.
+  - read:
+      help: Display the date and time represented by seconds, where seconds is the number of seconds since the Epoch (00:00:00 UTC, January 1, 1970; see time(3)), and can be specified in decimal, octal, or hex. Display the date and time of the last modification of filename.
       short: r
-      long: r
-      value_name: seconds
+      long: read
+      value_name: seconds or filename
       takes_value: true
-  - r:
-      help: Display the date and	time of	the last modification of filename.
-      short: r
-      long: r
-      value_name: filename
+      conflicts_with:
+        - date
+  - outputformat:
+      help: Can only be combined with -j. Specify output format of date.
+      short: +
       takes_value: true
+      requires:
+        - convert
   - convert:
-      help: Do	not try	to set the date.  This allows you to use the -f	flag in	addition to the	+ option to convert one	date format to another.
+      help: Do not try to set the date. This allows you to use the -f flag in addition to the + option to convert one date format to another.
       short: j
       long: convert
+
