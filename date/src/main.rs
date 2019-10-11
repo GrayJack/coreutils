@@ -98,7 +98,8 @@ fn parse_file(filename: &str) -> Result<DateTime<FixedOffset>, io::Error> {
     if path.exists() {
         let metadata = path.metadata().unwrap();
         let modified = metadata.modified().unwrap();
-        let datetime: DateTime<Local> = DateTime::from(modified);
+        println!("System time is {:?} ", modified);
+        let datetime: DateTime<Utc> = DateTime::from(modified); // TODO this should be local time
         let datetime_fixed: DateTime<FixedOffset> = DateTime::from(datetime);
         return Ok(datetime_fixed);
     } else {
