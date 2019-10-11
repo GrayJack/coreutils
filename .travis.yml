@@ -8,6 +8,12 @@ matrix:
   allow_failures:
     - rust: nightly
   fast_finish: true
+  include:
+    - rust: nightly
+      before_script:
+        - rustup component add rustfmt-preview
+      script:
+        - cargo fmt -- --check
 cache: cargo
 before_script:
   - rustup target add x86_64-unknown-netbsd x86_64-unknown-freebsd
