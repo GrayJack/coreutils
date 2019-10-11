@@ -1,5 +1,3 @@
-mod execution_options {
-
 use std::process;
 
 pub enum Counters {
@@ -35,7 +33,7 @@ fn parse_num_or_panic(num_s: &str, message: String) -> u32 {
 /// # Arguments
 /// * `matches` - A `clap::ArgMatches` object to transform into a struct
 ///   representing the parameters of execution
-pub fn read_clap_matches(arg_matches: &clap::ArgMatches) -> ExecutionOptions {
+pub fn read_clap_matches(arg_matches: clap::ArgMatches) -> ExecutionOptions {
     let read_stdin = !arg_matches.is_present("input_file");
     let write_stdout = !arg_matches.is_present("output_file");
 
@@ -63,8 +61,8 @@ pub fn read_clap_matches(arg_matches: &clap::ArgMatches) -> ExecutionOptions {
         } else {
             0
         },
-        read_stdin: read_stdin,
-        write_stdout: write_stdout,
+        read_stdin,
+        write_stdout,
         input_file_path: if read_stdin {
             None
         } else {
@@ -87,5 +85,4 @@ pub fn read_clap_matches(arg_matches: &clap::ArgMatches) -> ExecutionOptions {
             }
         },
     }
-}
 }
