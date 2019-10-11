@@ -1,5 +1,34 @@
 name: uniq
 version: "0.0.0"
-author: Vaibhav Yenamandra <yvvaibhav@gmail.com>
-about: "Report or fitler out duplicated lines from a file or stream"
+author: Vaibhav Yenamandra <yvvaibhav+rust@gmail.com>
+about: "Report or fitler out duplicated lines from a file or stream.\nCommand descriptions taken from 'BSD General Commands Manual page for uniq.1'"
 args:
+    - count-all:
+        help: Precede each output line with the count of number of times the
+              line has occured, followed by a single space
+        short: c
+    - duplicate-only:
+        help: Only output lines that are repeated in the input
+        short: d
+    - unique-only:
+        help: Only output lines that are not repeated in the input
+        short: u
+    - ignore-case:
+        short: i
+        help: Turn on case insensitive comparison of lines
+    - num:
+        short: f
+        takes_value: true
+    - chars:
+        short: s
+        takes_value: true
+    - input_file:
+        takes_value: true
+    - output_file:
+        takes_value: true
+groups:
+    - counting-strategy:
+        args:
+            - count-all
+            - duplicate-only
+            - unique-only
