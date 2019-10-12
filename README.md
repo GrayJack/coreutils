@@ -124,7 +124,7 @@ cargo build --manifest-path Haiku.toml
 |   uname  |             |         |   X  |
 | unexpand |      X      |         |      |
 |   uniq   |      X      |         |      |
-|  unlink  |      X      |         |      |
+|  unlink  |             |         |   X  |
 |  uptime  |      X      |         |      |
 |   users  |      X      |         |      |
 |    wc    |             |         |   X  |
