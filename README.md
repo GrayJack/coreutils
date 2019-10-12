@@ -88,7 +88,7 @@ cargo build --manifest-path Haiku.toml
 |    id    |             |         |   X  |
 |  install |      X      |         |      |
 |   join   |      X      |         |      |
-|   link   |      X      |         |      |
+|   link   |             |         |   X  |
 |    ln    |      X      |         |      |
 |  logname |             |         |   X  |
 |    ls    |      X      |         |      |
