@@ -63,12 +63,7 @@ fn touch(matches: &ArgMatches, files: &Vec<&str>) -> Result<()> {
 fn update_time(matches: &ArgMatches, path: &str, filetime: FileTime) {
     let access_time = matches.is_present("accesstime");
     let modification = matches.is_present("modification");
-    let time = matches.is_present("time");
-    let time_value = if time {
-        matches.value_of("time").unwrap()
-    } else {
-        ""
-    };
+    let time_value = matches.value_of("time").unwrap_or("");
 
     if access_time || time_value == "atime" {
         update_access_time(&path, filetime);
