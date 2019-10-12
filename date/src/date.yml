@@ -13,6 +13,7 @@ args:
       takes_value: true
       conflicts_with:
         - read
+        - format
   - format:
       help: Use input_fmt as the format string to parse the new_date provided rather than using the default [[[[[cc]yy]mm]dd]HH]MM[.ss] format.
       short: f
@@ -20,6 +21,9 @@ args:
       value_names:
         - input_fmt
         - new_date
+      conflicts_with:
+        - date
+        - read
   - RFC2822:
       help: Use RFC 2822 date and time output format. This is equivalent to using "%a, %d %b %Y %T %z" as output_fmt while LC_TIME is set to the "C" locale.
       short: R
@@ -32,6 +36,7 @@ args:
       takes_value: true
       conflicts_with:
         - date
+        - format
   - outputformat:
       help: Can only be combined with -j. Specify output format of date.
       short: +
