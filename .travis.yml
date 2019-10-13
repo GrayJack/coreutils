@@ -21,4 +21,4 @@ script:
   - cargo build --verbose --all
   - cargo test --verbose --all
   - cargo check --verbose --all --target x86_64-unknown-freebsd
-  - cargo check --verbose --all --target x86_64-unknown-netbsd
+  # - cargo check --verbose --all --target x86_64-unknown-netbsd

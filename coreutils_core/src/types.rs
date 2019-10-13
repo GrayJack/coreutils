@@ -2,16 +2,26 @@
 //! times.
 #[cfg(target_os = "linux")]
 use libc::__timeval;
-#[cfg(not(any(target_os = "linux", target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
-use libc::timeval;
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use libc::c_int;
-use libc::{getegid, geteuid, getgid, getuid, gid_t, time_t, uid_t, pid_t};
+#[cfg(not(any(
+    target_os = "linux",
+    target_os = "fuchsia",
+    target_os = "haiku",
+    target_os = "openbsd"
+)))]
+use libc::timeval;
+use libc::{getegid, geteuid, getgid, getuid, gid_t, pid_t, time_t, uid_t};
 
 /// Time stamp type used on system structures
 #[cfg(target_os = "linux")]
 pub type TimeVal = __timeval;
-#[cfg(not(any(target_os = "linux", target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
+#[cfg(not(any(
+    target_os = "linux",
+    target_os = "fuchsia",
+    target_os = "haiku",
+    target_os = "openbsd"
+)))]
 pub type TimeVal = timeval;
 
 /// Group ID type.

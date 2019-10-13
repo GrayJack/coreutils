@@ -71,7 +71,7 @@ cargo build --manifest-path Haiku.toml
 |    cp    |      X      |         |      |
 |  csplit  |      X      |         |      |
 |    cut   |      X      |         |      |
-|   date   |      X      |         |      |
+|   date   |             |    X    |      |
 |    dd    |      X      |         |      |
 |    df    |      X      |         |      |
 |   diff   |      X      |         |      |
@@ -88,7 +88,7 @@ cargo build --manifest-path Haiku.toml
 |    id    |             |         |   X  |
 |  install |      X      |         |      |
 |   join   |      X      |         |      |
-|   link   |      X      |         |      |
+|   link   |             |         |   X  |
 |    ln    |      X      |         |      |
 |  logname |             |         |   X  |
 |    ls    |      X      |         |      |
@@ -124,7 +124,7 @@ cargo build --manifest-path Haiku.toml
 |   uname  |             |         |   X  |
 | unexpand |      X      |         |      |
 |   uniq   |      X      |         |      |
-|  unlink  |      X      |         |      |
+|  unlink  |             |         |   X  |
 |  uptime  |      X      |         |      |
 |   users  |      X      |         |      |
 |    wc    |             |         |   X  |

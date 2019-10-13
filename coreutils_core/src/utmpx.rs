@@ -1,7 +1,7 @@
 //! Extended account database module
 use std::collections::{hash_set, HashSet};
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::{io, ffi::CStr};
+use std::{ffi::CStr, io};
 
 use crate::types::{Pid, TimeVal};
 
@@ -285,7 +285,7 @@ impl UtmpxSet {
         UtmpxSet(set)
     }
 
-    /// Check if collection is empty
+    /// Returns `true` if collection nas no elements
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
     /// Creates a iterator over it's entries
