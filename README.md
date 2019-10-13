@@ -71,7 +71,7 @@ cargo build --manifest-path Haiku.toml
 |    cp    |      X      |         |      |
 |  csplit  |      X      |         |      |
 |    cut   |      X      |         |      |
-|   date   |      X      |         |      |
+|   date   |             |    X    |      |
 |    dd    |      X      |         |      |
 |    df    |      X      |         |      |
 |   diff   |      X      |         |      |
