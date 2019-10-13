@@ -74,20 +74,22 @@ fn head(flags: Flags, input: Input) -> Result<(), io::Error> {
                 }
                 let f = File::open(file)?;
                 let reader = BufReader::new(f);
-                read_stream(&flags, reader)?;
+                read_stream(&flags, reader, &mut io::stdout())?;
             }
         }
         Input::Stdin => {
             let stdin = io::stdin();
             let reader = BufReader::new(stdin.lock());
-            read_stream(&flags, reader)?;
+            read_stream(&flags, reader, &mut io::stdout())?;
         }
     }
     Ok(())
 }
 
-/// Read from a stream, truncated at a number of lines or bytes
-fn read_stream<R: Read>(flags: &Flags, mut reader: BufReader<R>) -> Result<(), io::Error> {
+/// Read from a stream, truncated at a number of lines or bytes and write back to a stream
+fn read_stream<R: Read, W: Write>(
+    flags: &Flags, mut reader: BufReader<R>, writer: &mut W,
+) -> Result<(), io::Error> {
     match flags {
         Flags::LinesCount(lines_count) => {
             for _ in 0..*lines_count {
@@ -96,14 +98,41 @@ fn read_stream<R: Read>(flags: &Flags, mut reader: BufReader<R>) -> Result<(), i
                 if bytes_read == 0 {
                     break;
                 }
-                io::stdout().write_all(&buffer)?;
+                writer.write_all(&buffer)?;
             }
         }
         Flags::BytesCount(bytes_count) => {
             let mut buffer = Vec::new();
             reader.take(*bytes_count as u64).read_to_end(&mut buffer)?;
-            io::stdout().write_all(&buffer)?;
+            writer.write_all(&buffer)?;
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_lines() {
+        let buffer = "foo\nbar\nbaz".as_bytes();
+        let flags = Flags::LinesCount(2);
+        let mut out = Vec::new();
+
+        read_stream(&flags, BufReader::new(buffer), &mut out).unwrap();
+
+        assert_eq!(String::from_utf8(out).unwrap(), "foo\nbar\n".to_string());
+    }
+
+    #[test]
+    fn test_bytes() {
+        let buffer = "foo\nbar\nbaz".as_bytes();
+        let flags = Flags::BytesCount(2);
+        let mut out = Vec::new();
+
+        read_stream(&flags, BufReader::new(buffer), &mut out).unwrap();
+
+        assert_eq!(String::from_utf8(out).unwrap(), "fo".to_string());
+    }
 }
