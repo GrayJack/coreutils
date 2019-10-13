@@ -285,7 +285,7 @@ impl UtmpxSet {
         UtmpxSet(set)
     }
 
-    /// Check if collection is empty
+    /// Returns `true` if collection nas no elements
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
     /// Creates a iterator over it's entries

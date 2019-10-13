@@ -11,3 +11,6 @@ Cargo.lock
 
 # Emacs autosave fils
 *~
+
+# IDEA IDE
+.idea/
