@@ -1,16 +1,11 @@
 extern crate chrono;
 
-use std::{
-    fmt,
-    io,
-    process,
-};
+use std::{fmt, io, process};
 
-use chrono::{Local, DateTime, TimeZone, Utc, NaiveDateTime};
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
 
 use clap::{load_yaml, App, ArgMatches};
-use std::path::Path;
-use std::io::ErrorKind;
+use std::{io::ErrorKind, path::Path};
 
 fn main() {
     let yaml = load_yaml!("date.yml");
@@ -21,7 +16,7 @@ fn main() {
         Err(e) => {
             eprintln!("date: {}", e);
             process::exit(1);
-        }
+        },
     };
 }
 
@@ -44,7 +39,7 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
         let date_str = args.value_of("date").unwrap();
         match read_date(date_str) {
             Ok(date) => datetime = date,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
         if !is_convert {
             // TODO this should usually set OS' datetime if -j is not given
@@ -60,7 +55,7 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
 
         match parse_date(new_date, input_fmt) {
             Ok(date) => datetime = date,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
 
         if !is_convert {
@@ -75,7 +70,7 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
         let date_str = args.value_of("read").unwrap();
         match read(date_str) {
             Ok(date) => datetime = date,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
     }
 
@@ -95,7 +90,7 @@ fn read<'a>(input: &str) -> Result<DateTime<Local>, &'a str> {
     let parsed: Result<i32, _> = input.trim().parse();
     let result = match parsed {
         Ok(_) => parse_seconds(input.trim()),
-        Err(_) => parse_file(input)
+        Err(_) => parse_file(input),
     };
 
     if let Ok(date) = result {
@@ -115,7 +110,7 @@ fn read_date<'a>(date_str: &str) -> Result<DateTime<Local>, &'a str> {
 fn parse_date<'a>(date_str: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
     match parse_datetime_from_str(date_str, &format) {
         Ok(d) => Ok(d),
-        Err(_) => Err("illegal date time format")
+        Err(_) => Err("illegal date time format"),
     }
 }
 
@@ -123,11 +118,11 @@ fn parse_date<'a>(date_str: &str, format: &str) -> Result<DateTime<Local>, &'a s
 fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
     match NaiveDateTime::parse_from_str(seconds, "%s") {
         Ok(date) => {
-            //let local = TimeZone::from_local_datetime(&Local, &date).unwrap();
+            // let local = TimeZone::from_local_datetime(&Local, &date).unwrap();
             let local = TimeZone::from_utc_datetime(&Local, &date);
             Ok(local)
         },
-        Err(e) => Err(io::Error::new(ErrorKind::InvalidInput, e))
+        Err(e) => Err(io::Error::new(ErrorKind::InvalidInput, e)),
     }
 }
 
@@ -181,7 +176,7 @@ fn build_parse_format(date: &str) -> String {
     let spliced_format = format[..6].iter();
 
     for chr in spliced_format {
-        if !chr.eq(&' '){
+        if !chr.eq(&' ') {
             format_str.push_str("%");
             format_str.push_str(&chr.to_string());
         }
@@ -194,34 +189,39 @@ fn build_parse_format(date: &str) -> String {
     format_str
 }
 
-/// This function parses `datetime` of given `format`. If `datetime` is not enough for a unique DateTime it uses die values of today.
+/// This function parses `datetime` of given `format`. If `datetime` is not enough for a
+/// unique DateTime it uses die values of today.
 fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
     let result = NaiveDateTime::parse_from_str(datetime, format);
 
-    // TODO Chrono's parse of strftime throws an error if it can not create an unique datetime.
-    // What we want is that it fills the missing data with data of DateTime::now()
+    // TODO Chrono's parse of strftime throws an error if it can not create an unique
+    // datetime. What we want is that it fills the missing data with data of
+    // DateTime::now()
 
     match result {
         Ok(datetime) => Ok(TimeZone::from_utc_datetime(&Local, &datetime)),
-        Err(_) => Err("could not parse datetime")
+        Err(_) => Err("could not parse datetime"),
     }
 }
 
 /// displays `datetime` in rfc2822 format
-fn format_rfc2822<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool) where Tz::Offset : fmt::Display {
+fn format_rfc2822<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
+where Tz::Offset: fmt::Display {
     let format_str = "%a, %d %b %Y %T %z";
     format(datetime, format_str, is_utc);
 }
 
 /// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
-fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool) where Tz::Offset : fmt::Display {
+fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
+where Tz::Offset: fmt::Display {
     let format_str = "%a %b %e %k:%M:%S %Z %Y"; // <- %Z should print the name of the timezone (only works for UTC)
-    // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
+                                                // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
     format(datetime, format_str, is_utc);
 }
 
 /// displays `datetime` with given `output_format`
-fn format<Tz: TimeZone >(datetime: DateTime<Tz>, output_format: &str, is_utc: bool) where Tz::Offset : fmt::Display {
+fn format<Tz: TimeZone>(datetime: DateTime<Tz>, output_format: &str, is_utc: bool)
+where Tz::Offset: fmt::Display {
     if is_utc {
         println!("{}", datetime.with_timezone(&Utc).format(output_format));
     } else {

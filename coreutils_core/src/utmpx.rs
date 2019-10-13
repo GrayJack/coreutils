@@ -1,7 +1,7 @@
 //! Extended account database module
 use std::collections::{hash_set, HashSet};
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::{io, ffi::CStr};
+use std::{ffi::CStr, io};
 
 use crate::types::{Pid, TimeVal};
 
