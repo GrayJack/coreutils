@@ -115,7 +115,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_lines() {
+    fn read_stream_lines_count() {
         let buffer = "foo\nbar\nbaz".as_bytes();
         let flags = Flags::LinesCount(2);
         let mut out = Vec::new();
@@ -126,7 +126,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bytes() {
+    fn read_stream_bytes_count() {
         let buffer = "foo\nbar\nbaz".as_bytes();
         let flags = Flags::BytesCount(2);
         let mut out = Vec::new();
