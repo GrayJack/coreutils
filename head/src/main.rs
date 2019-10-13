@@ -8,8 +8,8 @@ const NEW_LINE: u8 = 0xA;
 fn main() {
     let yaml = load_yaml!("head.yml");
     let matches = App::from_yaml(yaml).get_matches();
-    let flags = Flags::parse(&matches);
-    let input = Input::parse(&matches);
+    let flags = Flags::from_matches(&matches);
+    let input = Input::from_matches(&matches);
 
     head(flags, input).unwrap_or_else(|e| {
         eprintln!("head: {}", e);
@@ -26,7 +26,7 @@ impl Flags {
     /// Parse arguments into a Flags enum
     ///
     /// This will exit the program early on invalid args
-    fn parse(matches: &ArgMatches) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Self {
         match value_t!(matches, "bytes", usize) {
             Ok(bytes_count) => Flags::BytesCount(bytes_count),
             Err(e) => match e.kind {
@@ -51,7 +51,7 @@ enum Input {
 
 impl Input {
     /// Parse arguments into an Input enum.
-    fn parse(matches: &ArgMatches) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Self {
         if let Some(files) = matches.values_of("FILE") {
             Self::Files(files.map(|f| f.into()).collect())
         } else {
