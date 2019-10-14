@@ -84,7 +84,7 @@ cargo build --manifest-path Haiku.toml
 |   false  |             |         |   X  |
 |  groups  |             |         |   X  |
 |   hash   |      X      |         |      |
-|   head   |      X      |         |      |
+|   head   |             |         |   X  |
 |    id    |             |         |   X  |
 |  install |      X      |         |      |
 |   join   |      X      |         |      |
