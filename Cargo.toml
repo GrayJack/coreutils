@@ -9,6 +9,7 @@ members = [
     "env",
     "false",
     "groups",
+    "head",
     "id",
     "link",
     "logname",
