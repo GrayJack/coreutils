@@ -1,6 +1,8 @@
 use clap::{load_yaml, value_t, App, ArgMatches, ErrorKind};
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read, Write};
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader, Read, Write},
+};
 
 const DEFAULT_LINES_COUNT: usize = 10;
 const NEW_LINE: u8 = 0xA;
@@ -76,12 +78,12 @@ fn head(flags: Flags, input: Input) -> Result<(), io::Error> {
                 let reader = BufReader::new(f);
                 read_stream(&flags, reader, &mut io::stdout())?;
             }
-        }
+        },
         Input::Stdin => {
             let stdin = io::stdin();
             let reader = BufReader::new(stdin.lock());
             read_stream(&flags, reader, &mut io::stdout())?;
-        }
+        },
     }
     Ok(())
 }
@@ -100,12 +102,12 @@ fn read_stream<R: Read, W: Write>(
                 }
                 writer.write_all(&buffer)?;
             }
-        }
+        },
         Flags::BytesCount(bytes_count) => {
             let mut buffer = Vec::new();
             reader.take(*bytes_count as u64).read_to_end(&mut buffer)?;
             writer.write_all(&buffer)?;
-        }
+        },
     }
     Ok(())
 }
