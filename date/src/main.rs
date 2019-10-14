@@ -214,8 +214,10 @@ where Tz::Offset: fmt::Display {
 /// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
 fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
 where Tz::Offset: fmt::Display {
-    let format_str = "%a %b %e %k:%M:%S %Z %Y"; // <- %Z should print the name of the timezone (only works for UTC)
-                                                // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
+    // %Z should print the name of the timezone (only works for UTC)
+    // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
+    let format_str = "%a %b %e %k:%M:%S %Z %Y";
+
     format(datetime, format_str, is_utc);
 }
 
