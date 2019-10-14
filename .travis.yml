@@ -9,7 +9,8 @@ matrix:
     - rust: nightly
   fast_finish: true
   include:
-    - rust: nightly
+    - name: "Check formatting"
+      rust: nightly-2019-10-14 # Nightly because some of the settings are unstable; not "nightly" to avoid the allow_failures check!
       before_script:
         - rustup component add rustfmt-preview
       script:
