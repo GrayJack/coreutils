@@ -206,46 +206,74 @@ fn main() {
             .collect()
     };
 
-    if flags.target_directory != "" {
-        move_files(sources, PathBuf::from(&flags.target_directory), &flags);
+    let success = if flags.target_directory != "" {
+        move_files(sources, PathBuf::from(&flags.target_directory), &flags)
     } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
         let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), target.to_path_buf(), &flags);
+        move_files(sources[..sources.len() - 1].to_vec(), target.to_path_buf(), &flags)
     } else if sources.len() == 2 {
-        rename_file(&sources[0], &sources[1], &flags);
+        rename_file(&sources[0], &sources[1], &flags)
     } else {
         // TODO(gab): make this better
         println!("Erroring out!");
         println!("Source: {:?}", sources);
         println!("Flags: {:?}", flags);
+        false
+    };
+
+    if !success {
+        std::process::exit(1);
+    } else {
+        std::process::exit(0);
     }
 }
 
-fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) {
-    // TODO(gab): fill out function
+fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
     println!("move files to directory: {:?} -> {:?}", sources, target);
     println!("Flags: {:?}", flags);
 
-    
+    if !target.is_dir() {
+        eprintln!("mv: '{}' is not a directory", target.display());
+        return false;
+    }
+
+    let mut success = true;
+    for source in sources {
+        match source.file_name() {
+            Some(filename) => {
+                let new = target.join(filename);
+
+                if !rename_file(&source, &new, flags) {
+                    success = false;
+                }
+            }
+            None => {
+                success = false;
+                eprintln!("mv: Cannot 'stat' file '{}'", source.display());
+            }
+        }
+    }
+
+    return success;
 }
 
-fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) {
+fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
     if new.exists() {
         match &flags.overwrite {
-            OverwriteMode::Force => {},
+            OverwriteMode::Force => {}
             OverwriteMode::Interactive => {
                 if !Input::with_msg(&format!("mv: overwrite '{}'?", new.display())).is_affirmative()
                 {
-                    return;
+                    return true;
                 }
             }
-            OverwriteMode::NoClobber => return,
+            OverwriteMode::NoClobber => return true,
         };
 
         if flags.update && file_older(curr, new) {
-            return;
+            return true;
         }
-        
+
         let res = match &flags.backup {
             BackupMode::Numbered => Some(create_numbered_backup(new)),
             BackupMode::Existing => Some(create_existing_backup(new, &flags.suffix)),
@@ -256,7 +284,10 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) {
         if let Some(res) = res {
             match res {
                 Ok(file) => println!("mv: Created backup file {}", file.display()),
-                Err(err) => eprintln!("mv: Backup failed: {}", err),
+                Err(err) => {
+                    eprintln!("mv: Backup failed: {}", err);
+                    return false;
+                }
             };
         }
     }
@@ -266,9 +297,14 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) {
             if flags.verbose {
                 println!("mv: Renamed {} to {}", curr.display(), new.display());
             }
+
+            true
         }
-        Err(msg) => eprintln!("mv: Cannot rename {}: {}", curr.display(), msg),
-    };
+        Err(msg) => {
+            eprintln!("mv: Cannot rename {}: {}", curr.display(), msg);
+            false
+        }
+    }
 }
 
 fn file_older(f: &PathBuf, ff: &PathBuf) -> bool {
