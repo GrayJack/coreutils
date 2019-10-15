@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+coreutils_core = {path = "../coreutils_core"}
 regex = "^1"
 
 [build-dependencies]
