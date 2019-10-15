@@ -1,16 +1,19 @@
-use self::backup::*;
-use self::input::Input;
+use self::{backup::*, input::Input};
 use clap::{load_yaml, App, ArgMatches};
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf}
+};
 
 // TODO(gab): Extract this to core because cp, ln, etc use backups
 pub mod backup {
     use regex::Regex;
-    use std::fs;
-    use std::io::{Error, ErrorKind};
-    use std::path::PathBuf;
-
+    use std::{
+        fs,
+        io::{Error, ErrorKind},
+        path::PathBuf
+    };
+    
     #[derive(Debug, Clone, PartialEq)]
     pub enum BackupMode {
         None,
@@ -87,9 +90,7 @@ pub mod backup {
 
 // TODO(gab): extract to core because a tonne of core utils use this
 mod input {
-    use std::io;
-    use std::io::prelude::*;
-    use std::process;
+    use std::{io, io::prelude::*, process};
 
     #[derive(Debug)]
     pub struct Input(String);
@@ -246,11 +247,11 @@ fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
                 if !rename_file(&source, &new, flags) {
                     success = false;
                 }
-            }
+            },
             None => {
                 success = false;
                 eprintln!("mv: Cannot 'stat' file '{}'", source.display());
-            }
+            },
         }
     }
 
@@ -260,13 +261,13 @@ fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
 fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
     if new.exists() {
         match &flags.overwrite {
-            OverwriteMode::Force => {}
+            OverwriteMode::Force => {},
             OverwriteMode::Interactive => {
                 if !Input::with_msg(&format!("mv: overwrite '{}'?", new.display())).is_affirmative()
                 {
                     return true;
                 }
-            }
+            },
             OverwriteMode::NoClobber => return true,
         };
 
@@ -287,7 +288,7 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
                 Err(err) => {
                     eprintln!("mv: Backup failed: {}", err);
                     return false;
-                }
+                },
             };
         }
     }
@@ -299,11 +300,11 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
             }
 
             true
-        }
+        },
         Err(msg) => {
             eprintln!("mv: Cannot rename {}: {}", curr.display(), msg);
             false
-        }
+        },
     }
 }
 
@@ -313,14 +314,14 @@ fn file_older(f: &PathBuf, ff: &PathBuf) -> bool {
         Err(msg) => {
             eprintln!("mv: stat failed: {}", msg);
             return true;
-        }
+        },
     };
     let ff_attrs = match fs::metadata(ff) {
         Ok(attrs) => attrs,
         Err(msg) => {
             eprintln!("mv: stat failed: {}", msg);
             return true;
-        }
+        },
     };
 
     f_attrs.modified().unwrap() < ff_attrs.modified().unwrap()
