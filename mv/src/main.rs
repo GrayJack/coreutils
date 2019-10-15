@@ -230,9 +230,6 @@ fn main() {
 }
 
 fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
-    println!("move files to directory: {:?} -> {:?}", sources, target);
-    println!("Flags: {:?}", flags);
-
     if !target.is_dir() {
         eprintln!("mv: '{}' is not a directory", target.display());
         return false;

@@ -1,7 +1,7 @@
 name: mv
 version: "0.1"
 author: Gab David <g.bianchetdavid@gmail.com>
-about: Move (rename) files
+about: Move or rename files
 args:
   - backup:
       help: Make a backup of each existing destination file
