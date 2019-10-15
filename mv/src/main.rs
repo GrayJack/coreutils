@@ -1,5 +1,5 @@
-use coreutils_core::{backup::*, input::*};
 use clap::{load_yaml, App, ArgMatches};
+use coreutils_core::{backup::*, input::*};
 use std::{
     fs,
     path::{Path, PathBuf},
