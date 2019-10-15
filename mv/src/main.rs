@@ -2,7 +2,7 @@ use self::{backup::*, input::Input};
 use clap::{load_yaml, App, ArgMatches};
 use std::{
     fs,
-    path::{Path, PathBuf}
+    path::{Path, PathBuf},
 };
 
 // TODO(gab): Extract this to core because cp, ln, etc use backups
@@ -11,9 +11,9 @@ pub mod backup {
     use std::{
         fs,
         io::{Error, ErrorKind},
-        path::PathBuf
+        path::PathBuf,
     };
-    
+
     #[derive(Debug, Clone, PartialEq)]
     pub enum BackupMode {
         None,
@@ -99,11 +99,11 @@ mod input {
         pub fn new() -> Self {
             let mut line = String::new();
             match io::stdin().lock().read_line(&mut line) {
-                Ok(_) => {}
+                Ok(_) => {},
                 Err(err) => {
                     eprintln!("rm: cannot read input: {}", err);
                     process::exit(1);
-                }
+                },
             };
 
             Input(line)
