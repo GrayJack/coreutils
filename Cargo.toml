@@ -13,6 +13,7 @@ members = [
     "id",
     "link",
     "logname",
+    "mv",
     "nice",
     "pwd",
     "rm",
