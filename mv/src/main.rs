@@ -213,12 +213,12 @@ fn main() {
         move_files(sources[..sources.len() - 1].to_vec(), target.to_path_buf(), &flags)
     } else if sources.len() == 2 {
         rename_file(&sources[0], &sources[1], &flags)
-    } else {
-        // TODO(gab): make this better
-        println!("Erroring out!");
-        println!("Source: {:?}", sources);
-        println!("Flags: {:?}", flags);
+    } else if sources.len() == 1 {
+        eprintln!("mv: No target supplied");
         false
+    } else {
+        let target = sources.last().unwrap();
+        move_files(sources[..sources.len() - 1].to_vec(), target.to_path_buf(), &flags)
     };
 
     if !success {
