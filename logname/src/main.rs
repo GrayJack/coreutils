@@ -1,10 +1,10 @@
 use std::{env, process};
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("logname.yml");
-    let _matches = App::from_yaml(yaml).get_matches();
+    let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let login_name = if let Ok(name) = env::var("LOGNAME") {
         name

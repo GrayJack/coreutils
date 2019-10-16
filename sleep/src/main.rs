@@ -1,11 +1,11 @@
 use std::process;
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 use sugars::sleep;
 
 fn main() {
     let yaml = load_yaml!("sleep.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let numbers = match matches.values_of("NUMBER") {
         Some(values) => values,

@@ -1,10 +1,10 @@
 use std::{fs, process};
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("unlink.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let path = matches.value_of("FILE").unwrap();
 

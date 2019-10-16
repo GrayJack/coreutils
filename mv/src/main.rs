@@ -1,9 +1,11 @@
-use self::{backup::*, input::Input};
-use clap::{load_yaml, App, ArgMatches};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
+
+use self::{backup::*, input::Input};
+
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 // TODO(gab): Extract this to core because cp, ln, etc use backups
 pub mod backup {
@@ -192,7 +194,7 @@ impl MvFlags {
 
 fn main() {
     let yaml = load_yaml!("mv.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
     let flags = MvFlags::from_matches(&matches);
 
     let sources: Vec<PathBuf> = {

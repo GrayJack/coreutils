@@ -4,12 +4,12 @@ use std::{fmt, io, process};
 
 use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
 
-use clap::{load_yaml, App, ArgMatches};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use std::{io::ErrorKind, path::Path};
 
 fn main() {
     let yaml = load_yaml!("date.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     match date(&matches) {
         Ok(_) => (),

@@ -3,14 +3,14 @@ use std::{
     io::{self, prelude::*, BufReader},
 };
 
-use clap::{load_yaml, App, ArgMatches};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 #[cfg(test)]
 mod tests;
 
 fn main() {
     let yaml = load_yaml!("wc.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let filenames: Vec<String> = {
         if let Some(values) = matches.values_of("FILE") {

@@ -2,11 +2,11 @@ use std::process;
 
 use coreutils_core::env;
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("pwd.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let curr_dir = {
         // The local path we get from environment variable PWD

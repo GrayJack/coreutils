@@ -1,15 +1,16 @@
-use clap::{load_yaml, value_t, App, ArgMatches, ErrorKind};
 use std::{
     fs::File,
     io::{self, BufRead, BufReader, Read, Write},
 };
+
+use clap::{load_yaml, value_t, App, AppSettings::ColoredHelp, ArgMatches, ErrorKind};
 
 const DEFAULT_LINES_COUNT: usize = 10;
 const NEW_LINE: u8 = 0xA;
 
 fn main() {
     let yaml = load_yaml!("head.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
     let flags = Flags::from_matches(&matches);
     let input = Input::from_matches(&matches);
 
