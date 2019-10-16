@@ -11,7 +11,6 @@ members = [
     "head",
     "id",
     "logname",
-    "nice",
     "pwd",
     "rm",
     "rmdir",
