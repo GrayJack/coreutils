@@ -1,14 +1,14 @@
 pub use bstr::{BStr, BString, ByteSlice, ByteVec, B};
+pub mod backup;
 pub mod consts;
 pub mod env;
 pub mod file_descriptor;
 pub mod group;
+pub mod input;
 pub mod passwd;
 pub mod tty;
 pub mod types;
 pub mod utsname;
-pub mod backup;
-pub mod input;
 
 #[cfg(not(target_os = "fuchsia"))]
 pub mod priority;
