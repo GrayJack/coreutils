@@ -1,4 +1,4 @@
-use clap::{load_yaml, App, ArgMatches, AppSettings::ColoredHelp};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use coreutils_core::{backup::*, input::*};
 use std::{
     fs,
