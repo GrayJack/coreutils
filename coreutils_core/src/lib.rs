@@ -7,6 +7,8 @@ pub mod passwd;
 pub mod tty;
 pub mod types;
 pub mod utsname;
+pub mod backup;
+pub mod input;
 
 #[cfg(not(target_os = "fuchsia"))]
 pub mod priority;
