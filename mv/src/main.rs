@@ -69,7 +69,7 @@ impl MvFlags {
 
 fn main() {
     let yaml = load_yaml!("mv.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
     let flags = MvFlags::from_matches(&matches);
 
     let sources: Vec<PathBuf> = {

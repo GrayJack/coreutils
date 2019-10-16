@@ -7,7 +7,7 @@ use std::{
 
 use coreutils_core::priority::{get_priority, set_priority, PRIO_PROCESS};
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 #[cfg(target_os = "linux")]
 const P_PROCESS: c_uint = PRIO_PROCESS as c_uint;
@@ -16,7 +16,7 @@ const P_PROCESS: c_int = PRIO_PROCESS;
 
 fn main() {
     let yaml = load_yaml!("nice.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let adjustment: c_int = if matches.is_present("N") {
         let str_n = matches.value_of("N").unwrap();

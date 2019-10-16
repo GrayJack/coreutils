@@ -2,11 +2,11 @@ use std::process;
 
 use coreutils_core::{group::Group, passwd::Passwd};
 
-use clap::{load_yaml, App, ArgMatches};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 fn main() {
     let yaml = load_yaml!("id.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let flags = IdFlags::from_matches(&matches);
 
