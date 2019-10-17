@@ -7,15 +7,77 @@ use std::{
 
 use clap::{load_yaml, App, ArgMatches};
 
+#[derive(Debug)]
+struct TabStops {
+    offset: Option<usize>,
+    repetable: Option<usize>,
+    positions: Option<Vec<usize>>
+}
+
+impl TabStops {
+    fn new(tabs_str: Option<String>) -> TabStops {
+        match tabs_str {
+            Some(tabs_str) => {
+                if tabs_str == "" {
+                    return TabStops {
+                        offset: None,
+                        repetable: Some(8),
+                        positions: None
+                    }
+                }
+
+                let mut tabs_vec: Vec<&str> = tabs_str.split(',').map(|s| s.trim()).collect();
+
+                if tabs_vec.len() == 1 {
+                    return TabStops {
+                        offset: None,
+                        repetable: Some(tabs_vec[0].parse::<usize>().unwrap()),
+                        positions: None
+                    };
+                }
+
+                let mut offset: Option<usize> = None;
+                let mut repetable: Option<usize> = None;
+                let last_item = tabs_vec.last().unwrap().clone();
+
+                if last_item.contains(&"+") {
+                    offset = tabs_vec[tabs_vec.len() - 2].parse::<usize>().ok();
+                    repetable = last_item[1..].parse::<usize>().ok();
+                    tabs_vec.pop();
+                }
+
+                if last_item.contains(&"/") {
+                    repetable = last_item[1..].parse::<usize>().ok();
+                    tabs_vec.pop();
+                }
+
+
+                TabStops {
+                    offset,
+                    repetable,
+                    positions: Some(tabs_vec.iter().map(|p| p.parse::<usize>().unwrap()).collect())
+                }
+            },
+            None => {
+                TabStops {
+                    offset: None,
+                    repetable: Some(8),
+                    positions: None
+                }
+            }
+        }
+    }
+}
+
 struct Unexpand {
-    pub all: bool,
-    pub first_only: bool,
-    pub tabs: Vec<String>,
+    all: bool,
+    first_only: bool,
+    tabs: Vec<String>,
     output: Stdout,
 }
 
 impl Unexpand {
-    pub fn from_matches(matches: &ArgMatches) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Self {
         let all = matches.is_present("all");
         let first_only = matches.is_present("first_only");
 
@@ -32,7 +94,7 @@ impl Unexpand {
         }
     }
 
-    pub fn unexpand_line(self: &mut Self, line: String) {
+    fn unexpand_line(self: &mut Self, line: String) {
         let mut convert = true;
         let mut spaces: usize = 0;
         let mut column: usize = 0;
@@ -55,6 +117,7 @@ impl Unexpand {
                     self.output
                         .write(String::from(" ").repeat(spaces).as_bytes())
                         .expect("write error");
+
                     spaces = 0;
 
 
@@ -69,7 +132,7 @@ impl Unexpand {
         }
 
         self.output.write(b"\n").expect("write error");
-        self.output.flush();
+        self.output.flush().expect("write error");
     }
 }
 
