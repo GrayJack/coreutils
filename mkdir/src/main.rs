@@ -16,8 +16,7 @@ fn main() {
     let verbose = matches.is_present("verbose");
     let parents = matches.is_present("parents");
     let has_mode = matches.is_present("mode");
-    let mode = matches.value_of("mode").unwrap();
-
+    
     let mkdir = { 
         if parents { 
             fs::create_dir_all
@@ -31,6 +30,7 @@ fn main() {
             Ok(_) => {
                 if verbose { log(format!("created directory '{}'", d)) };
                 if has_mode {
+                    let mode = matches.value_of("mode").unwrap();
                     match fs::metadata(d) {
                         Ok(v) => {
                             let mut perms = v.permissions();
