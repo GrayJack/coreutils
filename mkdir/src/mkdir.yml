@@ -19,13 +19,13 @@ args:
       long: verbose
       short: v
 
-  - Z:
-      help: set SELinux security context of each created directory to the default type
-      short: Z
+#  - Z:
+#      help: set SELinux security context of each created directory to the default type
+#      short: Z
   
-  - context:
-      help: like -Z, or if CTX is specified then set the SELinux of SMACK security context to CTX
-      long: context
+#  - context:
+#      help: like -Z, or if CTX is specified then set the SELinux of SMACK security context to CTX
+#      long: context
 
   - DIRECTORY:
       help: directory that will be created
