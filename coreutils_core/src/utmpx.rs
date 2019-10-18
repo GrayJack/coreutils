@@ -219,12 +219,10 @@ impl Utmpx {
     /// Get the time where the entry was created (often login time)
     pub fn timeval(&self) -> TimeVal { self.timeval }
 
-    /// Get the time where the entry was created (often login time) in a more complete structure
+    /// Get the time where the entry was created (often login time) in a more complete
+    /// structure
     pub fn login_time(&self) -> Tm {
-        time::at(Timespec::new(
-            self.timeval.tv_sec as i64,
-            self.timeval.tv_usec as i32,
-        ))
+        time::at(Timespec::new(self.timeval.tv_sec as i64, self.timeval.tv_usec as i32))
     }
 
     /// Get the session ID

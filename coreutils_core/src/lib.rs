@@ -1,5 +1,6 @@
 // Re-exports
 pub use bstr::{self, BStr, BString, ByteSlice, ByteVec, B};
+pub use libc;
 pub use time;
 
 // Agnostic Modules
@@ -11,6 +12,9 @@ pub mod passwd;
 pub mod tty;
 pub mod types;
 pub mod utsname;
+
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+pub mod load;
 
 // Specific Modules
 #[cfg(not(target_os = "fuchsia"))]
