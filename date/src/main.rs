@@ -194,11 +194,7 @@ fn build_parse_format(date: &str) -> String {
 /// This function parses `datetime` of given `format`. If `datetime` is not enough for a
 /// unique DateTime it uses die values of today.
 fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
-    //let result = NaiveDateTime::parse_from_str(datetime, format);
-
-    let result = time::strptime(datetime, format);
-
-    match result {
+    match time::strptime(datetime, format) {
         Ok(time) => {
             let datetime = convert_tm_to_datetime(time, format);
             let local = TimeZone::from_local_datetime(&Local, &datetime).unwrap();
