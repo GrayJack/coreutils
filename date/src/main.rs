@@ -1,4 +1,5 @@
 extern crate chrono;
+extern crate chrono_tz;
 
 use std::{fmt, io, process};
 
@@ -6,6 +7,8 @@ use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use std::{io::ErrorKind, path::Path};
+use std::os::raw::c_int;
+use std::ffi::c_void;
 
 fn main() {
     let yaml = load_yaml!("date.yml");
@@ -42,9 +45,7 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
             Err(e) => return Err(e),
         }
         if !is_convert {
-            // TODO this should usually set OS' datetime if -j is not given
-            unimplemented!();
-            return Ok(());
+            return settimeofday(datetime);
         }
     }
 
@@ -59,12 +60,9 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
         }
 
         if !is_convert {
-            // TODO this should usually set OS' datetime if -j is not given
-            unimplemented!();
-            return Ok(());
+            return settimeofday(datetime);
         }
     }
-
 
     if is_read {
         let date_str = args.value_of("read").unwrap();
@@ -83,6 +81,34 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
     }
 
     Ok(())
+}
+
+fn convert_datetime_to_cstruct(datetime: DateTime<Local>) -> (libc::timeval, libc::timezone) {
+    let timeval = libc::timeval {
+        tv_sec: datetime.timestamp(),
+        tv_usec: datetime.timestamp_subsec_nanos() as i32
+    };
+
+    let timezone = libc::timezone {
+        tz_minuteswest: datetime.offset().local_minus_utc(),
+        tz_dsttime: 0
+    };
+
+    (timeval, timezone)
+}
+
+/// Wrapper function for `libc::settimeofday`
+fn settimeofday<'a>(datetime: DateTime<Local>) -> Result<(), &'a str> {
+    let (timeval, timezone) = convert_datetime_to_cstruct(datetime);
+    let mut result: c_int = -1;
+    unsafe {
+        result = libc::settimeofday(&timeval as *const libc::timeval, &timezone as *const libc::timezone);
+    }
+    match result {
+        0 => Ok(()),
+        _ => Err(errno::errno().to_string().as_str())
+    }
+
 }
 
 /// Reads datetime from `input`. Could be seconds or a filepath.
