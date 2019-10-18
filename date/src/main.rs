@@ -1,5 +1,4 @@
 extern crate chrono;
-extern crate chrono_tz;
 
 use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
