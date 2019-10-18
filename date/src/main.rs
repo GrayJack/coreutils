@@ -1,9 +1,8 @@
-extern crate chrono;
-
-use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use coreutils_core::settime::settimeofday;
 use std::{fmt, io, io::ErrorKind, path::Path, process};
+use time::Tm;
 
 fn main() {
     let yaml = load_yaml!("date.yml");
@@ -184,16 +183,53 @@ fn build_parse_format(date: &str) -> String {
 /// This function parses `datetime` of given `format`. If `datetime` is not enough for a
 /// unique DateTime it uses die values of today.
 fn parse_datetime_from_str(datetime: &str, format: &str) -> Result<DateTime<Local>, String> {
-    let result = NaiveDateTime::parse_from_str(datetime, format);
-
-    // TODO Chrono's parse of strftime throws an error if it can not create an unique
-    // datetime. What we want is that it fills the missing data with data of
-    // DateTime::now()
-
-    match result {
-        Ok(datetime) => Ok(TimeZone::from_local_datetime(&Local, &datetime).unwrap()),
+    match time::strptime(datetime, format) {
+        Ok(time) => {
+            let datetime = convert_tm_to_datetime(time, format);
+            let local = TimeZone::from_local_datetime(&Local, &datetime).unwrap();
+            Ok(local)
+        }
         Err(_) => Err(String::from("could not parse datetime")),
     }
+}
+
+/// Converts `time::Tm` to `chrono::DateTime` depending on which `strformat` was used to
+/// parse. If a time unit was not given it will substitute with the current time.
+fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
+    let now: DateTime<Local> = Local::now();
+    let date = now.date();
+    let naivetime = now.time();
+
+    let day = match time.tm_mday == 0 && !format_used.contains("%d") {
+        true => date.format("%d").to_string().parse().unwrap(),
+        false => time.tm_mday,
+    };
+    let month = match time.tm_mon == 0 && !format_used.contains("%m") {
+        true => date.format("%m").to_string().parse().unwrap(),
+        false => time.tm_mon + 1,
+    };
+    let year = match time.tm_year == 0 && !format_used.contains("%Y") {
+        true => date.format("%Y").to_string().parse().unwrap(),
+        false => time.tm_year + 1900,
+    };
+    let seconds = match time.tm_sec == 0 && !format_used.contains("%S") {
+        true => naivetime.format("%S").to_string().parse().unwrap(),
+        false => time.tm_sec,
+    };
+    let minutes = match time.tm_min == 0 && !format_used.contains("%M") {
+        true => naivetime.format("%M").to_string().parse().unwrap(),
+        false => time.tm_min,
+    };
+    let hours = match time.tm_hour == 0 && !format_used.contains("%H") {
+        true => naivetime.format("%H").to_string().parse().unwrap(),
+        false => time.tm_hour,
+    };
+
+    NaiveDate::from_ymd(year, month as u32, day as u32).and_hms(
+        hours as u32,
+        minutes as u32,
+        seconds as u32,
+    )
 }
 
 /// displays `datetime` in rfc2822 format
