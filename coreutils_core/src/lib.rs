@@ -1,4 +1,8 @@
-pub use bstr::{BStr, BString, ByteSlice, ByteVec, B};
+// Re-exports
+pub use bstr::{self, BStr, BString, ByteSlice, ByteVec, B};
+pub use time;
+
+// Agnostic Modules
 pub mod consts;
 pub mod env;
 pub mod file_descriptor;
@@ -8,6 +12,7 @@ pub mod tty;
 pub mod types;
 pub mod utsname;
 
+// Specific Modules
 #[cfg(not(target_os = "fuchsia"))]
 pub mod priority;
 

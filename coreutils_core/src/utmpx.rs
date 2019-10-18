@@ -15,6 +15,8 @@ use libc::{endutxent, getutxent, setutxent, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
 
+use time::{Timespec, Tm};
+
 /// Possible types of a `Utmpx` instance
 #[repr(u16)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -214,8 +216,16 @@ impl Utmpx {
     /// Get the type kind if the entry
     pub fn utype(&self) -> UtmpxType { self.ut_type }
 
-    /// Get the time where the entry was created
+    /// Get the time where the entry was created (often login time)
     pub fn timeval(&self) -> TimeVal { self.timeval }
+
+    /// Get the time where the entry was created (often login time) in a more complete structure
+    pub fn login_time(&self) -> Tm {
+        time::at(Timespec::new(
+            self.timeval.tv_sec as i64,
+            self.timeval.tv_usec as i32,
+        ))
+    }
 
     /// Get the session ID
     #[cfg(target_os = "linux")]

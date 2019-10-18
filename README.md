@@ -94,7 +94,7 @@ cargo build --manifest-path Haiku.toml
 |    ls    |      X      |         |      |
 |   mkdir  |      X      |         |      |
 |  mkfifo  |      X      |         |      |
-|    mv    |      X      |         |      |
+|    mv    |             |         |   X  |
 |   nice   |             |         |   X  |
 |    nl    |      X      |         |      |
 |   nohup  |      X      |         |      |
@@ -126,7 +126,7 @@ cargo build --manifest-path Haiku.toml
 |   uniq   |      X      |         |      |
 |  unlink  |             |         |   X  |
 |  uptime  |      X      |         |      |
-|   users  |      X      |         |      |
+|   users  |             |    X    |      |
 |    wc    |             |         |   X  |
 |    who   |      X      |         |      |
 |  whoami  |             |         |   X  |
