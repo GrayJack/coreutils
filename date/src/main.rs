@@ -3,7 +3,7 @@ extern crate time;
 
 use std::{fmt, io, process};
 
-use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc, NaiveDate};
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use std::{io::ErrorKind, path::Path};
@@ -18,7 +18,7 @@ fn main() {
         Err(e) => {
             eprintln!("date: {}", e);
             process::exit(1);
-        },
+        }
     };
 }
 
@@ -66,7 +66,6 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
             return Ok(());
         }
     }
-
 
     if is_read {
         let date_str = args.value_of("read").unwrap();
@@ -123,7 +122,7 @@ fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
             // let local = TimeZone::from_local_datetime(&Local, &date).unwrap();
             let local = TimeZone::from_utc_datetime(&Local, &date);
             Ok(local)
-        },
+        }
         Err(e) => Err(io::Error::new(ErrorKind::InvalidInput, e)),
     }
 }
@@ -199,7 +198,7 @@ fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<
             let datetime = convert_tm_to_datetime(time, format);
             let local = TimeZone::from_local_datetime(&Local, &datetime).unwrap();
             Ok(local)
-        },
+        }
         Err(_) => Err("could not parse datetime"),
     }
 }
@@ -207,48 +206,56 @@ fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<
 /// Converts `time::Tm` to `chrono::DateTime` depending on which `strformat` was used to parse.
 /// If a time unit was not given it will substitute with the current time.
 fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
-    let now : DateTime<Local> = Local::now();
+    let now: DateTime<Local> = Local::now();
     let date = now.date();
     let naivetime = now.time();
 
-    let day =  match time.tm_mday == 0 && !format_used.contains("%d") {
+    let day = match time.tm_mday == 0 && !format_used.contains("%d") {
         true => date.format("%d").to_string().parse().unwrap(),
-        false => time.tm_mday
+        false => time.tm_mday,
     };
-    let month = match time.tm_mon == 0 && !format_used.contains("%m"){
+    let month = match time.tm_mon == 0 && !format_used.contains("%m") {
         true => date.format("%m").to_string().parse().unwrap(),
-        false => time.tm_mon + 1
+        false => time.tm_mon + 1,
     };
     let year = match time.tm_year == 0 && !format_used.contains("%Y") {
         true => date.format("%Y").to_string().parse().unwrap(),
-        false => time.tm_year + 1900
+        false => time.tm_year + 1900,
     };
-    let seconds = match time.tm_sec == 0 && !format_used.contains("%S"){
+    let seconds = match time.tm_sec == 0 && !format_used.contains("%S") {
         true => naivetime.format("%S").to_string().parse().unwrap(),
-        false => time.tm_sec
+        false => time.tm_sec,
     };
-    let minutes = match time.tm_min == 0 && !format_used.contains("%M"){
+    let minutes = match time.tm_min == 0 && !format_used.contains("%M") {
         true => naivetime.format("%M").to_string().parse().unwrap(),
-        false => time.tm_min
+        false => time.tm_min,
     };
-    let hours = match time.tm_hour == 0 && !format_used.contains("%H"){
+    let hours = match time.tm_hour == 0 && !format_used.contains("%H") {
         true => naivetime.format("%H").to_string().parse().unwrap(),
-        false => time.tm_hour
+        false => time.tm_hour,
     };
 
-    NaiveDate::from_ymd(year, month as u32, day as u32).and_hms(hours as u32, minutes as u32, seconds as u32)
+    NaiveDate::from_ymd(year, month as u32, day as u32).and_hms(
+        hours as u32,
+        minutes as u32,
+        seconds as u32,
+    )
 }
 
 /// displays `datetime` in rfc2822 format
 fn format_rfc2822<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
-where Tz::Offset: fmt::Display {
+where
+    Tz::Offset: fmt::Display,
+{
     let format_str = "%a, %d %b %Y %T %z";
     format(datetime, format_str, is_utc);
 }
 
 /// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
 fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
-where Tz::Offset: fmt::Display {
+where
+    Tz::Offset: fmt::Display,
+{
     // %Z should print the name of the timezone (only works for UTC)
     // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
     let format_str = "%a %b %e %k:%M:%S %Z %Y";
@@ -258,7 +265,9 @@ where Tz::Offset: fmt::Display {
 
 /// displays `datetime` with given `output_format`
 fn format<Tz: TimeZone>(datetime: DateTime<Tz>, output_format: &str, is_utc: bool)
-where Tz::Offset: fmt::Display {
+where
+    Tz::Offset: fmt::Display,
+{
     if is_utc {
         println!("{}", datetime.with_timezone(&Utc).format(output_format));
     } else {
