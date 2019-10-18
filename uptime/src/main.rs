@@ -57,7 +57,7 @@ fn main() {
 
     if pretty_flag {
         println!("{}", fmt_uptime(up_time / 100, pretty_flag));
-        return
+        return;
     }
 
     println!(
@@ -145,17 +145,9 @@ fn fmt_uptime(upsecs: time_t, pretty_flag: bool) -> String {
                 if upmins == 1 { "minute" } else { "minutes" },
             );
         } else if upmins > 0 {
-            return format!(
-                "up {:2} {}",
-                upmins,
-                if upmins == 1 { "minute" } else { "minutes" },
-            );
+            return format!("up {:2} {}", upmins, if upmins == 1 { "minute" } else { "minutes" },);
         } else {
-            return format!(
-                "up {:2} {}",
-                upsecs,
-                if upmins == 1 { "second" } else { "seconds" },
-            );
+            return format!("up {:2} {}", upsecs, if upmins == 1 { "second" } else { "seconds" },);
         }
     }
     match updays {
