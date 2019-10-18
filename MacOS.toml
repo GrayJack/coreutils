@@ -23,6 +23,8 @@ members = [
     "tty",
     "uname",
     "unlink",
+    "uptime",
+    "users",
     "wc",
     "whoami",
     "yes",
