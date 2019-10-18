@@ -1,6 +1,3 @@
-extern crate chrono;
-extern crate time;
-
 use std::{fmt, io, process};
 
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
@@ -18,7 +15,7 @@ fn main() {
         Err(e) => {
             eprintln!("date: {}", e);
             process::exit(1);
-        }
+        },
     };
 }
 
@@ -122,7 +119,7 @@ fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
             // let local = TimeZone::from_local_datetime(&Local, &date).unwrap();
             let local = TimeZone::from_utc_datetime(&Local, &date);
             Ok(local)
-        }
+        },
         Err(e) => Err(io::Error::new(ErrorKind::InvalidInput, e)),
     }
 }
@@ -198,13 +195,13 @@ fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<
             let datetime = convert_tm_to_datetime(time, format);
             let local = TimeZone::from_local_datetime(&Local, &datetime).unwrap();
             Ok(local)
-        }
+        },
         Err(_) => Err("could not parse datetime"),
     }
 }
 
-/// Converts `time::Tm` to `chrono::DateTime` depending on which `strformat` was used to parse.
-/// If a time unit was not given it will substitute with the current time.
+/// Converts `time::Tm` to `chrono::DateTime` depending on which `strformat` was used to
+/// parse. If a time unit was not given it will substitute with the current time.
 fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
     let now: DateTime<Local> = Local::now();
     let date = now.date();
@@ -244,18 +241,14 @@ fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
 
 /// displays `datetime` in rfc2822 format
 fn format_rfc2822<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
-where
-    Tz::Offset: fmt::Display,
-{
+where Tz::Offset: fmt::Display {
     let format_str = "%a, %d %b %Y %T %z";
     format(datetime, format_str, is_utc);
 }
 
 /// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
 fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
-where
-    Tz::Offset: fmt::Display,
-{
+where Tz::Offset: fmt::Display {
     // %Z should print the name of the timezone (only works for UTC)
     // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
     let format_str = "%a %b %e %k:%M:%S %Z %Y";
@@ -265,9 +258,7 @@ where
 
 /// displays `datetime` with given `output_format`
 fn format<Tz: TimeZone>(datetime: DateTime<Tz>, output_format: &str, is_utc: bool)
-where
-    Tz::Offset: fmt::Display,
-{
+where Tz::Offset: fmt::Display {
     if is_utc {
         println!("{}", datetime.with_timezone(&Utc).format(output_format));
     } else {
