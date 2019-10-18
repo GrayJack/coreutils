@@ -3,8 +3,8 @@ extern crate chrono_tz;
 
 use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use std::{io::ErrorKind, path::Path, fmt, io, process};
 use coreutils_core::settime::settimeofday;
+use std::{fmt, io, io::ErrorKind, path::Path, process};
 
 fn main() {
     let yaml = load_yaml!("date.yml");
@@ -15,7 +15,7 @@ fn main() {
         Err(e) => {
             eprintln!("date: {}", e);
             process::exit(1);
-        },
+        }
     };
 }
 
@@ -114,7 +114,7 @@ fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
         Ok(date) => {
             let local = TimeZone::from_utc_datetime(&Local, &date);
             Ok(local)
-        },
+        }
         Err(e) => Err(io::Error::new(ErrorKind::InvalidInput, e)),
     }
 }
@@ -199,14 +199,18 @@ fn parse_datetime_from_str(datetime: &str, format: &str) -> Result<DateTime<Loca
 
 /// displays `datetime` in rfc2822 format
 fn format_rfc2822<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
-where Tz::Offset: fmt::Display {
+where
+    Tz::Offset: fmt::Display,
+{
     let format_str = "%a, %d %b %Y %T %z";
     format(datetime, format_str, is_utc);
 }
 
 /// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
 fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
-where Tz::Offset: fmt::Display {
+where
+    Tz::Offset: fmt::Display,
+{
     // %Z should print the name of the timezone (only works for UTC)
     // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
     let format_str = "%a %b %e %k:%M:%S %Z %Y";
@@ -216,7 +220,9 @@ where Tz::Offset: fmt::Display {
 
 /// displays `datetime` with given `output_format`
 fn format<Tz: TimeZone>(datetime: DateTime<Tz>, output_format: &str, is_utc: bool)
-where Tz::Offset: fmt::Display {
+where
+    Tz::Offset: fmt::Display,
+{
     if is_utc {
         println!("{}", datetime.with_timezone(&Utc).format(output_format));
     } else {
