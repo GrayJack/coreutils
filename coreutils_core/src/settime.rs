@@ -1,21 +1,13 @@
-use libc::timeval;
-use std::ptr;
-use errno::errno;
+use std::{ptr, io};
+use super::types::TimeVal;
 
 /// Wrapper function for `libc::settimeofday`
-pub fn settimeofday(tv_sec: i64, tv_nsec: i32) -> Result<(), String> {
-    let timeval = timeval {
-        tv_sec,
-        tv_usec: tv_nsec
-    };
-
-    unsafe {
-        let result = libc::settimeofday(&timeval as *const timeval, ptr::null());
-        match result {
-            0 => Ok(()),
-            _ => {
-                Err(errno().to_string())
-            }
+pub fn settimeofday(timeval: TimeVal) -> io::Result<()> {
+    let result = unsafe { libc::settimeofday(&timeval as *const TimeVal, ptr::null()) };
+    match result {
+        0 => Ok(()),
+        _ => {
+            Err(io::Error::last_os_error())
         }
     }
 }

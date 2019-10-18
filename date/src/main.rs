@@ -1,6 +1,9 @@
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use coreutils_core::settime::settimeofday;
+use coreutils_core::{
+    types::TimeVal,
+    settime::settimeofday
+};
 use std::{fmt, io, io::ErrorKind, path::Path, process};
 use time::Tm;
 
@@ -39,7 +42,15 @@ fn date(args: &ArgMatches) -> Result<(), String> {
             Err(e) => return Err(e),
         }
         if !is_convert {
-            return settimeofday(datetime.timestamp(), datetime.timestamp_subsec_nanos() as i32);
+            let time = TimeVal {
+                tv_sec: datetime.timestamp(),
+                tv_usec: datetime.timestamp_subsec_micros() as i32
+            };
+
+            return match settimeofday(time) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(err.to_string())
+            }
         }
     }
 
@@ -54,7 +65,15 @@ fn date(args: &ArgMatches) -> Result<(), String> {
         }
 
         if !is_convert {
-            return settimeofday(datetime.timestamp(), datetime.timestamp_subsec_nanos() as i32);
+            let time = TimeVal {
+                tv_sec: datetime.timestamp(),
+                tv_usec: datetime.timestamp_subsec_micros() as i32
+            };
+
+            return match settimeofday(time) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(err.to_string())
+            }
         }
     }
 
@@ -210,7 +229,7 @@ fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
     };
     let year = match time.tm_year == 0 && !format_used.contains("%Y") {
         true => date.format("%Y").to_string().parse().unwrap(),
-        false => time.tm_year + 1900,
+        false => time.tm_year + 2000,
     };
     let seconds = match time.tm_sec == 0 && !format_used.contains("%S") {
         true => naivetime.format("%S").to_string().parse().unwrap(),
