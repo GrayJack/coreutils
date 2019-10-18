@@ -12,6 +12,7 @@ pub mod passwd;
 pub mod tty;
 pub mod types;
 pub mod utsname;
+pub mod settime;
 
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub mod load;
