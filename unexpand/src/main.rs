@@ -1,103 +1,36 @@
 use std::{
     env::current_dir,
     fs::File,
-    io::{prelude::BufRead, stdin, stdout, Stdout, BufReader, Write},
+    io::{prelude::BufRead, stdin, stdout, BufReader, Stdout, Write},
     process,
 };
 
 use clap::{load_yaml, App, ArgMatches};
 
-#[derive(Debug)]
-struct TabStops {
-    offset: Option<usize>,
-    repetable: Option<usize>,
-    positions: Option<Vec<usize>>
-}
-
-impl TabStops {
-    fn new(tabs_str: Option<String>) -> TabStops {
-        match tabs_str {
-            Some(tabs_str) => {
-                if tabs_str == "" {
-                    return TabStops {
-                        offset: None,
-                        repetable: Some(8),
-                        positions: None
-                    }
-                }
-
-                let mut tabs_vec: Vec<&str> = tabs_str.split(',').map(|s| s.trim()).collect();
-
-                if tabs_vec.len() == 1 {
-                    return TabStops {
-                        offset: None,
-                        repetable: Some(tabs_vec[0].parse::<usize>().unwrap()),
-                        positions: None
-                    };
-                }
-
-                let mut offset: Option<usize> = None;
-                let mut repetable: Option<usize> = None;
-                let last_item = tabs_vec.last().unwrap().clone();
-
-                if last_item.contains(&"+") {
-                    offset = tabs_vec[tabs_vec.len() - 2].parse::<usize>().ok();
-                    repetable = last_item[1..].parse::<usize>().ok();
-                    tabs_vec.pop();
-                }
-
-                if last_item.contains(&"/") {
-                    repetable = last_item[1..].parse::<usize>().ok();
-                    tabs_vec.pop();
-                }
-
-
-                TabStops {
-                    offset,
-                    repetable,
-                    positions: Some(tabs_vec.iter().map(|p| p.parse::<usize>().unwrap()).collect())
-                }
-            },
-            None => {
-                TabStops {
-                    offset: None,
-                    repetable: Some(8),
-                    positions: None
-                }
-            }
-        }
-    }
-}
+mod tab_stops;
+use tab_stops::*;
 
 struct Unexpand {
     all: bool,
     first_only: bool,
-    tabs: Vec<String>,
-    output: Stdout,
+    tabs: TabStops,
 }
 
 impl Unexpand {
     fn from_matches(matches: &ArgMatches) -> Self {
         let all = matches.is_present("all");
         let first_only = matches.is_present("first_only");
+        let tabs_str = matches.value_of("tabs");
+        let tabs = TabStops::new(tabs_str);
 
-        Unexpand {
-            all,
-            first_only,
-            tabs: matches
-                .value_of("tabs")
-                .unwrap_or("8")
-                .split(",")
-                .map(|s| s.to_string())
-                .collect(),
-            output: stdout()
-        }
+        Unexpand { all, first_only, tabs }
     }
 
-    fn unexpand_line(self: &mut Self, line: String) {
+    fn unexpand_line(self: &mut Self, line: String) -> String {
         let mut convert = true;
         let mut spaces: usize = 0;
         let mut column: usize = 0;
+        let mut new_line: String = String::new();
 
         for c in line.bytes() {
             match c {
@@ -109,30 +42,27 @@ impl Unexpand {
                     column -= !!column;
                 }
                 _ => {
-                    if spaces > 2 && convert {
-                        self.output.write("\t".repeat(spaces / 2).as_bytes()).expect("write error");
+                    if spaces >= 2 && convert {
+                        new_line.push_str("\t".repeat(spaces / 2).as_str());
                         spaces = spaces % 2;
                     }
 
-                    self.output
-                        .write(String::from(" ").repeat(spaces).as_bytes())
-                        .expect("write error");
+                    new_line.push_str(String::from(" ").repeat(spaces).as_str());
 
                     spaces = 0;
 
-
-                    self.output.write(&[c as u8]).expect("write error");
+                    new_line.push(c as char);
                 }
             };
-
 
             column += 1;
             let blank = c == b' ' || c == b'\t';
             convert &= self.all || blank;
         }
 
-        self.output.write(b"\n").expect("write error");
-        self.output.flush().expect("write error");
+        new_line.push_str("\n");
+
+        new_line
     }
 }
 
@@ -163,18 +93,49 @@ fn main() {
         None => vec!["-".to_string()],
     };
 
+    let mut stdout = stdout();
+
     for file_path in files {
         if file_path == "-" {
             let stdin = stdin();
             for line in stdin.lock().lines() {
-                unexpand.unexpand_line(line.unwrap());
+                stdout.write_all(unexpand.unexpand_line(line.unwrap()).as_bytes())
+                    .expect("write error");
+                stdout.flush().expect("write error");
             }
         } else {
             let fd = File::open(file_path).unwrap();
             let reader = BufReader::new(fd);
             for line in reader.lines() {
-                unexpand.unexpand_line(line.unwrap());
+                stdout.write_all(unexpand.unexpand_line(line.unwrap()).as_bytes())
+                    .expect("write error");
+                stdout.flush().expect("write error");
             }
         }
     }
+}
+
+#[test]
+fn unexpand_lines() {
+    let mut instance = Unexpand {
+        all: false,
+        first_only: true,
+        tabs: TabStops::new(Some("2")),
+    };
+
+    assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
+    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
+    assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc  c\n"));
+    assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c    c\n"));
+
+    let mut instance = Unexpand {
+        all: true,
+        first_only: false,
+        tabs: TabStops::new(Some("2")),
+    };
+
+    assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
+    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
+    assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc\tc\n"));
+    assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\t\tc\n"));
 }
