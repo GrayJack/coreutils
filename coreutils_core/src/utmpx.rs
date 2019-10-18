@@ -11,7 +11,7 @@ use libc::__exit_status;
 use libc::c_short;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use libc::utmpxname;
-use libc::{endutxent, getutxent, setutxent, utmpx, time_t, suseconds_t};
+use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -171,7 +171,7 @@ impl Utmpx {
         let ut_type = UtmpxType::from(utm.ut_type);
 
         let timeval = TimeVal {
-            tv_sec: utm.ut_tv.tv_sec as time_t,
+            tv_sec:  utm.ut_tv.tv_sec as time_t,
             tv_usec: utm.ut_tv.tv_usec as suseconds_t,
         };
 
