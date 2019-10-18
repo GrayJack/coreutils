@@ -11,7 +11,7 @@ use libc::__exit_status;
 use libc::c_short;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use libc::utmpxname;
-use libc::{endutxent, getutxent, setutxent, utmpx};
+use libc::{endutxent, getutxent, setutxent, utmpx, time_t, suseconds_t};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -170,7 +170,10 @@ impl Utmpx {
 
         let ut_type = UtmpxType::from(utm.ut_type);
 
-        let timeval = utm.ut_tv;
+        let timeval = TimeVal {
+            tv_sec: utm.ut_tv.tv_sec as time_t,
+            tv_usec: utm.ut_tv.tv_usec as suseconds_t,
+        };
 
         #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly"))]
         let session = utm.ut_session;
