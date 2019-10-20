@@ -6,6 +6,7 @@ use std::{
     io::{self, BufRead, BufReader, Write},
     num::ParseIntError,
     result, string,
+    usize::{MAX, MIN},
 };
 
 fn main() {
@@ -20,7 +21,7 @@ fn main() {
     let complement = matches.is_present("complement");
     let options = Options { line_terminator, complement };
 
-    let result = make_cutter(&matches).and_then(|cutter| {
+    let result = make_cutter(&matches, &options).and_then(|cutter| {
         filenames
             .iter()
             .map(|filename| cutter.process_file(&filename, &options))
@@ -96,11 +97,11 @@ impl Range {
             return Err(Error::RangeError(format!("invalid range with no endpoint")));
         }
 
-        let lower = if v[0].len() == 0 { std::usize::MIN } else { v[0].parse::<usize>()? - 1 };
+        let lower = if v[0].len() == 0 { MIN } else { v[0].parse::<usize>()? - 1 };
         let upper = if v.len() == 1 {
             lower + 1
         } else if v[1].len() == 0 {
-            std::usize::MAX
+            MAX
         } else {
             v[1].parse::<usize>()?
         };
@@ -127,9 +128,12 @@ struct RangeSet {
 impl RangeSet {
     fn from_string(string: &str) -> Result<RangeSet> {
         // Split the string at commas and parse the pieces as ranges.
-        let mut ranges =
+        let ranges =
             string.split(',').map(|rng| Range::from_string(rng)).collect::<Result<Vec<Range>>>()?;
+        RangeSet::from_vec(ranges)
+    }
 
+    fn from_vec(mut ranges: Vec<Range>) -> Result<RangeSet> {
         // Sort the ranges on the start of the range. This will place
         // all ranges in correct order in the vector for the merging
         // below.
@@ -156,6 +160,22 @@ impl RangeSet {
             points.push(rng);
         }
         Ok(RangeSet { points })
+    }
+
+    // In-place complement a range set.
+    fn complement(&mut self) {
+        let mut points = Vec::new();
+        let mut carry = 0;
+        for range in &self.points {
+            if range.0 > carry {
+                points.push(Range(carry, range.0));
+            }
+            carry = range.1;
+        }
+        if carry < MAX {
+            points.push(Range(carry, MAX));
+        }
+        self.points = points;
     }
 }
 
@@ -292,17 +312,26 @@ impl Cutter for Fields {
 }
 
 // Factory function to create a cutter from command-line arguments.
-fn make_cutter(matches: &ArgMatches) -> Result<Box<dyn Cutter>> {
+fn make_cutter(matches: &ArgMatches, options: &Options) -> Result<Box<dyn Cutter>> {
     if let Some(rng) = matches.value_of("bytes") {
-        let range_set = RangeSet::from_string(rng)?;
+        let mut range_set = RangeSet::from_string(rng)?;
+        if options.complement {
+            range_set.complement();
+        }
         let cutter = Bytes::new(range_set, matches)?;
         Ok(Box::new(cutter))
     } else if let Some(rng) = matches.value_of("chars") {
-        let range_set = RangeSet::from_string(rng)?;
+        let mut range_set = RangeSet::from_string(rng)?;
+        if options.complement {
+            range_set.complement();
+        }
         let cutter = Chars::new(range_set, matches)?;
         Ok(Box::new(cutter))
     } else if let Some(rng) = matches.value_of("fields") {
-        let range_set = RangeSet::from_string(rng)?;
+        let mut range_set = RangeSet::from_string(rng)?;
+        if options.complement {
+            range_set.complement();
+        }
         let cutter = Fields::new(range_set, matches)?;
         Ok(Box::new(cutter))
     } else {
@@ -361,11 +390,38 @@ mod tests {
         );
         assert_eq!(
             RangeSet::from_string("2,5-"),
-            Ok(RangeSet { points: vec![Range(1, 2), Range(4, MAX)] })
+            RangeSet::from_vec(vec![Range(1, 2), Range(4, MAX)])
         );
         assert_eq!(
             RangeSet::from_string("-2,5-"),
             Ok(RangeSet { points: vec![Range(MIN, 2), Range(4, MAX)] })
         );
+    }
+
+    fn complement_rangeset_helper(ranges: Vec<Range>, expected: Vec<Range>) {
+        let mut range_set = RangeSet::from_vec(ranges).unwrap();
+        range_set.complement();
+        assert_eq!(range_set, RangeSet::from_vec(expected).unwrap());
+    }
+
+    #[test]
+    fn completment_rangeset() {
+        complement_rangeset_helper(vec![Range(MIN, MAX)], vec![]);
+        complement_rangeset_helper(vec![Range(MIN, 5)], vec![Range(5, MAX)]);
+        complement_rangeset_helper(vec![Range(5, MAX)], vec![Range(MIN, 5)]);
+        complement_rangeset_helper(vec![Range(1, 5)], vec![Range(MIN, 1), Range(5, MAX)]);
+        complement_rangeset_helper(vec![Range(1, 5), Range(8, 12)], vec![
+            Range(MIN, 1),
+            Range(5, 8),
+            Range(12, MAX),
+        ]);
+        complement_rangeset_helper(vec![Range(MIN, 5), Range(8, 12)], vec![
+            Range(5, 8),
+            Range(12, MAX),
+        ]);
+        complement_rangeset_helper(vec![Range(5, 8), Range(12, MAX)], vec![
+            Range(0, 5),
+            Range(8, 12),
+        ]);
     }
 }
