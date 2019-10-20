@@ -68,7 +68,7 @@ impl UtmpSet {
         }
 
         for raw_utm in vec {
-            set.insert(Utmp::from_c_utmp(utm as utmp));
+            set.insert(Utmp::from_c_utmp(raw_utm as utmp));
         }
 
         Ok(UtmpSet(set))
