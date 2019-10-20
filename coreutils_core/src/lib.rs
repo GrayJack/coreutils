@@ -8,6 +8,7 @@ pub mod consts;
 pub mod env;
 pub mod file_descriptor;
 pub mod group;
+pub mod mktemp;
 pub mod passwd;
 pub mod tty;
 pub mod types;
