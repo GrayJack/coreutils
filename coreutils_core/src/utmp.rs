@@ -46,6 +46,18 @@ impl Utmp {
 
         Utmp { user, host, line, time }
     }
+
+    /// Get user name
+    pub fn user(&self) -> &BStr { self.user.as_bstr() }
+
+    /// Get host name
+    pub fn host(&self) -> &BStr { self.host.as_bstr() }
+
+    /// Get the device name of the entry (usually a tty or console)
+    pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
+
+    /// Get the time the entry was created
+    pub fn time(&self) -> Time { &self.time }
 }
 
 #[derive(Debug)]
