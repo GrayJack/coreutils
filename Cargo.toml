@@ -5,6 +5,7 @@ members = [
     "basename",
     "dirname",
     "date",
+    "du",
     "echo",
     "env",
     "false",
