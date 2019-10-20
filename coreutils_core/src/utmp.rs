@@ -49,7 +49,7 @@ impl Utmp {
 }
 
 #[derive(Debug)]
-pub struct UtmpSet(HashSet<Utmpx>);
+pub struct UtmpSet(HashSet<Utmp>);
 
 impl UtmpSet {
     /// Creates a new collection over a utmpx entry binary file
