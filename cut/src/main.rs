@@ -3,9 +3,9 @@ use std::{
     cmp::min,
     fmt,
     fs::File,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead, BufReader, Write},
     num::ParseIntError,
-    result,
+    result, string,
 };
 
 fn main() {
@@ -16,13 +16,25 @@ fn main() {
         None => vec!["-"],
     };
 
+    let line_terminator = if matches.is_present("zero-terminated") { '\0' } else { '\n' } as u8;
+    let complement = matches.is_present("complement");
+    let options = Options { line_terminator, complement };
+
     let result = make_cutter(&matches).and_then(|cutter| {
-        filenames.iter().map(|filename| cutter.process_file(&filename)).collect::<Result<Vec<_>>>()
+        filenames
+            .iter()
+            .map(|filename| cutter.process_file(&filename, &options))
+            .collect::<Result<Vec<_>>>()
     });
 
     if let Err(err) = result {
         eprintln!("cut: {}", err);
     }
+}
+
+struct Options {
+    line_terminator: u8,
+    complement:      bool,
 }
 
 #[derive(PartialEq, Debug)]
@@ -40,6 +52,10 @@ impl From<ParseIntError> for Error {
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error { Error::IOError(format!("{}", err)) }
+}
+
+impl From<string::FromUtf8Error> for Error {
+    fn from(err: string::FromUtf8Error) -> Error { Error::ParseError(format!("{}", err)) }
 }
 
 impl fmt::Display for Error {
@@ -145,26 +161,27 @@ impl RangeSet {
 
 // Trait that is used to implement line cutting traits.
 trait Cutter {
-    fn process_line(&self, line: &str);
+    fn process_line(&self, line: Vec<u8>) -> Result<()>;
 
     // Process an entire file. The special file name "-" will be
     // reading from standard input.
-    fn process_file(&self, filename: &str) -> Result<()> {
+    fn process_file(&self, filename: &str, options: &Options) -> Result<()> {
         let mut reader: Box<dyn io::Read> =
             if filename == "-" { Box::new(io::stdin()) } else { Box::new(File::open(filename)?) };
-        self.process_input(&mut reader)
+        self.process_input(&mut reader, options)
     }
 
     // Process input from an already opened reader.
-    fn process_input(&self, reader: &mut Box<dyn io::Read>) -> Result<()> {
-        let reader = BufReader::new(reader);
-        for line in reader.lines() {
-            match line {
-                Ok(ref line) => self.process_line(line),
+    fn process_input(&self, reader: &mut Box<dyn io::Read>, options: &Options) -> Result<()> {
+        let mut reader = BufReader::new(reader);
+        loop {
+            let mut line = Vec::new();
+            match reader.read_until(options.line_terminator, &mut line) {
+                Ok(count) if count > 0 => self.process_line(line)?,
+                Ok(_) => return Ok(()),
                 Err(err) => return Err(Error::IOError(format!("I/O error: {}", err))),
             }
         }
-        Ok(())
     }
 }
 
@@ -178,15 +195,16 @@ impl Bytes {
 }
 
 impl Cutter for Bytes {
-    fn process_line(&self, line: &str) {
+    fn process_line(&self, bytes: Vec<u8>) -> Result<()> {
         // If line is shorter than range give, only print the parts of
         // the line that are in range.
         for range in &self.range_set.points {
-            if line.len() > range.0 {
-                print!("{}", &line[range.0..min(line.len(), range.1)]);
+            if bytes.len() > range.0 {
+                io::stdout().write_all(&bytes[range.0..min(bytes.len(), range.1)])?;
             }
         }
-        print!("\n");
+        io::stdout().write_all(b"\n")?;
+        Ok(())
     }
 }
 
@@ -201,7 +219,8 @@ impl Chars {
 }
 
 impl Cutter for Chars {
-    fn process_line(&self, line: &str) {
+    fn process_line(&self, bytes: Vec<u8>) -> Result<()> {
+        let line: String = String::from_utf8(bytes)?;
         let pieces: Vec<&str> = self
             .range_set
             .points
@@ -213,6 +232,7 @@ impl Cutter for Chars {
             })
             .collect();
         println!("{}", pieces.join(""));
+        Ok(())
     }
 }
 
@@ -246,7 +266,8 @@ impl Fields {
 }
 
 impl Cutter for Fields {
-    fn process_line(&self, line: &str) {
+    fn process_line(&self, bytes: Vec<u8>) -> Result<()> {
+        let line: String = String::from_utf8(bytes)?;
         let fields: Vec<&str> = line.split(&self.input_delimiter).collect();
         if !self.only_delimited || fields.len() > 1 {
             let pieces: Vec<_> = self
@@ -266,12 +287,12 @@ impl Cutter for Fields {
                 .collect();
             println!("{}", pieces.join(&self.output_delimiter));
         }
+        Ok(())
     }
 }
 
 // Factory function to create a cutter from command-line arguments.
 fn make_cutter(matches: &ArgMatches) -> Result<Box<dyn Cutter>> {
-    let line_delimiter = if matches.is_present("zero-terminated") { '\0' } else { '\n' };
     if let Some(rng) = matches.value_of("bytes") {
         let range_set = RangeSet::from_string(rng)?;
         let cutter = Bytes::new(range_set, matches)?;
