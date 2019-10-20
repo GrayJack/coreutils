@@ -14,8 +14,7 @@ use libc::utmp;
 
 use bstr::BString;
 
-enum Error {}
-
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmp {
     name: BString,
     line: BString,
