@@ -1,7 +1,9 @@
 //! Extended account database module
-use std::collections::{hash_set, HashSet};
+use std::{io, path::Path, collections::{hash_set, HashSet}};
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::{ffi::CStr, io};
+use std::ffi::CString;
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+use std::{mem, slice, fs::{self, File}, io::{Read, BufReader}};
 
 use crate::types::{Pid, TimeVal};
 
@@ -247,7 +249,15 @@ pub struct UtmpxSet(HashSet<Utmpx>);
 impl UtmpxSet {
     /// Creates a new collection over a utmpx entry binary file
     #[cfg(any(target_os = "linux", target_os = "macos"))]
-    pub fn from_file(file: &CStr) -> io::Result<Self> {
+    pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
+        let file = {
+            let str = match path.as_ref().to_str() {
+                Some(s) => s,
+                None => "",
+            };
+            CString::new(str).unwrap_or_default()
+        };
+
         let mut set = HashSet::new();
 
         unsafe {
@@ -268,6 +278,29 @@ impl UtmpxSet {
             }
 
             endutxent();
+        }
+
+        Ok(UtmpxSet(set))
+    }
+
+    /// Creates a new collection over a utmpx entry binary file
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
+        let struct_size = mem::size_of::<utmpx>();
+        let num_bytes = fs::metadata(&path)?.len() as usize;
+        let num_structs = num_bytes / struct_size;
+        let mut reader = BufReader::new(File::open(&path)?);
+        let mut vec = Vec::with_capacity(num_structs);
+        let mut set = HashSet::with_capacity(num_structs);
+
+        unsafe {
+            let mut buffer = slice::from_raw_parts_mut(vec.as_mut_ptr() as *mut u8, num_bytes);
+            reader.read_exact(&mut buffer)?;
+            vec.set_len(num_structs);
+        }
+
+        for raw_utm in vec {
+            set.insert(Utmpx::from_c_utmpx(raw_utm));
         }
 
         Ok(UtmpxSet(set))
