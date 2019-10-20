@@ -3,11 +3,11 @@ use std::{ffi::CString, process};
 
 use coreutils_core::utmpx::{UtmpxSet, UtmpxType};
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("users.yml");
-    let _matches = App::from_yaml(yaml).get_matches();
+    let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     let uts = if _matches.is_present("FILE") {

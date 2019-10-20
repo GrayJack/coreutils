@@ -37,24 +37,18 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 |  Haiku        | Tier3  | [![Haiku](https://github.com/GrayJack/coreutils/workflows/Haiku/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | - |
 
 ## Compilation
-Since not all targets provides full Unix API coverage (cause they aren't Unix) one can provide a manifest that have all utilities that would work on the target
+Since not all targets provides full Unix API coverage (cause they aren't Unix) and some targets have some methods lacking on libc crate, one can provide a manifest that have all utilities that would work on the target
 
-### On UNIX/UNIX-like
-```
-cp Unix.toml Cargo.toml
-cargo build
-```
-
-### On Fuchsia
-```
-cp Fuchsia.toml Cargo.toml
-cargo build
+### Compilation example
+```sh
+cp <Platform>.toml Cargo.toml
+cargo build --release
 ```
 
-### On Haiku
-```
-cp Haiku.toml Cargo.toml
-cargo build --manifest-path Haiku.toml
+### Install example
+```sh
+cp <Platform>.toml Cargo.toml
+cargo install --path .
 ```
 
 ## Tools
@@ -94,7 +88,7 @@ cargo build --manifest-path Haiku.toml
 |    ls    |      X      |         |      |
 |   mkdir  |      X      |         |      |
 |  mkfifo  |      X      |         |      |
-|    mv    |      X      |         |      |
+|    mv    |             |         |   X  |
 |   nice   |             |         |   X  |
 |    nl    |      X      |         |      |
 |   nohup  |      X      |         |      |
@@ -125,8 +119,8 @@ cargo build --manifest-path Haiku.toml
 | unexpand |      X      |         |      |
 |   uniq   |      X      |         |      |
 |  unlink  |             |         |   X  |
-|  uptime  |      X      |         |      |
-|   users  |      X      |         |      |
+|  uptime  |             |    X    |      |
+|   users  |             |    X    |      |
 |    wc    |             |         |   X  |
 |    who   |      X      |         |      |
 |  whoami  |             |         |   X  |

@@ -8,6 +8,13 @@ matrix:
   allow_failures:
     - rust: nightly
   fast_finish: true
+  include:
+    - name: "Check formatting"
+      rust: nightly-2019-10-14 # Nightly because some of the settings are unstable; not "nightly" to avoid the allow_failures check!
+      before_script:
+        - rustup component add rustfmt-preview
+      script:
+        - cargo fmt -- --check
 cache: cargo
 before_script:
   - rustup target add x86_64-unknown-netbsd x86_64-unknown-freebsd
