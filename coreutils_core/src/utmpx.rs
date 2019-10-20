@@ -1,9 +1,17 @@
 //! Extended account database module
-use std::{io, path::Path, collections::{hash_set, HashSet}};
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::ffi::CString;
+use std::{
+    collections::{hash_set, HashSet},
+    io,
+    path::Path,
+};
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
-use std::{mem, slice, fs::{self, File}, io::{Read, BufReader}};
+use std::{
+    fs::{self, File},
+    io::{BufReader, Read},
+    mem, slice,
+};
 
 use crate::types::{Pid, TimeVal};
 
