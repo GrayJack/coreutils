@@ -7,18 +7,11 @@ use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("users.yml");
-    let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
-    let uts = if _matches.is_present("FILE") {
-        let file = _matches.value_of("FILE").unwrap();
-        let file = match CString::new(file) {
-            Ok(s) => s,
-            Err(err) => {
-                eprintln!("users: {}", err);
-                process::exit(1);
-            },
-        };
+    let uts = if matches.is_present("FILE") {
+        let file = matches.value_of("FILE").unwrap();
+
         match UtmpxSet::from_file(&file) {
             Ok(u) => u,
             Err(_) => UtmpxSet::system(),
@@ -26,10 +19,6 @@ fn main() {
     } else {
         UtmpxSet::system()
     };
-
-    // When File is not possible, just ignore it
-    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
-    let uts = UtmpxSet::system();
 
     if !uts.is_empty() {
         uts.iter()
