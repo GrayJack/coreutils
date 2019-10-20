@@ -12,7 +12,7 @@ use crate::types::Time;
 
 use libc::utmp;
 
-use bstr::BString;
+use bstr::{BStr, BString, ByteSlice};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmp {
@@ -57,7 +57,7 @@ impl Utmp {
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
     /// Get the time the entry was created
-    pub fn time(&self) -> Time { &self.time }
+    pub fn time(&self) -> Time { self.time }
 }
 
 #[derive(Debug)]
