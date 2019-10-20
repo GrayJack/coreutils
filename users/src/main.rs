@@ -1,10 +1,10 @@
 #[cfg(any(target_os = "openbsd"))]
 use std::process;
 
-#[cfg(any(target_os = "openbsd"))]
-use coreutils_core::utmp::UtmpSet;
 #[cfg(not(any(target_os = "openbsd")))]
 use coreutils_core::utmpx::{UtmpxSet, UtmpxType};
+#[cfg(any(target_os = "openbsd"))]
+use coreutils_core::{utmp::UtmpSet, ByteSlice};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -35,7 +35,7 @@ fn main() {
     } else {
         #[cfg(any(target_os = "openbsd"))]
         match UtmpSet::system() {
-            Ok(u) => return u,
+            Ok(u) => u,
             Err(err) => {
                 eprintln!("users: failed to get utmp: {}", err);
                 process::exit(1);
@@ -49,11 +49,12 @@ fn main() {
     if !uts.is_empty() {
         #[cfg(any(target_os = "openbsd"))]
         uts.iter()
-            .filter(|u| match u.user() {
-                "" => false,
-                "poweroff" => false,
-                "reboot" => false,
-                _ => true,
+            .filter(|u| match u.user().to_str() {
+                Ok("") => false,
+                Ok("shutdown") => false,
+                Ok("reboot") => false,
+                Ok(_) => true,
+                Err(_) => false,
             })
             .for_each(|u| print!("{} ", u.user()));
 
