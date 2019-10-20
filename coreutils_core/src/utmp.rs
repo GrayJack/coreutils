@@ -2,7 +2,7 @@
 use std::{
     collections::{hash_set, HashSet},
     fs::{self, File},
-    io::{self, BufReader},
+    io::{self, BufReader, Read},
     mem,
     path::Path,
     slice,
@@ -16,9 +16,9 @@ use bstr::BString;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmp {
-    name: BString,
+    user: BString,
     line: BString,
-    host: Bstring,
+    host: BString,
     time: Time,
 }
 
@@ -26,7 +26,7 @@ impl Utmp {
     pub fn from_c_utmp(utm: utmp) -> Self {
         let user = {
             let cstr: String =
-                utm.ut_user.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
+                utm.ut_name.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
             BString::from(cstr.as_bytes())
         };
 
@@ -54,8 +54,8 @@ pub struct UtmpSet(HashSet<Utmpx>);
 impl UtmpSet {
     /// Creates a new collection over a utmpx entry binary file
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
-        let struct_size = std::mem::size_of::<utmp>();
-        let num_bytes = std::fs::metadata(&path)?.len() as usize;
+        let struct_size = mem::size_of::<utmp>();
+        let num_bytes = fs::metadata(&path)?.len() as usize;
         let num_structs = num_bytes / struct_size;
         let mut reader = BufReader::new(File::open(&path)?);
         let mut vec = Vec::with_capacity(num_structs);
@@ -71,7 +71,7 @@ impl UtmpSet {
             set.insert(Utmp::from_c_utmp(utm as utmp));
         }
 
-        Ok(set)
+        Ok(UtmpSet(set))
     }
 
     /// Creates a new collection geting all entries from the running system
