@@ -1,0 +1,67 @@
+name: cut
+version: "0.0.0"
+author: Mats Kindahl <mats.kindahl@gmail.com>
+about: >
+  Display selected parts of lines from each FILE to standard output.
+
+  With no FILE, or when FILE is -, read standard input.
+args:
+    - FILE:
+        help: File(s) to read, or '-' to read from stdin
+        required: false
+        multiple: true
+    - bytes:
+        long: bytes
+        short: b
+        value_name: LIST
+        help: Select only these bytes
+        conflicts_with:
+          - chars
+          - fields
+    - chars:
+        long: characters
+        short: c
+        value_name: LIST
+        conflicts_with:
+          - bytes
+          - fields
+        help: Select only these characters.
+    - input-delimiter:
+        long: delimiter
+        short: d
+        requires:
+          - fields
+        value_name: DELIM
+        help: Use DELIM instead of TAB for field delimiter.
+    - fields:
+        long: fields
+        short: f
+        conflicts_with:
+          - bytes
+          - chars
+        value_name: LIST
+        help: >
+          Select only these fields. Will display any line that contains
+          no delimiter character, unless the -s option is specified.
+    - complement:
+        long: complement
+        short: C
+        help: >
+          Complement the set of selected bytes, characters, or fields.
+    - only-delimited:
+        long: only-delimited
+        short: s
+        requires:
+          - fields
+        help: Do not display lines not containing delimiters
+    - output-delimiter:
+        long: output-delimiter
+        short: D
+        value_name: STRING
+        help: >
+          Use STRING as the output delimiter. Defaults to use the
+          input delimiter.
+    - zero-terminated:
+        long: zero-terminated
+        short: z
+        help: Line delimiter is NUL. Default is to use newline.
