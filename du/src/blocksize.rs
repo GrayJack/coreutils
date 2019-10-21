@@ -105,15 +105,13 @@ impl BlocksizeSuffix {
 
 #[derive(Debug)]
 pub struct Blocksize {
-    value: u64,
+    value:  u64,
     suffix: Option<BlocksizeSuffix>,
     use_si: bool,
 }
 
 impl Blocksize {
-    pub fn new() -> Blocksize {
-        Blocksize { value: init_blocksize(), suffix: None, use_si: false }
-    }
+    pub fn new() -> Blocksize { Blocksize { value: init_blocksize(), suffix: None, use_si: false } }
 
     pub fn from_str(size: &str) -> Result<Blocksize, BlocksizeError> {
         let init = Blocksize::new();
@@ -137,14 +135,14 @@ impl Blocksize {
                 } else {
                     Ok(blocksize.with_value(value))
                 }
-            }
+            },
             Err(err) => {
                 if value == 0 {
                     return Err(BlocksizeError::InvalidBlocksize);
                 } else {
                     Err(err)
                 }
-            }
+            },
         }
     }
 
@@ -179,9 +177,7 @@ impl Blocksize {
         Ok(self)
     }
 
-    pub fn use_si(&mut self) {
-        self.use_si = true;
-    }
+    pub fn use_si(&mut self) { self.use_si = true; }
 
     pub fn use_largest_suffix(self) -> Blocksize {
         let total = self.value();
@@ -190,13 +186,9 @@ impl Blocksize {
         Blocksize { value: total / suffix.map_or(1, |s| s.value()), suffix, use_si: self.use_si }
     }
 
-    pub fn value(&self) -> u64 {
-        self.value * self.suffix.map_or(1, |s| s.value())
-    }
+    pub fn value(&self) -> u64 { self.value * self.suffix.map_or(1, |s| s.value()) }
 
-    pub fn human_readable(&self) -> String {
-        format!("{}", self)
-    }
+    pub fn human_readable(&self) -> String { format!("{}", self) }
 
     pub fn get_suffix_str(&self) -> &'static str {
         match self.suffix {

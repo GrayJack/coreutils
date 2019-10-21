@@ -29,14 +29,12 @@ pub enum TimeOption {
 
 #[derive(Clone, Debug, Eq)]
 pub struct DuTime {
-    seconds: i64,
+    seconds:   i64,
     n_seconds: i64,
 }
 
 impl DuTime {
-    pub fn new(seconds: i64) -> DuTime {
-        DuTime { seconds, n_seconds: 0 }
-    }
+    pub fn new(seconds: i64) -> DuTime { DuTime { seconds, n_seconds: 0 } }
 
     pub fn with_nano_seconds(mut self, n_secs: i64) -> DuTime {
         self.n_seconds = n_secs;
@@ -60,9 +58,7 @@ impl Ord for DuTime {
 }
 
 impl PartialOrd for DuTime {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
 }
 
 impl PartialEq for DuTime {

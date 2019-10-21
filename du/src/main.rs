@@ -113,7 +113,7 @@ fn parse_blocksize(matches: &ArgMatches) -> Blocksize {
             Ok(blocksize) => return blocksize,
             _ => {
                 process::exit(1);
-            }
+            },
         }
     }
 
@@ -122,7 +122,7 @@ fn parse_blocksize(matches: &ArgMatches) -> Blocksize {
             Ok(blocksize) => return blocksize,
             _ => {
                 process::exit(1);
-            }
+            },
         }
     }
 
@@ -130,18 +130,18 @@ fn parse_blocksize(matches: &ArgMatches) -> Blocksize {
         match Blocksize::from_str(size) {
             Ok(blocksize) => {
                 return blocksize;
-            }
+            },
             Err(err) => {
                 match err {
                     BlocksizeError::InvalidBlocksize => {
                         eprintln!("du: invalid --block-size argument: '{}'", size);
-                    }
+                    },
                     BlocksizeError::InvalidSuffixError(s) => {
                         eprintln!("du: invalid suffix in --block-size argument: '{}'", &s)
-                    }
+                    },
                 }
                 process::exit(1);
-            }
+            },
         }
     }
     initial_size
@@ -154,7 +154,7 @@ fn parse_exclude_pattern(value: Option<&str>) -> Option<Pattern> {
             Err(err) => {
                 println!("du: error parsing value for --exclude-pattern: {}", err);
                 process::exit(1);
-            }
+            },
         }
     }
     None
@@ -170,7 +170,7 @@ fn parse_depth(matches: &ArgMatches) -> Option<usize> {
             Err(err) => {
                 eprintln!("du: error parsing value for --max-depth: {}", err);
                 process::exit(1);
-            }
+            },
         }
     }
     None
@@ -187,11 +187,11 @@ fn parse_threshold(value: Option<&str>) -> Option<(bool, Blocksize)> {
             Err(err) => match err {
                 BlocksizeError::InvalidBlocksize => {
                     eprintln!("du: invalid --threshold argument: '{}'", threshold);
-                }
+                },
                 BlocksizeError::InvalidSuffixError(s) => {
                     eprintln!("du: invalid suffix in --threshold argument: '{}'", &s);
                     process::exit(1);
-                }
+                },
             },
         }
     }
@@ -205,17 +205,17 @@ fn parse_time(matches: &ArgMatches) -> Option<TimeOption> {
         match time {
             "mtime" => {
                 return Some(TimeOption::MTime);
-            }
+            },
             "atime" | "access" => {
                 return Some(TimeOption::ATime);
-            }
+            },
             "ctime" | "status" | "use" => {
                 return Some(TimeOption::CTime);
-            }
+            },
             _ => {
                 eprintln!("du: invalid --time argument: {}", time);
                 process::exit(1);
-            }
+            },
         }
     }
     None
@@ -237,7 +237,7 @@ fn parse_time_style(value: Option<&str>) -> TimeStyleOption {
             _ => {
                 eprintln!("du: invalid --time-style argument: {}", &style);
                 process::exit(1);
-            }
+            },
         };
     } else {
         return TimeStyleOption::LongIso;
@@ -326,12 +326,10 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions) {
 
 // returns file size and manages the subdir sizes vector
 fn process_value(
-    meta: &Metadata,
-    flags_opts: &DuFlagsAndOptions,
-    subdir_sizes_r: &mut Vec<u64>,
-    depth: usize,
+    meta: &Metadata, flags_opts: &DuFlagsAndOptions, subdir_sizes_r: &mut Vec<u64>, depth: usize,
     is_dir: bool,
-) -> DisplayValue {
+) -> DisplayValue
+{
     let subdir_count = subdir_sizes_r.len() - 1;
 
     if depth > subdir_count {
@@ -361,7 +359,7 @@ fn process_value(
             DisplayValue::DiskUsage(b) => {
                 let blk_val = b.value();
                 return DisplayValue::DiskUsage(b.with_value(blk_val + subdir_sum));
-            }
+            },
         }
     }
 
@@ -396,14 +394,10 @@ fn get_bytes(metadata: &Metadata, use_apparent_size: bool) -> u64 {
 }
 
 #[cfg(not(target_family = "unix"))]
-fn get_bytes(metadata: &Metadata, use_apparent_size: bool) -> u64 {
-    metadata.len()
-}
+fn get_bytes(metadata: &Metadata, use_apparent_size: bool) -> u64 { metadata.len() }
 
 #[cfg(target_family = "unix")]
-fn get_inode() -> u64 {
-    1
-}
+fn get_inode() -> u64 { 1 }
 
 #[cfg(not(target_family = "unix"))]
 fn get_inode() -> u64 {
@@ -413,10 +407,7 @@ fn get_inode() -> u64 {
 
 // returns file time and manages the max_time vector
 fn process_time(
-    meta: &Metadata,
-    time: &TimeOption,
-    subdir_times_r: &mut Vec<DuTime>,
-    depth: usize,
+    meta: &Metadata, time: &TimeOption, subdir_times_r: &mut Vec<DuTime>, depth: usize,
 ) -> DuTime {
     let subdir_times_count = subdir_times_r.len() - 1;
 
@@ -467,14 +458,10 @@ fn get_sec(sys_time_res: Result<SystemTime, Error>) -> Option<i64> {
 
 // applies filters from args before printing
 fn filter_and_print(
-    root: &str,
-    path: &Display,
-    value: DisplayValue,
-    time: Option<DuTime>,
-    flags_opts: &DuFlagsAndOptions,
-    depth: usize,
-    is_dir: bool,
-) {
+    root: &str, path: &Display, value: DisplayValue, time: Option<DuTime>,
+    flags_opts: &DuFlagsAndOptions, depth: usize, is_dir: bool,
+)
+{
     let print_entry: bool;
 
     if is_dir {
@@ -502,18 +489,18 @@ fn satisfies_threshold(value: &DisplayValue, threshold_opt: &Option<(bool, Block
             if let Some(threshold) = threshold_opt {
                 let (t_is_negative, t_value) = (threshold.0, threshold.1.value());
 
-                //exclude entries greater than THRESHOLD if negative
+                // exclude entries greater than THRESHOLD if negative
                 if t_is_negative && blocksize.value() > t_value {
                     return false;
                 }
 
-                //exclude entries smaller then THRESHOLD if positive
+                // exclude entries smaller then THRESHOLD if positive
                 if !t_is_negative && blocksize.value() < t_value {
                     return false;
                 }
             }
             true
-        }
+        },
     }
 }
 
@@ -529,10 +516,7 @@ fn print_du(value: DisplayValue, path: &Display, flags_opts: &DuFlagsAndOptions)
 }
 
 fn print_du_with_time(
-    value: DisplayValue,
-    time: DuTime,
-    path: &Display,
-    flags_opts: &DuFlagsAndOptions,
+    value: DisplayValue, time: DuTime, path: &Display, flags_opts: &DuFlagsAndOptions,
 ) {
     if satisfies_threshold(&value, &flags_opts.threshold) {
         print!(
@@ -563,7 +547,7 @@ fn format_display_value(value: DisplayValue, flags_opts: &DuFlagsAndOptions) -> 
 
                 format!("{}{}", blocksize_fraction, flags_opts.blocksize.get_suffix_str())
             }
-        }
+        },
     }
 }
 
