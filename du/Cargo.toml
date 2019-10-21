@@ -12,7 +12,4 @@ walkdir = "^2.2.9"
 glob = "^0.3.0"
 
 [build-dependencies]
-chrono = "^0.4.9"
 clap = { version = "^2.33.0", features = ["yaml"] }
-walkdir = "^2.2.9"
-glob = "^0.3.0"
