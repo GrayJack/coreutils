@@ -1,8 +1,17 @@
 name: yes
-version: "0.0.0"
-author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Repeatedly output a line with all specified STRING(s), or 'y'."
+version: "0.0.1"
+author: Federico Ponzi <federico.ponzi@gmail.com>
+about: "Run a commmand and ignore SIGHUP signals. If standard input is a terminal, redirect it from an unreadable file.
+If standard output is a terminal, append output to 'nohup.out' if possible,
+'$HOME/nohup.out' otherwise.
+If standard error is a terminal, redirect it to standard output.
+To save output to FILE, use 'nohup COMMAND > FILE'.
+
+NOTE: your shell may have its own version of nohup, which usually supersedes
+the version described here.  Please refer to your shell's documentation
+for details about the options it supports."
 args:
-    - STRING:
-        help: The text to be printed.
+    - COMMAND:
+        help: Run COMMAND, which will ignore hangup signals.
         multiple: true
+        required: true
