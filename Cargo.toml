@@ -1,8 +1,9 @@
 [workspace]
 members = [
-    "coreutils_core",
     "basename",
     "clear",
+    "coreutils_core",
+    "cut",
     "date",
     "dirname",
     "echo",
@@ -13,6 +14,7 @@ members = [
     "id",
     "link",
     "logname",
+    "mktemp",
     "mv",
     "nice",
     "pwd",

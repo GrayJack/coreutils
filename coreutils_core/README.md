@@ -10,5 +10,6 @@ Here lies several abstraction for Unix/Unix-like structures in the OS supported 
  * tty module: helper function about tty and `TtyName` to get the ttyname
  * Routing table abstractions for OpenBSD
  * Audit structs and syscall for FreeBSD and MacOS
+ * mktemp: Wrappers for libc mkstemp(3) and mkdtemp(3)
 
 It also re-export major needed things from [bstr](https://github.com/BurntSushi/bstr), a crate with a string type for Rust that is not required to be valid UTF-8.

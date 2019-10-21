@@ -1,7 +1,4 @@
-use std::{
-    io,
-    os::raw::{c_double, c_int},
-};
+use std::{io, os::raw::c_double};
 
 use libc::getloadavg;
 
