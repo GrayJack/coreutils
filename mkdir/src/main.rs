@@ -1,11 +1,13 @@
-use std::fs;
-use std::os::unix::fs::PermissionsExt;
-
+use std::{fs, os::unix::fs::PermissionsExt};
 use clap::{load_yaml, App};
 
 
 fn log<S: Into<String>>(msg: S) {
     println!("mkdir: {}", msg.into());
+}
+
+fn log_err<S: Into<String>>(msg: S) {
+    eprintln!("mkdir: {}", msg.into());
 }
 
 fn main() {
@@ -38,12 +40,12 @@ fn main() {
                             perms.set_mode(umode);
                         }
                         Err(e) => {
-                            log(format!("{}", e));
+                            log_err(format!("{}", e));
                         }
                     }
                 }
             }
-            Err(e) => log(format!("cannot create directory '{}': {}", d, e))
+            Err(e) => log_err(format!("cannot create directory '{}': {}", d, e))
         }
     }
 }
