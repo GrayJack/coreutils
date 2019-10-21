@@ -14,14 +14,14 @@ args:
     - all:
           long: all
           short: a
-          help: Prints counts for all files, not just directories
+          help: Display counts for all files, not just directories
     - apparent-size:
           long: apparent-size
-          help: Prints apparent sizes rather than disk usage
+          help: Display apparent sizes rather than disk usage
     - block-size:
           long: block-size
           short: B
-          help: Scales sizes by SIZE before printing them
+          help: Scales sizes by SIZE before displaying them
           takes_value: true
           value_name: SIZE
     - bytes:
@@ -35,19 +35,21 @@ args:
     - dereference-args:
           long: dereference-args
           short: D
+          help: Dereference only symlinks that are given as arguments
     - max-depth:
           long: max-depth
           short: d
-          help: Prints the total for a directory only if it is N or fewer levels below the FILEs
+          help: Display the total for a directory only if it is N or fewer levels below the FILEs
           takes_value: true
           value_name: N
     - dereference-args-alias:
+          long: deref-args
           short: H
           help: Equivalent to '--dereference-args (-D)'
     - human-readable:
           long: human-readable
           short: h
-          help: Outputs sizes in a human readable format
+          help: Display sizes in a human readable format
           conflicts_with:
               - si
               - apparent-size
@@ -57,6 +59,7 @@ args:
               - bytes
     - inodes:
           long: inodes
+          short: i
           help: Lists inode usage information instead of block usage
           conflicts_with:
               - apparent-size
@@ -66,6 +69,7 @@ args:
               - bytes
     - block-size-k:
           short: k
+          long: blocks-k
           help: Equivalent to '--block-size=1K'
     - dereference:
           long: dereference
@@ -76,6 +80,7 @@ args:
           short: l
           help: Counts sizes many times if hard linked
     - block-size-m:
+          long: blocks-m
           short: m
           help: Equivalent to '--block-size=1M'
     - seperate-dirs:
@@ -84,6 +89,7 @@ args:
           help: For directories do not include size of subdirectories
     - si:
           long: si
+          short: I
           help: Like -h, but uses powers of 1000 not 1024
           conflicts_with:
               - human-readable
@@ -95,18 +101,19 @@ args:
     - summarize:
           long: summarize
           short: s
-          help: Outputs only a total for each FILE
+          help: Display only a total for each FILE
           conflicts_with:
               - all
     - threshold:
           long: threshold
           short: t
-          help: Excludes entries smaller then THRESHOLD if positive or entries greater than THRESHOLD if negative
+          help: Exclude entries smaller then THRESHOLD if positive or entries greater than THRESHOLD if negative
           takes_value: true
           value_name: SIZE
     - time:
           long: time
-          help: Shows WORD file timestamp
+          short: T
+          help: Show WORD file timestamp
           takes_value: true
           value_name: WORD
           possible_values:
@@ -118,16 +125,18 @@ args:
               - status
     - time-style:
           long: time-style
-          help: Shows times using STYLE
+          short: j
+          help: Show times using STYLE
           takes_value: true
           value_name: STYLE
           requires: time
     - exclude-pattern:
           long: exclude
-          help: Excludes files that match PATTERN
+          short: p
+          help: Exclude files that match PATTERN
           takes_value: true
           value_name: PATTERN
     - one-file-system:
           long: one-file-system
           short: x
-          help: Skips directories on different file systems
+          help: Skip directories on different file systems
