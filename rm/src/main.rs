@@ -93,10 +93,10 @@ fn ask(
         if filetype.is_file() {
             let msg =
                 format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new()::with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_dir() {
             let msg = format!("rm: delete write_protected dir file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new()::with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg));
         }
     }
 
@@ -104,17 +104,17 @@ fn ask(
         if filetype.is_file() && permissions.readonly() {
             let msg =
                 format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new()::with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_file() && !permissions.readonly() {
             let msg = format!("rm: delete regular file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new()::with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_dir() && permissions.readonly() {
             let msg =
                 format!("rm: delete write_protected directory file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new()::with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_dir() && !permissions.readonly() {
             let msg = format!("rm: delete directory file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new()::with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg));
         }
     }
 
@@ -259,7 +259,7 @@ fn rm_dir_all_recursive(
 ) -> io::Result<()> {
     if flags.interactive {
         let msg = format!("rm: Descend into directory '{}'? [Y/n]: ", relative);
-        let input = Input::new()::with_msg(&msg);
+        let input = Input::new().with_msg(&msg);
 
         if !input.is_affirmative() {
             return Ok(());

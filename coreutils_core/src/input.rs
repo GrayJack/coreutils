@@ -49,7 +49,7 @@ impl Input {
         self.input = Some(line);
     }
 
-    pub fn get(&self) -> Option<&str> {
+    pub fn get(&mut self) -> Option<&str> {
         self.get_input();
 
         match self.input {
@@ -58,7 +58,7 @@ impl Input {
         }
     }
 
-    pub fn is_affirmative(&self) -> bool {
+    pub fn is_affirmative(&mut self) -> bool {
         self.get_input();
 
         if let Some(input) = &self.input {
