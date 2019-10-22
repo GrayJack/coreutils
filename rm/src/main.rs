@@ -38,7 +38,7 @@ fn main() {
     }
 
     if flags.interactive_batch && (files.len() > 3 || flags.recursive) {
-        let input = Input::new()::with_msg("rm: are you sure you want to do this deletion? [Y/n]: ");
+        let input = Input::new().with_msg("rm: are you sure you want to do this deletion? [Y/n]: ");
 
         if !input.is_affirmative() {
             process::exit(1);
