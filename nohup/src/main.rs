@@ -35,12 +35,13 @@ fn main() -> Result<(), Error> {
         })
     };
     let _signal_handler = unsafe {
-        signal_hook::register(signal_hook::SIGHUP, || {
-            //ignore
+        signal_hook::register(signal_hook::SIGINT, || {
+            // ignore
+            println!("Hello world! :D ");
         })
     }?;
     if isatty(FileDescriptor::StdOut) {
-        //Try to open in write append nohup.out else open $HOME/nohup.out
+        // Try to open in write append nohup.out else open $HOME/nohup.out
         command = command.stdout(get_stdout());
     }
     // If standard error is a terminal, redirect it to standard output.
