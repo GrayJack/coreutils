@@ -52,7 +52,7 @@ impl Input {
     pub fn get(&mut self) -> Option<&str> {
         self.get_input();
 
-        match self.input {
+        match &self.input {
             Some(input) => Some(input.trim()),
             None => None,
         }
