@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "coreutils_core",
+    "coreutqils_core",
     "basename",
     "clear",
     "cut",

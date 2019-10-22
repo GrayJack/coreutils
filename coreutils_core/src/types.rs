@@ -3,7 +3,7 @@
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use libc::c_int;
 
-use libc::{getegid, geteuid, getgid, getuid, gid_t, pid_t, time_t, timeval, uid_t, suseconds_t};
+use libc::{getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t};
 
 /// Time stamp type used on system structures
 pub type TimeVal = timeval;

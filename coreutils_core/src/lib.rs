@@ -10,10 +10,10 @@ pub mod file_descriptor;
 pub mod group;
 pub mod mktemp;
 pub mod passwd;
+pub mod settime;
 pub mod tty;
 pub mod types;
 pub mod utsname;
-pub mod settime;
 
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub mod load;
