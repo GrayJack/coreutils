@@ -41,16 +41,16 @@ impl<'a> Input<'a> {
                     eprintln!("{}", err);
                 }
 
-                return None
+                return None;
             },
         };
 
         Some(line)
     }
 
-    pub fn get(self) -> Option<&'a str> {
+    pub fn get(self) -> Option<String> {
         match self.get_input() {
-            Some(input) => Some(input.trim()),
+            Some(input) => Some(input.trim().to_owned()),
             None => None,
         }
     }
