@@ -16,8 +16,19 @@ fn main() {
     let flags = DuFlagsAndOptions::from_matches(&matches);
     let paths = parse_files(&matches);
 
+    let mut grand_total = 0;
+
     for path in paths {
-        process_path(path, &flags);
+        process_path(path, &flags, &mut grand_total);
+    }
+
+    if flags.grand_total {
+        let total_value = if flags.use_inodes {
+            DisplayValue::INodes(grand_total)
+        } else {
+            DisplayValue::DiskUsage(Blocksize::new().with_value(grand_total))
+        };
+        print_du(total_value, String::from("total"), &flags);
     }
 }
 
@@ -244,7 +255,7 @@ fn parse_time_style(value: Option<&str>) -> TimeStyleOption {
     }
 }
 
-fn process_path(path: &str, flags_opts: &DuFlagsAndOptions) {
+fn process_path(path: &str, flags_opts: &DuFlagsAndOptions, total_ref: &mut u64) {
     let walker = WalkDir::new(path)
         .same_file_system(flags_opts.one_file_system)
         .follow_links(flags_opts.dereference)
@@ -259,6 +270,8 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions) {
     // tracks max m/a/c-time of a subdir
     let mut subir_max_times = vec![DuTime::new(0)];
 
+    let mut arg_total = 0;
+
     walker
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -271,6 +284,11 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions) {
                 if meta.is_dir() {
                     let value =
                         process_value(&meta, flags_opts, &mut subdir_sizes, current_depth, true);
+
+                    if flags_opts.grand_total {
+                        arg_total = value.get_size();
+                    }
+
                     if let Some(t) = &flags_opts.time {
                         let time = process_time(&meta, t, &mut subir_max_times, current_depth);
                         filter_and_print(
@@ -322,6 +340,10 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions) {
                 }
             }
         });
+
+    if flags_opts.grand_total {
+        *total_ref += arg_total;
+    }
 }
 
 // returns file size and manages the subdir sizes vector
@@ -475,9 +497,9 @@ fn filter_and_print(
 
     if print_entry {
         if let Some(t) = time {
-            print_du_with_time(value, t, path, flags_opts);
+            print_du_with_time(value, t, path.to_string(), flags_opts);
         } else {
-            print_du(value, path, flags_opts);
+            print_du(value, path.to_string(), flags_opts);
         }
     }
 }
@@ -504,7 +526,7 @@ fn satisfies_threshold(value: &DisplayValue, threshold_opt: &Option<(bool, Block
     }
 }
 
-fn print_du(value: DisplayValue, path: &Display, flags_opts: &DuFlagsAndOptions) {
+fn print_du(value: DisplayValue, path: String, flags_opts: &DuFlagsAndOptions) {
     if satisfies_threshold(&value, &flags_opts.threshold) {
         print!(
             "{}\t{}{}",
@@ -516,7 +538,7 @@ fn print_du(value: DisplayValue, path: &Display, flags_opts: &DuFlagsAndOptions)
 }
 
 fn print_du_with_time(
-    value: DisplayValue, time: DuTime, path: &Display, flags_opts: &DuFlagsAndOptions,
+    value: DisplayValue, time: DuTime, path: String, flags_opts: &DuFlagsAndOptions,
 ) {
     if satisfies_threshold(&value, &flags_opts.threshold) {
         print!(
