@@ -18,6 +18,7 @@ members = [
     "mv",
     "nice",
     "pwd",
+	"nohup",
     "rm",
     "rmdir",
     "sleep",
