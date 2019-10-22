@@ -6,6 +6,7 @@ use std::{
     os::raw::c_int,
 };
 
+// TODO(GrayJack): Make a pull request to expose that on libc crate
 pub mod syscall {
     //! Expose publically the syscalls, use with caution
     use std::os::raw::c_int;

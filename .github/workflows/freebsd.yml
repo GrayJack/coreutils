@@ -17,4 +17,6 @@ jobs:
     - name: Install target
       run: rustup target add x86_64-unknown-freebsd
     - name: Check FreeBSD
-      run: cargo check --verbose --target x86_64-unknown-freebsd
+      run: |
+        cp FreeBSD.toml Cargo.toml
+        cargo check --verbose --target x86_64-unknown-freebsd
