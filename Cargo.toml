@@ -9,6 +9,7 @@ members = [
     "false",
     "groups",
     "id",
+    "ls",
     "logname",
     "nice",
     "pwd",
