@@ -1,9 +1,6 @@
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use coreutils_core::{
-    types::TimeVal,
-    settime::settimeofday
-};
+use coreutils_core::{settime::settimeofday, types::Subsec, types::Time, types::TimeVal};
 use std::{fmt, io, io::ErrorKind, path::Path, process};
 use time::Tm;
 
@@ -42,15 +39,7 @@ fn date(args: &ArgMatches) -> Result<(), String> {
             Err(e) => return Err(e),
         }
         if !is_convert {
-            let time = TimeVal {
-                tv_sec: datetime.timestamp(),
-                tv_usec: datetime.timestamp_subsec_micros() as i32
-            };
-
-            return match settimeofday(time) {
-                Ok(_) => Ok(()),
-                Err(err) => Err(err.to_string())
-            }
+            return set_os_time(datetime);
         }
     }
 
@@ -65,15 +54,7 @@ fn date(args: &ArgMatches) -> Result<(), String> {
         }
 
         if !is_convert {
-            let time = TimeVal {
-                tv_sec: datetime.timestamp(),
-                tv_usec: datetime.timestamp_subsec_micros() as i32
-            };
-
-            return match settimeofday(time) {
-                Ok(_) => Ok(()),
-                Err(err) => Err(err.to_string())
-            }
+            return set_os_time(datetime);
         }
     }
 
@@ -94,6 +75,19 @@ fn date(args: &ArgMatches) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+/// Sets the os datetime to `datetime`
+fn set_os_time(datetime: DateTime<Local>) -> Result<(), String> {
+    let time = TimeVal {
+        tv_sec: datetime.timestamp() as Time,
+        tv_usec: datetime.timestamp_subsec_micros() as Subsec,
+    };
+
+    return match settimeofday(time) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err.to_string()),
+    };
 }
 
 /// Reads datetime from `input`. Could be seconds or a filepath.
