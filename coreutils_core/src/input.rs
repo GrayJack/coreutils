@@ -1,36 +1,80 @@
 use std::{io, io::prelude::*, process};
 
 #[derive(Debug)]
-pub struct Input(String);
+pub struct Input {
+    input: Option<String>,
+    msg: Option<String>,
+    err_msg: Option<String>,
+}
+
+impl Default for Input {
+    fn default() -> Input {
+        Input {
+            input: None,
+            msg: None,
+            err_msg: None,
+        }
+    }
+}
 
 impl Input {
     pub fn new() -> Self {
+        Input::default()
+    }
+
+    pub fn with_msg(&self, msg: &str) -> &Self {
+        self.msg = Some(msg.to_string());
+
+        self
+    }
+
+    pub fn with_err_msg(&self, err_msg: &str) -> &Self {
+        self.err_msg = Some(err_msg.to_string());
+
+        self
+    }
+
+    fn get_input(&self) {
+        if let Some(msg) = self.msg {
+            print!("{}", msg);
+            io::stdout().lock().flush().unwrap();
+        }
+        
         let mut line = String::new();
         match io::stdin().lock().read_line(&mut line) {
             Ok(_) => {},
             Err(err) => {
-                eprintln!("rm: cannot read input: {}", err);
-                process::exit(1);
+                if let Some(err_msg) = self.err_msg {
+                    eprintln!("{}: {}", err_msg, err);
+                } else {
+                    eprintln!("{}", err);
+                }
+
+                self.input = None;
             },
         };
 
-        Input(line)
+        self.input = Some(line);
     }
 
-    pub fn with_msg(msg: &str) -> Self {
-        print!("{}", msg);
-
-        if let Err(err) = io::stdout().lock().flush() {
-            eprintln!("rm: could not flush stdout: {}", err);
-            process::exit(1);
+    pub fn get(&self) -> Option<&str> {
+        self.get_input();
+        
+        match self.input {
+            Some(input) => Some(input.trim()),
+            None => None,
         }
-
-        Self::new()
     }
 
     pub fn is_affirmative(&self) -> bool {
-        let input = self.0.trim().to_uppercase();
+        self.get_input();
 
-        input == "Y" || input == "YES" || input == "1"
+        if let Some(input) = self.input {
+            let input = input.trim().to_uppercase();
+
+            input == "Y" || input == "YES" || input == "1"
+        } else {
+            false
+        }
     }
 }

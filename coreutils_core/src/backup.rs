@@ -2,10 +2,10 @@ use regex::Regex;
 use std::{
     fs,
     io::{Error, ErrorKind},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BackupMode {
     None,
     Numbered,
@@ -25,7 +25,7 @@ impl BackupMode {
     }
 }
 
-pub fn create_numbered_backup(file: &PathBuf) -> Result<PathBuf, Error> {
+pub fn create_numbered_backup(file: &Path) -> Result<PathBuf, Error> {
     let mut index = 1_u64;
     loop {
         if index == std::u64::MAX {
@@ -47,7 +47,7 @@ pub fn create_numbered_backup(file: &PathBuf) -> Result<PathBuf, Error> {
     }
 }
 
-pub fn create_existing_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf, Error> {
+pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Error> {
     let mut has_numbered_backup = false;
     let regex = Regex::new(r"~\d+~").unwrap();
     let parent = file.parent().unwrap();
@@ -69,7 +69,7 @@ pub fn create_existing_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf
     }
 }
 
-pub fn create_simple_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf, Error> {
+pub fn create_simple_backup(file: &Path, suffix: &str) -> Result<PathBuf, Error> {
     let new = PathBuf::from(format!("{}{}", file.display(), suffix));
 
     match fs::rename(file, &new) {

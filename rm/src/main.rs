@@ -5,7 +5,7 @@ use std::{
     path::PathBuf,
     process,
 };
-
+use coreutils_core::input::*;
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 fn main() {
@@ -86,45 +86,17 @@ impl RmFlags {
     }
 }
 
-#[derive(Debug)]
-struct Input(String);
-
-impl Input {
-    fn new() -> Self {
-        let mut line = String::new();
-        match io::stdin().lock().read_line(&mut line) {
-            Ok(_) => {},
-            Err(err) => {
-                eprintln!("rm: cannot read input: {}", err);
-                process::exit(1);
-            },
-        };
-
-        Input(line)
-    }
-
-    fn with_msg(msg: &str) -> Self {
-        print!("{}", msg);
-
-        if let Err(err) = io::stdout().lock().flush() {
-            eprintln!("rm: could not flush stdout: {}", err);
-            process::exit(1);
-        }
-
-        Self::new()
-    }
-
-    fn ask(
+fn ask(
         filetype: FileType, permissions: &Permissions, filename: &str, flags: RmFlags,
     ) -> Result<Self, ()> {
         if !flags.interactive && permissions.readonly() {
             if filetype.is_file() {
                 let msg =
                     format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
-                return Ok(Self::with_msg(&msg));
+                return Ok(Input::with_msg(&msg));
             } else if filetype.is_dir() {
                 let msg = format!("rm: delete write_protected dir file '{}'? [Y/n]: ", filename);
-                return Ok(Self::with_msg(&msg));
+                return Ok(Input::with_msg(&msg));
             }
         }
 
@@ -132,29 +104,22 @@ impl Input {
             if filetype.is_file() && permissions.readonly() {
                 let msg =
                     format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
-                return Ok(Self::with_msg(&msg));
+                return Ok(Input::with_msg(&msg));
             } else if filetype.is_file() && !permissions.readonly() {
                 let msg = format!("rm: delete regular file '{}'? [Y/n]: ", filename);
-                return Ok(Self::with_msg(&msg));
+                return Ok(Input::with_msg(&msg));
             } else if filetype.is_dir() && permissions.readonly() {
                 let msg =
                     format!("rm: delete write_protected directory file '{}'? [Y/n]: ", filename);
-                return Ok(Self::with_msg(&msg));
+                return Ok(Input::with_msg(&msg));
             } else if filetype.is_dir() && !permissions.readonly() {
                 let msg = format!("rm: delete directory file '{}'? [Y/n]: ", filename);
-                return Ok(Self::with_msg(&msg));
+                return Ok(Input::with_msg(&msg));
             }
         }
 
         Err(())
     }
-
-    fn is_affirmative(&self) -> bool {
-        let input = self.0.trim().to_uppercase();
-
-        input == "Y" || input == "YES" || input == "1"
-    }
-}
 
 fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<()> {
     for (index, file) in files.iter().enumerate() {
