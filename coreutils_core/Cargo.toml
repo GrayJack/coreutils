@@ -8,3 +8,4 @@ edition = "2018"
 libc = { version = "^0.2.64", features = ["extra_traits"] }
 regex = "^1"
 bstr = "^0.2.8"
+time = "~0.1.42"
