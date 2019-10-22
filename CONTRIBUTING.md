@@ -54,7 +54,8 @@ Core: Groups: Blablabla bla bla
 
 ### Rust Styleguide
 * Don't use nightly only features.
-* The code must be formatted with this repository `rustfmt` configuration `rustfmt.toml`.
+* The code must be formatted with this repository `rustfmt` configuration `rustfmt.toml`, otherwise the CI will fail.
+  * Install the toolchain with: `rustup toolchain install nightly` and then format your code with `cargo +nightly fmt`. Be sure that `cargo +nightly fmt -- --check` doesn't print anything. 
 * Documentation should always be included when needed, for both functions, methods, modules, etc.
 * Tests, when possible, should always be included/updated with your changes.
 * Always comment what you're doing if it's not obvious, should be before the code that need explaining.
