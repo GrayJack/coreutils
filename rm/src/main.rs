@@ -91,8 +91,7 @@ fn ask(
 ) -> Result<Input, ()> {
     if !flags.interactive && permissions.readonly() {
         if filetype.is_file() {
-            let msg =
-                format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
+            let msg = format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
             return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_dir() {
             let msg = format!("rm: delete write_protected dir file '{}'? [Y/n]: ", filename);
@@ -102,15 +101,13 @@ fn ask(
 
     if flags.interactive {
         if filetype.is_file() && permissions.readonly() {
-            let msg =
-                format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
+            let msg = format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
             return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_file() && !permissions.readonly() {
             let msg = format!("rm: delete regular file '{}'? [Y/n]: ", filename);
             return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_dir() && permissions.readonly() {
-            let msg =
-                format!("rm: delete write_protected directory file '{}'? [Y/n]: ", filename);
+            let msg = format!("rm: delete write_protected directory file '{}'? [Y/n]: ", filename);
             return Ok(Input::new().with_msg(&msg));
         } else if filetype.is_dir() && !permissions.readonly() {
             let msg = format!("rm: delete directory file '{}'? [Y/n]: ", filename);
