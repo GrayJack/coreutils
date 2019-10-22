@@ -2,25 +2,17 @@ use std::{io, io::prelude::*, process};
 
 #[derive(Debug)]
 pub struct Input {
-    input: Option<String>,
-    msg: Option<String>,
+    input:   Option<String>,
+    msg:     Option<String>,
     err_msg: Option<String>,
 }
 
 impl Default for Input {
-    fn default() -> Input {
-        Input {
-            input: None,
-            msg: None,
-            err_msg: None,
-        }
-    }
+    fn default() -> Input { Input { input: None, msg: None, err_msg: None } }
 }
 
 impl Input {
-    pub fn new() -> Self {
-        Input::default()
-    }
+    pub fn new() -> Self { Input::default() }
 
     pub fn with_msg(&self, msg: &str) -> &Self {
         self.msg = Some(msg.to_string());
@@ -39,7 +31,7 @@ impl Input {
             print!("{}", msg);
             io::stdout().lock().flush().unwrap();
         }
-        
+
         let mut line = String::new();
         match io::stdin().lock().read_line(&mut line) {
             Ok(_) => {},
@@ -59,7 +51,7 @@ impl Input {
 
     pub fn get(&self) -> Option<&str> {
         self.get_input();
-        
+
         match self.input {
             Some(input) => Some(input.trim()),
             None => None,
