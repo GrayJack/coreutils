@@ -1,5 +1,5 @@
-use coreutils_core::input::*;
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use coreutils_core::input::*;
 use std::{
     env::current_dir,
     fs::{self, FileType, Permissions},

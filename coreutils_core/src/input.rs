@@ -1,33 +1,32 @@
 use std::{io, io::prelude::*};
 
 #[derive(Debug)]
-pub struct Input {
-    input:   Option<String>,
-    msg:     Option<String>,
-    err_msg: Option<String>,
+pub struct Input<'a> {
+    msg:     Option<&'a str>,
+    err_msg: Option<&'a str>,
 }
 
-impl Default for Input {
-    fn default() -> Input { Input { input: None, msg: None, err_msg: None } }
+impl<'a> Default for Input<'a> {
+    fn default() -> Input<'a> { Input { msg: None, err_msg: None } }
 }
 
-impl Input {
-    pub fn new() -> Self { Input::default() }
+impl<'a> Input<'a> {
+    pub fn new() -> Input<'a> { Input::default() }
 
-    pub fn with_msg(&mut self, msg: &str) -> &Self {
-        self.msg = Some(msg.to_string());
+    pub fn with_msg(&mut self, msg: &'a str) -> &mut Self {
+        self.msg = Some(msg);
 
         self
     }
 
-    pub fn with_err_msg(&mut self, err_msg: &str) -> &Self {
-        self.err_msg = Some(err_msg.to_string());
+    pub fn with_err_msg(&mut self, err_msg: &'a str) -> &mut Self {
+        self.err_msg = Some(err_msg);
 
         self
     }
 
-    fn get_input(&mut self) {
-        if let Some(msg) = &self.msg {
+    fn get_input(self) -> Option<String> {
+        if let Some(msg) = self.msg {
             print!("{}", msg);
             io::stdout().lock().flush().unwrap();
         }
@@ -36,32 +35,28 @@ impl Input {
         match io::stdin().lock().read_line(&mut line) {
             Ok(_) => {},
             Err(err) => {
-                if let Some(err_msg) = &self.err_msg {
+                if let Some(err_msg) = self.err_msg {
                     eprintln!("{}: {}", err_msg, err);
                 } else {
                     eprintln!("{}", err);
                 }
 
-                self.input = None;
+                return None
             },
         };
 
-        self.input = Some(line);
+        Some(line)
     }
 
-    pub fn get(&mut self) -> Option<&str> {
-        self.get_input();
-
-        match &self.input {
+    pub fn get(self) -> Option<&'a str> {
+        match self.get_input() {
             Some(input) => Some(input.trim()),
             None => None,
         }
     }
 
-    pub fn is_affirmative(&mut self) -> bool {
-        self.get_input();
-
-        if let Some(input) = &self.input {
+    pub fn is_affirmative(self) -> bool {
+        if let Some(input) = self.get_input() {
             let input = input.trim().to_uppercase();
 
             input == "Y" || input == "YES" || input == "1"
