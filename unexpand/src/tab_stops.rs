@@ -13,7 +13,11 @@ impl TabStops {
                     return TabStops { offset: None, repetable: Some(8), positions: vec![] };
                 }
 
-                let mut tabs_vec: Vec<&str> = tabs_str.split(',').map(|s| s.trim()).collect();
+                let tabs_str = tabs_str.replace(", ", ",");
+                let mut tabs_vec: Vec<&str> = tabs_str
+                    .split(|c| c == ',' || c == ' ')
+                    .map(|s| s.trim())
+                    .collect();
 
                 if tabs_vec.len() == 1 {
                     let value = tabs_vec[0].parse::<usize>().unwrap();
@@ -180,4 +184,10 @@ fn is_tab_stop_with_values_and_repetable() {
     assert_eq!(instance.is_tab_stop(8), true);
     assert_eq!(instance.is_tab_stop(9), false);
     assert_eq!(instance.is_tab_stop(16), true);
+}
+
+#[test]
+fn tab_stops_separate_by_blanks() {
+    let instance = TabStops::new(Some("2 4"));
+    assert_eq!(instance.positions, vec![2, 4]);
 }
