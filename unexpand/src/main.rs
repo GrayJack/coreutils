@@ -33,7 +33,6 @@ impl Unexpand {
         let mut new_line: String = String::new();
 
         for c in line.bytes() {
-
             match c {
                 b' ' => {
                     spaces += 1;
@@ -148,4 +147,7 @@ fn unexpand_lines() {
     let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("2,/4"))};
     assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t\tc\tc\n"));
+
+    let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("2 4 6"))};
+    assert_eq!(instance.unexpand_line(String::from("      c")), String::from("\t\t\tc\n"));
 }
