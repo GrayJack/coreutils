@@ -56,5 +56,5 @@ Core: Groups: Blablabla bla bla
 * Don't use nightly only features.
 * The code must be formatted with this repository `rustfmt` configuration `rustfmt.toml`.
 * Documentation should always be included when needed, for both functions, methods, modules, etc.
-* Tests should always be included/updated with your changes.
+* Tests, when possible, should always be included/updated with your changes.
 * Always comment what you're doing if it's not obvious, should be before the code that need explaining.

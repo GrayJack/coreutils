@@ -1,6 +1,6 @@
 use std::env;
 
-use clap::{ App, Shell, load_yaml };
+use clap::{load_yaml, App, Shell};
 
 fn main() {
     let yaml = load_yaml!("src/rmdir.yml");
@@ -8,7 +8,7 @@ fn main() {
 
     let out_dir = match env::var("OUT_DIR") {
         Ok(dir) => dir,
-        _ => return
+        _ => return,
     };
 
     app.gen_completions("rmdir", Shell::Zsh, out_dir.clone());

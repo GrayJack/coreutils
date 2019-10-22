@@ -6,11 +6,11 @@ use std::{
     process,
 };
 
-use clap::{load_yaml, App, ArgMatches};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 fn main() {
     let yaml = load_yaml!("rm.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let flags = RmFlags::from_matches(&matches);
 

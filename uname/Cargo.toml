@@ -2,6 +2,7 @@
 name = "uname"
 version = "0.1.0"
 authors = ["GrayJack <gr41.j4ck@gmail.com>"]
+build = "build.rs"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

@@ -3,11 +3,7 @@ version: "0.1.0"
 author: Ashwin-A-K <ashwinkumar3098@gmail.com>
 about: "Clear the terminal screen"
 args:
-  # -T $TERM:
-  #   help: use this instead of $TERM
-  #   long: T
-  #   short: T
-  -x:
-    help: do not try to clear scrollback
-    long: x
-    short: x
+    - x:
+        help: Do not try to clear scrollback
+        long: no-scrollback
+        short: x

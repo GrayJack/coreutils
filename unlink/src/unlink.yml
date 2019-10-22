@@ -1,0 +1,8 @@
+name: unlink
+version: "0.0.0"
+author: "Torbjörn Lönnemark <tobbez@ryara.net>"
+about: Call the unlink function to remove a specified file
+args:
+    - FILE:
+        help: "File to be unlinked"
+        required: true

@@ -6,11 +6,11 @@ use coreutils_core::{
 use GrError::*;
 use PwError::*;
 
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("groups.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let by_name = matches.is_present("USER");
     let id = matches.is_present("id");
@@ -47,13 +47,9 @@ fn main() {
 
     if !groups.is_empty() {
         if id {
-            for group in groups {
-                print!("{}:{} ", group.name(), group.id());
-            }
+            groups.iter().for_each(|g| print!("{}:{} ", g.name(), g.id()));
         } else {
-            for group in groups {
-                print!("{} ", group.name());
-            }
+            groups.iter().for_each(|g| print!("{} ", g.name()));
         }
     }
     println!();

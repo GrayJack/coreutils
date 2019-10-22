@@ -1,6 +1,6 @@
 name: MacOS
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -17,4 +17,6 @@ jobs:
     - name: Build
       run: cargo check --verbose
     - name: Run tests
-      run: cargo test --verbose
+      run: |
+        cp MacOS.toml Cargo.toml
+        cargo test --verbose

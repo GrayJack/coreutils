@@ -1,6 +1,6 @@
 name: Solaris
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -17,4 +17,6 @@ jobs:
     - name: Install target
       run: rustup target add x86_64-sun-solaris
     - name: Check Solaris
-      run: cargo check --verbose --target x86_64-sun-solaris
+      run: |
+        cp Solaris.toml Cargo.toml
+        cargo check --verbose --target x86_64-sun-solaris

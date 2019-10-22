@@ -1,6 +1,6 @@
 name: NetBSD
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   check:
@@ -17,4 +17,6 @@ jobs:
     - name: Install target
       run: rustup target add x86_64-unknown-netbsd
     - name: Check NetBSD
-      run: cargo check --verbose --target x86_64-unknown-netbsd
+      run: |
+        cp NetBSD.toml Cargo.toml
+        cargo check --verbose --target x86_64-unknown-netbsd

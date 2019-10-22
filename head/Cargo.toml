@@ -1,0 +1,11 @@
+[package]
+name = "head"
+version = "0.1.0"
+authors = ["Odin Dutton <odindutton@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+
+[build-dependencies]
+clap = { version = "^2.33.0", features = ["yaml"] }

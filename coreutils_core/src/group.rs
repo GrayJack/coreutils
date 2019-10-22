@@ -10,6 +10,7 @@ use std::{
     mem::MaybeUninit,
     os::raw::c_char,
     ptr,
+    slice::Iter,
 };
 
 #[cfg(target_os = "macos")]
@@ -323,13 +324,13 @@ impl Group {
 /// A collection of `Group`.
 #[derive(Debug, Clone, Default)]
 pub struct Groups {
-    iter: Vec<Group>,
+    inner: Vec<Group>,
 }
 
 impl Groups {
     /// Creates a empty new `Groups`.
     #[inline]
-    pub fn new() -> Self { Groups { iter: Vec::new() } }
+    pub fn new() -> Self { Groups { inner: Vec::new() } }
 
     /// Get all the process caller groups
     pub fn caller() -> Result<Self> {
@@ -362,7 +363,7 @@ impl Groups {
             gs
         };
 
-        Ok(Groups { iter: groups })
+        Ok(Groups { inner: groups })
     }
 
     /// Get all groups that `username` belongs.
@@ -472,20 +473,22 @@ impl Groups {
             gs
         };
 
-        Ok(Groups { iter: groups })
+        Ok(Groups { inner: groups })
     }
 
     /// Insert as `Group` on `Groups`.
     #[inline]
-    pub fn push(&mut self, value: Group) { self.iter.push(value); }
+    pub fn push(&mut self, value: Group) { self.inner.push(value); }
 
     /// Return `true` if `Groups` contains 0 elements.
     #[inline]
-    pub fn is_empty(&self) -> bool { self.iter.is_empty() }
+    pub fn is_empty(&self) -> bool { self.inner.is_empty() }
 
     /// Transform `Groups` to a Vector of `Group`.
     #[inline]
-    pub fn into_vec(self) -> Vec<Group> { self.iter }
+    pub fn into_vec(self) -> Vec<Group> { self.inner }
+
+    pub fn iter(&self) -> Iter<'_, Group> { self.inner.iter() }
 }
 
 impl IntoIterator for Groups {
@@ -493,5 +496,5 @@ impl IntoIterator for Groups {
     type Item = Group;
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter { self.iter.into_iter() }
+    fn into_iter(self) -> Self::IntoIter { self.inner.into_iter() }
 }
