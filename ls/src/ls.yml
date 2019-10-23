@@ -1,24 +1,16 @@
-name: rm
+name: ls
 version: "0.1"
 author: "Lucas Leonardo <lucasleonardo@protonmail.com>"
-about: Remove files or directories
+about: List files and directories
 args:
     - all:
         help: Show hidden
         short: a
         long: all
-    # - noPreserveRoot:
-    #     help: Do not treat '/' specially
-    #     long_help: "Prompt once before removing more than three files, or when removing recursively.\n\n Less intrusive than -i, while still giving protection against most mistakes"
-    #     short: n
-    #     long: no-preserve-root
-    # - preserveRoot:
-    #     help: Do not remove '/' (default)
-    #     short: p
-    #     long: preserve-root
-    #     conflicts_with:
-    #         - noPreserveRoot
+    - long:
+        help: Show long, detailed form
+        short: l
     - FILE:
         long_help: "Directory to be shown"
         required: false
-        multiple: false
+        multiple: true
