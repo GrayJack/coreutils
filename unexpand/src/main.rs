@@ -11,7 +11,7 @@ mod tab_stops;
 use tab_stops::*;
 
 struct Unexpand {
-    all: bool,
+    all:  bool,
     tabs: TabStops,
 }
 
@@ -47,18 +47,18 @@ impl Unexpand {
                         new_line.push_str("\t");
                         spaces = 0;
                     }
-                }
+                },
                 b'\x08' => {
                     spaces -= !!spaces;
                     column -= !!column;
-                }
+                },
                 _ => {
                     column -= spaces;
                     new_line.push_str(String::from(" ").repeat(spaces as usize).as_str());
                     spaces = 0;
                     new_line.push(c as char);
                     convert &= self.all;
-                }
+                },
             };
         }
 
@@ -77,7 +77,7 @@ fn main() {
         Err(err) => {
             eprintln!("rm: error reading current working directory: {}", err);
             process::exit(1);
-        }
+        },
     };
 
     let files: Vec<String> = match matches.values_of("FILE") {

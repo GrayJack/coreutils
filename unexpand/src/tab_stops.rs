@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct TabStops {
-    offset: Option<usize>,
+    offset:    Option<usize>,
     repetable: Option<usize>,
     positions: Vec<usize>,
 }
@@ -59,7 +59,7 @@ impl TabStops {
                 }
 
                 TabStops { offset, repetable, positions: vec![] }
-            }
+            },
             None => TabStops { offset: None, repetable: Some(8), positions: vec![] },
         }
     }
@@ -117,27 +117,19 @@ fn new_values_with_prefix() {
 
 #[test]
 #[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending() {
-    TabStops::new(Some("2,1"));
-}
+fn new_panic_ascending() { TabStops::new(Some("2,1")); }
 
 #[test]
 #[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending2() {
-    TabStops::new(Some("2,2"));
-}
+fn new_panic_ascending2() { TabStops::new(Some("2,2")); }
 
 #[test]
 #[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero() {
-    TabStops::new(Some("0"));
-}
+fn new_panic_zero() { TabStops::new(Some("0")); }
 
 #[test]
 #[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero_values() {
-    TabStops::new(Some("0,1"));
-}
+fn new_panic_zero_values() { TabStops::new(Some("0,1")); }
 
 #[test]
 fn is_tab_stop_repetable() {
