@@ -14,10 +14,8 @@ impl TabStops {
                 }
 
                 let tabs_str = tabs_str.replace(", ", ",");
-                let mut tabs_vec: Vec<&str> = tabs_str
-                    .split(|c| c == ',' || c == ' ')
-                    .map(|s| s.trim())
-                    .collect();
+                let mut tabs_vec: Vec<&str> =
+                    tabs_str.split(|c| c == ',' || c == ' ').map(|s| s.trim()).collect();
 
                 if tabs_vec.len() == 1 {
                     let value = tabs_vec[0].parse::<usize>().unwrap();
@@ -57,7 +55,7 @@ impl TabStops {
                         }
                     }
 
-                    return TabStops { offset, repetable, positions: positions };
+                    return TabStops { offset, repetable, positions };
                 }
 
                 TabStops { offset, repetable, positions: vec![] }
@@ -71,7 +69,8 @@ impl TabStops {
             return true;
         }
 
-        if self.repetable.is_some() && column % self.repetable.unwrap() == self.offset.unwrap_or(0) {
+        if self.repetable.is_some() && column % self.repetable.unwrap() == self.offset.unwrap_or(0)
+        {
             return true;
         }
 
@@ -139,7 +138,6 @@ fn new_panic_zero() {
 fn new_panic_zero_values() {
     TabStops::new(Some("0,1"));
 }
-
 
 #[test]
 fn is_tab_stop_repetable() {
