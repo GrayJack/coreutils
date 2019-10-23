@@ -155,4 +155,9 @@ fn unexpand_lines() {
 
     let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2 4 6"))};
     assert_eq!(instance.unexpand_line(String::from("      c")), String::from("\t\t\tc\n"));
+
+    // backspace tests
+    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2"))};
+    assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
+    assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
 }
