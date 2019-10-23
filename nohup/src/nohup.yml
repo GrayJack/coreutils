@@ -1,4 +1,4 @@
-name: yes
+name: nohup
 version: "0.0.1"
 author: Federico Ponzi <federico.ponzi@gmail.com>
 about: "Run a commmand and ignore SIGHUP signals. If standard input is a terminal, redirect it from an unreadable file.
