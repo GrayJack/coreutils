@@ -43,7 +43,7 @@ struct Options {
 struct Error(String, i32);
 
 impl From<ParseIntError> for Error {
-    fn from(_err: ParseIntError) -> Error { Error(format!("not an integer"), 2) }
+    fn from(_err: ParseIntError) -> Error { Error("not an integer".to_string(), 2) }
 }
 
 impl From<io::Error> for Error {
@@ -75,19 +75,19 @@ impl Range {
     /// # Errors
     fn from_string(string: &str) -> Result<Range> {
         let v: Vec<&str> = string.split('-').collect();
-        if string.len() == 0 || v.len() < 1 || v.len() > 2 {
-            return Err(Error(format!("invalid byte or character range"), 2));
+        if string.is_empty() || v.is_empty() || v.len() > 2 {
+            return Err(Error("invalid byte or character range".to_string(), 2));
         }
 
         // An interval with no endpoints at all should give an error.
-        if v.len() == 2 && v[0].len() == 0 && v[1].len() == 0 {
-            return Err(Error(format!("invalid range with no endpoint"), 2));
+        if v.len() == 2 && v[0].is_empty() && v[1].is_empty() {
+            return Err(Error("invalid range with no endpoint".to_string(), 2));
         }
 
-        let lower = if v[0].len() == 0 { MIN } else { v[0].parse::<usize>()? - 1 };
+        let lower = if v[0].is_empty() { MIN } else { v[0].parse::<usize>()? - 1 };
         let upper = if v.len() == 1 {
             lower + 1
-        } else if v[1].len() == 0 {
+        } else if v[1].is_empty() {
             MAX
         } else {
             v[1].parse::<usize>()?
@@ -174,7 +174,7 @@ trait Cutter {
     }
 
     // Process input from an already opened reader.
-    fn process_input(&self, reader: &mut Box<dyn io::Read>, options: &Options) -> Result<()> {
+    fn process_input(&self, reader: &mut dyn io::Read, options: &Options) -> Result<()> {
         let mut reader = BufReader::new(reader);
         loop {
             let mut line = Vec::new();
@@ -250,12 +250,12 @@ impl Fields {
     fn new(range_set: RangeSet, matches: &ArgMatches) -> Result<Fields> {
         let idelim = matches.value_of("input-delimiter").unwrap_or("\t");
         if idelim.len() != 1 {
-            return Err(Error(format!("single character for delimiter"), 2));
+            return Err(Error("single character for delimiter".to_string(), 2));
         }
 
         let odelim = matches.value_of("output-delimiter").unwrap_or(idelim);
         if odelim.len() != 1 {
-            return Err(Error(format!("single character for delimiter"), 2));
+            return Err(Error("single character for delimiter".to_string(), 2));
         }
 
         Ok(Fields {
@@ -317,7 +317,7 @@ fn make_cutter(matches: &ArgMatches, options: &Options) -> Result<Box<dyn Cutter
         let cutter = Fields::new(range_set, matches)?;
         Ok(Box::new(cutter))
     } else {
-        Err(Error(format!("not possible to select cutter"), 1))
+        Err(Error("not possible to select cutter".to_string(), 1))
     }
 }
 
