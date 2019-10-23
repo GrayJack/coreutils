@@ -58,7 +58,7 @@ pub mod backup {
         }
     }
 
-    pub fn create_existing_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf, Error> {
+    pub fn create_existing_backup(file: &PathBuf, suffix: &str) -> Result<PathBuf, Error> {
         let mut has_numbered_backup = false;
         let regex = Regex::new(r"~\d+~").unwrap();
         let parent = file.parent().unwrap();
@@ -74,13 +74,13 @@ pub mod backup {
         }
 
         if has_numbered_backup {
-            return create_numbered_backup(file);
+            create_numbered_backup(file)
         } else {
-            return create_simple_backup(file, suffix);
+            create_simple_backup(file, suffix)
         }
     }
 
-    pub fn create_simple_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf, Error> {
+    pub fn create_simple_backup(file: &PathBuf, suffix: &str) -> Result<PathBuf, Error> {
         let new = PathBuf::from(format!("{}{}", file.display(), suffix));
 
         match fs::rename(file, &new) {
@@ -254,7 +254,7 @@ fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
         }
     }
 
-    return success;
+    success
 }
 
 fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
