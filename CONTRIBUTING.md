@@ -19,7 +19,7 @@ The following is a set of guidelines for contributing to coreutils. These are mo
   * [Documentation Styleguide](#documentation-styleguide)
 
 [References](#references)
-  * [Man Pages (online)](#man-pages)
+  * [Man Pages (online)](#man-pages-online)
 
 ## Code of Conduct
 Just don't be an pain in anyone's butt 😸
@@ -48,6 +48,9 @@ After forking and making your changes, always make a Pull Request to the `master
 ```
 Core: Groups: Blablabla bla bla
 ```
+```
+Id: Implement flag '-a'
+```
 
 ### Tools Styleguide
 * Always use `clap` with `yaml` support to create the tools arguments.
@@ -66,7 +69,7 @@ Core: Groups: Blablabla bla bla
 * Always comment what you're doing if it's not obvious, should be before the code that need explaining.
 
 ## References
-### Manual pages (online)
+### Manual pages online
 * [Linux](https://www.linux.org/docs/index.html)
 * [FreeBSD](https://www.freebsd.org/cgi/man.cgi)
 * [NetBSD](https://netbsd.gw.com/cgi-bin/man-cgi?)
