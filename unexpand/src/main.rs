@@ -1,7 +1,7 @@
 use std::{
     env::current_dir,
     fs::File,
-    io::{prelude::BufRead, stdin, stdout, BufReader, Stdout, Write},
+    io::{prelude::BufRead, stdin, stdout, BufReader, Write},
     process,
 };
 
@@ -12,24 +12,29 @@ use tab_stops::*;
 
 struct Unexpand {
     all: bool,
-    first_only: bool,
     tabs: TabStops,
 }
 
 impl Unexpand {
     fn from_matches(matches: &ArgMatches) -> Self {
-        let all = matches.is_present("all");
+        let mut all = matches.is_present("all");
         let first_only = matches.is_present("first_only");
         let tabs_str = matches.value_of("tabs");
         let tabs = TabStops::new(tabs_str);
 
-        Unexpand { all, first_only, tabs }
+        if first_only {
+            all = false;
+        } else if tabs_str.is_some() {
+            all = true;
+        }
+
+        Unexpand { all, tabs }
     }
 
     fn unexpand_line(self: &mut Self, line: String) -> String {
         let mut convert = true;
-        let mut spaces: usize = 0;
-        let mut column: usize = 0;
+        let mut spaces: i32 = 0;
+        let mut column: i32 = 0;
         let mut new_line: String = String::new();
 
         for c in line.bytes() {
@@ -38,7 +43,7 @@ impl Unexpand {
                     spaces += 1;
                     column += 1;
 
-                    if self.tabs.is_tab_stop(column) && convert {
+                    if self.tabs.is_tab_stop(column as usize) && convert {
                         new_line.push_str("\t");
                         spaces = 0;
                     }
@@ -49,7 +54,7 @@ impl Unexpand {
                 }
                 _ => {
                     column -= spaces;
-                    new_line.push_str(String::from(" ").repeat(spaces).as_str());
+                    new_line.push_str(String::from(" ").repeat(spaces as usize).as_str());
                     spaces = 0;
                     new_line.push(c as char);
                     convert &= self.all;
@@ -114,19 +119,19 @@ fn main() {
 
 #[test]
 fn unexpand_lines() {
-    let mut instance = Unexpand { all: false, first_only: true, tabs: TabStops::new(Some("2")) };
+    let mut instance = Unexpand { all: false, tabs: TabStops::new(Some("2")) };
     assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc  c\n"));
     assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c    c\n"));
 
-    let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("2")) };
+    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")) };
     assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\t\tc\n"));
 
-    let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("8"))};
+    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("8"))};
     assert_eq!(instance.unexpand_line(String::from("    c")), String::from("    c\n"));
     assert_eq!(instance.unexpand_line(String::from("  c")), String::from("  c\n"));
     assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("  c  c\n"));
@@ -134,7 +139,7 @@ fn unexpand_lines() {
     assert_eq!(instance.unexpand_line(String::from("        c")), String::from("\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("        c        c")), String::from("\tc\tc\n"));
 
-    let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("2,+4"))};
+    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,+4"))};
     assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("          c")), String::from("\t\t\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("  c    c")), String::from("\tc\tc\n"));
@@ -144,10 +149,10 @@ fn unexpand_lines() {
     assert_eq!(instance.unexpand_line(String::from("      c        c")), String::from("\t\tc\t\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("      c        c    ")), String::from("\t\tc\t\tc\t\n"));
 
-    let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("2,/4"))};
+    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,/4"))};
     assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
     assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t\tc\tc\n"));
 
-    let mut instance = Unexpand { all: true, first_only: false, tabs: TabStops::new(Some("2 4 6"))};
+    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2 4 6"))};
     assert_eq!(instance.unexpand_line(String::from("      c")), String::from("\t\t\tc\n"));
 }
