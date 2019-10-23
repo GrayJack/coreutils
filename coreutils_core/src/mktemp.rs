@@ -54,7 +54,7 @@ pub fn mkstemp(template: &str) -> Result<Mktemp, MktempError> {
     // remove the trailing \0
     template_cstr.pop();
 
-    Ok(Mktemp { file: unsafe { File::from_raw_fd(fd) }, path: String::from(template_cstr) })
+    Ok(Mktemp { file: unsafe { File::from_raw_fd(fd) }, path: template_cstr })
 }
 
 /// Creates a temporary directory based on the given template.
