@@ -14,7 +14,7 @@ fn main() -> Result<(), Error> {
     let matches = App::from_yaml(yaml).get_matches();
 
     let args_val = matches.values_of("COMMAND").unwrap();
-    let mut args = args_val.into_iter().map(|x| x.to_owned()).collect::<Vec<String>>();
+    let mut args = args_val.map(|x| x.to_owned()).collect::<Vec<String>>();
     let command_name = args.remove(0);
 
     let mut command = &mut Command::new(command_name);
