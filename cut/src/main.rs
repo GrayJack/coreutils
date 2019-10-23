@@ -5,7 +5,7 @@ use std::{
     fs::File,
     io::{self, BufRead, BufReader, Write},
     num::ParseIntError,
-    result, string,
+    process, result, string,
     usize::{MAX, MIN},
 };
 
@@ -30,6 +30,7 @@ fn main() {
 
     if let Err(err) = result {
         eprintln!("cut: {}", err);
+        process::exit(1);
     }
 }
 
@@ -39,36 +40,22 @@ struct Options {
 }
 
 #[derive(PartialEq, Debug)]
-enum Error {
-    SyntaxError(String),
-    RangeError(String),
-    ParseError(String),
-    IOError(String),
-    InternalError(String),
-}
+struct Error(String, i32);
 
 impl From<ParseIntError> for Error {
-    fn from(_err: ParseIntError) -> Error { Error::ParseError(format!("not an integer")) }
+    fn from(_err: ParseIntError) -> Error { Error(format!("not an integer"), 2) }
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error { Error::IOError(format!("{}", err)) }
+    fn from(err: io::Error) -> Error { Error(format!("{}", err), 1) }
 }
 
 impl From<string::FromUtf8Error> for Error {
-    fn from(err: string::FromUtf8Error) -> Error { Error::ParseError(format!("{}", err)) }
+    fn from(err: string::FromUtf8Error) -> Error { Error(format!("{}", err), 1) }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::SyntaxError(ref msg) => write!(f, "syntax error: {}", msg),
-            Error::RangeError(ref msg) => write!(f, "range error: {}", msg),
-            Error::ParseError(ref msg) => write!(f, "parse error: {}", msg),
-            Error::IOError(ref msg) => write!(f, "I/O error: {}", msg),
-            Error::InternalError(ref msg) => write!(f, "internal error: {}", msg),
-        }
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 type Result<T> = result::Result<T, Error>;
@@ -89,12 +76,12 @@ impl Range {
     fn from_string(string: &str) -> Result<Range> {
         let v: Vec<&str> = string.split('-').collect();
         if string.len() == 0 || v.len() < 1 || v.len() > 2 {
-            return Err(Error::SyntaxError(format!("invalid byte or character range")));
+            return Err(Error(format!("invalid byte or character range"), 2));
         }
 
         // An interval with no endpoints at all should give an error.
         if v.len() == 2 && v[0].len() == 0 && v[1].len() == 0 {
-            return Err(Error::RangeError(format!("invalid range with no endpoint")));
+            return Err(Error(format!("invalid range with no endpoint"), 2));
         }
 
         let lower = if v[0].len() == 0 { MIN } else { v[0].parse::<usize>()? - 1 };
@@ -107,12 +94,7 @@ impl Range {
         };
 
         if lower >= upper {
-            return Err(Error::RangeError(format!(
-                "invalid range {} ({} >= {})",
-                string,
-                lower + 1,
-                upper
-            )));
+            return Err(Error(format!("invalid range {} ({} >= {})", string, lower + 1, upper), 2));
         }
 
         Ok(Range(lower, upper))
@@ -199,7 +181,7 @@ trait Cutter {
             match reader.read_until(options.line_terminator, &mut line) {
                 Ok(count) if count > 0 => self.process_line(line)?,
                 Ok(_) => return Ok(()),
-                Err(err) => return Err(Error::IOError(format!("I/O error: {}", err))),
+                Err(err) => return Err(Error(format!("I/O error: {}", err), 1)),
             }
         }
     }
@@ -268,12 +250,12 @@ impl Fields {
     fn new(range_set: RangeSet, matches: &ArgMatches) -> Result<Fields> {
         let idelim = matches.value_of("input-delimiter").unwrap_or("\t");
         if idelim.len() != 1 {
-            return Err(Error::SyntaxError(format!("single character for delimiter")));
+            return Err(Error(format!("single character for delimiter"), 2));
         }
 
         let odelim = matches.value_of("output-delimiter").unwrap_or(idelim);
         if odelim.len() != 1 {
-            return Err(Error::SyntaxError(format!("single character for delimiter")));
+            return Err(Error(format!("single character for delimiter"), 2));
         }
 
         Ok(Fields {
@@ -335,7 +317,7 @@ fn make_cutter(matches: &ArgMatches, options: &Options) -> Result<Box<dyn Cutter
         let cutter = Fields::new(range_set, matches)?;
         Ok(Box::new(cutter))
     } else {
-        Err(Error::InternalError(format!("not possible to select cutter")))
+        Err(Error(format!("not possible to select cutter"), 1))
     }
 }
 
@@ -363,11 +345,11 @@ mod tests {
         assert_eq!(Range::from_string("2-"), Ok(Range(1, MAX)));
         assert_eq!(Range::from_string("2-5"), Ok(Range(1, 5)));
 
-        assert_matches!(Range::from_string(""), Err(Error::SyntaxError(_)));
-        assert_matches!(Range::from_string("5-2"), Err(Error::RangeError(_)));
-        assert_matches!(Range::from_string("foo"), Err(Error::ParseError(_)));
-        assert_matches!(Range::from_string("2-0x12"), Err(Error::ParseError(_)));
-        assert_matches!(Range::from_string("-"), Err(Error::RangeError(_)));
+        assert_matches!(Range::from_string(""), Err(Error(_, _)));
+        assert_matches!(Range::from_string("5-2"), Err(Error(_, _)));
+        assert_matches!(Range::from_string("foo"), Err(Error(_, _)));
+        assert_matches!(Range::from_string("2-0x12"), Err(Error(_, _)));
+        assert_matches!(Range::from_string("-"), Err(Error(_, _)));
     }
 
     #[test]

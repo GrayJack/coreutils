@@ -11,7 +11,12 @@ use std::{
 
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use crate::types::Fields;
-#[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+#[cfg(not(any(
+    target_os = "linux",
+    target_os = "haiku",
+    target_os = "fuchsia",
+    target_os = "solaris"
+)))]
 use crate::types::Time;
 use crate::{
     group::{Error as GrError, Groups},
@@ -111,13 +116,28 @@ pub struct Passwd {
     /// User login shell
     shell: BString,
     /// Password change time
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     change: Time,
     /// User access class
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     class: BString,
     /// Account expiration
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     expire: Time,
     /// Fields filled in
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
@@ -136,13 +156,7 @@ impl Passwd {
         let mut pw_ptr = ptr::null_mut();
 
         let res = unsafe {
-            getpwuid_r(
-                geteuid(),
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
+            getpwuid_r(geteuid(), pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr)
         };
 
         if pw_ptr.is_null() {
@@ -195,13 +209,28 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let change = pw.pw_change;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let expire = pw.pw_expire;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -220,11 +249,26 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             change,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             class,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             expire,
             #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
@@ -241,15 +285,8 @@ impl Passwd {
         let mut pw = MaybeUninit::zeroed();
         let mut pw_ptr = ptr::null_mut();
 
-        let res = unsafe {
-            getpwuid_r(
-                getuid(),
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
+        let res =
+            unsafe { getpwuid_r(getuid(), pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
 
         if pw_ptr.is_null() {
             if res == 0 {
@@ -301,13 +338,28 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let change = pw.pw_change;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let expire = pw.pw_expire;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -326,11 +378,26 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             change,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             class,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             expire,
             #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
@@ -404,13 +471,28 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let change = pw.pw_change;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let expire = pw.pw_expire;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -429,11 +511,26 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             change,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             class,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             expire,
             #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
@@ -515,13 +612,28 @@ impl Passwd {
             return Err(ShellCheckFailed);
         };
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let change = pw.pw_change;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let expire = pw.pw_expire;
 
-        #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+        #[cfg(not(any(
+            target_os = "linux",
+            target_os = "haiku",
+            target_os = "fuchsia",
+            target_os = "solaris"
+        )))]
         let class = if !pw.pw_class.is_null() {
             let class_cstr = unsafe { CStr::from_ptr(pw.pw_class) };
             BString::from(class_cstr.to_bytes())
@@ -540,11 +652,26 @@ impl Passwd {
             gecos,
             dir,
             shell,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             change,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             class,
-            #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "haiku",
+                target_os = "fuchsia",
+                target_os = "solaris"
+            )))]
             expire,
             #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
@@ -595,21 +722,36 @@ impl Passwd {
 
     /// Get `Passwd` access class.
     #[inline]
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     pub fn class(&self) -> &BStr {
         &self.class.as_bstr()
     }
 
     /// Get `Passwd` password change time
     #[inline]
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     pub fn password_change(&self) -> Time {
         self.change
     }
 
     /// Get `Passwd` expiration time
     #[inline]
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     pub fn expire(&self) -> Time {
         self.expire
     }
@@ -634,7 +776,12 @@ impl Passwd {
 }
 
 impl Display for Passwd {
-    #[cfg(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris"))]
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    ))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -643,7 +790,12 @@ impl Display for Passwd {
         )
     }
 
-    #[cfg(not(any(target_os = "linux", target_os = "haiku", target_os = "fuchsia", target_os = "solaris")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "haiku",
+        target_os = "fuchsia",
+        target_os = "solaris"
+    )))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
