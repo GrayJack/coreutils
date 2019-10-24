@@ -5,9 +5,7 @@ macro_rules! assert_matches {
     ($xpr:expr, $pat:pat) => {
         match $xpr {
             $pat => true,
-            ref xpr => {
-                panic!("assert_matches: '{:?}' doesn't match '{}'", xpr, stringify!($pat))
-            },
+            ref xpr => panic!("assert_matches: '{:?}' doesn't match '{}'", xpr, stringify!($pat)),
         }
     };
 }
@@ -35,14 +33,8 @@ fn rangeset_from_string() {
     );
     assert_eq!(RangeSet::from_string("2,3"), Ok(RangeSet { points: vec![Range(1, 3)] }));
     assert_eq!(RangeSet::from_string("2-3"), Ok(RangeSet { points: vec![Range(1, 3)] }));
-    assert_eq!(
-        RangeSet::from_string("2-3,3-5,4-6"),
-        Ok(RangeSet { points: vec![Range(1, 6)] })
-    );
-    assert_eq!(
-        RangeSet::from_string("4-6,3-5,2-3"),
-        Ok(RangeSet { points: vec![Range(1, 6)] })
-    );
+    assert_eq!(RangeSet::from_string("2-3,3-5,4-6"), Ok(RangeSet { points: vec![Range(1, 6)] }));
+    assert_eq!(RangeSet::from_string("4-6,3-5,2-3"), Ok(RangeSet { points: vec![Range(1, 6)] }));
     assert_eq!(
         RangeSet::from_string("2,5-10"),
         Ok(RangeSet { points: vec![Range(1, 2), Range(4, 10)] })
@@ -53,9 +45,7 @@ fn rangeset_from_string() {
     );
     assert_eq!(
         RangeSet::from_string("-2,5-"),
-        Ok(RangeSet {
-            points: vec![Range(usize::min_value(), 2), Range(4, usize::max_value())],
-        })
+        Ok(RangeSet { points: vec![Range(usize::min_value(), 2), Range(4, usize::max_value())] })
     );
 }
 
