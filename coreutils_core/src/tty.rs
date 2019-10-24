@@ -48,11 +48,11 @@ impl TTYName {
     pub fn new(file_descriptor: FileDescriptor) -> Result<Self, Error> {
         let name = unsafe { ttyname(file_descriptor as c_int) };
 
-        let name = if !name.is_null() {
+        let name = if name.is_null() {
+            return Err(Error::NotTTY);
+        } else {
             let name_cstr = unsafe { CStr::from_ptr(name) };
             BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(Error::NotTTY);
         };
 
         Ok(TTYName(name))

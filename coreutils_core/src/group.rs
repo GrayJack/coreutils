@@ -93,11 +93,11 @@ impl StdError for Error {
 }
 
 impl From<IoError> for Error {
-    fn from(err: IoError) -> Error { Io(err) }
+    fn from(err: IoError) -> Self { Io(err) }
 }
 
 impl From<PwError> for Error {
-    fn from(err: PwError) -> Error { Passwd(Box::new(err)) }
+    fn from(err: PwError) -> Self { Passwd(Box::new(err)) }
 }
 
 /// This struct holds information about a group of UNIX/UNIX-like systems.
@@ -141,19 +141,19 @@ impl Group {
         // Now that pw is initialized we get it
         let gr = unsafe { gr.assume_init() };
 
-        let name = if !gr.gr_name.is_null() {
+        let name = if gr.gr_name.is_null() {
+            return Err(NameCheckFailed);
+        } else {
             let name_cstr = unsafe { CStr::from_ptr(gr.gr_name) };
             BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
         };
 
         let id = gr.gr_gid;
-        let passwd = if !gr.gr_passwd.is_null() {
+        let passwd = if gr.gr_passwd.is_null() {
+            return Err(PasswdCheckFailed);
+        } else {
             let passwd_cstr = unsafe { CStr::from_ptr(gr.gr_passwd) };
             BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
         };
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
@@ -202,18 +202,18 @@ impl Group {
         let pw_ptr = gr.gr_passwd;
         let mut mem_list_ptr = gr.gr_mem;
 
-        let name = if !name_ptr.is_null() {
+        let name = if name_ptr.is_null() {
+            return Err(NameCheckFailed);
+        } else {
             let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
             BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(NameCheckFailed);
         };
 
-        let passwd = if !pw_ptr.is_null() {
+        let passwd = if pw_ptr.is_null() {
+            return Err(PasswdCheckFailed);
+        } else {
             let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
             BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
         };
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
@@ -275,11 +275,11 @@ impl Group {
 
         let id = gr.gr_gid;
 
-        let passwd = if !pw_ptr.is_null() {
+        let passwd = if pw_ptr.is_null() {
+            return Err(PasswdCheckFailed);
+        } else {
             let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
             BString::from(passwd_cstr.to_bytes())
-        } else {
-            return Err(PasswdCheckFailed);
         };
 
         // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
@@ -306,7 +306,7 @@ impl Group {
 
     /// Get the `Group` name.
     #[inline]
-    pub fn name(&self) -> &BStr { &self.name.as_bstr() }
+    pub fn name(&self) -> &BStr { self.name.as_bstr() }
 
     /// Get the `Group` id.
     #[inline]
@@ -314,7 +314,7 @@ impl Group {
 
     /// Get the `Group` encrypted password.
     #[inline]
-    pub fn passwd(&self) -> &BStr { &self.passwd.as_bstr() }
+    pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
 
     /// Get the `Group` list of members.
     #[inline]
