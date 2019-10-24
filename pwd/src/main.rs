@@ -14,14 +14,11 @@ fn main() {
             Ok(dir) => {
                 if matches.is_present("logical") {
                     dir
+                } else if let Ok(d) = dir.canonicalize() {
+                    d
                 } else {
-                    match dir.canonicalize() {
-                        Ok(d) => d,
-                        _ => {
-                            eprintln!("pwd: Failed to get absolute current directory.");
-                            process::exit(1);
-                        },
-                    }
+                    eprintln!("pwd: Failed to get absolute current directory.");
+                    process::exit(1);
                 }
             },
             Err(e) => {

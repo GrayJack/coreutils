@@ -15,14 +15,14 @@ fn main() {
 
     let line_ending = if matches.is_present("zero") { '\0' } else { '\n' };
 
-    if !multiple_paths {
-        let path = matches.value_of("NAME").unwrap();
-        print!("{} {}", basename(path, suffix), line_ending);
-    } else {
+    if multiple_paths {
         let paths = matches.values_of("NAME").unwrap();
         for path in paths {
             print!("{} {}", basename(path, suffix), line_ending);
         }
+    } else {
+        let path = matches.value_of("NAME").unwrap();
+        print!("{} {}", basename(path, suffix), line_ending);
     }
 }
 
