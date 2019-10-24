@@ -5,12 +5,14 @@ pub struct TabStops {
     positions: Vec<usize>,
 }
 
+const ARG_PARSE_MSG: &str = "unexpand: error parsing arguments";
+
 impl TabStops {
-    pub fn new(tabs_str: Option<&str>) -> TabStops {
+    pub fn new(tabs_str: Option<&str>) -> Result<TabStops, &str> {
         match tabs_str {
             Some(tabs_str) => {
                 if tabs_str == "" {
-                    return TabStops { offset: None, repetable: Some(8), positions: vec![] };
+                    return Ok(TabStops { offset: None, repetable: Some(8), positions: vec![] });
                 }
 
                 let tabs_str = tabs_str.replace(", ", ",");
@@ -18,13 +20,13 @@ impl TabStops {
                     tabs_str.split(|c| c == ',' || c == ' ').map(|s| s.trim()).collect();
 
                 if tabs_vec.len() == 1 {
-                    let value = tabs_vec[0].parse::<usize>().unwrap();
+                    let value = tabs_vec[0].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?;
 
                     if value == 0 {
-                        panic!("unexpand: tab size cannot be 0");
+                        return Err("unexpand: tab size cannot be 0");
                     }
 
-                    return TabStops { offset: None, repetable: Some(value), positions: vec![] };
+                    return Ok(TabStops { offset: None, repetable: Some(value), positions: vec![] });
                 }
 
                 let mut offset: Option<usize> = None;
@@ -32,35 +34,37 @@ impl TabStops {
                 let last_item = tabs_vec.last().unwrap().clone();
 
                 if last_item.contains(&"+") {
-                    repetable = tabs_vec.pop().unwrap()[1..].parse::<usize>().ok();
-                    offset = tabs_vec.pop().unwrap().parse::<usize>().ok();
+                    repetable = Some(tabs_vec.pop().unwrap()[1..].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
+                    offset = Some(tabs_vec.pop().unwrap().parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
                 }
 
                 if last_item.contains(&"/") {
-                    repetable = last_item[1..].parse::<usize>().ok();
+                    repetable = Some(last_item[1..].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
                     tabs_vec.pop();
                 }
 
-                let positions: Vec<usize> =
-                    tabs_vec.iter().map(|p| p.parse::<usize>().unwrap()).collect();
+                let mut positions: Vec<usize> = vec![];
+                for tab_val in tabs_vec.iter() {
+                    positions.push(tab_val.parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
+                }
 
                 if positions.len() > 0 {
                     if positions.contains(&0) {
-                        panic!("unexpand: tab size cannot be 0");
+                        return Err("unexpand: tab size cannot be 0");
                     }
 
                     for i in 0..(positions.len() - 1) {
                         if positions[i + 1] <= positions[i] {
-                            panic!("unexpand: tab sizes must be ascending");
+                            return Err("unexpand: tab sizes must be ascending");
                         }
                     }
 
-                    return TabStops { offset, repetable, positions };
+                    return Ok(TabStops { offset, repetable, positions });
                 }
 
-                TabStops { offset, repetable, positions: vec![] }
+                Ok(TabStops { offset, repetable, positions: vec![] })
             },
-            None => TabStops { offset: None, repetable: Some(8), positions: vec![] },
+            None => Ok(TabStops { offset: None, repetable: Some(8), positions: vec![] }),
         }
     }
 
@@ -80,15 +84,15 @@ impl TabStops {
 
 #[test]
 fn new() {
-    let instance = TabStops::new(Some("2"));
+    let instance = TabStops::new(Some("2")).unwrap();
     assert_eq!(instance.offset, None);
     assert_eq!(instance.positions, vec![]);
     assert_eq!(instance.repetable, Some(2));
 
-    let instance = TabStops::new(Some("4"));
+    let instance = TabStops::new(Some("4")).unwrap();
     assert_eq!(instance.repetable, Some(4));
 
-    let instance = TabStops::new(Some("1,2"));
+    let instance = TabStops::new(Some("1,2")).unwrap();
     assert_eq!(instance.offset, None);
     assert_eq!(instance.repetable, None);
     assert_eq!(instance.positions, vec![1, 2]);
@@ -96,7 +100,7 @@ fn new() {
 
 #[test]
 fn new_values_with_repetable() {
-    let instance = TabStops::new(Some("1,2,/4"));
+    let instance = TabStops::new(Some("1,2,/4")).unwrap();
     assert_eq!(instance.offset, None);
     assert_eq!(instance.repetable, Some(4));
     assert_eq!(instance.positions, (vec![1, 2]));
@@ -104,12 +108,12 @@ fn new_values_with_repetable() {
 
 #[test]
 fn new_values_with_prefix() {
-    let instance = TabStops::new(Some("1,+8"));
+    let instance = TabStops::new(Some("1,+8")).unwrap();
     assert_eq!(instance.offset, Some(1));
     assert_eq!(instance.repetable, Some(8));
     assert_eq!(instance.positions, vec![]);
 
-    let instance = TabStops::new(Some("1,2,+4"));
+    let instance = TabStops::new(Some("1,2,+4")).unwrap();
     assert_eq!(instance.offset, Some(2));
     assert_eq!(instance.repetable, Some(4));
     assert_eq!(instance.positions, (vec![1]));
@@ -117,23 +121,35 @@ fn new_values_with_prefix() {
 
 #[test]
 #[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending() { TabStops::new(Some("2,1")); }
+fn new_panic_ascending() { TabStops::new(Some("2,1")).unwrap(); }
 
 #[test]
 #[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending2() { TabStops::new(Some("2,2")); }
+fn new_panic_ascending2() { TabStops::new(Some("2,2")).unwrap(); }
 
 #[test]
 #[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero() { TabStops::new(Some("0")); }
+fn new_panic_zero() { TabStops::new(Some("0")).unwrap(); }
 
 #[test]
 #[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero_values() { TabStops::new(Some("0,1")); }
+fn new_panic_zero_values() { TabStops::new(Some("0,1")).unwrap(); }
+
+#[test]
+#[should_panic(expected = "unexpand: error parsing arguments")]
+fn new_panic_wrong_type() { TabStops::new(Some("a")).unwrap(); }
+
+#[test]
+#[should_panic(expected = "unexpand: error parsing arguments")]
+fn new_panic_wrong_type_multipe_with_prefix() { TabStops::new(Some("a, +b")).unwrap(); }
+
+#[test]
+#[should_panic(expected = "unexpand: error parsing arguments")]
+fn new_panic_wrong_type_multipe() { TabStops::new(Some("a, b")).unwrap(); }
 
 #[test]
 fn is_tab_stop_repetable() {
-    let instance = TabStops::new(Some("2"));
+    let instance = TabStops::new(Some("2")).unwrap();
 
     for i in 1..50 {
         assert_eq!(instance.is_tab_stop(i), i % 2 == 0);
@@ -142,7 +158,7 @@ fn is_tab_stop_repetable() {
 
 #[test]
 fn is_tab_stop_values() {
-    let instance = TabStops::new(Some("1, 2, 4"));
+    let instance = TabStops::new(Some("1, 2, 4")).unwrap();
     assert_eq!(instance.is_tab_stop(1), true);
     assert_eq!(instance.is_tab_stop(2), true);
     assert_eq!(instance.is_tab_stop(3), false);
@@ -155,7 +171,7 @@ fn is_tab_stop_values() {
 
 #[test]
 fn is_tab_stop_with_offset() {
-    let instance = TabStops::new(Some("1,+8"));
+    let instance = TabStops::new(Some("1,+8")).unwrap();
     assert_eq!(instance.is_tab_stop(1), true);
     assert_eq!(instance.is_tab_stop(2), false);
     assert_eq!(instance.is_tab_stop(8), false);
@@ -167,7 +183,7 @@ fn is_tab_stop_with_offset() {
 
 #[test]
 fn is_tab_stop_with_values_and_repetable() {
-    let instance = TabStops::new(Some("1, 2, /8"));
+    let instance = TabStops::new(Some("1, 2, /8")).unwrap();
     assert_eq!(instance.is_tab_stop(1), true);
     assert_eq!(instance.is_tab_stop(2), true);
     assert_eq!(instance.is_tab_stop(3), false);
@@ -178,6 +194,6 @@ fn is_tab_stop_with_values_and_repetable() {
 
 #[test]
 fn tab_stops_separate_by_blanks() {
-    let instance = TabStops::new(Some("2 4"));
+    let instance = TabStops::new(Some("2 4")).unwrap();
     assert_eq!(instance.positions, vec![2, 4]);
 }

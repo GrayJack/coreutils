@@ -4,21 +4,19 @@ author: "Bojan Durdevic <bojan88@gmail.com>"
 about: Convert spaces to tabs
 args:
     - all:
-        help: convert all blanks, instead of just initial blanks
+        help: Convert all blanks, instead of just initial blanks
         short: a
         long: all
     - first_only:
-        help: convert only leading sequences of blanks (overrides -a)
+        help: Convert only leading sequences of blanks (overrides -a)
         long: first-only
+        short: f
     - tabs:
-        help: have tabs N characters apart instead of 8 (enables -a)
+        help: Have tabs N characters apart instead of 8 (enables -a)
         short: t
         long: tabs
         value_names: N or LIST
         takes_value: true
-    - version:
-        help: output version information and exit
-        long: version
     - FILE:
         help: Input file
         multiple: true
