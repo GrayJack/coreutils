@@ -93,118 +93,123 @@ impl TabStops {
     }
 }
 
-#[test]
-fn new() {
-    let instance = TabStops::new(Some("2")).unwrap();
-    assert_eq!(instance.offset, None);
-    assert_eq!(instance.positions, vec![]);
-    assert_eq!(instance.repetable, Some(2));
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let instance = TabStops::new(Some("4")).unwrap();
-    assert_eq!(instance.repetable, Some(4));
+    #[test]
+    fn new() {
+        let instance = TabStops::new(Some("2")).unwrap();
+        assert_eq!(instance.offset, None);
+        assert_eq!(instance.positions, vec![]);
+        assert_eq!(instance.repetable, Some(2));
 
-    let instance = TabStops::new(Some("1,2")).unwrap();
-    assert_eq!(instance.offset, None);
-    assert_eq!(instance.repetable, None);
-    assert_eq!(instance.positions, vec![1, 2]);
-}
+        let instance = TabStops::new(Some("4")).unwrap();
+        assert_eq!(instance.repetable, Some(4));
 
-#[test]
-fn new_values_with_repetable() {
-    let instance = TabStops::new(Some("1,2,/4")).unwrap();
-    assert_eq!(instance.offset, None);
-    assert_eq!(instance.repetable, Some(4));
-    assert_eq!(instance.positions, (vec![1, 2]));
-}
-
-#[test]
-fn new_values_with_prefix() {
-    let instance = TabStops::new(Some("1,+8")).unwrap();
-    assert_eq!(instance.offset, Some(1));
-    assert_eq!(instance.repetable, Some(8));
-    assert_eq!(instance.positions, vec![]);
-
-    let instance = TabStops::new(Some("1,2,+4")).unwrap();
-    assert_eq!(instance.offset, Some(2));
-    assert_eq!(instance.repetable, Some(4));
-    assert_eq!(instance.positions, (vec![1]));
-}
-
-#[test]
-#[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending() { TabStops::new(Some("2,1")).unwrap(); }
-
-#[test]
-#[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending2() { TabStops::new(Some("2,2")).unwrap(); }
-
-#[test]
-#[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero() { TabStops::new(Some("0")).unwrap(); }
-
-#[test]
-#[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero_values() { TabStops::new(Some("0,1")).unwrap(); }
-
-#[test]
-#[should_panic(expected = "unexpand: error parsing arguments")]
-fn new_panic_wrong_type() { TabStops::new(Some("a")).unwrap(); }
-
-#[test]
-#[should_panic(expected = "unexpand: error parsing arguments")]
-fn new_panic_wrong_type_multipe_with_prefix() { TabStops::new(Some("a, +b")).unwrap(); }
-
-#[test]
-#[should_panic(expected = "unexpand: error parsing arguments")]
-fn new_panic_wrong_type_multipe() { TabStops::new(Some("a, b")).unwrap(); }
-
-#[test]
-fn is_tab_stop_repetable() {
-    let instance = TabStops::new(Some("2")).unwrap();
-
-    for i in 1..50 {
-        assert_eq!(instance.is_tab_stop(i), i % 2 == 0);
+        let instance = TabStops::new(Some("1,2")).unwrap();
+        assert_eq!(instance.offset, None);
+        assert_eq!(instance.repetable, None);
+        assert_eq!(instance.positions, vec![1, 2]);
     }
-}
 
-#[test]
-fn is_tab_stop_values() {
-    let instance = TabStops::new(Some("1, 2, 4")).unwrap();
-    assert_eq!(instance.is_tab_stop(1), true);
-    assert_eq!(instance.is_tab_stop(2), true);
-    assert_eq!(instance.is_tab_stop(3), false);
-    assert_eq!(instance.is_tab_stop(4), true);
-
-    for i in 5..50 {
-        assert_eq!(instance.is_tab_stop(i), false);
+    #[test]
+    fn new_values_with_repetable() {
+        let instance = TabStops::new(Some("1,2,/4")).unwrap();
+        assert_eq!(instance.offset, None);
+        assert_eq!(instance.repetable, Some(4));
+        assert_eq!(instance.positions, (vec![1, 2]));
     }
-}
 
-#[test]
-fn is_tab_stop_with_offset() {
-    let instance = TabStops::new(Some("1,+8")).unwrap();
-    assert_eq!(instance.is_tab_stop(1), true);
-    assert_eq!(instance.is_tab_stop(2), false);
-    assert_eq!(instance.is_tab_stop(8), false);
-    assert_eq!(instance.is_tab_stop(9), true);
-    assert_eq!(instance.is_tab_stop(16), false);
-    assert_eq!(instance.is_tab_stop(17), true);
-    assert_eq!(instance.is_tab_stop(18), false);
-}
+    #[test]
+    fn new_values_with_prefix() {
+        let instance = TabStops::new(Some("1,+8")).unwrap();
+        assert_eq!(instance.offset, Some(1));
+        assert_eq!(instance.repetable, Some(8));
+        assert_eq!(instance.positions, vec![]);
 
-#[test]
-fn is_tab_stop_with_values_and_repetable() {
-    let instance = TabStops::new(Some("1, 2, /8")).unwrap();
-    assert_eq!(instance.is_tab_stop(1), true);
-    assert_eq!(instance.is_tab_stop(2), true);
-    assert_eq!(instance.is_tab_stop(3), false);
-    assert_eq!(instance.is_tab_stop(8), true);
-    assert_eq!(instance.is_tab_stop(9), false);
-    assert_eq!(instance.is_tab_stop(16), true);
-}
+        let instance = TabStops::new(Some("1,2,+4")).unwrap();
+        assert_eq!(instance.offset, Some(2));
+        assert_eq!(instance.repetable, Some(4));
+        assert_eq!(instance.positions, (vec![1]));
+    }
 
-#[test]
-fn tab_stops_separate_by_blanks() {
-    let instance = TabStops::new(Some("2 4")).unwrap();
-    assert_eq!(instance.positions, vec![2, 4]);
+    #[test]
+    #[should_panic(expected = "unexpand: tab sizes must be ascending")]
+    fn new_panic_ascending() { TabStops::new(Some("2,1")).unwrap(); }
+
+    #[test]
+    #[should_panic(expected = "unexpand: tab sizes must be ascending")]
+    fn new_panic_ascending2() { TabStops::new(Some("2,2")).unwrap(); }
+
+    #[test]
+    #[should_panic(expected = "unexpand: tab size cannot be 0")]
+    fn new_panic_zero() { TabStops::new(Some("0")).unwrap(); }
+
+    #[test]
+    #[should_panic(expected = "unexpand: tab size cannot be 0")]
+    fn new_panic_zero_values() { TabStops::new(Some("0,1")).unwrap(); }
+
+    #[test]
+    #[should_panic(expected = "unexpand: error parsing arguments")]
+    fn new_panic_wrong_type() { TabStops::new(Some("a")).unwrap(); }
+
+    #[test]
+    #[should_panic(expected = "unexpand: error parsing arguments")]
+    fn new_panic_wrong_type_multipe_with_prefix() { TabStops::new(Some("a, +b")).unwrap(); }
+
+    #[test]
+    #[should_panic(expected = "unexpand: error parsing arguments")]
+    fn new_panic_wrong_type_multipe() { TabStops::new(Some("a, b")).unwrap(); }
+
+    #[test]
+    fn is_tab_stop_repetable() {
+        let instance = TabStops::new(Some("2")).unwrap();
+
+        for i in 1..50 {
+            assert_eq!(instance.is_tab_stop(i), i % 2 == 0);
+        }
+    }
+
+    #[test]
+    fn is_tab_stop_values() {
+        let instance = TabStops::new(Some("1, 2, 4")).unwrap();
+        assert_eq!(instance.is_tab_stop(1), true);
+        assert_eq!(instance.is_tab_stop(2), true);
+        assert_eq!(instance.is_tab_stop(3), false);
+        assert_eq!(instance.is_tab_stop(4), true);
+
+        for i in 5..50 {
+            assert_eq!(instance.is_tab_stop(i), false);
+        }
+    }
+
+    #[test]
+    fn is_tab_stop_with_offset() {
+        let instance = TabStops::new(Some("1,+8")).unwrap();
+        assert_eq!(instance.is_tab_stop(1), true);
+        assert_eq!(instance.is_tab_stop(2), false);
+        assert_eq!(instance.is_tab_stop(8), false);
+        assert_eq!(instance.is_tab_stop(9), true);
+        assert_eq!(instance.is_tab_stop(16), false);
+        assert_eq!(instance.is_tab_stop(17), true);
+        assert_eq!(instance.is_tab_stop(18), false);
+    }
+
+    #[test]
+    fn is_tab_stop_with_values_and_repetable() {
+        let instance = TabStops::new(Some("1, 2, /8")).unwrap();
+        assert_eq!(instance.is_tab_stop(1), true);
+        assert_eq!(instance.is_tab_stop(2), true);
+        assert_eq!(instance.is_tab_stop(3), false);
+        assert_eq!(instance.is_tab_stop(8), true);
+        assert_eq!(instance.is_tab_stop(9), false);
+        assert_eq!(instance.is_tab_stop(16), true);
+    }
+
+    #[test]
+    fn tab_stops_separate_by_blanks() {
+        let instance = TabStops::new(Some("2 4")).unwrap();
+        assert_eq!(instance.positions, vec![2, 4]);
+    }
 }

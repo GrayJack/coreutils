@@ -142,56 +142,64 @@ fn main() {
     }
 }
 
-#[test]
-fn unexpand_lines() {
-    let mut instance = Unexpand { all: false, tabs: TabStops::new(Some("2")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc  c\n"));
-    assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c    c\n"));
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\t\tc\n"));
+    #[test]
+    fn unexpand_lines() {
+        let mut instance = Unexpand { all: false, tabs: TabStops::new(Some("2")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc  c\n"));
+        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c    c\n"));
 
-    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("8")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("    c")), String::from("    c\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("  c\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("  c  c\n"));
-    assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("   c    c\n"));
-    assert_eq!(instance.unexpand_line(String::from("        c")), String::from("\tc\n"));
-    assert_eq!(
-        instance.unexpand_line(String::from("        c        c")),
-        String::from("\tc\tc\n")
-    );
+        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\t\tc\n"));
 
-    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,+4")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("          c")), String::from("\t\t\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("  c    c")), String::from("\tc\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t  c\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("      c    c")), String::from("\t\tc\tc\n"));
-    assert_eq!(
-        instance.unexpand_line(String::from("      c        c")),
-        String::from("\t\tc\t\tc\n")
-    );
-    assert_eq!(
-        instance.unexpand_line(String::from("      c        c    ")),
-        String::from("\t\tc\t\tc\t\n")
-    );
+        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("8")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("    c")), String::from("    c\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("  c\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("  c  c\n"));
+        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("   c    c\n"));
+        assert_eq!(instance.unexpand_line(String::from("        c")), String::from("\tc\n"));
+        assert_eq!(
+            instance.unexpand_line(String::from("        c        c")),
+            String::from("\tc\tc\n")
+        );
 
-    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,/4")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-    assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t\tc\tc\n"));
+        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,+4")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("          c")), String::from("\t\t\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("  c    c")), String::from("\tc\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t  c\tc\n"));
+        assert_eq!(
+            instance.unexpand_line(String::from("      c    c")),
+            String::from("\t\tc\tc\n")
+        );
+        assert_eq!(
+            instance.unexpand_line(String::from("      c        c")),
+            String::from("\t\tc\t\tc\n")
+        );
+        assert_eq!(
+            instance.unexpand_line(String::from("      c        c    ")),
+            String::from("\t\tc\t\tc\t\n")
+        );
 
-    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2 4 6")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("      c")), String::from("\t\t\tc\n"));
+        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,/4")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
+        assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t\tc\tc\n"));
 
-    // backspace tests
-    let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
-    assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
-    assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
+        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2 4 6")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("      c")), String::from("\t\t\tc\n"));
+
+        // backspace tests
+        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
+        assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
+        assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
+    }
 }
