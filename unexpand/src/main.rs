@@ -25,7 +25,7 @@ impl Unexpand {
             Err(err_message) => {
                 eprintln!("{}", err_message);
                 std::process::exit(1);
-            }
+            },
         };
 
         if first_only {
@@ -117,7 +117,11 @@ fn main() {
             let stdin = stdin();
             for line in stdin.lock().lines() {
                 stdout
-                    .write_all(unexpand.unexpand_line(line.unwrap_or_else(line_read_else_closure)).as_bytes())
+                    .write_all(
+                        unexpand
+                            .unexpand_line(line.unwrap_or_else(line_read_else_closure))
+                            .as_bytes(),
+                    )
                     .unwrap_or_else(write_error_closure);
                 stdout.flush().unwrap_or_else(write_error_closure);
             }
@@ -126,7 +130,11 @@ fn main() {
             let reader = BufReader::new(fd);
             for line in reader.lines() {
                 stdout
-                    .write_all(unexpand.unexpand_line(line.unwrap_or_else(line_read_else_closure)).as_bytes())
+                    .write_all(
+                        unexpand
+                            .unexpand_line(line.unwrap_or_else(line_read_else_closure))
+                            .as_bytes(),
+                    )
                     .unwrap_or_else(write_error_closure);
                 stdout.flush().unwrap_or_else(write_error_closure);
             }

@@ -26,7 +26,11 @@ impl TabStops {
                         return Err("unexpand: tab size cannot be 0");
                     }
 
-                    return Ok(TabStops { offset: None, repetable: Some(value), positions: vec![] });
+                    return Ok(TabStops {
+                        offset:    None,
+                        repetable: Some(value),
+                        positions: vec![],
+                    });
                 }
 
                 let mut offset: Option<usize> = None;
@@ -34,12 +38,19 @@ impl TabStops {
                 let last_item = tabs_vec.last().unwrap().clone();
 
                 if last_item.contains(&"+") {
-                    repetable = Some(tabs_vec.pop().unwrap()[1..].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
-                    offset = Some(tabs_vec.pop().unwrap().parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
+                    repetable = Some(
+                        tabs_vec.pop().unwrap()[1..]
+                            .parse::<usize>()
+                            .map_err(|_err| ARG_PARSE_MSG)?,
+                    );
+                    offset = Some(
+                        tabs_vec.pop().unwrap().parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?,
+                    );
                 }
 
                 if last_item.contains(&"/") {
-                    repetable = Some(last_item[1..].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
+                    repetable =
+                        Some(last_item[1..].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
                     tabs_vec.pop();
                 }
 
