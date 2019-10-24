@@ -21,7 +21,7 @@ fn main() {
         v
     };
 
-    match echo(strings, matches.is_present("escape"), matches.is_present("no_newline")) {
+    match echo(&strings, matches.is_present("escape"), matches.is_present("no_newline")) {
         Ok(_) => (),
         Err(e) => {
             eprintln!("echo: Failed to write to stdout.\n{}", e);
@@ -33,7 +33,7 @@ fn main() {
 /// Print given `strings` to standard output.
 /// If `scape` true, it also prints the scape codes inside `strings`.
 /// If `no_newline` true, it does not print a newline after.
-fn echo(strings: Vec<String>, escape: bool, no_newline: bool) -> io::Result<()> {
+fn echo(strings: &[String], escape: bool, no_newline: bool) -> io::Result<()> {
     let stdout = io::stdout();
     let mut output = stdout.lock();
 

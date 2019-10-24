@@ -277,11 +277,11 @@ impl UtmpxSet {
 
             loop {
                 let ut = getutxent();
-                if !ut.is_null() {
+                if ut.is_null() {
+                    break;
+                } else {
                     let utm = Utmpx::from_c_utmpx(*ut);
                     set.insert(utm);
-                } else {
-                    break;
                 }
             }
 
@@ -323,11 +323,11 @@ impl UtmpxSet {
 
             loop {
                 let ut = getutxent();
-                if !ut.is_null() {
+                if ut.is_null() {
+                    break;
+                } else {
                     let utm = Utmpx::from_c_utmpx(*ut);
                     set.insert(utm);
-                } else {
-                    break;
                 }
             }
 

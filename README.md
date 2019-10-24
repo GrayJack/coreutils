@@ -26,15 +26,13 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 
 |   Platform    |  Tier  | CI Status | Manual Status |
 |:-------------:|:------:|:---------:|:-------------:|
-|  Linux        | Tier1  | [![Linux](https://github.com/GrayJack/coreutils/workflows/Linux/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | Passing (Manjaro Linux 5.3.2 - 2019-10-20) (
-60b21fe0a) |
+|  Linux        | Tier1  | [![Linux](https://github.com/GrayJack/coreutils/workflows/Linux/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | Passing (Manjaro Linux 5.3.2 - 2019-10-20) (60b21fe0a) |
 |  MacOS        | Tier1  | [![MacOS](https://github.com/GrayJack/coreutils/workflows/MacOS/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | - |
 |  FreeBSD      | Tier2  | [![FreeBSD](https://github.com/GrayJack/coreutils/workflows/FreeBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (FreeBSD 12.0 - 2019-10-01) (202fa79) |
 |  NetBSD       | Tier2  | [![NetBSD](https://github.com/GrayJack/coreutils/workflows/NetBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)             | - (system without minimal version) |
 |  Solaris      | Tier2  | [![Solaris](https://github.com/GrayJack/coreutils/workflows/Solaris/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | - (system without minimal version) |
 |  Fuchsia      | Tier2  | [![Fuchsia](https://github.com/GrayJack/coreutils/workflows/Fuchsia/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | - |
-|  OpenBSD      | Tier3  | [![OpenBSD](https://github.com/GrayJack/coreutils/workflows/OpenBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (OpenBSD 6.6 Current - 2019-10-20) (
-60b21fe0a) |
+|  OpenBSD      | Tier3  | [![OpenBSD](https://github.com/GrayJack/coreutils/workflows/OpenBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (OpenBSD 6.6 Current - 2019-10-20) (60b21fe0a) |
 |  DragonflyBSD | Tier3  | [![DragonflyBSD](https://github.com/GrayJack/coreutils/workflows/DragonflyBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions) | Passing (DragonflyBSD 5.6.2 - 2019-10-01) (202fa79) |
 |  Haiku        | Tier3  | [![Haiku](https://github.com/GrayJack/coreutils/workflows/Haiku/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | - |
 
@@ -66,7 +64,7 @@ cargo install --path .
 |   comm   |      X      |         |      |
 |    cp    |      X      |         |      |
 |  csplit  |      X      |         |      |
-|    cut   |      X      |         |      |
+|    cut   |             |         |   X  |
 |   date   |             |    X    |      |
 |    dd    |      X      |         |      |
 |    df    |      X      |         |      |
@@ -88,7 +86,7 @@ cargo install --path .
 |    ln    |      X      |         |      |
 |  logname |             |         |   X  |
 |    ls    |      X      |         |      |
-|   mkdir  |      X      |         |      |
+|   mkdir  |             |         |   X  |
 |  mktemp  |             |         |   X  |
 |  mkfifo  |      X      |         |      |
 |    mv    |             |         |   X  |

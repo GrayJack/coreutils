@@ -1,7 +1,3 @@
-extern crate signal_hook;
-
-use clap::{load_yaml, App};
-use coreutils_core::{file_descriptor::FileDescriptor, tty::isatty};
 use std::{
     env,
     fs::{File, OpenOptions},
@@ -9,12 +5,17 @@ use std::{
     process::{Command, Stdio},
 };
 
+use coreutils_core::{file_descriptor::FileDescriptor, tty::isatty};
+
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
+use signal_hook;
+
 fn main() -> Result<(), Error> {
     let yaml = load_yaml!("nohup.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let args_val = matches.values_of("COMMAND").unwrap();
-    let mut args = args_val.into_iter().map(|x| x.to_owned()).collect::<Vec<String>>();
+    let mut args = args_val.map(|x| x.to_owned()).collect::<Vec<String>>();
     let command_name = args.remove(0);
 
     let mut command = &mut Command::new(command_name);

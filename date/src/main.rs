@@ -73,11 +73,11 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
     }
 
     if is_outputformat {
-        format(datetime, args.value_of("outputformat").unwrap(), is_utc);
+        format(&datetime, args.value_of("outputformat").unwrap(), is_utc);
     } else if is_rfc2822 {
-        format_rfc2822(datetime, is_utc);
+        format_rfc2822(&datetime, is_utc);
     } else {
-        format_standard(datetime, is_utc);
+        format_standard(&datetime, is_utc);
     }
 
     Ok(())
@@ -91,11 +91,7 @@ fn read<'a>(input: &str) -> Result<DateTime<Local>, &'a str> {
         Err(_) => parse_file(input),
     };
 
-    if let Ok(date) = result {
-        return Ok(date);
-    } else {
-        return Err("illegal date time format");
-    }
+    if let Ok(date) = result { Ok(date) } else { Err("illegal date time format") }
 }
 
 /// Parses datetime from `date_str` with format `[[[[[cc]yy]mm]dd]HH]MM[.ss]`.
@@ -106,13 +102,13 @@ fn read_date<'a>(date_str: &str) -> Result<DateTime<Local>, &'a str> {
 
 /// Parsed datetime from `date_str` with `format`.
 fn parse_date<'a>(date_str: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
-    match parse_datetime_from_str(date_str, &format) {
+    match parse_datetime_from_str(date_str, format) {
         Ok(d) => Ok(d),
         Err(_) => Err("illegal date time format"),
     }
 }
 
-/// Return the local DateTime
+/// Return the local `DateTime`
 fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
     match NaiveDateTime::parse_from_str(seconds, "%s") {
         Ok(date) => {
@@ -134,9 +130,9 @@ fn parse_file(filename: &str) -> Result<DateTime<Local>, io::Error> {
         let modified = metadata.modified().unwrap();
         let datetime: DateTime<Local> = DateTime::from(modified);
 
-        return Ok(datetime);
+        Ok(datetime)
     } else {
-        return Err(io::Error::from(ErrorKind::NotFound));
+        Err(io::Error::from(ErrorKind::NotFound))
     }
 }
 
@@ -146,7 +142,7 @@ fn build_parse_format(date: &str) -> String {
     let mut format = vec![' ', ' ', ' ', ' ', ' ', ' ', ' '];
     let mut len = date.chars().count();
 
-    if date.contains(".") {
+    if date.contains('.') {
         format[6] = 'S';
         len -= 3;
     }
@@ -188,7 +184,7 @@ fn build_parse_format(date: &str) -> String {
 }
 
 /// This function parses `datetime` of given `format`. If `datetime` is not enough for a
-/// unique DateTime it uses die values of today.
+/// unique `DateTime` it uses die values of today.
 fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
     match time::strptime(datetime, format) {
         Ok(time) => {
@@ -207,29 +203,35 @@ fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
     let date = now.date();
     let naivetime = now.time();
 
-    let day = match time.tm_mday == 0 && !format_used.contains("%d") {
-        true => date.format("%d").to_string().parse().unwrap(),
-        false => time.tm_mday,
+    let day = if time.tm_mday == 0 && !format_used.contains("%d") {
+        date.format("%d").to_string().parse().unwrap()
+    } else {
+        time.tm_mday
     };
-    let month = match time.tm_mon == 0 && !format_used.contains("%m") {
-        true => date.format("%m").to_string().parse().unwrap(),
-        false => time.tm_mon + 1,
+    let month = if time.tm_mon == 0 && !format_used.contains("%m") {
+        date.format("%m").to_string().parse().unwrap()
+    } else {
+        time.tm_mon + 1
     };
-    let year = match time.tm_year == 0 && !format_used.contains("%Y") {
-        true => date.format("%Y").to_string().parse().unwrap(),
-        false => time.tm_year + 1900,
+    let year = if time.tm_year == 0 && !format_used.contains("%Y") {
+        date.format("%Y").to_string().parse().unwrap()
+    } else {
+        time.tm_year + 1900
     };
-    let seconds = match time.tm_sec == 0 && !format_used.contains("%S") {
-        true => naivetime.format("%S").to_string().parse().unwrap(),
-        false => time.tm_sec,
+    let seconds = if time.tm_sec == 0 && !format_used.contains("%S") {
+        naivetime.format("%S").to_string().parse().unwrap()
+    } else {
+        time.tm_sec
     };
-    let minutes = match time.tm_min == 0 && !format_used.contains("%M") {
-        true => naivetime.format("%M").to_string().parse().unwrap(),
-        false => time.tm_min,
+    let minutes = if time.tm_min == 0 && !format_used.contains("%M") {
+        naivetime.format("%M").to_string().parse().unwrap()
+    } else {
+        time.tm_min
     };
-    let hours = match time.tm_hour == 0 && !format_used.contains("%H") {
-        true => naivetime.format("%H").to_string().parse().unwrap(),
-        false => time.tm_hour,
+    let hours = if time.tm_hour == 0 && !format_used.contains("%H") {
+        naivetime.format("%H").to_string().parse().unwrap()
+    } else {
+        time.tm_hour
     };
 
     NaiveDate::from_ymd(year, month as u32, day as u32).and_hms(
@@ -240,14 +242,14 @@ fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
 }
 
 /// displays `datetime` in rfc2822 format
-fn format_rfc2822<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
+fn format_rfc2822<Tz: TimeZone>(datetime: &DateTime<Tz>, is_utc: bool)
 where Tz::Offset: fmt::Display {
     let format_str = "%a, %d %b %Y %T %z";
     format(datetime, format_str, is_utc);
 }
 
 /// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
-fn format_standard<Tz: TimeZone>(datetime: DateTime<Tz>, is_utc: bool)
+fn format_standard<Tz: TimeZone>(datetime: &DateTime<Tz>, is_utc: bool)
 where Tz::Offset: fmt::Display {
     // %Z should print the name of the timezone (only works for UTC)
     // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
@@ -257,7 +259,7 @@ where Tz::Offset: fmt::Display {
 }
 
 /// displays `datetime` with given `output_format`
-fn format<Tz: TimeZone>(datetime: DateTime<Tz>, output_format: &str, is_utc: bool)
+fn format<Tz: TimeZone>(datetime: &DateTime<Tz>, output_format: &str, is_utc: bool)
 where Tz::Offset: fmt::Display {
     if is_utc {
         println!("{}", datetime.with_timezone(&Utc).format(output_format));
