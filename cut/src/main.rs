@@ -1,17 +1,20 @@
-use clap::{load_yaml, App, ArgMatches};
 use std::{
     cmp::min,
     fmt,
     fs::File,
     io::{self, BufRead, BufReader, Write},
     num::ParseIntError,
-    result, string,
-    usize::{MAX, MIN},
+    process, result, string,
 };
+
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+
+#[cfg(test)]
+mod tests;
 
 fn main() {
     let yaml = load_yaml!("cut.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
     let filenames: Vec<_> = match matches.values_of("FILE") {
         Some(files) => files.collect(),
         None => vec!["-"],
@@ -24,12 +27,13 @@ fn main() {
     let result = make_cutter(&matches, &options).and_then(|cutter| {
         filenames
             .iter()
-            .map(|filename| cutter.process_file(&filename, &options))
+            .map(|filename| cutter.process_file(filename, &options))
             .collect::<Result<Vec<_>>>()
     });
 
     if let Err(err) = result {
         eprintln!("cut: {}", err);
+        process::exit(1);
     }
 }
 
@@ -39,36 +43,22 @@ struct Options {
 }
 
 #[derive(PartialEq, Debug)]
-enum Error {
-    SyntaxError(String),
-    RangeError(String),
-    ParseError(String),
-    IOError(String),
-    InternalError(String),
-}
+struct Error(String, i32);
 
 impl From<ParseIntError> for Error {
-    fn from(_err: ParseIntError) -> Error { Error::ParseError(format!("not an integer")) }
+    fn from(_err: ParseIntError) -> Self { Error("not an integer".to_string(), 2) }
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error { Error::IOError(format!("{}", err)) }
+    fn from(err: io::Error) -> Self { Error(format!("{}", err), 1) }
 }
 
 impl From<string::FromUtf8Error> for Error {
-    fn from(err: string::FromUtf8Error) -> Error { Error::ParseError(format!("{}", err)) }
+    fn from(err: string::FromUtf8Error) -> Self { Error(format!("{}", err), 1) }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::SyntaxError(ref msg) => write!(f, "syntax error: {}", msg),
-            Error::RangeError(ref msg) => write!(f, "range error: {}", msg),
-            Error::ParseError(ref msg) => write!(f, "parse error: {}", msg),
-            Error::IOError(ref msg) => write!(f, "I/O error: {}", msg),
-            Error::InternalError(ref msg) => write!(f, "internal error: {}", msg),
-        }
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 type Result<T> = result::Result<T, Error>;
@@ -86,33 +76,28 @@ impl Range {
     /// - <number> "-"
     /// - <number> "-" <number>
     /// # Errors
-    fn from_string(string: &str) -> Result<Range> {
+    fn from_string(string: &str) -> Result<Self> {
         let v: Vec<&str> = string.split('-').collect();
-        if string.len() == 0 || v.len() < 1 || v.len() > 2 {
-            return Err(Error::SyntaxError(format!("invalid byte or character range")));
+        if string.is_empty() || v.is_empty() || v.len() > 2 {
+            return Err(Error("invalid byte or character range".to_string(), 2));
         }
 
         // An interval with no endpoints at all should give an error.
-        if v.len() == 2 && v[0].len() == 0 && v[1].len() == 0 {
-            return Err(Error::RangeError(format!("invalid range with no endpoint")));
+        if v.len() == 2 && v[0].is_empty() && v[1].is_empty() {
+            return Err(Error("invalid range with no endpoint".to_string(), 2));
         }
 
-        let lower = if v[0].len() == 0 { MIN } else { v[0].parse::<usize>()? - 1 };
+        let lower = if v[0].is_empty() { usize::min_value() } else { v[0].parse::<usize>()? - 1 };
         let upper = if v.len() == 1 {
             lower + 1
-        } else if v[1].len() == 0 {
-            MAX
+        } else if v[1].is_empty() {
+            usize::max_value()
         } else {
             v[1].parse::<usize>()?
         };
 
         if lower >= upper {
-            return Err(Error::RangeError(format!(
-                "invalid range {} ({} >= {})",
-                string,
-                lower + 1,
-                upper
-            )));
+            return Err(Error(format!("invalid range {} ({} >= {})", string, lower + 1, upper), 2));
         }
 
         Ok(Range(lower, upper))
@@ -126,14 +111,14 @@ struct RangeSet {
 }
 
 impl RangeSet {
-    fn from_string(string: &str) -> Result<RangeSet> {
+    fn from_string(string: &str) -> Result<Self> {
         // Split the string at commas and parse the pieces as ranges.
         let ranges =
             string.split(',').map(|rng| Range::from_string(rng)).collect::<Result<Vec<Range>>>()?;
-        RangeSet::from_vec(ranges)
+        Self::from_vec(ranges)
     }
 
-    fn from_vec(mut ranges: Vec<Range>) -> Result<RangeSet> {
+    fn from_vec(mut ranges: Vec<Range>) -> Result<Self> {
         // Sort the ranges on the start of the range. This will place
         // all ranges in correct order in the vector for the merging
         // below.
@@ -172,8 +157,8 @@ impl RangeSet {
             }
             carry = range.1;
         }
-        if carry < MAX {
-            points.push(Range(carry, MAX));
+        if carry < usize::max_value() {
+            points.push(Range(carry, usize::max_value()));
         }
         self.points = points;
     }
@@ -192,14 +177,14 @@ trait Cutter {
     }
 
     // Process input from an already opened reader.
-    fn process_input(&self, reader: &mut Box<dyn io::Read>, options: &Options) -> Result<()> {
+    fn process_input(&self, reader: &mut dyn io::Read, options: &Options) -> Result<()> {
         let mut reader = BufReader::new(reader);
         loop {
             let mut line = Vec::new();
             match reader.read_until(options.line_terminator, &mut line) {
                 Ok(count) if count > 0 => self.process_line(line)?,
                 Ok(_) => return Ok(()),
-                Err(err) => return Err(Error::IOError(format!("I/O error: {}", err))),
+                Err(err) => return Err(Error(format!("I/O error: {}", err), 1)),
             }
         }
     }
@@ -211,7 +196,7 @@ struct Bytes {
 }
 
 impl Bytes {
-    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Result<Bytes> { Ok(Bytes { range_set }) }
+    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Result<Self> { Ok(Bytes { range_set }) }
 }
 
 impl Cutter for Bytes {
@@ -235,7 +220,7 @@ struct Chars {
 }
 
 impl Chars {
-    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Result<Chars> { Ok(Chars { range_set }) }
+    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Result<Self> { Ok(Chars { range_set }) }
 }
 
 impl Cutter for Chars {
@@ -265,15 +250,15 @@ struct Fields {
 }
 
 impl Fields {
-    fn new(range_set: RangeSet, matches: &ArgMatches) -> Result<Fields> {
+    fn new(range_set: RangeSet, matches: &ArgMatches) -> Result<Self> {
         let idelim = matches.value_of("input-delimiter").unwrap_or("\t");
         if idelim.len() != 1 {
-            return Err(Error::SyntaxError(format!("single character for delimiter")));
+            return Err(Error("single character for delimiter".to_string(), 2));
         }
 
         let odelim = matches.value_of("output-delimiter").unwrap_or(idelim);
         if odelim.len() != 1 {
-            return Err(Error::SyntaxError(format!("single character for delimiter")));
+            return Err(Error("single character for delimiter".to_string(), 2));
         }
 
         Ok(Fields {
@@ -335,93 +320,6 @@ fn make_cutter(matches: &ArgMatches, options: &Options) -> Result<Box<dyn Cutter
         let cutter = Fields::new(range_set, matches)?;
         Ok(Box::new(cutter))
     } else {
-        Err(Error::InternalError(format!("not possible to select cutter")))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::usize::{MAX, MIN};
-
-    // Macro to assert that an expression matches a pattern.
-    macro_rules! assert_matches {
-        ($xpr:expr, $pat:pat) => {
-            match $xpr {
-                $pat => true,
-                ref xpr => {
-                    panic!("assert_matches: '{:?}' doesn't match '{}'", xpr, stringify!($pat))
-                },
-            }
-        };
-    }
-
-    #[test]
-    fn range_from_string() {
-        assert_eq!(Range::from_string("2"), Ok(Range(1, 2)));
-        assert_eq!(Range::from_string("-2"), Ok(Range(MIN, 2)));
-        assert_eq!(Range::from_string("2-"), Ok(Range(1, MAX)));
-        assert_eq!(Range::from_string("2-5"), Ok(Range(1, 5)));
-
-        assert_matches!(Range::from_string(""), Err(Error::SyntaxError(_)));
-        assert_matches!(Range::from_string("5-2"), Err(Error::RangeError(_)));
-        assert_matches!(Range::from_string("foo"), Err(Error::ParseError(_)));
-        assert_matches!(Range::from_string("2-0x12"), Err(Error::ParseError(_)));
-        assert_matches!(Range::from_string("-"), Err(Error::RangeError(_)));
-    }
-
-    #[test]
-    fn rangeset_from_string() {
-        assert_eq!(RangeSet::from_string("2"), Ok(RangeSet { points: vec![Range(1, 2)] }));
-        assert_eq!(RangeSet::from_string("-2"), Ok(RangeSet { points: vec![Range(MIN, 2)] }));
-        assert_eq!(RangeSet::from_string("2,3"), Ok(RangeSet { points: vec![Range(1, 3)] }));
-        assert_eq!(RangeSet::from_string("2-3"), Ok(RangeSet { points: vec![Range(1, 3)] }));
-        assert_eq!(
-            RangeSet::from_string("2-3,3-5,4-6"),
-            Ok(RangeSet { points: vec![Range(1, 6)] })
-        );
-        assert_eq!(
-            RangeSet::from_string("4-6,3-5,2-3"),
-            Ok(RangeSet { points: vec![Range(1, 6)] })
-        );
-        assert_eq!(
-            RangeSet::from_string("2,5-10"),
-            Ok(RangeSet { points: vec![Range(1, 2), Range(4, 10)] })
-        );
-        assert_eq!(
-            RangeSet::from_string("2,5-"),
-            RangeSet::from_vec(vec![Range(1, 2), Range(4, MAX)])
-        );
-        assert_eq!(
-            RangeSet::from_string("-2,5-"),
-            Ok(RangeSet { points: vec![Range(MIN, 2), Range(4, MAX)] })
-        );
-    }
-
-    fn complement_rangeset_helper(ranges: Vec<Range>, expected: Vec<Range>) {
-        let mut range_set = RangeSet::from_vec(ranges).unwrap();
-        range_set.complement();
-        assert_eq!(range_set, RangeSet::from_vec(expected).unwrap());
-    }
-
-    #[test]
-    fn completment_rangeset() {
-        complement_rangeset_helper(vec![Range(MIN, MAX)], vec![]);
-        complement_rangeset_helper(vec![Range(MIN, 5)], vec![Range(5, MAX)]);
-        complement_rangeset_helper(vec![Range(5, MAX)], vec![Range(MIN, 5)]);
-        complement_rangeset_helper(vec![Range(1, 5)], vec![Range(MIN, 1), Range(5, MAX)]);
-        complement_rangeset_helper(vec![Range(1, 5), Range(8, 12)], vec![
-            Range(MIN, 1),
-            Range(5, 8),
-            Range(12, MAX),
-        ]);
-        complement_rangeset_helper(vec![Range(MIN, 5), Range(8, 12)], vec![
-            Range(5, 8),
-            Range(12, MAX),
-        ]);
-        complement_rangeset_helper(vec![Range(5, 8), Range(12, MAX)], vec![
-            Range(0, 5),
-            Range(8, 12),
-        ]);
+        Err(Error("not possible to select cutter".to_string(), 1))
     }
 }

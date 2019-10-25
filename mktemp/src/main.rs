@@ -31,7 +31,7 @@ fn main() {
             // a prefix.
             // This means the user will get a reasonable result, regardless of whether we're called
             // as if we were a BSD or GNU mktemp.
-            if template_arg.ends_with("X") {
+            if template_arg.ends_with('X') {
                 tmpdir.join(template_arg)
             } else {
                 tmpdir.join(format!("{}.XXXXXXXX", template_arg))

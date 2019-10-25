@@ -23,6 +23,7 @@ members = [
     "true",
     "tty",
     "uname",
+    "unexpand",
     "unlink",
     "uptime",
     "users",

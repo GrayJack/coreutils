@@ -25,13 +25,13 @@ pub mod backup {
     }
 
     impl BackupMode {
-        pub fn from_string(string: &str) -> BackupMode {
+        pub fn from_string(string: &str) -> Self {
             match string {
-                "none" | "off" => BackupMode::None,
-                "numbered" | "t" => BackupMode::Numbered,
-                "existing" | "nil" => BackupMode::Existing,
-                "simple" | "never" => BackupMode::Simple,
-                _ => BackupMode::Existing,
+                "none" | "off" => Self::None,
+                "numbered" | "t" => Self::Numbered,
+                "existing" | "nil" => Self::Existing,
+                "simple" | "never" => Self::Simple,
+                _ => Self::Existing,
             }
         }
     }
@@ -39,7 +39,7 @@ pub mod backup {
     pub fn create_numbered_backup(file: &PathBuf) -> Result<PathBuf, Error> {
         let mut index = 1_u64;
         loop {
-            if index == std::u64::MAX {
+            if index == u64::max_value() {
                 return Err(Error::new(
                     ErrorKind::AlreadyExists,
                     "Cannot create backup: too many backup files",
@@ -58,7 +58,7 @@ pub mod backup {
         }
     }
 
-    pub fn create_existing_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf, Error> {
+    pub fn create_existing_backup(file: &PathBuf, suffix: &str) -> Result<PathBuf, Error> {
         let mut has_numbered_backup = false;
         let regex = Regex::new(r"~\d+~").unwrap();
         let parent = file.parent().unwrap();
@@ -74,13 +74,13 @@ pub mod backup {
         }
 
         if has_numbered_backup {
-            return create_numbered_backup(file);
+            create_numbered_backup(file)
         } else {
-            return create_simple_backup(file, suffix);
+            create_simple_backup(file, suffix)
         }
     }
 
-    pub fn create_simple_backup(file: &PathBuf, suffix: &String) -> Result<PathBuf, Error> {
+    pub fn create_simple_backup(file: &PathBuf, suffix: &str) -> Result<PathBuf, Error> {
         let new = PathBuf::from(format!("{}{}", file.display(), suffix));
 
         match fs::rename(file, &new) {
@@ -172,16 +172,16 @@ impl OverwriteMode {
 impl MvFlags {
     pub fn from_matches(matches: &ArgMatches) -> MvFlags {
         let target_dir = {
-            if !matches.is_present("targetDirectory") {
-                String::from("")
-            } else {
+            if matches.is_present("targetDirectory") {
                 matches.value_of("targetDirectory").unwrap().to_string()
+            } else {
+                String::from("")
             }
         };
 
         MvFlags {
             backup: BackupMode::from_string(matches.value_of("backup").unwrap()),
-            overwrite: OverwriteMode::from_matches(&matches),
+            overwrite: OverwriteMode::from_matches(matches),
             update: matches.is_present("update"),
             strip_trailing_slashes: matches.is_present("stripTrailingSlashes"),
             verbose: matches.is_present("verbose"),
@@ -210,10 +210,10 @@ fn main() {
     };
 
     let success = if flags.target_directory != "" {
-        move_files(sources, PathBuf::from(&flags.target_directory), &flags)
+        move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
     } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
         let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), target.to_path_buf(), &flags)
+        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
     } else if sources.len() == 2 {
         rename_file(&sources[0], &sources[1], &flags)
     } else if sources.len() == 1 {
@@ -221,7 +221,7 @@ fn main() {
         false
     } else {
         let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), target.to_path_buf(), &flags)
+        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
     };
 
     if !success {
@@ -231,7 +231,7 @@ fn main() {
     }
 }
 
-fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
+fn move_files(sources: Vec<PathBuf>, target: &PathBuf, flags: &MvFlags) -> bool {
     if !target.is_dir() {
         eprintln!("mv: '{}' is not a directory", target.display());
         return false;
@@ -239,22 +239,19 @@ fn move_files(sources: Vec<PathBuf>, target: PathBuf, flags: &MvFlags) -> bool {
 
     let mut success = true;
     for source in sources {
-        match source.file_name() {
-            Some(filename) => {
-                let new = target.join(filename);
+        if let Some(filename) = source.file_name() {
+            let new = target.join(filename);
 
-                if !rename_file(&source, &new, flags) {
-                    success = false;
-                }
-            },
-            None => {
+            if !rename_file(&source, &new, flags) {
                 success = false;
-                eprintln!("mv: Cannot 'stat' file '{}'", source.display());
-            },
+            }
+        } else {
+            success = false;
+            eprintln!("mv: Cannot 'stat' file '{}'", source.display());
         }
     }
 
-    return success;
+    success
 }
 
 fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {

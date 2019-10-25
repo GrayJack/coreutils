@@ -96,7 +96,7 @@ impl WcFlags {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 struct WcResult {
     lines: u64,
     words: u64,

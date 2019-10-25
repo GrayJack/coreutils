@@ -7,9 +7,11 @@ Here lies several abstraction for Unix/Unix-like structures in the OS supported 
  * `Group`: This struct holds information about a system group
  * `Groups`: A collection of `Group`
  * `UtsName`: A struct that holds general system information
+ * `Utmp` and `Utmpx`: A struct representing account database on linux
  * tty module: helper function about tty and `TtyName` to get the ttyname
  * Routing table abstractions for OpenBSD
  * Audit structs and syscall for FreeBSD and MacOS
  * mktemp: Wrappers for libc mkstemp(3) and mkdtemp(3)
+ * load: safe abstraction to system function to get load of the system
 
-It also re-export major needed things from [bstr](https://github.com/BurntSushi/bstr), a crate with a string type for Rust that is not required to be valid UTF-8.
+It also re-export major needed things from [bstr](https://github.com/BurntSushi/bstr), a crate with a string type for Rust that is not required to be valid UTF-8, as well as [time](https://github.com/time-rs/time) and [libc](https://github.com/rust-lang/libc)
