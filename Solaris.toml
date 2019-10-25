@@ -23,9 +23,9 @@ members = [
     "true",
     "tty",
     "uname",
+    "unexpand",
     "unlink",
     "wc",
     "whoami",
     "yes",
-    "unexpand",
 ]

@@ -8,7 +8,7 @@ pub struct TabStops {
 const ARG_PARSE_MSG: &str = "unexpand: error parsing arguments";
 
 impl TabStops {
-    pub fn new(tabs_str: Option<&str>) -> Result<TabStops, &str> {
+    pub fn new(tabs_str: Option<&str>) -> Result<Self, &str> {
         match tabs_str {
             Some(tabs_str) => {
                 if tabs_str == "" {
@@ -17,7 +17,7 @@ impl TabStops {
 
                 let tabs_str = tabs_str.replace(", ", ",");
                 let mut tabs_vec: Vec<&str> =
-                    tabs_str.split(|c| c == ',' || c == ' ').map(|s| s.trim()).collect();
+                    tabs_str.split(|c| c == ',' || c == ' ').map(str::trim).collect();
 
                 if tabs_vec.len() == 1 {
                     let value = tabs_vec[0].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?;
@@ -35,9 +35,9 @@ impl TabStops {
 
                 let mut offset: Option<usize> = None;
                 let mut repetable: Option<usize> = None;
-                let last_item = tabs_vec.last().unwrap().clone();
+                let last_item = String::from(*tabs_vec.last().unwrap());
 
-                if last_item.contains(&"+") {
+                if last_item.contains('+') {
                     repetable = Some(
                         tabs_vec.pop().unwrap()[1..]
                             .parse::<usize>()
@@ -48,18 +48,18 @@ impl TabStops {
                     );
                 }
 
-                if last_item.contains(&"/") {
+                if last_item.contains('/') {
                     repetable =
                         Some(last_item[1..].parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
                     tabs_vec.pop();
                 }
 
                 let mut positions: Vec<usize> = vec![];
-                for tab_val in tabs_vec.iter() {
+                for tab_val in &tabs_vec {
                     positions.push(tab_val.parse::<usize>().map_err(|_err| ARG_PARSE_MSG)?);
                 }
 
-                if positions.len() > 0 {
+                if !positions.is_empty() {
                     if positions.contains(&0) {
                         return Err("unexpand: tab size cannot be 0");
                     }

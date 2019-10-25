@@ -1,3 +1,4 @@
+#![warn(clippy::pedantic)]
 use std::{
     env::current_dir,
     fs::File,
@@ -5,10 +6,79 @@ use std::{
     process,
 };
 
-use clap::{load_yaml, App, ArgMatches};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 mod tab_stops;
 use tab_stops::*;
+
+fn main() {
+    let yaml = load_yaml!("unexpand.yml");
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let mut unexpand = Unexpand::from_matches(&matches);
+    let cwd = match current_dir() {
+        Ok(path) => path,
+        Err(err) => {
+            eprintln!("unexpand: error reading current working directory: {}", err);
+            process::exit(1);
+        },
+    };
+
+    let files: Vec<String> = match matches.values_of("FILE") {
+        Some(files) => files
+            .map(|file| {
+                if file == "-" {
+                    return String::from("-");
+                }
+
+                file.split_whitespace()
+                    .map(|s| cwd.join(s.to_string()).to_str().unwrap().to_string())
+                    .collect()
+            })
+            .collect(),
+        None => vec!["-".to_string()],
+    };
+
+    let mut stdout = stdout();
+
+    let write_error = |err| {
+        eprintln!("unexpand: write error: {}", err);
+        process::exit(1);
+    };
+
+    let read_error = |err| {
+        eprintln!("unexpand: read error: {}", err);
+        String::new()
+    };
+
+    for file_path in files {
+        if file_path == "-" {
+            let stdin = stdin();
+            for line in stdin.lock().lines() {
+                stdout
+                    .write_all(
+                        unexpand
+                            .unexpand_line(&line.unwrap_or_else(read_error))
+                            .as_bytes(),
+                    )
+                    .unwrap_or_else(write_error);
+                stdout.flush().unwrap_or_else(write_error);
+            }
+        } else {
+            let fd = File::open(file_path).unwrap();
+            let reader = BufReader::new(fd);
+            for line in reader.lines() {
+                stdout
+                    .write_all(
+                        unexpand
+                            .unexpand_line(&line.unwrap_or_else(read_error))
+                            .as_bytes(),
+                    )
+                    .unwrap_or_else(write_error);
+                stdout.flush().unwrap_or_else(write_error);
+            }
+        }
+    }
+}
 
 struct Unexpand {
     all:  bool,
@@ -37,7 +107,7 @@ impl Unexpand {
         Unexpand { all, tabs }
     }
 
-    fn unexpand_line(self: &mut Self, line: String) -> String {
+    fn unexpand_line(self: &mut Self, line: &str) -> String {
         let mut convert = true;
         let mut spaces: i32 = 0;
         let mut column: i32 = 0;
@@ -74,74 +144,6 @@ impl Unexpand {
     }
 }
 
-fn main() {
-    let yaml = load_yaml!("unexpand.yml");
-    let matches = App::from_yaml(yaml).get_matches();
-    let mut unexpand = Unexpand::from_matches(&matches);
-    let cwd = match current_dir() {
-        Ok(path) => path,
-        Err(err) => {
-            eprintln!("unexpand: error reading current working directory: {}", err);
-            process::exit(1);
-        },
-    };
-
-    let files: Vec<String> = match matches.values_of("FILE") {
-        Some(files) => files
-            .map(|file| {
-                if file == "-" {
-                    return String::from("-");
-                }
-
-                file.split_whitespace()
-                    .map(|s| cwd.join(s.to_string()).to_str().unwrap().to_string())
-                    .collect()
-            })
-            .collect(),
-        None => vec!["-".to_string()],
-    };
-
-    let mut stdout = stdout();
-    fn write_error_closure(err: std::io::Error) {
-        eprintln!("unexpand: write error: {}", err);
-        std::process::exit(1);
-    };
-
-    fn line_read_else_closure(err: std::io::Error) -> String {
-        eprintln!("unexpand: read error: {}", err);
-        String::from("")
-    }
-
-    for file_path in files {
-        if file_path == "-" {
-            let stdin = stdin();
-            for line in stdin.lock().lines() {
-                stdout
-                    .write_all(
-                        unexpand
-                            .unexpand_line(line.unwrap_or_else(line_read_else_closure))
-                            .as_bytes(),
-                    )
-                    .unwrap_or_else(write_error_closure);
-                stdout.flush().unwrap_or_else(write_error_closure);
-            }
-        } else {
-            let fd = File::open(file_path).unwrap();
-            let reader = BufReader::new(fd);
-            for line in reader.lines() {
-                stdout
-                    .write_all(
-                        unexpand
-                            .unexpand_line(line.unwrap_or_else(line_read_else_closure))
-                            .as_bytes(),
-                    )
-                    .unwrap_or_else(write_error_closure);
-                stdout.flush().unwrap_or_else(write_error_closure);
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -149,57 +151,45 @@ mod tests {
     #[test]
     fn unexpand_lines() {
         let mut instance = Unexpand { all: false, tabs: TabStops::new(Some("2")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc  c\n"));
-        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c    c\n"));
+        assert_eq!(instance.unexpand_line("    c"), "\t\tc\n");
+        assert_eq!(instance.unexpand_line("  c"), "\tc\n");
+        assert_eq!(instance.unexpand_line("  c  c"), "\tc  c\n");
+        assert_eq!(instance.unexpand_line("   c    c"), "\t c    c\n");
 
         let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("    c")), String::from("\t\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("\tc\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\t\tc\n"));
+        assert_eq!(instance.unexpand_line("    c"), "\t\tc\n");
+        assert_eq!(instance.unexpand_line("  c"), "\tc\n");
+        assert_eq!(instance.unexpand_line("  c  c"), "\tc\tc\n");
+        assert_eq!(instance.unexpand_line("   c    c"), "\t c\t\tc\n");
 
         let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("8")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("    c")), String::from("    c\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("  c\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c  c")), String::from("  c  c\n"));
-        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("   c    c\n"));
-        assert_eq!(instance.unexpand_line(String::from("        c")), String::from("\tc\n"));
-        assert_eq!(
-            instance.unexpand_line(String::from("        c        c")),
-            String::from("\tc\tc\n")
-        );
+        assert_eq!(instance.unexpand_line("    c"), "    c\n");
+        assert_eq!(instance.unexpand_line("  c"), "  c\n");
+        assert_eq!(instance.unexpand_line("  c  c"), "  c  c\n");
+        assert_eq!(instance.unexpand_line("   c    c"), "   c    c\n");
+        assert_eq!(instance.unexpand_line("        c"), "\tc\n");
+        assert_eq!(instance.unexpand_line("        c        c"), "\tc\tc\n");
 
         let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,+4")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("          c")), String::from("\t\t\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("  c    c")), String::from("\tc\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("   c    c")), String::from("\t c\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t  c\tc\n"));
-        assert_eq!(
-            instance.unexpand_line(String::from("      c    c")),
-            String::from("\t\tc\tc\n")
-        );
-        assert_eq!(
-            instance.unexpand_line(String::from("      c        c")),
-            String::from("\t\tc\t\tc\n")
-        );
-        assert_eq!(
-            instance.unexpand_line(String::from("      c        c    ")),
-            String::from("\t\tc\t\tc\t\n")
-        );
+        assert_eq!(instance.unexpand_line("  c"), "\tc\n");
+        assert_eq!(instance.unexpand_line("          c"), "\t\t\tc\n");
+        assert_eq!(instance.unexpand_line("  c    c"), "\tc\tc\n");
+        assert_eq!(instance.unexpand_line("   c    c"), "\t c\tc\n");
+        assert_eq!(instance.unexpand_line("    c    c"), "\t  c\tc\n");
+        assert_eq!(instance.unexpand_line("      c    c"), "\t\tc\tc\n");
+        assert_eq!(instance.unexpand_line("      c        c"), "\t\tc\t\tc\n");
+        assert_eq!(instance.unexpand_line("      c        c    "), "\t\tc\t\tc\t\n");
 
         let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,/4")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("  c")), String::from("\tc\n"));
-        assert_eq!(instance.unexpand_line(String::from("    c    c")), String::from("\t\tc\tc\n"));
+        assert_eq!(instance.unexpand_line("  c"), String::from("\tc\n"));
+        assert_eq!(instance.unexpand_line("    c    c"), "\t\tc\tc\n");
 
         let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2 4 6")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("      c")), String::from("\t\t\tc\n"));
+        assert_eq!(instance.unexpand_line("      c"), "\t\t\tc\n");
 
         // backspace tests
         let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
-        assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
-        assert_eq!(instance.unexpand_line(String::from("     c")), String::from("\t\t c\n"));
+        assert_eq!(instance.unexpand_line("     c"), "\t\t c\n");
+        assert_eq!(instance.unexpand_line("     c"), "\t\t c\n");
     }
 }

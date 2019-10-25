@@ -25,11 +25,11 @@ members = [
     "true",
     "tty",
     "uname",
+    "unexpand",
     "unlink",
     "uptime",
     "users",
     "wc",
     "whoami",
     "yes",
-    "unexpand",
 ]
