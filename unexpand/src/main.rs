@@ -1,4 +1,3 @@
-#![warn(clippy::pedantic)]
 use std::{
     env::current_dir,
     fs::File,
