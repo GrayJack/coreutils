@@ -1,0 +1,22 @@
+name: unexpand
+version: "0.1"
+author: "Bojan Durdevic <bojan88@gmail.com>"
+about: Convert spaces to tabs
+args:
+    - all:
+        help: Convert all blanks, instead of just initial blanks
+        short: a
+        long: all
+    - first_only:
+        help: Convert only leading sequences of blanks (overrides -a)
+        long: first-only
+        short: f
+    - tabs:
+        help: Have tabs N characters apart instead of 8 (enables -a)
+        short: t
+        long: tabs
+        value_names: N or LIST
+        takes_value: true
+    - FILE:
+        help: Input file
+        multiple: true
