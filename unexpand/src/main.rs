@@ -7,6 +7,9 @@ use std::{
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
+#[cfg(test)]
+mod tests;
+
 mod tab_stops;
 use tab_stops::*;
 
@@ -111,7 +114,7 @@ impl Unexpand {
                     column += 1;
 
                     if self.tabs.is_tab_stop(column as usize) && convert {
-                        new_line.push_str("\t");
+                        new_line.push('\t');
                         spaces = 0;
                     }
                 },
@@ -132,55 +135,5 @@ impl Unexpand {
         new_line.push_str("\n");
 
         new_line
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn unexpand_lines() {
-        let mut instance = Unexpand { all: false, tabs: TabStops::new(Some("2")).unwrap() };
-        assert_eq!(instance.unexpand_line("    c"), "\t\tc\n");
-        assert_eq!(instance.unexpand_line("  c"), "\tc\n");
-        assert_eq!(instance.unexpand_line("  c  c"), "\tc  c\n");
-        assert_eq!(instance.unexpand_line("   c    c"), "\t c    c\n");
-
-        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
-        assert_eq!(instance.unexpand_line("    c"), "\t\tc\n");
-        assert_eq!(instance.unexpand_line("  c"), "\tc\n");
-        assert_eq!(instance.unexpand_line("  c  c"), "\tc\tc\n");
-        assert_eq!(instance.unexpand_line("   c    c"), "\t c\t\tc\n");
-
-        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("8")).unwrap() };
-        assert_eq!(instance.unexpand_line("    c"), "    c\n");
-        assert_eq!(instance.unexpand_line("  c"), "  c\n");
-        assert_eq!(instance.unexpand_line("  c  c"), "  c  c\n");
-        assert_eq!(instance.unexpand_line("   c    c"), "   c    c\n");
-        assert_eq!(instance.unexpand_line("        c"), "\tc\n");
-        assert_eq!(instance.unexpand_line("        c        c"), "\tc\tc\n");
-
-        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,+4")).unwrap() };
-        assert_eq!(instance.unexpand_line("  c"), "\tc\n");
-        assert_eq!(instance.unexpand_line("          c"), "\t\t\tc\n");
-        assert_eq!(instance.unexpand_line("  c    c"), "\tc\tc\n");
-        assert_eq!(instance.unexpand_line("   c    c"), "\t c\tc\n");
-        assert_eq!(instance.unexpand_line("    c    c"), "\t  c\tc\n");
-        assert_eq!(instance.unexpand_line("      c    c"), "\t\tc\tc\n");
-        assert_eq!(instance.unexpand_line("      c        c"), "\t\tc\t\tc\n");
-        assert_eq!(instance.unexpand_line("      c        c    "), "\t\tc\t\tc\t\n");
-
-        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2,/4")).unwrap() };
-        assert_eq!(instance.unexpand_line("  c"), String::from("\tc\n"));
-        assert_eq!(instance.unexpand_line("    c    c"), "\t\tc\tc\n");
-
-        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2 4 6")).unwrap() };
-        assert_eq!(instance.unexpand_line("      c"), "\t\t\tc\n");
-
-        // backspace tests
-        let mut instance = Unexpand { all: true, tabs: TabStops::new(Some("2")).unwrap() };
-        assert_eq!(instance.unexpand_line("     c"), "\t\t c\n");
-        assert_eq!(instance.unexpand_line("     c"), "\t\t c\n");
     }
 }
