@@ -54,11 +54,7 @@ fn main() {
             let stdin = stdin();
             for line in stdin.lock().lines() {
                 stdout
-                    .write_all(
-                        unexpand
-                            .unexpand_line(&line.unwrap_or_else(read_error))
-                            .as_bytes(),
-                    )
+                    .write_all(unexpand.unexpand_line(&line.unwrap_or_else(read_error)).as_bytes())
                     .unwrap_or_else(write_error);
                 stdout.flush().unwrap_or_else(write_error);
             }
@@ -67,11 +63,7 @@ fn main() {
             let reader = BufReader::new(fd);
             for line in reader.lines() {
                 stdout
-                    .write_all(
-                        unexpand
-                            .unexpand_line(&line.unwrap_or_else(read_error))
-                            .as_bytes(),
-                    )
+                    .write_all(unexpand.unexpand_line(&line.unwrap_or_else(read_error)).as_bytes())
                     .unwrap_or_else(write_error);
                 stdout.flush().unwrap_or_else(write_error);
             }
