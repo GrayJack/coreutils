@@ -33,7 +33,7 @@ enum BlocksizeSuffix {
 }
 
 impl BlocksizeSuffix {
-    fn iterate() -> Iter<'static, BlocksizeSuffix> {
+    fn iter() -> Iter<'static, BlocksizeSuffix> {
         static SUFFIXES: [BlocksizeSuffix; 18] =
             [KB, K, KiB, MB, M, MiB, GB, G, GiB, TB, T, TiB, PB, P, PiB, EB, E, EiB];
         SUFFIXES.into_iter()
@@ -83,7 +83,7 @@ impl BlocksizeSuffix {
         let mut largest_suffix: Option<BlocksizeSuffix> = None;
         let mut count = 0;
 
-        for suffix in BlocksizeSuffix::iterate() {
+        for suffix in BlocksizeSuffix::iter() {
             // take base 10 suffixes
             if use_si && count % 3 == 0 {
                 if value / suffix.value() > 1 {
@@ -190,7 +190,7 @@ impl Blocksize {
 
     pub fn human_readable(&self) -> String { format!("{}", self) }
 
-    pub fn get_suffix_str(&self) -> &'static str {
+    pub fn suffix_str(&self) -> &'static str {
         match self.suffix {
             Some(s) => s.to_str(),
             None => "",

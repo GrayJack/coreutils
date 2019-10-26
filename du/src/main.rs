@@ -39,7 +39,7 @@ enum DisplayValue {
 }
 
 impl DisplayValue {
-    fn get_size(&self) -> u64 {
+    fn size(&self) -> u64 {
         match &self {
             DisplayValue::INodes(inodes) => *inodes,
             DisplayValue::DiskUsage(blocksize) => blocksize.value(),
@@ -286,7 +286,7 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions, total_ref: &mut u64)
                         process_value(&meta, flags_opts, &mut subdir_sizes, current_depth, true);
 
                     if flags_opts.grand_total {
-                        arg_total = value.get_size();
+                        arg_total = value.size();
                     }
 
                     if let Some(t) = &flags_opts.time {
@@ -365,7 +365,7 @@ fn process_value(
 
     if !is_dir || !flags_opts.seperate_dirs {
         // add size to subdir total size
-        subdir_sizes_r[depth] += display_value.get_size();
+        subdir_sizes_r[depth] += display_value.size();
     }
 
     if is_dir && depth < subdir_count {
@@ -567,7 +567,7 @@ fn format_display_value(value: DisplayValue, flags_opts: &DuFlagsAndOptions) -> 
                     blocksize_fraction = blocksize.value() / flags_opts.blocksize.value();
                 }
 
-                format!("{}{}", blocksize_fraction, flags_opts.blocksize.get_suffix_str())
+                format!("{}{}", blocksize_fraction, flags_opts.blocksize.suffix_str())
             }
         },
     }
