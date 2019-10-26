@@ -92,7 +92,7 @@ cargo install --path .
 |    mv    |             |         |   X  |
 |   nice   |             |         |   X  |
 |    nl    |      X      |         |      |
-|   nohup  |      X      |         |      |
+|   nohup  |             |         |   X  |
 |    od    |      X      |         |      |
 |   paste  |      X      |         |      |
 |   patch  |      X      |         |      |
@@ -117,7 +117,7 @@ cargo install --path .
 |   tsort  |      X      |         |      |
 |    tty   |             |         |   X  |
 |   uname  |             |         |   X  |
-| unexpand |      X      |         |      |
+| unexpand |             |         |   X  |
 |   uniq   |      X      |         |      |
 |  unlink  |             |         |   X  |
 |  uptime  |             |    X    |      |
@@ -130,6 +130,24 @@ cargo install --path .
 
 ## Licensing
 This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE). If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
+
+## Contributors
+Without they this project would not be in the shape it is today
+
+ * [Ashwin-A-K](https://github.com/Ashwin-A-K)
+ * [Bojan Đurđević](https://github.com/bojan88)
+ * [Celeo](https://github.com/Celeo)
+ * [Federico Ponzi](https://github.com/FedericoPonzi)
+ * [Gab David](https://github.com/Larisho)
+ * [Giacomo Parolini](https://github.com/silverweed)
+ * [Jonas Geschke](https://github.com/kegesch)
+ * [Mats Kindah](https://github.com/mkindahl)
+ * [Odin Dutton](https://github.com/twe4ked)
+ * [Rodrigo Oliveira Campos](https://github.com/rodrigocam)
+ * [Sergey Noskov](https://github.com/Albibek)
+ * [Tom Parker-Shemilt](https://github.com/palfrey)
+ * [Torbjörn Lönnemark](https://github.com/tobbez)
+ * [Vaibhav Yenamandra](https://github.com/vaibhav-y)
 
 
 <!-- [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_large) -->

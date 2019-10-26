@@ -1,5 +1,5 @@
 name: rm
-version: "0.1"
+version: "0.0.0"
 author: "Gab David <g.bianchetdavid@gmail.com>, Eric Shimizu Karbstein <gr41.j4ck@gmail.com>"
 about: Remove files or directories
 args:

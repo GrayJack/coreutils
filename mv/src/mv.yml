@@ -1,5 +1,5 @@
 name: mv
-version: "0.1"
+version: "0.0.0"
 author: Gab David <g.bianchetdavid@gmail.com>
 about: Move or rename files
 args:
