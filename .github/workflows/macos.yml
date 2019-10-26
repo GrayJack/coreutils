@@ -14,9 +14,13 @@ jobs:
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: ${{ matrix.rust }}
-    - name: Build
+    - name: Install targets
+      run: rustup target add i686-apple-darwin
+    - name: Setup TOML
+      run: cp MacOS.toml Cargo.toml
+    - name: Check MacOS (x86_64)
       run: cargo check --verbose
+    - name: Check MacOS (i686)
+      run: cargo check --verbose --target i686-apple-darwin
     - name: Run tests
-      run: |
-        cp MacOS.toml Cargo.toml
-        cargo test --verbose
+      run: cargo test --verbose
