@@ -17,6 +17,10 @@ use crate::types::{Pid, TimeVal};
 
 #[cfg(target_os = "linux")]
 use libc::__exit_status;
+#[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+use libc::c_int;
+#[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+use libc::c_long;
 #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
 use libc::c_short;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -140,8 +144,11 @@ pub struct Utmpx {
     #[cfg(target_os = "linux")]
     exit: __exit_status,
     /// Session ID (used for windowing)
-    #[cfg(target_os = "linux")]
-    session: i32,
+    #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+    session: c_int,
+    /// Session ID (used for windowing)
+    #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+    session: c_long,
     /// Session ID (used for windowing)
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     session: u16,
