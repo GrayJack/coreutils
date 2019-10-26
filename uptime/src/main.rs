@@ -4,6 +4,17 @@ use std::{
     process,
 };
 
+#[cfg(not(any(
+    target_arch = "x86_64",
+    target_arch = "aarch64",
+    target_arch = "mips64",
+    target_arch = "mips64el",
+    target_arch = "powerpc64",
+    target_arch = "powerpc64le",
+    target_arch = "sparc64"
+)))]
+use std::convert::TryInto;
+
 use coreutils_core::{
     libc::time_t,
     load::load_average,
