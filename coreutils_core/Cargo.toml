@@ -8,3 +8,4 @@ edition = "2018"
 libc = { version = "^0.2.65", features = ["extra_traits"] }
 bstr = "^0.2.8"
 time = "~0.1.42"
+errno = "0.2.4"
