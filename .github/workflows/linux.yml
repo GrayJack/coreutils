@@ -20,15 +20,15 @@ jobs:
       run: cp Linux.toml Cargo.toml
     - name: Check Linux (x86_64 GNU)
       run: cargo check --verbose
-    - name: Check Linux (x86_64 MUSL)
-      run: cargo check --verbose --target x86_64-unknown-linux-musl
+    # - name: Check Linux (x86_64 MUSL)
+    #   run: cargo check --verbose --target x86_64-unknown-linux-musl
     - name: Check Linux (i686 GNU)
       run: cargo check --verbose --target i686-unknown-linux-gnu
-    - name: Check Linux (i686 MUSL)
-      run: cargo check --verbose --target i686-unknown-linux-musl
+    # - name: Check Linux (i686 MUSL)
+    #   run: cargo check --verbose --target i686-unknown-linux-musl
     - name: Check Linux (aarch64 GNU)
       run: cargo check --verbose --target aarch64-unknown-linux-gnu
-    - name: Check Linux (aarch64 MUSL)
-      run: cargo check --verbose --target aarch64-unknown-linux-musl
+    # - name: Check Linux (aarch64 MUSL)
+    #   run: cargo check --verbose --target aarch64-unknown-linux-musl
     - name: Run tests
       run: cargo test --verbose
