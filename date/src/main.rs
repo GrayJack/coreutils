@@ -1,10 +1,9 @@
-use std::{fmt, io, process};
+use std::{fmt, io, io::ErrorKind, path::Path, process};
 
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
+use time::Tm;
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use std::{io::ErrorKind, path::Path};
-use time::Tm;
 
 fn main() {
     let yaml = load_yaml!("date.yml");

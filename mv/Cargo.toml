@@ -2,6 +2,7 @@
 name = "mv"
 version = "0.1.0"
 authors = ["Gab David <g.bianchetdavid@gmail.com>"]
+build = "build.rs"
 edition = "2018"
 
 [dependencies]
