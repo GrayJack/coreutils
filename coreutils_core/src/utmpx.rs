@@ -246,8 +246,12 @@ impl Utmpx {
     }
 
     /// Get the session ID
-    #[cfg(target_os = "linux")]
-    pub fn session(&self) -> i32 { self.session }
+    #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+    pub fn session(&self) -> c_int { self.session }
+
+    /// Get the session ID
+    #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+    pub fn session(&self) -> c_long { self.session }
 
     /// Get the session ID
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
