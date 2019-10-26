@@ -1,8 +1,6 @@
 use libc::{self, mode_t, EACCES, EEXIST, ENOENT};
-use std::io::Error;
-use std::{ffi::CString, io, path::Path};
+use std::{ffi::CString, io, io::Error, path::Path};
 
-///
 /// Mkfifo wrapper around libc's
 /// Inspired by crate `unix_named_pipe`
 pub fn mkfifo(filepath: &str, mode: u32) -> io::Result<()> {
