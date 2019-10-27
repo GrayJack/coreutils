@@ -12,32 +12,5 @@ pub fn mkfifo(filepath: &str, mode: u32) -> io::Result<()> {
     if result == 0 {
         return Ok(());
     }
-
-    let error = errno::errno();
-    match Error::last_os_error().raw_os_error().unwrap() {
-        EACCES => {
-            return Err(io::Error::new(
-                io::ErrorKind::PermissionDenied,
-                format!("could not open {:?}: {}", path, error),
-            ));
-        },
-        EEXIST => {
-            return Err(io::Error::new(
-                io::ErrorKind::AlreadyExists,
-                format!("could not open {:?}: {}", path, error),
-            ));
-        },
-        ENOENT => {
-            return Err(io::Error::new(
-                io::ErrorKind::NotFound,
-                format!("could not open {:?}: {}", path, error),
-            ));
-        },
-        _ => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("could not open {:?}: {}", path, error),
-            ));
-        },
-    }
+    Err(Error::last_os_error())
 }
