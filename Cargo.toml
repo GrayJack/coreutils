@@ -15,6 +15,7 @@ members = [
     "link",
     "logname",
     "mktemp",
+    "mkfifo",
     "mv",
     "nice",
     "pwd",
