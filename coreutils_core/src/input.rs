@@ -6,7 +6,7 @@ use std::{io, io::prelude::*};
 /// # Example
 /// To ask the user whether they want to make a change or not, and validate their response
 /// into a `bool`, the `Input` struct can be used like so:
-/// ```rust
+/// ```no_run
 /// let answer: bool = Input::new()
 ///     .with_msg("Do you want to make this change?")
 ///     .with_err_msg("Error! Failure to read!")
@@ -16,7 +16,7 @@ use std::{io, io::prelude::*};
 /// ```
 ///
 /// One could also get the response directly from the user like so:
-/// ```rust
+/// ```no_run
 /// let answer: String = Input::new()
 ///     .with_msg("Do you want to make this change?")
 ///     .with_err_msg("Error! Failure to read!")
