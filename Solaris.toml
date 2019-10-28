@@ -29,7 +29,6 @@ members = [
     "unexpand",
     "unlink",
     "wc",
-    "who",
     "whoami",
     "yes",
 ]
