@@ -1,10 +1,11 @@
 [package]
 name = "coreutils_core"
 version = "0.1.0"
-authors = ["GrayJack <gr41.j4ck@gmail.com>"]
+authors = ["GrayJack <gr41.j4ck@gmail.com>", "Gab David <g.bianchetdavid@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 libc = { version = "^0.2.65", features = ["extra_traits"] }
 bstr = "~0.2.8"
+regex = "^1"
 time = "~0.1.42"

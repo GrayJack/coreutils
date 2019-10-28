@@ -46,7 +46,6 @@ fn unexpand_lines() {
     assert_eq!(instance.unexpand_line("     c"), "\t\t c\n");
 }
 
-
 #[test]
 fn new() {
     let instance = TabStops::new(Some("2")).unwrap();
