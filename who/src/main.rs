@@ -1,15 +1,20 @@
 use std::{os::unix::fs::MetadataExt, path::PathBuf, process};
 
 #[cfg(target_os = "openbsd")]
-use coreutils_core::utmp::UtmpSet;
+use coreutils_core::utmp::{Utmp, UtmpSet};
 #[cfg(not(target_os = "openbsd"))]
-use coreutils_core::utmpx::{
-    Utmpx, UtmpxSet,
-    UtmpxType::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
-};
 use coreutils_core::{
-    file_descriptor::FileDescriptor, libc::S_IWGRP, time, tty::TTYName, ByteSlice,
+    file_descriptor::FileDescriptor,
+    tty::TTYName,
+    utmpx::{
+        Utmpx, UtmpxSet,
+        UtmpxType::{
+            BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess,
+        },
+    },
+    ByteSlice,
 };
+use coreutils_core::{libc::S_IWGRP, time};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
@@ -66,7 +71,14 @@ fn main() {
 
     if flags.count {
         let mut counter = 0;
+        #[cfg(not(target_os = "openbsd"))]
         for ut in ut_vec.iter().filter(|u| u.utype() == UserProcess) {
+            print!("{} ", ut.user());
+            counter += 1;
+        }
+
+        #[cfg(target_os = "openbsd")]
+        for ut in ut_vec.iter() {
             print!("{} ", ut.user());
             counter += 1;
         }
