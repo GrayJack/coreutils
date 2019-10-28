@@ -146,67 +146,7 @@ fn print_header(flags: WhoFlags) {
     }
 }
 
-// TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
 #[cfg(not(target_os = "openbsd"))]
-fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
-    if flags.is_all_false() {
-        uts.iter().for_each(|u| {
-            let (msg, _) = def_status(u);
-            println!(
-                "{:<12} {:<3} {:<10} {:<18}   {:<10}",
-                u.user(),
-                if flags.message { msg } else { ' ' },
-                u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
-                format!("({})", u.host())
-            )
-        });
-    } else if flags.short {
-        uts.iter().for_each(|u| {
-            let (msg, _) = def_status(u);
-            println!(
-                "{:<12} {:<3} {:<10} {:<18}",
-                u.user(),
-                if flags.message { msg } else { ' ' },
-                u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
-            )
-        });
-    } else {
-        uts.iter().for_each(|u| {
-            let (msg, idle) = def_status(u);
-            println!(
-                "{:<12} {:<3} {:<10} {:<10} {:<10} {:<18}   {:<10}",
-                u.user(),
-                if flags.message { msg } else { ' ' },
-                u.device_name(),
-                idle,
-                u.process_id(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
-                format!("({})", u.host())
-            )
-        });
-    }
-}
-
 fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     let mut uts_user: Vec<_>;
     let mut uts_boot: Vec<_>;
@@ -275,6 +215,67 @@ fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     }
 
     ut_vec
+}
+
+// TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
+#[cfg(not(target_os = "openbsd"))]
+fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
+    if flags.is_all_false() {
+        uts.iter().for_each(|u| {
+            let (msg, _) = def_status(u);
+            println!(
+                "{:<12} {:<3} {:<10} {:<18}   {:<10}",
+                u.user(),
+                if flags.message { msg } else { ' ' },
+                u.device_name(),
+                match u.login_time().strftime("%Y-%m-%d %H:%M") {
+                    Ok(t) => t,
+                    Err(err) => {
+                        eprintln!("who: failed to format string: {}", err);
+                        process::exit(1);
+                    },
+                },
+                format!("({})", u.host())
+            )
+        });
+    } else if flags.short {
+        uts.iter().for_each(|u| {
+            let (msg, _) = def_status(u);
+            println!(
+                "{:<12} {:<3} {:<10} {:<18}",
+                u.user(),
+                if flags.message { msg } else { ' ' },
+                u.device_name(),
+                match u.login_time().strftime("%Y-%m-%d %H:%M") {
+                    Ok(t) => t,
+                    Err(err) => {
+                        eprintln!("who: failed to format string: {}", err);
+                        process::exit(1);
+                    },
+                },
+            )
+        });
+    } else {
+        uts.iter().for_each(|u| {
+            let (msg, idle) = def_status(u);
+            println!(
+                "{:<12} {:<3} {:<10} {:<10} {:<10} {:<18}   {:<10}",
+                u.user(),
+                if flags.message { msg } else { ' ' },
+                u.device_name(),
+                idle,
+                u.process_id(),
+                match u.login_time().strftime("%Y-%m-%d %H:%M") {
+                    Ok(t) => t,
+                    Err(err) => {
+                        eprintln!("who: failed to format string: {}", err);
+                        process::exit(1);
+                    },
+                },
+                format!("({})", u.host())
+            )
+        });
+    }
 }
 
 // TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
