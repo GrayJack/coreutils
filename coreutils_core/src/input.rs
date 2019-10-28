@@ -6,23 +6,23 @@ use std::{io, io::prelude::*};
 /// # Example
 /// To ask the user whether they want to make a change or not, and validate their response
 /// into a `bool`, the `Input` struct can be used like so:
-/// ```no_run
+/// ```rust,ignore
 /// let answer: bool = Input::new()
 ///     .with_msg("Do you want to make this change?")
 ///     .with_err_msg("Error! Failure to read!")
 ///     .is_affirmative();
 ///
-/// assert!(answer, true);
+/// assert_eq!(answer, true);
 /// ```
 ///
 /// One could also get the response directly from the user like so:
-/// ```no_run
+/// ```rust,ignore
 /// let answer: String = Input::new()
 ///     .with_msg("Do you want to make this change?")
 ///     .with_err_msg("Error! Failure to read!")
 ///     .get();
 ///
-/// assert!(answer, String::from("Yes, I do"));
+/// assert_eq!(answer, String::from("Yes, I do"));
 /// ```
 #[derive(Debug, Clone)]
 pub struct Input<'a> {
