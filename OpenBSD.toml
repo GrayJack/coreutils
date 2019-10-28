@@ -30,7 +30,7 @@ members = [
     "unlink",
     "users",
     "wc",
-    "who"
+    "who",
     "whoami",
     "yes",
 ]
