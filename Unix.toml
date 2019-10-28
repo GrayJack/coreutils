@@ -2,6 +2,7 @@
 members = [
     "coreutils_core",
     "basename",
+    "cat",
     "chroot",
     "clear",
     "cut",
