@@ -11,7 +11,7 @@ use std::{io, io::prelude::*};
 ///     .with_msg("Do you want to make this change?")
 ///     .with_err_msg("Error! Failure to read!")
 ///     .is_affirmative();
-/// 
+///
 /// assert!(answer, true);
 /// ```
 ///
@@ -21,7 +21,7 @@ use std::{io, io::prelude::*};
 ///     .with_msg("Do you want to make this change?")
 ///     .with_err_msg("Error! Failure to read!")
 ///     .get();
-/// 
+///
 /// assert!(answer, String::from("Yes, I do"));
 /// ```
 #[derive(Debug, Clone)]
