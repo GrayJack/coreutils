@@ -10,6 +10,7 @@ pub mod env;
 pub mod file_descriptor;
 pub mod group;
 pub mod input;
+pub mod mkfifo;
 pub mod mktemp;
 pub mod passwd;
 pub mod tty;

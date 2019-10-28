@@ -7,12 +7,11 @@ fn main() {
     let yaml = load_yaml!("sleep.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    let numbers = match matches.values_of("NUMBER") {
-        Some(values) => values,
-        None => {
-            eprintln!("sleep: Missing operand.\nTry 'sleep --help' for more information.");
-            process::exit(1);
-        },
+    let numbers = if let Some(values) = matches.values_of("NUMBER") {
+        values
+    } else {
+        eprintln!("sleep: Missing operand.\nTry 'sleep --help' for more information.");
+        process::exit(1);
     };
 
     let total: u64 = numbers.filter_map(|s| s.parse::<u64>().ok()).sum();

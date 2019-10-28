@@ -11,7 +11,7 @@ use libc::ttyname;
 
 use crate::file_descriptor::FileDescriptor;
 
-use bstr::BString;
+use bstr::{BStr, BString, ByteSlice};
 
 /// Possible errors while trying to get a TTY name
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -48,15 +48,19 @@ impl TTYName {
     pub fn new(file_descriptor: FileDescriptor) -> Result<Self, Error> {
         let name = unsafe { ttyname(file_descriptor as c_int) };
 
-        let name = if !name.is_null() {
+        let name = if name.is_null() {
+            return Err(Error::NotTTY);
+        } else {
             let name_cstr = unsafe { CStr::from_ptr(name) };
             BString::from(name_cstr.to_bytes())
-        } else {
-            return Err(Error::NotTTY);
         };
 
         Ok(TTYName(name))
     }
+
+    pub fn as_bstr(&self) -> &BStr { self.0.as_bstr() }
+
+    pub fn to_bstring(&self) -> BString { self.0.clone() }
 }
 
 impl Display for TTYName {

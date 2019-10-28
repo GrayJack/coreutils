@@ -24,11 +24,11 @@ fn main() {
 
     // Checks if zero_flag is being used as expected
     if flags.zero {
-        if !flags.is_zero_valid() {
+        if flags.is_zero_valid() {
+            sep = '\0'
+        } else {
             eprintln!("id: Option --zero not permitted in pretty or default format");
             process::exit(1);
-        } else {
-            sep = '\0'
         }
     }
 
@@ -47,7 +47,7 @@ fn main() {
     let name = if flags.by_name { matches.value_of("USER").unwrap() } else { "" };
 
     let passwd = if flags.by_name {
-        Passwd::from_name(&name)
+        Passwd::from_name(name)
     } else if (flags.user || flags.group) && flags.real {
         Passwd::real()
     } else {

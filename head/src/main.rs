@@ -14,7 +14,7 @@ fn main() {
     let flags = Flags::from_matches(&matches);
     let input = Input::from_matches(&matches);
 
-    head(flags, input).unwrap_or_else(|e| {
+    head(&flags, input).unwrap_or_else(|e| {
         eprintln!("head: {}", e);
     });
 }
@@ -64,7 +64,7 @@ impl Input {
 }
 
 /// Return the head of our input, truncated at a number of lines or bytes
-fn head(flags: Flags, input: Input) -> Result<(), io::Error> {
+fn head(flags: &Flags, input: Input) -> Result<(), io::Error> {
     match input {
         Input::Files(files) => {
             let files_count = files.len();
@@ -77,13 +77,13 @@ fn head(flags: Flags, input: Input) -> Result<(), io::Error> {
                 }
                 let f = File::open(file)?;
                 let reader = BufReader::new(f);
-                read_stream(&flags, reader, &mut io::stdout())?;
+                read_stream(flags, reader, &mut io::stdout())?;
             }
         },
         Input::Stdin => {
             let stdin = io::stdin();
             let reader = BufReader::new(stdin.lock());
-            read_stream(&flags, reader, &mut io::stdout())?;
+            read_stream(flags, reader, &mut io::stdout())?;
         },
     }
     Ok(())

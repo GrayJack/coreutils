@@ -8,12 +8,11 @@ fn main() {
     let yaml = load_yaml!("whoami.yml");
     let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    let user = match Passwd::effective() {
-        Ok(pw) => pw,
-        Err(_) => {
-            eprintln!("whoami: Failed to get user");
-            process::exit(1);
-        },
+    let user = if let Ok(pw) = Passwd::effective() {
+        pw
+    } else {
+        eprintln!("whoami: Failed to get user");
+        process::exit(1);
     };
 
     // If user name in Passwd is empty, check for environment variable USER.

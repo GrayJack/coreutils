@@ -1,0 +1,12 @@
+name: mkfifo
+version: "0.0.1"
+author: Federico Ponzi <federico.ponzi92@gmail.com>
+about: "make FIFOs (named pipes)\n\n"
+args:
+    - NAME:
+        help: Name of the fifo
+    - mode:
+        help: set file permission bits to MODE, not a=rw - umask
+        long: mode
+        default_value: "644"
+        short: m
