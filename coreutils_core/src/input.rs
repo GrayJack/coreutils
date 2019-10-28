@@ -1,6 +1,6 @@
 use std::{io, io::prelude::*};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Input<'a> {
     msg:     Option<&'a str>,
     err_msg: Option<&'a str>,
@@ -25,7 +25,7 @@ impl<'a> Input<'a> {
         self
     }
 
-    fn get_input(self) -> Option<String> {
+    fn get_input(&self) -> Option<String> {
         if let Some(msg) = self.msg {
             print!("{}", msg);
             io::stdout().lock().flush().unwrap();
@@ -48,14 +48,14 @@ impl<'a> Input<'a> {
         Some(line)
     }
 
-    pub fn get(self) -> Option<String> {
+    pub fn get(&self) -> Option<String> {
         match self.get_input() {
-            Some(input) => Some(input.trim().to_owned()),
+            Some(input) => Some(input.trim().to_string()),
             None => None,
         }
     }
 
-    pub fn is_affirmative(self) -> bool {
+    pub fn is_affirmative(&self) -> bool {
         if let Some(input) = self.get_input() {
             let input = input.trim().to_uppercase();
 

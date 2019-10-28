@@ -3,7 +3,7 @@ use coreutils_core::input::*;
 use std::{
     env::current_dir,
     fs::{self, FileType, Permissions},
-    io::{self, BufRead, Write},
+    io,
     path::PathBuf,
     process,
 };
@@ -38,9 +38,9 @@ fn main() {
     }
 
     if flags.interactive_batch && (files.len() > 3 || flags.recursive) {
-        let input = Input::new().with_msg("rm: are you sure you want to do this deletion? [Y/n]: ");
+        let is_affirmative = Input::new().with_msg("rm: are you sure you want to do this deletion? [Y/n]: ").is_affirmative();
 
-        if !input.is_affirmative() {
+        if !is_affirmative {
             process::exit(1);
         }
     }
@@ -88,30 +88,30 @@ impl RmFlags {
 
 fn ask(
     filetype: FileType, permissions: &Permissions, filename: &str, flags: RmFlags,
-) -> Result<Input, ()> {
+) -> Result<bool, ()> {
     if !flags.interactive && permissions.readonly() {
         if filetype.is_file() {
             let msg = format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new().with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg).is_affirmative());
         } else if filetype.is_dir() {
             let msg = format!("rm: delete write_protected dir file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new().with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg).is_affirmative());
         }
     }
 
     if flags.interactive {
         if filetype.is_file() && permissions.readonly() {
             let msg = format!("rm: delete write_protected regular file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new().with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg).is_affirmative());
         } else if filetype.is_file() && !permissions.readonly() {
             let msg = format!("rm: delete regular file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new().with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg).is_affirmative());
         } else if filetype.is_dir() && permissions.readonly() {
             let msg = format!("rm: delete write_protected directory file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new().with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg).is_affirmative());
         } else if filetype.is_dir() && !permissions.readonly() {
             let msg = format!("rm: delete directory file '{}'? [Y/n]: ", filename);
-            return Ok(Input::new().with_msg(&msg));
+            return Ok(Input::new().with_msg(&msg).is_affirmative());
         }
     }
 
@@ -126,7 +126,7 @@ fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<
 
         if filetype.is_file() {
             if !flags.force && (flags.interactive ^ permissions.readonly()) {
-                let input = match ask(filetype, &permissions, &relative[index], flags) {
+                let is_affirmative = match ask(filetype, &permissions, &relative[index], flags) {
                     Ok(i) => i,
                     Err(_) => {
                         eprintln!("rm: failed to get input when interactive of write protected");
@@ -134,7 +134,7 @@ fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<
                     },
                 };
 
-                if input.is_affirmative() {
+                if is_affirmative {
                     match fs::remove_file(&file) {
                         Ok(()) => {
                             if flags.verbose {
@@ -164,7 +164,7 @@ fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<
                 rm_dir_all(&file, &relative[index], filetype, &permissions, flags)?;
             } else if flags.dirs {
                 if !flags.force && (flags.interactive ^ permissions.readonly()) {
-                    let input = match ask(filetype, &permissions, &relative[index], flags) {
+                    let is_affirmative = match ask(filetype, &permissions, &relative[index], flags) {
                         Ok(i) => i,
                         Err(_) => {
                             eprintln!(
@@ -174,7 +174,7 @@ fn rm(files: Vec<PathBuf>, relative: Vec<String>, flags: RmFlags) -> io::Result<
                         },
                     };
 
-                    if input.is_affirmative() {
+                    if is_affirmative {
                         match fs::remove_dir(&file) {
                             Ok(()) => {
                                 if flags.verbose {
@@ -216,7 +216,7 @@ fn rm_dir_all(
     let file_type = fs::symlink_metadata(file)?.file_type();
     if file_type.is_symlink() {
         if !flags.force && (flags.interactive ^ permissions.readonly()) {
-            let input = match ask(filetype, &permissions, &relative, flags) {
+            let is_affirmative = match ask(filetype, &permissions, &relative, flags) {
                 Ok(i) => i,
                 Err(_) => {
                     eprintln!("rm: failed to get input when interactive of write protected");
@@ -224,7 +224,7 @@ fn rm_dir_all(
                 },
             };
 
-            if input.is_affirmative() {
+            if is_affirmative {
                 match fs::remove_file(file.as_path()) {
                     Ok(()) => {
                         if flags.verbose {
@@ -256,9 +256,9 @@ fn rm_dir_all_recursive(
 ) -> io::Result<()> {
     if flags.interactive {
         let msg = format!("rm: Descend into directory '{}'? [Y/n]: ", relative);
-        let input = Input::new().with_msg(&msg);
+        let is_affirmative = Input::new().with_msg(&msg).is_affirmative();
 
-        if !input.is_affirmative() {
+        if !is_affirmative {
             return Ok(());
         }
     }
@@ -278,7 +278,7 @@ fn rm_dir_all_recursive(
                 flags,
             )?
         } else if !flags.force && (flags.interactive || child_permissions.readonly()) {
-            let input = match ask(child_type, &child_permissions, &child_relative, flags) {
+            let is_affirmative = match ask(child_type, &child_permissions, &child_relative, flags) {
                 Ok(i) => i,
                 Err(_) => {
                     eprintln!("rm: failed to get input when interactive of write protected");
@@ -286,7 +286,7 @@ fn rm_dir_all_recursive(
                 },
             };
 
-            if input.is_affirmative() {
+            if is_affirmative {
                 match fs::remove_file(&child.path()) {
                     Ok(()) => {
                         if flags.verbose {
@@ -313,7 +313,7 @@ fn rm_dir_all_recursive(
     }
 
     if !flags.force && (flags.interactive ^ permissions.readonly()) {
-        let input = match ask(filetype, &permissions, &relative, flags) {
+        let is_affirmative = match ask(filetype, &permissions, &relative, flags) {
             Ok(i) => i,
             Err(_) => {
                 eprintln!("rm: failed to get input when interactive of write protected");
@@ -321,7 +321,7 @@ fn rm_dir_all_recursive(
             },
         };
 
-        if input.is_affirmative() {
+        if is_affirmative {
             match fs::remove_dir(&file) {
                 Ok(()) => {
                     if flags.verbose {

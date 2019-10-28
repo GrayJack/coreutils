@@ -137,10 +137,11 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
         match &flags.overwrite {
             OverwriteMode::Force => {},
             OverwriteMode::Interactive => {
-                let input = Input::new()
+                let is_affirmative = Input::new()
                     .with_msg(&format!("mv: overwrite '{}'?", new.display()))
-                    .with_err_msg("mv: could not read user input");
-                if !input.is_affirmative() {
+                    .with_err_msg("mv: could not read user input")
+                    .is_affirmative();
+                if !is_affirmative {
                     return true;
                 }
             },
