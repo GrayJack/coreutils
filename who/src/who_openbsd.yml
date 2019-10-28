@@ -32,7 +32,7 @@ args:
             and '?' if a bad line is encountered"
         long: message
         short: T
-    - users:
+    - idle:
         help: Display the idle time for each user
-        long: users
-        short: u
+        long: idle
+        short: i

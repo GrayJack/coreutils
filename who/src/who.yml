@@ -60,3 +60,7 @@ args:
         help: Display the idle time for each user
         long: users
         short: u
+    - idle:
+        help: Display the idle time for each user
+        long: idle
+        short: i

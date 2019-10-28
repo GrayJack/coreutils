@@ -107,6 +107,7 @@ struct WhoFlags {
     time: bool,
     message: bool,
     users: bool,
+    idle: bool,
 }
 
 impl WhoFlags {
@@ -124,11 +125,12 @@ impl WhoFlags {
             time: matches.is_present("time") || matches.is_present("all"),
             message: matches.is_present("message") || matches.is_present("all"),
             users: matches.is_present("users") || matches.is_present("all"),
+            idle: matches.is_present("idle") || matches.is_present("all"),
         }
     }
 
     fn is_all_false(&self) -> bool {
-        if let (false, false, false, false, false, false, false, false) = (
+        if let (false, false, false, false, false, false, false, false, false) = (
             self.boot,
             self.dead,
             self.login,
@@ -137,6 +139,7 @@ impl WhoFlags {
             self.short,
             self.time,
             self.users,
+            self.idle,
         ) {
             return true;
         }
@@ -149,16 +152,15 @@ fn print_header(flags: WhoFlags) {
         println!("{:<16} {:<10} {:<18} {:<10}", "NAME", "LINE", "TIME", "COMMENT");
     } else if flags.short {
         println!("{:<16} {:<10} {:<18}", "NAME", "LINE", "TIME");
+    } else if flags.idle {
+        println!("{:<16} {:<10} {:<18} {:<10} {:<10}", "NAME", "LINE", "TIME", "IDLE", "COMMENT");
     } else {
         #[cfg(target_os = "openbsd")]
-        println!(
-            "{:<16} {:<10} {:<10} {:<18} {:<10}",
-            "NAME", "LINE", "IDLE", "TIME", "COMMENT"
-        );
+        println!("{:<16} {:<10} {:<18} {:<10} {:<10}", "NAME", "LINE", "TIME", "IDLE", "COMMENT");
         #[cfg(not(target_os = "openbsd"))]
         println!(
-            "{:<16} {:<10} {:<10} {:<10} {:<18} {:<10}",
-            "NAME", "LINE", "IDLE", "PID", "TIME", "COMMENT"
+            "{:<16} {:<10} {:<10} {:<18}  {:<10} {:<10}",
+            "NAME", "LINE", "PID", "TIME", "IDLE", "COMMENT"
         );
     }
 }
@@ -272,15 +274,33 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
                 },
             )
         });
+    } else if flags.idle {
+        uts.iter().for_each(|u| {
+            let (msg, idle) = def_status(u);
+            println!(
+                "{:<12} {:<3} {:<10} {:<18}    {:<10} {:<10}",
+                u.user(),
+                if flags.message { msg } else { ' ' },
+                u.device_name(),
+                match u.login_time().strftime("%Y-%m-%d %H:%M") {
+                    Ok(t) => t,
+                    Err(err) => {
+                        eprintln!("who: failed to format string: {}", err);
+                        process::exit(1);
+                    },
+                },
+                idle,
+                format!("({})", u.host())
+            )
+        });
     } else {
         uts.iter().for_each(|u| {
             let (msg, idle) = def_status(u);
             println!(
-                "{:<12} {:<3} {:<10} {:<10} {:<10} {:<18}   {:<10}",
+                "{:<12} {:<3} {:<10} {:<10} {:<18}    {:<10} {:<10}",
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                idle,
                 u.process_id(),
                 match u.login_time().strftime("%Y-%m-%d %H:%M") {
                     Ok(t) => t,
@@ -289,6 +309,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
                         process::exit(1);
                     },
                 },
+                idle,
                 format!("({})", u.host())
             )
         });
@@ -333,15 +354,14 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
                 },
             )
         });
-    } else {
+    } else if flags.idle {
         uts.iter().for_each(|u| {
             let (msg, idle) = def_status(u);
             println!(
-                "{:<12} {:<3} {:<10} {:<10} {:<18}   {:<10}",
+                "{:<12} {:<3} {:<10} {:<18}    {:<10} {:<10}",
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                idle,
                 match u.login_time().strftime("%Y-%m-%d %H:%M") {
                     Ok(t) => t,
                     Err(err) => {
@@ -349,6 +369,26 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
                         process::exit(1);
                     },
                 },
+                idle,
+                format!("({})", u.host())
+            )
+        });
+    } else {
+        uts.iter().for_each(|u| {
+            let (msg, idle) = def_status(u);
+            println!(
+                "{:<12} {:<3} {:<10} {:<18}    {:<10} {:<10}",
+                u.user(),
+                if flags.message { msg } else { ' ' },
+                u.device_name(),
+                match u.login_time().strftime("%Y-%m-%d %H:%M") {
+                    Ok(t) => t,
+                    Err(err) => {
+                        eprintln!("who: failed to format string: {}", err);
+                        process::exit(1);
+                    },
+                },
+                idle,
                 format!("({})", u.host())
             )
         });
