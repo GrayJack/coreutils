@@ -358,7 +358,7 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
         uts.iter().for_each(|u| {
             let (msg, idle) = def_status(u);
             println!(
-                "{:<12} {:<3} {:<10} {:<18}    {:<10} {:<10}",
+                "{:<12} {:<3} {:<10} {:<18}   {:<10} {:<10}",
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
@@ -377,7 +377,7 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
         uts.iter().for_each(|u| {
             let (msg, idle) = def_status(u);
             println!(
-                "{:<12} {:<3} {:<10} {:<18}    {:<10} {:<10}",
+                "{:<12} {:<3} {:<10} {:<18}   {:<10} {:<10}",
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
