@@ -159,9 +159,17 @@ pub struct Utmpx {
 impl Utmpx {
     /// Creates a new `Utmpx` entry from the `C` version of the structure
     pub fn from_c_utmpx(utm: utmpx) -> Self {
+        #[cfg(not(any(target_os = "dragonfly")))]
         let user = {
             let cstr: String =
                 utm.ut_user.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
+            BString::from(cstr.as_bytes())
+        };
+
+        #[cfg(any(target_os = "dragonfly"))]
+        let user = {
+            let cstr: String =
+                utm.ut_name.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
             BString::from(cstr.as_bytes())
         };
 
