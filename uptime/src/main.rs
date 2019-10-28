@@ -46,7 +46,6 @@ fn main() {
         }
     }
 
-
     let up_time = match uptime(
         #[cfg(any(
             target_arch = "x86_64",
