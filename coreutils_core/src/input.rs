@@ -1,5 +1,29 @@
+//! The Input module handles getting user input from the command line
+
 use std::{io, io::prelude::*};
 
+/// The Input struct handles issuing messages and getting responses from the user.
+/// # Example
+/// To ask the user whether they want to make a change or not, and validate their response
+/// into a `bool`, the `Input` struct can be used like so:
+/// ```rust
+/// let answer: bool = Input::new()
+///     .with_msg("Do you want to make this change?")
+///     .with_err_msg("Error! Failure to read!")
+///     .is_affirmative();
+/// 
+/// assert!(answer, true);
+/// ```
+///
+/// One could also get the response directly from the user like so:
+/// ```rust
+/// let answer: String = Input::new()
+///     .with_msg("Do you want to make this change?")
+///     .with_err_msg("Error! Failure to read!")
+///     .get();
+/// 
+/// assert!(answer, String::from("Yes, I do"));
+/// ```
 #[derive(Debug, Clone)]
 pub struct Input<'a> {
     msg:     Option<&'a str>,
@@ -11,14 +35,18 @@ impl<'a> Default for Input<'a> {
 }
 
 impl<'a> Input<'a> {
+    /// Initializes a new Input builder
     pub fn new() -> Input<'a> { Input::default() }
 
+    /// Specifies the message to display to the user
     pub fn with_msg(&mut self, msg: &'a str) -> &mut Self {
         self.msg = Some(msg);
 
         self
     }
 
+    /// Specifies the error message to display to the user.
+    /// **NOTE:** This error message prepends the actual error message produced
     pub fn with_err_msg(&mut self, err_msg: &'a str) -> &mut Self {
         self.err_msg = Some(err_msg);
 
@@ -48,6 +76,7 @@ impl<'a> Input<'a> {
         Some(line)
     }
 
+    /// Gets the input value the user entered as a `String`
     pub fn get(&self) -> Option<String> {
         match self.get_input() {
             Some(input) => Some(input.trim().to_string()),
@@ -55,6 +84,7 @@ impl<'a> Input<'a> {
         }
     }
 
+    /// Verifies whether the user input is considered an 'affirmative' answer
     pub fn is_affirmative(&self) -> bool {
         if let Some(input) = self.get_input() {
             let input = input.trim().to_uppercase();
