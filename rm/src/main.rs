@@ -132,6 +132,7 @@ fn rm(files: &[PathBuf], relative: &[String], flags: RmFlags) -> io::Result<()> 
                         eprintln!("rm: failed to get input when interactive of write protected");
                         process::exit(1);
                     };
+                }
 
                 if is_affirmative {
                     match fs::remove_file(&file) {
