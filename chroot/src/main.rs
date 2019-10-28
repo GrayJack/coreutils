@@ -1,10 +1,6 @@
-use std::convert::TryInto;
-use std::ffi::CString;
-use std::path::Path;
+use std::{convert::TryInto, ffi::CString, path::Path};
 
-use coreutils_core::group::Group;
-use coreutils_core::libc;
-use coreutils_core::passwd::Passwd;
+use coreutils_core::{group::Group, libc, passwd::Passwd};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -54,11 +50,7 @@ fn main() {
         .unwrap();
 
     let exit_code = {
-        if proc.success() {
-            0
-        } else {
-            proc.code().unwrap_or(-1)
-        }
+        if proc.success() { 0 } else { proc.code().unwrap_or(-1) }
     };
 
     std::process::exit(exit_code);
