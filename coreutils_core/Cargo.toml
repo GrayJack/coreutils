@@ -6,5 +6,5 @@ edition = "2018"
 
 [dependencies]
 libc = { version = "^0.2.65", features = ["extra_traits"] }
-bstr = "^0.2.8"
+bstr = "~0.2.8"
 time = "~0.1.42"

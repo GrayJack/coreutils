@@ -11,7 +11,7 @@ use libc::ttyname;
 
 use crate::file_descriptor::FileDescriptor;
 
-use bstr::BString;
+use bstr::{BStr, BString, ByteSlice};
 
 /// Possible errors while trying to get a TTY name
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -57,6 +57,10 @@ impl TTYName {
 
         Ok(TTYName(name))
     }
+
+    pub fn as_bstr(&self) -> &BStr { self.0.as_bstr() }
+
+    pub fn to_bstring(&self) -> BString { self.0.clone() }
 }
 
 impl Display for TTYName {

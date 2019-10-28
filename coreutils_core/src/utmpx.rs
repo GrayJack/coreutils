@@ -353,6 +353,9 @@ impl UtmpxSet {
 
     /// Creates a iterator over it's entries
     pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
+
+    /// Size of the collection
+    pub fn len(&self) -> usize { self.0.len() }
 }
 
 impl IntoIterator for UtmpxSet {
