@@ -61,11 +61,7 @@ fn main() {
         UtmpxSet::system()
     };
 
-    #[cfg(not(target_os = "openbsd"))]
     let mut ut_vec = filter_entries(&uts, flags);
-    #[cfg(target_os = "openbsd")]
-    let mut ut_vec: Vec<_> = uts.iter().collect();
-
     ut_vec.sort_unstable_by_key(|u| u.login_time());
 
     if flags.count {
@@ -162,6 +158,27 @@ fn print_header(flags: WhoFlags) {
             "{:<16} {:<10} {:<10} {:<18}  {:<10} {:<10}",
             "NAME", "LINE", "PID", "TIME", "IDLE", "COMMENT"
         );
+    }
+}
+
+#[cfg(target_os = "openbsd")]
+fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmp> {
+    if flags.associated_stdin {
+        let curr_tty_name = {
+            let tty = match TTYName::new(FileDescriptor::StdIn) {
+                Ok(t) => t,
+                Err(err) => {
+                    eprintln!("who: failed to get current tty: {}", err);
+                    process::exit(1);
+                },
+            };
+
+            format!("{}", tty).trim_start_matches("/dev/").to_string()
+        };
+
+        uts.iter().filter(|u| format!("{}", u.device_name()) == curr_tty_name).collect()
+    } else {
+        uts.iter().collect()
     }
 }
 
