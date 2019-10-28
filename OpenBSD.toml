@@ -14,8 +14,11 @@ members = [
     "id",
     "link",
     "logname",
+    "mktemp",
+    "mkfifo",
     "mv",
     "nice",
+    "nohup",
     "pwd",
     "rm",
     "rmdir",
@@ -27,6 +30,7 @@ members = [
     "unlink",
     "users",
     "wc",
+    "who"
     "whoami",
     "yes",
 ]
