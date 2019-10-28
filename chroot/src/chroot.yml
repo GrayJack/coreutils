@@ -1,0 +1,25 @@
+name: chroot
+version: "0.0.0"
+author: ladysamantha <ladysamantha@protonmail.com>
+about: "run command or interactive shell with special root directory"
+args:
+    - userspec:
+        help: specify user and group (ID or name) to use. format = USER:GROUP
+        long: userspec
+        takes_value: true
+    - groups:
+        help: specify supplementary groups
+        long: groups
+        takes_value: true
+    - NEWROOT:
+        help: New root directory
+        required: true
+    - COMMAND:
+        help: shell command to run
+        long_help: "If COMMAND is not specified, it defaults to '$(SHELL) -i'.\nIf $(SHELL) is not set, /bin/sh is used."
+        # default_value: /bin/sh -i
+        multiple: false
+    - ARGS:
+        help: argument(s) passed to COMMAND
+        multiple: true
+    
