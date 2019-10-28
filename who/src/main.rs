@@ -12,9 +12,8 @@ use coreutils_core::{
             BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess,
         },
     },
-    ByteSlice,
 };
-use coreutils_core::{libc::S_IWGRP, time};
+use coreutils_core::{libc::S_IWGRP, time, ByteSlice};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
@@ -151,6 +150,12 @@ fn print_header(flags: WhoFlags) {
     } else if flags.short {
         println!("{:<16} {:<10} {:<18}", "NAME", "LINE", "TIME");
     } else {
+        #[cfg(target_os = "openbsd")]
+        println!(
+            "{:<16} {:<10} {:<10} {:<18} {:<10}",
+            "NAME", "LINE", "IDLE", "TIME", "COMMENT"
+        );
+        #[cfg(not(target_os = "openbsd"))]
         println!(
             "{:<16} {:<10} {:<10} {:<10} {:<18} {:<10}",
             "NAME", "LINE", "IDLE", "PID", "TIME", "COMMENT"
@@ -332,12 +337,11 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
         uts.iter().for_each(|u| {
             let (msg, idle) = def_status(u);
             println!(
-                "{:<12} {:<3} {:<10} {:<10} {:<10} {:<18}   {:<10}",
+                "{:<12} {:<3} {:<10} {:<10} {:<18}   {:<10}",
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
                 idle,
-                u.process_id(),
                 match u.login_time().strftime("%Y-%m-%d %H:%M") {
                     Ok(t) => t,
                     Err(err) => {
