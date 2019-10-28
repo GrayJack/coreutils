@@ -24,14 +24,10 @@ use std::{io, io::prelude::*};
 ///
 /// assert_eq!(answer, String::from("Yes, I do"));
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Input<'a> {
     msg:     Option<&'a str>,
     err_msg: Option<&'a str>,
-}
-
-impl<'a> Default for Input<'a> {
-    fn default() -> Input<'a> { Input { msg: None, err_msg: None } }
 }
 
 impl<'a> Input<'a> {
