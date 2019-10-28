@@ -52,8 +52,8 @@ args:
         short: t
     - message:
         help: "Display a character after the user name indicating the state of the\
-            terminal line: ‘+’ if the terminal is writable; ‘-’ if it is not;\
-            and ‘?’ if a bad line is encountered"
+            terminal line: '+' if the terminal is writable; '-' if it is not;\
+            and '?' if a bad line is encountered"
         long: message
         short: T
     - users:
