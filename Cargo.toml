@@ -18,8 +18,8 @@ members = [
     "mkfifo",
     "mv",
     "nice",
+    "nohup",
     "pwd",
-	"nohup",
     "rm",
     "rmdir",
     "sleep",
@@ -31,6 +31,7 @@ members = [
     "uptime",
     "users",
     "wc",
+    "who",
     "whoami",
     "yes",
 ]
