@@ -1,9 +1,48 @@
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use coreutils_core::{backup::*, input::*};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
+
+use coreutils_core::{backup::*, input::*};
+
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+
+fn main() {
+    let yaml = load_yaml!("mv.yml");
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let flags = MvFlags::from_matches(&matches);
+
+    let sources: Vec<PathBuf> = {
+        let strip = flags.strip_trailing_slashes;
+
+        matches
+            .values_of("SOURCE")
+            .unwrap()
+            .map(Path::new)
+            .map(|val| if strip { val.components().as_path() } else { val })
+            .map(|val| val.to_owned())
+            .collect()
+    };
+
+    let success = if flags.target_directory != "" {
+        move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
+    } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
+        let target = sources.last().unwrap();
+        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
+    } else if sources.len() == 2 {
+        rename_file(&sources[0], &sources[1], &flags)
+    } else if sources.len() == 1 {
+        eprintln!("mv: No target supplied");
+        false
+    } else {
+        let target = sources.last().unwrap();
+        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
+    };
+
+    if !success {
+        std::process::exit(1);
+    }
+}
 
 #[derive(Debug, Clone)]
 enum OverwriteMode {
@@ -67,44 +106,6 @@ impl MvFlags {
     }
 }
 
-fn main() {
-    let yaml = load_yaml!("mv.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
-    let flags = MvFlags::from_matches(&matches);
-
-    let sources: Vec<PathBuf> = {
-        let strip = flags.strip_trailing_slashes;
-
-        matches
-            .values_of("SOURCE")
-            .unwrap()
-            .map(Path::new)
-            .map(|val| if strip { val.components().as_path() } else { val })
-            .map(|val| val.to_owned())
-            .collect()
-    };
-
-    let success = if flags.target_directory != "" {
-        move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
-    } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
-        let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
-    } else if sources.len() == 2 {
-        rename_file(&sources[0], &sources[1], &flags)
-    } else if sources.len() == 1 {
-        eprintln!("mv: No target supplied");
-        false
-    } else {
-        let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
-    };
-
-    if !success {
-        std::process::exit(1);
-    } else {
-        std::process::exit(0);
-    }
-}
 
 fn move_files(sources: Vec<PathBuf>, target: &PathBuf, flags: &MvFlags) -> bool {
     if !target.is_dir() {

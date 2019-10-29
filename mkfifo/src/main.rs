@@ -1,6 +1,8 @@
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
-use coreutils_core::mkfifo::mkfifo;
 use std::process;
+
+use coreutils_core::mkfifo::mkfifo;
+
+use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("mkfifo.yml");
