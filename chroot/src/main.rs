@@ -18,40 +18,26 @@ fn main() {
     change_root(Path::new(root)).map_err(|e| eprintln!("error changing root {:?}", e)).unwrap();
 
     if let Some(groups_list) = matches.value_of("groups") {
-        let groups: Vec<&str> = groups_list.split(",").collect();
-        let gids: Vec<libc::gid_t> = groups
-            .into_iter()
-            .map(|group| Group::from_name(group))
-            .filter_map(Result::ok)
-            .map(|group| group.id())
-            .collect();
-        set_groups(gids).expect("unable to set groups for process");
+        set_groups_from_list(groups_list);
     }
 
     if let Some(userspec_str) = matches.value_of("userspec") {
-        let parts: Vec<&str> = userspec_str.split(':').collect();
-        if parts.len() != 2 {
-            eprintln!("userspec is in an incorrect format");
-            std::process::exit(1);
-        }
+        set_user_from_userspec(userspec_str);
+    }
 
-        let (user, group) = (parts[0], parts[1]);
-        let user = Passwd::from_name(user).expect("unable to get user from passwd");
-        let group = Group::from_name(group).expect("unable to get group from name");
-
+    if let Some(group) = matches.value_of("group") {
+        let group = Group::from_name(group).expect("unable to get group information");
         set_group(group.id()).expect("unable to set group for process");
+    }
+
+    if let Some(user) = matches.value_of("user") {
+        let user = Passwd::from_name(user).expect("unable to get user from passwd");
         set_user(user.uid()).expect("unable to set user for process");
     }
 
-    let proc = std::process::Command::new(cmd)
-        .args(args)
-        .status()
-        .map_err(|e| eprintln!("error execing cmd = {:?}", e))
-        .unwrap();
+    let proc = std::process::Command::new(cmd).args(args).status().unwrap();
 
-    let exit_code = {
-        if proc.success() { 0 } else { proc.code().unwrap_or(-1) }
-    };
+    let exit_code = if proc.success() { 0 } else { proc.code().unwrap_or(-1) };
 
     std::process::exit(exit_code);
 }
@@ -67,6 +53,32 @@ fn change_root(path: &Path) -> std::io::Result<()> {
         0 => Ok(()),
         _ => Err(std::io::Error::last_os_error()),
     }
+}
+
+fn set_groups_from_list(groups_list: &str) {
+    let groups: Vec<&str> = groups_list.split(",").collect();
+    let gids: Vec<libc::gid_t> = groups
+        .into_iter()
+        .map(|group| Group::from_name(group))
+        .filter_map(Result::ok)
+        .map(|group| group.id())
+        .collect();
+    set_groups(gids).expect("unable to set groups for process");
+}
+
+fn set_user_from_userspec(userspec: &str) {
+    let parts: Vec<&str> = userspec.split(':').collect();
+    if parts.len() != 2 {
+        eprintln!("userspec is in an incorrect format");
+        std::process::exit(1);
+    }
+
+    let (user, group) = (parts[0], parts[1]);
+    let user = Passwd::from_name(user).expect("unable to get user from passwd");
+    let group = Group::from_name(group).expect("unable to get group from name");
+
+    set_group(group.id()).expect("unable to set group for process");
+    set_user(user.uid()).expect("unable to set user for process");
 }
 
 fn set_user(user_id: libc::uid_t) -> std::io::Result<()> {
