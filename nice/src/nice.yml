@@ -10,7 +10,7 @@ args:
         help: Command to be run with modified niceness
         required: true
     - ARGS:
-        help: command arguments
+        help: Command arguments
         multiple: true
     - N:
         help: A positive or negative decimal integer used to modify the system scheduling priority of utility.
