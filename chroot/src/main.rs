@@ -37,7 +37,7 @@ fn main() {
 
     let proc = std::process::Command::new(cmd).args(args).status().unwrap();
 
-    let exit_code = if proc.success() { 0 } else { proc.code().unwrap_or(-1) };
+    let exit_code = if proc.success() { 0 } else { proc.code().unwrap_or(1) };
 
     std::process::exit(exit_code);
 }

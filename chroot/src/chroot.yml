@@ -5,12 +5,14 @@ about: "run command or interactive shell with special root directory"
 args:
   - user:
       help: specify the user ID or name
+      long: user
       short: u
       takes_value: true
       conflicts_with:
         - userspec
   - group:
       help: specify the group ID or name
+      long: group
       short: g
       takes_value: true
       conflicts_with:
@@ -18,6 +20,7 @@ args:
   - userspec:
       help: specify user and group (ID or name) to use. format = USER:GROUP
       long: userspec
+      short: U
       takes_value: true
       conflicts_with:
         - user
@@ -33,7 +36,6 @@ args:
   - COMMAND:
       help: shell command to run
       long_help: "If COMMAND is not specified, it defaults to '$(SHELL) -i'.\nIf $(SHELL) is not set, /bin/sh is used."
-      # default_value: /bin/sh -i
       multiple: false
   - ARGS:
       help: argument(s) passed to COMMAND
