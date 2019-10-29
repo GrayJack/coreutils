@@ -15,7 +15,7 @@ fn main() {
     let by_name = matches.is_present("USER");
     let id = matches.is_present("id");
 
-    let name = if by_name { matches.value_of("USER").unwrap() } else { "" };
+    let name = matches.value_of("USER").unwrap_or("");
 
     let groups = if by_name {
         match Groups::from_username(name) {

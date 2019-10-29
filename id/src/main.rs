@@ -44,7 +44,7 @@ fn main() {
         process::exit(1);
     }
 
-    let name = if flags.by_name { matches.value_of("USER").unwrap() } else { "" };
+    let name = matches.value_of("USER").unwrap_or("");
 
     let passwd = if flags.by_name {
         Passwd::from_name(name)

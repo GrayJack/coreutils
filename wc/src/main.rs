@@ -12,19 +12,13 @@ fn main() {
     let yaml = load_yaml!("wc.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    let filenames: Vec<String> = {
-        if let Some(values) = matches.values_of("FILE") {
-            let mut v = Vec::new();
-            for value in values {
-                v.push(value.to_owned());
-            }
-            v
-        } else {
-            vec![String::from("-")]
-        }
-    };
-
     let flags = WcFlags::from_matches(&matches);
+
+    let filenames: Vec<String> = if let Some(values) = matches.values_of("FILE") {
+        values.map(|v| v.to_string()).collect()
+    } else {
+        vec![String::from("-")]
+    };
 
     let mut total_result = WcResult::default();
     for filename in &filenames {
