@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use std::cmp::Ordering;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum TimeStyleOption<'a> {
     LongIso,
     FullIso,

@@ -9,6 +9,9 @@ use blocksize::{Blocksize, BlocksizeError};
 mod time;
 use time::{DuTime, TimeOption, TimeStyleOption};
 
+#[cfg(test)]
+mod tests;
+
 fn main() {
     let yaml = load_yaml!("du.yml");
     let matches = App::from_yaml(yaml).get_matches();
