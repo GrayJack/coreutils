@@ -1,51 +1,51 @@
-use std::{fs, os::unix::fs::PermissionsExt};
+use std::{fs, os::unix::fs::PermissionsExt, process};
+
 use clap::{load_yaml, App};
-
-
-fn log<S: Into<String>>(msg: S) {
-    println!("mkdir: {}", msg.into());
-}
-
-fn log_err<S: Into<String>>(msg: S) {
-    eprintln!("mkdir: {}", msg.into());
-}
 
 fn main() {
     let yaml = load_yaml!("mkdir.yml");
     let matches = App::from_yaml(yaml).get_matches();
-    
+
     let directories = matches.values_of("DIRECTORY").unwrap();
     let verbose = matches.is_present("verbose");
     let parents = matches.is_present("parents");
     let has_mode = matches.is_present("mode");
-    
-    let mkdir = { 
-        if parents { 
-            fs::create_dir_all
-        } else {
-            fs::create_dir
-        }
+
+    let mut exit_code = 0;
+
+    let mkdir = {
+        if parents { fs::create_dir_all } else { fs::create_dir }
     };
-    
-    for d in directories {
-        match mkdir(d) {
+
+    for dir in directories {
+        match mkdir(dir) {
             Ok(_) => {
-                if verbose { log(format!("created directory '{}'", d)) };
+                if verbose {
+                    println!("mkdir: created directory '{}'", dir)
+                };
                 if has_mode {
                     let mode = matches.value_of("mode").unwrap();
-                    match fs::metadata(d) {
+                    match fs::metadata(dir) {
                         Ok(v) => {
                             let mut perms = v.permissions();
                             let umode: u32 = mode.parse().unwrap();
                             perms.set_mode(umode);
-                        }
-                        Err(e) => {
-                            log_err(format!("{}", e));
-                        }
+                        },
+                        Err(err) => {
+                            eprintln!("mkdir: {}", err);
+                            exit_code = 1;
+                        },
                     }
                 }
-            }
-            Err(e) => log_err(format!("cannot create directory '{}': {}", d, e))
+            },
+            Err(err) => {
+                eprintln!("mkdir: cannot create directory '{}': {}", dir, err);
+                exit_code = 1;
+            },
         }
+    }
+
+    if exit_code != 0 {
+        process::exit(exit_code);
     }
 }
