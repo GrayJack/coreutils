@@ -85,13 +85,7 @@ impl OverwriteMode {
 
 impl MvFlags {
     pub fn from_matches(matches: &ArgMatches) -> MvFlags {
-        let target_dir = {
-            if matches.is_present("targetDirectory") {
-                matches.value_of("targetDirectory").unwrap().to_string()
-            } else {
-                String::from("")
-            }
-        };
+        let target_dir = matches.value_of("targetDirectory").unwrap_or("").to_string();
 
         MvFlags {
             backup: BackupMode::from_string(matches.value_of("backup").unwrap()),
