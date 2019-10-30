@@ -1,24 +1,30 @@
 name: head
 version: 1.0.0
 author: Odin Dutton <odindutton@gmail.com>
-about: "This filter displays the first count lines or bytes of each specified
-FILE, or of the standard input if no files are specified. If count is omitted
-it defaults to 10.
-\n\nIf more than a single file is specified, each file is preceded by a header
-consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file."
+about: >
+  This filter displays the first count lines or bytes of each specified FILE, or
+  of the standard input if no files are specified. If count is omitted it
+  defaults to 10.
+
+
+  If more than a single file is specified, each file is preceded by a header
+  consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
 args:
     - FILE:
         help: One or more file names.
         required: false
         multiple: true
     - bytes:
+        help: Display the byte counts.
         long: bytes
         short: c
         takes_value: true
-        help: Display the byte counts
+        value_name: N
         conflicts_with: lines
     - lines:
+        help: Display the newline counts (default 10)
         long: lines
         short: n
         takes_value: true
-        help: Display the newline counts (default 10)
+        value_name: N
+        conflicts_with: bytes

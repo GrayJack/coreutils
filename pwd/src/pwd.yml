@@ -1,13 +1,22 @@
 name: pwd
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Display the current directory. If	no options are specified, the -p option	is assumed."
+about: >
+    Display the current directory. If no options are specified, the -p option
+    is assumed.
 args:
     - logical:
-        help: Use PWD from environment, even if it contains symlinks
+        help: Display the logical current working directory.
+        long_help: |
+            Display the logical current working directory.
+
+            Use PWD from environment, even if it contains symlinks.
         long: logical
         short: l
     - physical:
-        help: Avoid all symlinks
+        help: Display the physical current working directory. Avoid all symlinks.
+        long_help: >
+            Display the physical current working directory. Avoid all symlinks
+            (All symbolic links resolved).
         long: physical
         short: p

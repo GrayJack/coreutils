@@ -1,19 +1,21 @@
 name: nice
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Run COMMAND with an adjusted niceness, which affects process scheduling.
-With no COMMAND, display the current niceness.  Niceness values range from at
-least -20 (most favorable to the process) to 19 (least favorable to the
-process)."
+about: >
+    Run COMMAND with an adjusted niceness, which affects process scheduling.
+
+    Niceness values range from at least -20 (most favorable to the process) to
+    20 (least favorable to the process).
 args:
     - COMMAND:
-        help: Command to be run with modified niceness
+        help: Command to be run with modified niceness.
         required: true
     - ARGS:
-        help: Command arguments
+        help: Command arguments.
         multiple: true
     - N:
         help: A positive or negative decimal integer used to modify the system scheduling priority of utility.
         long: adjustment
         short: n
         takes_value: true
+        default_value: "10"

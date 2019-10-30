@@ -1,7 +1,7 @@
 name: yes
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Repeatedly output a line with all specified STRING(s), or 'y'."
+about: Repeatedly output a line with all specified STRING(s), or 'y'.
 args:
     - STRING:
         help: The text to be printed.

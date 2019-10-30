@@ -1,7 +1,7 @@
 name: mkdir
 version: "0.0.0"
 author: Rodrigo Oliveira Campos <rodrigo.redcode@gmail.com>
-about: "Create directory(ies), if they do not already exist."
+about: Create directory(ies), if they do not already exist.
 args:
   - mode:
       help: Set file mode (as in chmod), not a=rwx - umask
