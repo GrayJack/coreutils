@@ -69,6 +69,10 @@ struct RmFlags {
 
 impl RmFlags {
     pub fn from_matches(matches: &ArgMatches) -> Self {
+        let force_index = matches.index_of("force").unwrap_or(0);
+        let inter_index = matches.index_of("interactive").unwrap_or(0);
+        let batch_index = matches.index_of("interactiveBatch").unwrap_or(0);
+
         let mut flags = RmFlags {
             force: matches.is_present("force"),
             interactive: matches.is_present("interactive"),
@@ -79,9 +83,19 @@ impl RmFlags {
             verbose: matches.is_present("verbose"),
         };
 
-        if flags.force {
+        if force_index > inter_index && force_index > batch_index {
             flags.interactive = false;
             flags.interactive_batch = false;
+        }
+
+        if inter_index > force_index && inter_index > batch_index {
+            flags.force = false;
+            flags.interactive_batch = false;
+        }
+
+        if batch_index > force_index && batch_index > inter_index {
+            flags.force = false;
+            flags.interactive = false;
         }
 
         flags
