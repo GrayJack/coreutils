@@ -10,7 +10,10 @@ use coreutils_core::{
     priority::{get_priority, set_priority, PRIO_PROCESS},
 };
 
-use clap::{load_yaml, App, AppSettings::{ColoredHelp, AllowNegativeNumbers}};
+use clap::{
+    load_yaml, App,
+    AppSettings::{AllowNegativeNumbers, ColoredHelp},
+};
 
 #[cfg(target_os = "linux")]
 const P_PROCESS: c_uint = PRIO_PROCESS as c_uint;
