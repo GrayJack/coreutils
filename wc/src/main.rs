@@ -86,6 +86,18 @@ impl WcFlags {
             return Self::new();
         }
 
+        if pretty
+            && !print_chars
+            && !print_lines
+            && !print_words
+            && !print_max_line_len
+            && !print_bytes
+        {
+            let mut flags = Self::new();
+            flags.pretty = true;
+            return flags;
+        }
+
         WcFlags { print_bytes, print_chars, print_lines, print_words, print_max_line_len, pretty }
     }
 }
