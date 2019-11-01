@@ -2,7 +2,7 @@
 use std::os::unix::fs::MetadataExt;
 use std::{fs::Metadata, path::Display, process};
 
-use clap::{load_yaml, App, ArgMatches, AppSettings::ColoredHelp};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use glob::Pattern;
 use walkdir::WalkDir;
 
