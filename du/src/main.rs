@@ -1,12 +1,15 @@
-use clap::{load_yaml, App, ArgMatches};
-use glob::Pattern;
 #[cfg(target_family = "unix")]
 use std::os::unix::fs::MetadataExt;
 use std::{fs::Metadata, path::Display, process};
+
+use clap::{load_yaml, App, ArgMatches, AppSettings::ColoredHelp};
+use glob::Pattern;
 use walkdir::WalkDir;
+
 mod blocksize;
-use blocksize::{Blocksize, BlocksizeError};
 mod time;
+
+use blocksize::{Blocksize, BlocksizeError};
 use time::{DuTime, TimeOption, TimeStyleOption};
 
 #[cfg(test)]
@@ -14,7 +17,7 @@ mod tests;
 
 fn main() {
     let yaml = load_yaml!("du.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let flags = DuFlagsAndOptions::from_matches(&matches);
     let paths = parse_files(&matches);

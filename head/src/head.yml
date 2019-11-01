@@ -1,5 +1,5 @@
 name: head
-version: 1.0.0
+version: 0.0.0
 author: Odin Dutton <odindutton@gmail.com>
 about: >
   This filter displays the first count lines or bytes of each specified FILE, or
