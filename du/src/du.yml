@@ -1,0 +1,142 @@
+name: du
+version: '0.0.0'
+author: 'Julian Kaindl <kaindl745@gmail.com>'
+about: 'Summarize disk usage for the set FILEs, recursively for directories'
+args:
+    - FILE:
+          help: One or more file names
+          required: false
+          multiple: true
+    - line-end-null:
+          long: 'null'
+          short: '0'
+          help: Ends each output line with NUL, not newline
+    - all:
+          long: all
+          short: a
+          help: Display counts for all files, not just directories
+    - apparent-size:
+          long: apparent-size
+          help: Display apparent sizes rather than disk usage
+    - block-size:
+          long: block-size
+          short: B
+          help: Scales sizes by SIZE before displaying them
+          takes_value: true
+          value_name: SIZE
+    - bytes:
+          long: bytes
+          short: b
+          help: Equivalent to '--apparent-size --block-size=1'
+    - total:
+          long: total
+          short: c
+          help: Produces a grand total
+    - dereference-args:
+          long: dereference-args
+          short: D
+          help: Dereference only symlinks that are given as arguments
+    - max-depth:
+          long: max-depth
+          short: d
+          help: Display the total for a directory only if it is N or fewer levels below the FILEs
+          takes_value: true
+          value_name: N
+    - dereference-args-alias:
+          long: deref-args
+          short: H
+          help: Equivalent to '--dereference-args (-D)'
+    - human-readable:
+          long: human-readable
+          short: h
+          help: Display sizes in a human readable format
+          conflicts_with:
+              - si
+              - apparent-size
+              - block-size
+              - block-size-k
+              - block-size-m
+              - bytes
+    - inodes:
+          long: inodes
+          short: i
+          help: Lists inode usage information instead of block usage
+          conflicts_with:
+              - apparent-size
+              - block-size
+              - block-size-k
+              - block-size-m
+              - bytes
+    - block-size-k:
+          short: k
+          long: blocks-k
+          help: Equivalent to '--block-size=1K'
+    - dereference:
+          long: dereference
+          short: L
+          help: Dereferences all symbolic links
+    - count-links:
+          long: count-links
+          short: l
+          help: Counts sizes many times if hard linked
+    - block-size-m:
+          long: blocks-m
+          short: m
+          help: Equivalent to '--block-size=1M'
+    - seperate-dirs:
+          long: seperate-dirs
+          short: S
+          help: For directories do not include size of subdirectories
+    - si:
+          long: si
+          short: I
+          help: Like -h, but uses powers of 1000 not 1024
+          conflicts_with:
+              - human-readable
+              - apparent-size
+              - block-size
+              - block-size-k
+              - block-size-m
+              - bytes
+    - summarize:
+          long: summarize
+          short: s
+          help: Display only a total for each FILE
+          conflicts_with:
+              - all
+    - threshold:
+          long: threshold
+          short: t
+          help: Exclude entries smaller then THRESHOLD if positive or entries greater than THRESHOLD if negative
+          takes_value: true
+          value_name: SIZE
+    - time:
+          long: time
+          short: T
+          help: Show WORD file timestamp
+          takes_value: true
+          value_name: WORD
+          possible_values:
+              - mtime
+              - atime
+              - ctime
+              - access
+              - use
+              - status
+    - time-style:
+          long: time-style
+          short: j
+          help: Show times using STYLE
+          takes_value: true
+          value_name: STYLE
+          requires: time
+    - exclude-pattern:
+          long: exclude
+          short: p
+          help: Exclude files that match PATTERN
+          takes_value: true
+          value_name: PATTERN
+    - one-file-system:
+          long: one-file-system
+          short: x
+          help: Skip directories on different file systems

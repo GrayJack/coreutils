@@ -6,6 +6,7 @@ members = [
     "cut",
     "date",
     "dirname",
+    "du",
     "echo",
     "env",
     "false",

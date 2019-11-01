@@ -5,6 +5,7 @@ members = [
     "coreutils_core",
     "cut",
     "date",
+    "du",
     "dirname",
     "echo",
     "env",
