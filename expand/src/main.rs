@@ -82,9 +82,7 @@ impl Expand {
 
         let tabs_str = matches.value_of("tabs");
         let tabstops = match TabStops::new(tabs_str) {
-            Ok(tab_stops) => {
-                tab_stops
-            },
+            Ok(tab_stops) => tab_stops,
             Err(err_message) => {
                 eprintln!("{}", err_message);
                 std::process::exit(1);
@@ -103,15 +101,12 @@ impl Expand {
         for c in line.bytes() {
             match c {
                 b'\t' => {
-                    let spaces = match self.tabstops.repetable {
-                        Some(t) => t-column % t,
-                        None => {
-                            match self.tabstops.positions.iter().skip_while(|&&t| t <= column).next() {
-                                Some(t) => t-column,
-                                None => 1
-                            }
-                        }
+                    let repeat = self.tabstops.repetable.unwrap();
+                    let offset = match self.tabstops.offset {
+                        Some(o) => o,
+                        None => 0,
                     };
+                    let spaces = repeat + offset - column % repeat;
                     column += spaces;
                     if convert {
                         new_line.push_str(String::from(" ").repeat(spaces as usize).as_str());
@@ -120,11 +115,7 @@ impl Expand {
                     }
                 },
                 b'\x08' => {
-                    column = if column > 0 {
-                        column -1
-                    } else {
-                        0
-                    };
+                    column = if column > 0 { column - 1 } else { 0 };
                     new_line.pop();
                 },
                 _ => {

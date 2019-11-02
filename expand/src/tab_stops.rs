@@ -5,7 +5,7 @@ pub struct TabStops {
     pub(crate) positions: Vec<usize>,
 }
 
-const ARG_PARSE_MSG: &str = "unexpand: error parsing arguments";
+const ARG_PARSE_MSG: &str = "expand: error parsing arguments";
 
 impl TabStops {
     pub fn new(tabs_str: Option<&str>) -> Result<Self, String> {
@@ -25,7 +25,7 @@ impl TabStops {
                         .map_err(|err| format!("{}: {}", ARG_PARSE_MSG, err))?;
 
                     if value == 0 {
-                        return Err("unexpand: tab size cannot be 0".to_string());
+                        return Err("expand: tab size cannot be 0".to_string());
                     }
 
                     return Ok(TabStops {
@@ -74,12 +74,12 @@ impl TabStops {
 
                 if !positions.is_empty() {
                     if positions.contains(&0) {
-                        return Err("unexpand: tab size cannot be 0".to_string());
+                        return Err("expand: tab size cannot be 0".to_string());
                     }
 
                     for i in 0..(positions.len() - 1) {
                         if positions[i + 1] <= positions[i] {
-                            return Err("unexpand: tab sizes must be ascending".to_string());
+                            return Err("expand: tab sizes must be ascending".to_string());
                         }
                     }
 
@@ -90,18 +90,5 @@ impl TabStops {
             },
             None => Ok(TabStops { offset: None, repetable: Some(8), positions: vec![] }),
         }
-    }
-
-    pub fn is_tab_stop(self: &Self, column: usize) -> bool {
-        if self.positions.contains(&column) {
-            return true;
-        }
-
-        if self.repetable.is_some() && column % self.repetable.unwrap() == self.offset.unwrap_or(0)
-        {
-            return true;
-        }
-
-        false
     }
 }
