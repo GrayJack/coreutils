@@ -7,61 +7,78 @@ about: >
   With no FILE, or when FILE is -, read standard input.
 args:
     - FILE:
-        help: File(s) to read, or '-' to read from stdin
+        help: File(s) to read, or '-' to read from stdin.
         required: false
         multiple: true
     - bytes:
+        help: Select only these bytes.
+        long_help: |
+            Select only these bytes.
+
+            The LIST specifies byte positions.
         long: bytes
         short: b
         value_name: LIST
-        help: Select only these bytes
         conflicts_with:
           - chars
           - fields
     - chars:
+        help: Select only these characters.
+        long_help: |
+            Select only these characters.
+
+            The LIST specifies character positions.
         long: characters
         short: c
         value_name: LIST
         conflicts_with:
           - bytes
           - fields
-        help: Select only these characters.
     - input-delimiter:
+        help: Use DELIM instead of TAB for field delimiter.
         long: delimiter
         short: d
         requires:
           - fields
         value_name: DELIM
-        help: Use DELIM instead of TAB for field delimiter.
     - fields:
+        help: >
+            Select only these fields. Will display any line that contains
+            no delimiter character, unless the -s option is specified.
+        long_help: >
+            Select only these fields. Will display any line that contains
+            no delimiter character, unless the -s option is specified.
+
+
+            The LIST specifies fields, separated in the input by the field
+            delimiter character (see the 'delimeter' option).
+
+            Output fields are separated by a single occurrence of the field
+            delimiter character.
         long: fields
         short: f
         conflicts_with:
           - bytes
           - chars
         value_name: LIST
-        help: >
-          Select only these fields. Will display any line that contains
-          no delimiter character, unless the -s option is specified.
     - complement:
+        help: Complement the set of selected bytes, characters, or fields.
         long: complement
         short: C
-        help: >
-          Complement the set of selected bytes, characters, or fields.
     - only-delimited:
+        help: Do not display lines not containing delimiters.
         long: only-delimited
         short: s
         requires:
           - fields
-        help: Do not display lines not containing delimiters
     - output-delimiter:
+        help: >
+            Use STRING as the output delimiter. Defaults to use the
+            input delimiter.
         long: output-delimiter
         short: D
         value_name: STRING
-        help: >
-          Use STRING as the output delimiter. Defaults to use the
-          input delimiter.
     - zero-terminated:
+        help: Line delimiter is NUL. Default is to use newline.
         long: zero-terminated
         short: z
-        help: Line delimiter is NUL. Default is to use newline.

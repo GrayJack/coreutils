@@ -16,8 +16,7 @@ fn main() {
 
     let total: u64 = numbers.filter_map(|s| s.parse::<u64>().ok()).sum();
 
-    let suffix =
-        if matches.is_present("suffix") { matches.value_of("suffix").unwrap() } else { "s" };
+    let suffix = matches.value_of("suffix").unwrap_or("s");
 
     match suffix {
         "s" | "sec" => sleep!(total sec),

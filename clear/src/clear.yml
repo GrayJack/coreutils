@@ -1,5 +1,5 @@
 name: clear
-version: "0.1.0"
+version: "0.0.0"
 author: Ashwin-A-K <ashwinkumar3098@gmail.com>
 about: "Clear the terminal screen"
 args:

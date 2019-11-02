@@ -1,7 +1,9 @@
 name: basename
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Display NAME with any leading directory components removed,\nIf specified, also remove a trailing SUFFIX"
+about: |
+    Display NAME with any leading directory components removed.
+    If specified, also remove a trailing SUFFIX".
 args:
     - NAME:
         help: Name of the file to use.
@@ -12,7 +14,11 @@ args:
         long: multiple
         short: a
     - suffix:
-        help: Remove a trailing suffix. This option implies the -a option.
+        help: Remove a trailing suffix.
+        long_help: |
+            Remove a trailing suffix.
+
+            This option implies the -a option.
         long: suffix
         short: s
         value_name: SUFFIX

@@ -5,9 +5,15 @@ use std::{
     process::{self, Command},
 };
 
-use coreutils_core::priority::{get_priority, set_priority, PRIO_PROCESS};
+use coreutils_core::{
+    libc::ENOENT,
+    priority::{get_priority, set_priority, PRIO_PROCESS},
+};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+use clap::{
+    load_yaml, App,
+    AppSettings::{AllowNegativeNumbers, ColoredHelp},
+};
 
 #[cfg(target_os = "linux")]
 const P_PROCESS: c_uint = PRIO_PROCESS as c_uint;
@@ -16,19 +22,17 @@ const P_PROCESS: c_int = PRIO_PROCESS;
 
 fn main() {
     let yaml = load_yaml!("nice.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, AllowNegativeNumbers]).get_matches();
 
-    let adjustment: c_int = if matches.is_present("N") {
+    let adjustment: c_int = {
         let str_n = matches.value_of("N").unwrap();
         match str_n.parse() {
             Ok(n) => n,
             Err(err) => {
-                eprintln!(r"{} is not a valid number. Err: {}", str_n, err);
+                eprintln!("nice: {} is not a valid number: {}", str_n, err);
                 process::exit(125);
             },
         }
-    } else {
-        10
     };
 
     let command = matches.value_of("COMMAND").unwrap();
@@ -57,9 +61,7 @@ fn main() {
 
     let err = Command::new(command).args(args).exec();
 
-    if err.raw_os_error().unwrap() as c_int == 2
-    // ENOENT
-    {
+    if err.raw_os_error().unwrap() as c_int == ENOENT {
         eprintln!("nice: '{}': {}", command, err);
         process::exit(127);
     } else {

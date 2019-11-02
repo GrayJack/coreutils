@@ -1,13 +1,14 @@
 name: mv
 version: "0.0.0"
 author: Gab David <g.bianchetdavid@gmail.com>
-about: Move or rename files
+about: Move or rename files.
 args:
   - backup:
-      help: Make a backup of each existing destination file
+      help: Make a backup of each existing destination file.
       short: b
       long: backup
       takes_value: true
+      value_name: TYPE
       env: VERSION_CONTROL
       default_value: existing
       possible_values:
@@ -20,49 +21,69 @@ args:
         - simple
         - never
   - force:
-      help: Do not prompt before overwriting
+      help: Do not prompt before overwriting.
+      long_help: |
+        Do not prompt before overwriting.
+
+        This option overrides any previous -n or -i options.
       short: f
       long: force
   - interactive:
-      help: Prompt before overwrite
+      help: Prompt before overwrite.
+      long_help: >
+        Prompt before overwrite.
+
+
+        Cause mv to write a prompt to standard out before moving a file that
+        would overwrite an existing file. If the response from the standard
+        input is affirmative, the move is attempted.
+
+
+        This option overrides any previous -f or -n options.
       short: i
       long: interactive
   - noClobber:
-      help: Do not overwrite an existing file
+      help: Do not overwrite an existing file.
+      long_help: |
+        Do not overwrite an existing file.
+
+        This option overrides any previous -f or -i options.
       short: n
       long: no-clobber
       conflicts_with: backup
   - stripTrailingSlashes:
-      help: Remove any trailing slashes from each SOURCE argument
+      help: Remove any trailing slashes from each SOURCE argument.
       short: s
       long: strip-trailing-slashes
   - suffix:
-      help: Override the usual backup suffix
+      help: Override the usual backup suffix.
       short: S
       long: suffix
       takes_value: true
+      value_name: STRING
       env: SIMPLE_BACKUP_SUFFIX
       default_value: '~'
   - targetDirectory:
-      help: Move all SOURCE arguments into DIRECTORY
+      help: Move all SOURCE arguments into DIRECTORY.
       short: t
       long: target-directory
       takes_value: true
+      value_name: DIRECTORY
       conflicts_with: noTargetDirectory
   - noTargetDirectory:
-      help: Treat DEST as a normal file
+      help: Treat DEST as a normal file.
       short: T
       long: no-target-directory
   - update:
-      help: Move only when the SOURCE file is newer than the destination file or when the destination file is missing
+      help: Move only when the SOURCE file is newer than the destination file or when the destination file is missing.
       short: u
       long: update
   - verbose:
-      help: Explain what is being done
+      help: Explain what is being done.
       short: v
       long: verbose
   - SOURCE:
-      help: Source files and dest files
+      help: Source files and dest files.
       takes_value: true
       multiple: true
       required: true

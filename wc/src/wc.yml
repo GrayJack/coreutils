@@ -1,34 +1,61 @@
 name: wc
 version: "0.0.0"
 author: Giacomo Parolini <silverweed1991@gmail.com>
-about: "Display newline, word and byte counts for each FILE, and a total line if more than one FILE is specified. A word is a non-zero-length sequence of characters delimited by white space.\n\nWith no FILE, or when FILE is -, read standard input."
+about: >
+    Display newline, word and byte counts for each FILE, and a total line if
+    more than one FILE is specified. A word is a non-zero-length sequence of
+    characters delimited by white space.
+
+
+    With no FILE, or when FILE is -, read standard input.
 args:
     - FILE:
         help: One or more file names.
         required: false
         multiple: true
     - bytes:
+        help: Display the byte counts.
+        long_help: >
+            Display the byte counts.
+
+
+            If the current locale does not support multibyte characters, this is
+            equivalent to the -m option.
         long: bytes
         short: c
-        help: Display the byte counts
     - chars:
+        help: Display the character counts.
+        long_help: >
+            Display the character counts.
+
+
+            If the current locale does not support multibyte characters, this is
+            equivalent to the -c option.
         long: chars
         short: m
-        help: Display the character counts
     - lines:
+        help: Display the newline counts.
         long: lines
         short: l
-        help: Display the newline counts
     - max-line-length:
+        help: Display the maximum display width.
+        long_help: >
+            Display the maximum display width.
+
+
+            Write the length of the line containing the most bytes (default) or
+            characters (when -m is provided) to standard output.
+
+
+            When more than one file argument is specified, the longest input
+            line of all files is reported as the value of the final "total".
         long: max-line-length
         short: L
-        help: Display the maximum display width
     - words:
+        help: Display the word counts.
         long: words
         short: w
-        help: Display the word counts
     - pretty:
+        help: Output results in a more human readable format.
         long: pretty
         short: p
-        help: Output results in a more human readable format
-

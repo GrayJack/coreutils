@@ -15,7 +15,7 @@ Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contri
 ## Minimum Rust Version Policy
 This project's minimum supported `rustc` version (MSRV) is 1.37.0.
 
-In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time. [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`]
+In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation.
 
 ## Compilation tests guarantees
 The compilations is tested for Rust x86_64 Unix/Unix-like platforms, with exception of redox target, with Github Actions.
@@ -26,14 +26,14 @@ Also note that Tier3 Rust Platform will probably fail before hits the compilatio
 
 |   Platform    |  Tier  | CI Status | Manual Status |
 |:-------------:|:------:|:---------:|:-------------:|
-|  Linux        | Tier1  | [![Linux](https://github.com/GrayJack/coreutils/workflows/Linux/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | Passing (Manjaro Linux 5.3.2 - 2019-10-20) (60b21fe0a) |
+|  Linux        | Tier1  | [![Linux](https://github.com/GrayJack/coreutils/workflows/Linux/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | Passing (Manjaro Linux 5.3.2 - 2019-10-28) (8695863) |
 |  MacOS        | Tier1  | [![MacOS](https://github.com/GrayJack/coreutils/workflows/MacOS/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | - |
-|  FreeBSD      | Tier2  | [![FreeBSD](https://github.com/GrayJack/coreutils/workflows/FreeBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (FreeBSD 12.0 - 2019-10-01) (202fa79) |
+|  FreeBSD      | Tier2  | [![FreeBSD](https://github.com/GrayJack/coreutils/workflows/FreeBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (FreeBSD 12.0 - 2019-10-28) (8695863) |
 |  NetBSD       | Tier2  | [![NetBSD](https://github.com/GrayJack/coreutils/workflows/NetBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)             | - (system without minimal version) |
 |  Solaris      | Tier2  | [![Solaris](https://github.com/GrayJack/coreutils/workflows/Solaris/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | - (system without minimal version) |
 |  Fuchsia      | Tier2  | [![Fuchsia](https://github.com/GrayJack/coreutils/workflows/Fuchsia/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | - |
-|  OpenBSD      | Tier3  | [![OpenBSD](https://github.com/GrayJack/coreutils/workflows/OpenBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (OpenBSD 6.6 Current - 2019-10-20) (60b21fe0a) |
-|  DragonflyBSD | Tier3  | [![DragonflyBSD](https://github.com/GrayJack/coreutils/workflows/DragonflyBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions) | Passing (DragonflyBSD 5.6.2 - 2019-10-01) (202fa79) |
+|  OpenBSD      | Tier3  | [![OpenBSD](https://github.com/GrayJack/coreutils/workflows/OpenBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions)           | Passing (OpenBSD 6.6 Current - 2019-10-28) (8695863) |
+|  DragonflyBSD | Tier3  | [![DragonflyBSD](https://github.com/GrayJack/coreutils/workflows/DragonflyBSD/badge.svg)](https://github.com/GrayJack/coreutils/actions) | Passing (DragonflyBSD 5.6.2 - 2019-10-28) (8695863) |
 |  Haiku        | Tier3  | [![Haiku](https://github.com/GrayJack/coreutils/workflows/Haiku/badge.svg)](https://github.com/GrayJack/coreutils/actions)               | - |
 
 ## Compilation
@@ -123,7 +123,7 @@ cargo install --path .
 |  uptime  |             |    X    |      |
 |   users  |             |    X    |      |
 |    wc    |             |         |   X  |
-|    who   |      X      |         |      |
+|    who   |             |    X    |      |
 |  whoami  |             |         |   X  |
 |    yes   |             |         |   X  |
 

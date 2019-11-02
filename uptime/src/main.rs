@@ -4,6 +4,17 @@ use std::{
     process,
 };
 
+#[cfg(not(any(
+    target_arch = "x86_64",
+    target_arch = "aarch64",
+    target_arch = "mips64",
+    target_arch = "mips64el",
+    target_arch = "powerpc64",
+    target_arch = "powerpc64le",
+    target_arch = "sparc64"
+)))]
+use std::convert::TryInto;
+
 use coreutils_core::{
     libc::time_t,
     load::load_average,
@@ -35,7 +46,34 @@ fn main() {
         }
     }
 
-    let up_time = match uptime(boot_time.to_timespec().sec) {
+    let up_time = match uptime(
+        #[cfg(any(
+            target_arch = "x86_64",
+            target_arch = "aarch64",
+            target_arch = "mips64",
+            target_arch = "mips64el",
+            target_arch = "powerpc64",
+            target_arch = "powerpc64le",
+            target_arch = "sparc64"
+        ))]
+        boot_time.to_timespec().sec,
+        #[cfg(not(any(
+            target_arch = "x86_64",
+            target_arch = "aarch64",
+            target_arch = "mips64",
+            target_arch = "mips64el",
+            target_arch = "powerpc64",
+            target_arch = "powerpc64le",
+            target_arch = "sparc64"
+        )))]
+        match boot_time.to_timespec().sec.try_into() {
+            Ok(time) => time,
+            Err(err) => {
+                eprintln!("uptime: failed to change from u64 to u32: {}", err);
+                process::exit(1);
+            },
+        },
+    ) {
         Ok(t) => t,
         Err(err) => {
             eprintln!("uptime: could not retrieve system uptime: {}", err);

@@ -4,18 +4,43 @@ author: "Torbjörn Lönnemark <tobbez@ryara.net>"
 about: Create a temporary file or directory
 args:
     - TEMPLATE:
-        help: "Template to use when creating the temporary file/directory"
-        long_help: "Template to use when creating the temporary file/directory.\n\nThe template may be any file name with some number of X's appended to it. "
+        help: Template to use when creating the temporary file/directory.
+        long_help: |
+            Template to use when creating the temporary file/directory.
+
+            The template may be any file name with some number of X's appended to it.
     - directory:
+        help: Make a directory instead of a file.
+        long: directory
         short: d
-        help: "Make a directory, not a file"
     - quiet:
+        help: Fail silently if an error occurs.
+        long_help: |
+            Fail silently if an error occurs.
+            This is useful if a script does not want error output to go to standard error.
+        long: quiet
         short: q
-        help: "Fail silently if an error occurs"
     - t:
+        help: Create the file/directory in the directory specified by the TMPDIR environment variable if set, otherwise /tmp/.
+        long_help: >
+            Create the file/directory in the directory specified by the TMPDIR
+            environment variable if set, otherwise /tmp/.
+
+
+            If TEMPLATE doesnot end with X, generate a template using TEMPLATE as a prefix.
+
+            If TEMPLATE does end with X, use it directly as a template.
+        long: single-file-name
         short: t
-        help: "Create the file/directory in the directory specified by the TMPDIR environment variable if set, otherwise /tmp/."
-        long_help: "Create the file/directory in the directory specified by the TMPDIR environment variable if set, otherwise /tmp/.\n\nIf TEMPLATE does not end with X, generate a template using TEMPLATE as a prefix.\n\nIf TEMPLATE does end with X, use it directly as a template."
     - unsafe:
+        help: Unsafe mode. Use of this option is discouraged.
+        long_help: |
+            Operate in ''unsafe'' mode.
+
+            The temp file will be unlinked before mktemp exits.
+            This is slightly better than mktemp(3) but still introduces a race condition.
+
+            Use of this option is not encouraged.
+        aliases: dry-run
+        long: unsafe
         short: u
-        help: "Unsafe mode. Use of this option is discouraged."

@@ -1,54 +1,112 @@
 use std::{
     env,
     fs::{File, OpenOptions},
-    io::Error,
-    process::{Command, Stdio},
+    io,
+    os::{raw::c_int, unix::process::CommandExt},
+    process::{self, Command, Stdio},
 };
 
-use coreutils_core::{file_descriptor::FileDescriptor, tty::isatty};
+use coreutils_core::{
+    file_descriptor::FileDescriptor,
+    libc::{signal, ENOENT, SIGHUP, SIG_IGN},
+    tty::isatty,
+};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
-use signal_hook;
 
-fn main() -> Result<(), Error> {
+fn main() {
     let yaml = load_yaml!("nohup.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    let args_val = matches.values_of("COMMAND").unwrap();
-    let mut args = args_val.map(|x| x.to_owned()).collect::<Vec<String>>();
-    let command_name = args.remove(0);
+    let command_name = matches.value_of("COMMAND").unwrap();
+    let args = if matches.is_present("ARGS") {
+        matches.values_of("ARGS").unwrap().collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
 
-    let mut command = &mut Command::new(command_name);
-    // If standard input is a terminal, redirect it from an unreadable file.
-    if isatty(FileDescriptor::StdIn) {
-        command = command.stdin(Stdio::null());
-    }
+    let mut command = Command::new(command_name);
+    let mut command_c = command.args(&args);
+
     let mut open_opts = OpenOptions::new();
     open_opts.write(true).create(true).append(true);
-    let get_stdout = || -> File {
-        open_opts.open("nohup.out").unwrap_or_else(|_| {
-            for (key, value) in env::vars() {
-                if key == "HOME" {
-                    return open_opts.open(value + "nohup.out").unwrap();
-                }
-            }
-            panic!("There is no $HOME variable in the environment.");
-        })
-    };
-    let _signal_handler = unsafe {
-        signal_hook::register(signal_hook::SIGINT, || {
-            // ignore
-            println!("Hello world! :D ");
-        })
-    }?;
+
+    // If standard input is a terminal, redirect it from an unreadable file.
+    if isatty(FileDescriptor::StdIn) {
+        command_c = command_c.stdin(Stdio::null());
+    }
+
     if isatty(FileDescriptor::StdOut) {
         // Try to open in write append nohup.out else open $HOME/nohup.out
-        command = command.stdout(get_stdout());
+        let stdout = match get_stdout(&open_opts) {
+            Ok(f) => {
+                println!("nohup: stdout is redirected to 'nohup.out'");
+                f
+            },
+            Err(err) => {
+                eprintln!("nohup: {}", err);
+                process::exit(125);
+            },
+        };
+
+        command_c = command_c.stdout(stdout);
     }
+
     // If standard error is a terminal, redirect it to standard output.
     if isatty(FileDescriptor::StdErr) {
-        command = command.stderr(get_stdout());
+        let stderr = match get_stdout(&open_opts) {
+            Ok(f) => {
+                println!("nohup: stderr is redirected to 'nohup.out'");
+                f
+            },
+            Err(err) => {
+                eprintln!("nohup: {}", err);
+                process::exit(125);
+            },
+        };
+
+        command_c = command_c.stderr(stderr);
     }
-    command.status().expect("Error while invoking the command.");
-    Ok(())
+
+    // Make all SIGHUP a ignored signal
+    unsafe { signal(SIGHUP, SIG_IGN) };
+
+    let err = command_c.exec();
+
+    if err.raw_os_error().unwrap() as c_int == ENOENT {
+        eprintln!("nohup: '{}': {}", command_name, err);
+        process::exit(127);
+    } else {
+        eprintln!("nohup: {}", err);
+        process::exit(126);
+    }
+}
+
+fn get_stdout(open_opts: &OpenOptions) -> io::Result<File> {
+    match open_opts.open("nohup.out") {
+        Ok(file) => Ok(file),
+        Err(_) => {
+            let out = match env::var("HOME") {
+                Ok(h) => {
+                    let mut o = h;
+                    o.push_str("nohup.out");
+                    o
+                },
+                Err(err) => {
+                    eprintln!("nohup: cannot replace STDOUT: {}", err);
+                    process::exit(125)
+                },
+            };
+            match open_opts.open(&out) {
+                Ok(file) => {
+                    println!("nohup: output is redirected to '{}'", out);
+                    Ok(file)
+                },
+                Err(err) => {
+                    eprintln!("nohup: here is no $HOME variable in the environment");
+                    Err(err)
+                },
+            }
+        },
+    }
 }
