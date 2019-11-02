@@ -1,9 +1,9 @@
-use std::{io, path::Path};
+use std::io;
 
 use coreutils_core::{
     group::{Group, Groups},
     passwd::Passwd,
-    process::{set_group, set_groups, set_user, change_root},
+    process::{change_root, set_group, set_groups, set_user},
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
