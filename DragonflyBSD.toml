@@ -5,6 +5,7 @@ members = [
     "chroot",
     "clear",
     "cut",
+    "csplit",
     "date",
     "dirname",
     "du",

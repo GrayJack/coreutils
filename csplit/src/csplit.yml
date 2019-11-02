@@ -1,0 +1,67 @@
+name: csplit
+version: "0.1.0"
+author: Mats Kindahl <mats.kindahl@gmail.com>
+about: |-
+  Split FILE by each PATTERN into a series of files 'xx00', 'xx01',
+  ... 
+
+  A file name has to be provided, but if it is '-', input will read
+  from standard input.
+
+  The input will be split up to, but not including, the line that
+  matches PATTERN.
+
+  The number of bytes in each file will be displayed on standard
+  output with one line for each file.
+args:
+    - FILE:
+        help: File to read, or '-' to read from standard input.
+        required: true
+    - PATTERN:
+        help: Patterns to use when splitting file.
+        multiple: true
+        long_help: |-
+          PATTERN can be any of:
+            INTEGER            copy lines up to line number
+            /REGEXP/[OFFSET]   copy lines up to line matching REGEXP
+            %REGEXP%[OFFSET]   skip lines up to line matching REGEXP
+            {INTEGER}          repeat preceeding pattern INTEGER times
+            {*}                repeat preceeding pattern indefinitely
+
+          If an OFFSET is given it should be an integer, either
+          positive or negative. An offset without sign is assumed to
+          be positive.
+    - prefix:
+        long: prefix
+        short: f
+        value_name: PREFIX
+        default_value: xx
+        help: Prefix to use for written files.
+    - suffix-format:
+        long: suffix-format
+        short: b
+        value_name: FORMAT
+        help: Format to use for the file suffix. The default is '%02d'.
+    - keep:
+        long: keep-files
+        short: k
+        help: Do not remove output files on error.
+    - suppress:
+        long: suppress-matched
+        short: x
+        help: Suppress lines that match a PATTERN.
+    - digits:
+        long: digits
+        short: n
+        value_name: DIGITS
+        default_value: "2"
+        help: Use the given number of digits for output file name.
+    - silent:
+        long: quiet
+        long: silent
+        short: s
+        help: Do not print counts of output file sizes.
+    - elide-empty:
+        long: elide-empty-files
+        short: z
+        help: Remove empty output files.

@@ -4,6 +4,7 @@ members = [
     "basename",
     "clear",
     "cut",
+    "csplit",
     "date",
     "dirname",
     "du",
