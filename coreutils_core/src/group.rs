@@ -476,6 +476,23 @@ impl Groups {
         Ok(Groups { inner: groups })
     }
 
+    /// Get groups from a list of group names
+    pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
+        let groups: Result<Vec<Group>> =
+            group_list.into_iter().map(|&group_name| Group::from_name(group_name)).collect();
+
+        match groups {
+            Ok(gs) => {
+                let mut groups = Self::new();
+                for group in gs {
+                    groups.push(group);
+                }
+                Ok(groups)
+            },
+            Err(err) => Err(err),
+        }
+    }
+
     /// Insert as `Group` on `Groups`.
     #[inline]
     pub fn push(&mut self, value: Group) { self.inner.push(value); }

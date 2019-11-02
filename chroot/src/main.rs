@@ -1,6 +1,10 @@
-use std::{convert::TryInto, ffi::CString, path::Path};
+use std::{io, path::Path};
 
-use coreutils_core::{group::Group, libc, passwd::Passwd};
+use coreutils_core::{
+    group::{Group, Groups},
+    passwd::Passwd,
+    process::{set_group, set_groups, set_user, change_root},
+};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -15,24 +19,26 @@ fn main() {
         None => vec!["-i"],
     };
 
-    change_root(Path::new(root)).map_err(|e| eprintln!("error changing root {:?}", e)).unwrap();
+    change_root(root).map_err(|e| eprintln!("error changing root {:?}", e)).unwrap();
 
     if let Some(groups_list) = matches.value_of("groups") {
-        set_groups_from_list(groups_list);
+        set_groups_from_list(groups_list)
+            .expect("unable to set groups for process from group list");
     }
 
     if let Some(userspec_str) = matches.value_of("userspec") {
-        set_user_from_userspec(userspec_str);
+        set_user_from_userspec(userspec_str)
+            .expect("unable to set groups for process from userspec");
     }
 
     if let Some(group) = matches.value_of("group") {
         let group = Group::from_name(group).expect("unable to get group information");
-        set_group(group.id()).expect("unable to set group for process");
+        set_group(group).expect("unable to set group for process");
     }
 
     if let Some(user) = matches.value_of("user") {
         let user = Passwd::from_name(user).expect("unable to get user from passwd");
-        set_user(user.uid()).expect("unable to set user for process");
+        set_user(user).expect("unable to set user for process");
     }
 
     let proc = std::process::Command::new(cmd).args(args).status().unwrap();
@@ -42,31 +48,13 @@ fn main() {
     std::process::exit(exit_code);
 }
 
-fn change_root(path: &Path) -> std::io::Result<()> {
-    std::env::set_current_dir(path)?;
-
-    let error = unsafe {
-        libc::chroot(CString::new(".").unwrap().as_bytes_with_nul().as_ptr() as *const libc::c_char)
-    };
-
-    match error {
-        0 => Ok(()),
-        _ => Err(std::io::Error::last_os_error()),
-    }
-}
-
-fn set_groups_from_list(groups_list: &str) {
+fn set_groups_from_list(groups_list: &str) -> io::Result<()> {
     let groups: Vec<&str> = groups_list.split(",").collect();
-    let gids: Vec<libc::gid_t> = groups
-        .into_iter()
-        .map(|group| Group::from_name(group))
-        .filter_map(Result::ok)
-        .map(|group| group.id())
-        .collect();
-    set_groups(gids).expect("unable to set groups for process");
+    let groups = Groups::from_group_list(&groups).expect("unable to get groups from group list");
+    set_groups(groups)
 }
 
-fn set_user_from_userspec(userspec: &str) {
+fn set_user_from_userspec(userspec: &str) -> io::Result<()> {
     let parts: Vec<&str> = userspec.split(':').collect();
     if parts.len() != 2 {
         eprintln!("userspec is in an incorrect format");
@@ -74,30 +62,11 @@ fn set_user_from_userspec(userspec: &str) {
     }
 
     let (user, group) = (parts[0], parts[1]);
-    let user = Passwd::from_name(user).expect("unable to get user from passwd");
+    let user = Passwd::from_name(user).expect("unable to get user from name");
     let group = Group::from_name(group).expect("unable to get group from name");
 
-    set_group(group.id()).expect("unable to set group for process");
-    set_user(user.uid()).expect("unable to set user for process");
-}
+    set_group(group)?;
+    set_user(user)?;
 
-fn set_user(user_id: libc::uid_t) -> std::io::Result<()> {
-    match unsafe { libc::setuid(user_id) } {
-        0 => Ok(()),
-        _ => Err(std::io::Error::last_os_error()),
-    }
-}
-
-fn set_group(group_id: libc::gid_t) -> std::io::Result<()> {
-    match unsafe { libc::setgid(group_id) } {
-        0 => Ok(()),
-        _ => Err(std::io::Error::last_os_error()),
-    }
-}
-
-fn set_groups(group_list: Vec<libc::gid_t>) -> std::io::Result<()> {
-    match unsafe { libc::setgroups(group_list.len().try_into().unwrap(), group_list.as_ptr()) } {
-        0 => Ok(()),
-        _ => Err(std::io::Error::last_os_error()),
-    }
+    Ok(())
 }
