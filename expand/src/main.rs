@@ -97,16 +97,25 @@ impl Expand {
         let mut column = 0;
         let mut new_line: String = String::new();
 
-
         for c in line.bytes() {
             match c {
                 b'\t' => {
-                    let repeat = self.tabstops.repetable.unwrap();
-                    let offset = match self.tabstops.offset {
-                        Some(o) => o,
-                        None => 0,
+                    let spaces = match self.tabstops.repetable {
+                        Some(t) => t - column % t,
+                        None => {
+                            match self
+                                .tabstops
+                                .positions
+                                .iter()
+                                .skip_while(|&&t| t <= column)
+                                .next()
+                            {
+                                Some(t) => t - column,
+                                None => 1,
+                            }
+                        },
                     };
-                    let spaces = repeat + offset - column % repeat;
+
                     column += spaces;
                     if convert {
                         new_line.push_str(String::from(" ").repeat(spaces as usize).as_str());
