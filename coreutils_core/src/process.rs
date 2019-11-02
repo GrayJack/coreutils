@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// Change the root of the running process
-#[cfg(not(any(target_os = "fuschia")))]
+#[cfg(not(any(target_os = "fuchsia")))]
 pub fn change_root(newroot: &str) -> io::Result<()> {
     std::env::set_current_dir(newroot)?;
 
