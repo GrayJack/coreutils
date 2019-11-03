@@ -32,4 +32,5 @@ members = [
     "wc",
     "whoami",
     "yes",
+    "nl",
 ]

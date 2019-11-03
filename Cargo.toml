@@ -36,4 +36,5 @@ members = [
     "who",
     "whoami",
     "yes",
+    "nl",
 ]

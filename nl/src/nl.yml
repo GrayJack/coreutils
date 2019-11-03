@@ -1,0 +1,94 @@
+name: nl
+version: "0.1.0"
+author: "Bojan Durdevic <bojan88@gmail.com>"
+about: >
+      Write each FILE to standard output, with line numbers added.
+
+
+      With no FILE, or when FILE is -, read standard input.
+after_help: >
+            Default options are: -bt -d'\:' -fn -hn -i1 -l1 -n'rn' -s<TAB> -v1 -w6
+
+
+            CC are two delimiter characters used to construct logical page delimiters;
+            a missing second character implies ':'.
+
+
+            STYLE is one of:
+
+              a      number all lines
+              t      number only nonempty lines
+              n      number no lines
+              pBRE   number only lines that contain a match for the basic regular
+                    expression, BRE
+
+            FORMAT is one of:
+
+              ln     left justified, no leading zeros
+              rn     right justified, no leading zeros
+              rz     right justified, leading zeros
+args:
+  - body_numbering:
+      help: use STYLE for numbering body lines
+      short: b
+      long: body-numbering
+      value_name: STYLE
+      takes_value: true
+  - section_delimiter:
+      help: use CC for logical page delimiters
+      short: d
+      long: section-delimiter
+      value_name: CC
+      takes_value: true
+  - footer_numbering:
+      help: use STYLE for numbering footer lines
+      short: f
+      long: footer-numbering
+      value_name: STYLE
+      takes_value: true
+  - header_numbering:
+      help: use STYLE for numbering header lines
+      short: h
+      long: header-numbering
+      value_name: STYLE
+      takes_value: true
+  - line_increment:
+      help: line number increment at each line
+      short: i
+      long: line-increment
+      value_name: NUMBER
+      takes_value: true
+  - join_blank_lines:
+      help: group of NUMBER empty lines counted as one
+      short: l
+      long: join-blank-lines
+      value_name: NUMBER
+      takes_value: true
+  - number_format:
+      help: insert line numbers according to FORMAT
+      short: n
+      long: number-format
+      value_name: FORMAT
+      takes_value: true
+  - no_renumber:
+      help: do not reset line numbers for each section
+      short: p
+      long: no-renumber
+  - number_separator:
+      help: add STRING after (possible) line number
+      short: s
+      long: number-separator
+      value_name: STRING
+      takes_value: true
+  - starting_line_number:
+      help: first line number for each section
+      short: v
+      long: starting-line-number
+      value_name: NUMBER
+      takes_value: true
+  - number_width:
+      help: use NUMBER columns for line numbers
+      short: w
+      long: number-width
+      value_name: NUMBER
+      takes_value: true
