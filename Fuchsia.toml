@@ -9,6 +9,7 @@ members = [
     "du",
     "echo",
     "env",
+    "expand",
     "false",
     "groups",
     "head",
