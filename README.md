@@ -59,7 +59,7 @@ cargo install --path .
 |   chgrp  |      X      |         |      |
 |   chmod  |      X      |         |      |
 |   chown  |      X      |         |      |
-|  chroot  |      X      |         |      |
+|  chroot  |             |         |   X  |
 |   clear  |             |         |   X  |
 |   comm   |      X      |         |      |
 |    cp    |      X      |         |      |
@@ -70,7 +70,7 @@ cargo install --path .
 |    df    |      X      |         |      |
 |   diff   |      X      |         |      |
 |  dirname |             |         |   X  |
-|    du    |      X      |         |      |
+|    du    |             |         |   X  |
 |   echo   |             |         |   X  |
 |    env   |             |         |   X  |
 |  expand  |      X      |         |      |
@@ -141,6 +141,7 @@ Without they this project would not be in the shape it is today
  * [Gab David](https://github.com/Larisho)
  * [Giacomo Parolini](https://github.com/silverweed)
  * [Jonas Geschke](https://github.com/kegesch)
+ * [Ladysamantha](https://github.com/ladysamantha)
  * [Mats Kindah](https://github.com/mkindahl)
  * [Odin Dutton](https://github.com/twe4ked)
  * [Rodrigo Oliveira Campos](https://github.com/rodrigocam)
