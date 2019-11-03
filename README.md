@@ -73,7 +73,7 @@ cargo install --path .
 |    du    |             |         |   X  |
 |   echo   |             |         |   X  |
 |    env   |             |         |   X  |
-|  expand  |      X      |         |      |
+|  expand  |             |         |   X  |
 |   expr   |      X      |         |      |
 |   false  |             |         |   X  |
 |  groups  |             |         |   X  |
@@ -149,6 +149,7 @@ Without they this project would not be in the shape it is today
  * [Tom Parker-Shemilt](https://github.com/palfrey)
  * [Torbjörn Lönnemark](https://github.com/tobbez)
  * [Vaibhav Yenamandra](https://github.com/vaibhav-y)
+ * [Victor Tuekam](https://github.com/muskuloes)
 
 
 <!-- [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_large) -->
