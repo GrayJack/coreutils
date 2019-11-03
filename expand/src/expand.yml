@@ -1,6 +1,6 @@
 name: expand
 version: "0.0.0"
-author: "Victor Tuekam <19honor@gmail.com> Bojan Durdevic <bojan88@gmail.com>"
+author: "muskuloes <19honor@gmail.com> Bojan Durdevic <bojan88@gmail.com>"
 about: |
     Convert tabs in each FILE to spaces, writing to standard output.
 
