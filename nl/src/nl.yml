@@ -92,3 +92,6 @@ args:
       long: number-width
       value_name: NUMBER
       takes_value: true
+  - FILE:
+        help: Sets the input file to use
+        multiple: true
