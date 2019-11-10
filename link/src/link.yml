@@ -1,11 +1,11 @@
 name: link
 version: "0.0.0"
 author: "Torbjörn Lönnemark <tobbez@ryara.net>"
-about: Creates a (hard) link to a file
+about: Creates a (hard) link to a file.
 args:
     - FILE1:
-        help: "Existing file to be linked"
+        help: Existing file to be linked.
         required: true
     - FILE2:
-        help: "File name of the link to be created"
+        help: File name of the link to be created.
         required: true

@@ -1,7 +1,9 @@
 name: id
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Print user and group information for the specified USER,\n or (when USER omitted) for the current user."
+about: >
+  Display user and group information for the specified USER, or (when USER
+  omitted) for the current user.
 args:
     - USER:
         help: Name of a user.

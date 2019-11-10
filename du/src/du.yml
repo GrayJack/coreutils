@@ -1,0 +1,172 @@
+name: du
+version: '0.0.0'
+author: 'Julian Kaindl <kaindl745@gmail.com>'
+about: Summarize disk usage for the set FILEs, recursively for directories
+args:
+    - FILE:
+          help: Files to be used by the program.
+          required: false
+          multiple: true
+    - line-end-null:
+          help: Ends each output line with NUL, not newline.
+          long: 'null'
+          short: '0'
+    - all:
+          help: Display counts for all files, not just directories.
+          long: all
+          short: a
+    - apparent-size:
+          help: Display apparent sizes rather than disk usage.
+          long_help: |
+            Display apparent sizes rather than disk usage.
+
+            This can be helpful when operating on compressed volumes or sparse files.
+          long: apparent-size
+          short: A
+    - block-size:
+          help: Scales sizes by SIZE before displaying them.
+          long_help: >
+            Scales sizes by SIZE before displaying them.
+
+
+            Calculate block counts in BLOCKSIZE byte blocks.
+
+
+            This is different from the -h, -k, -m, --si and -g options or
+            setting BLOCKSIZE and gives an estimate of how much space the
+            examined file hierarchy would require on a filesystem with the given
+            BLOCKSIZE.
+
+
+            Unless in -A mode, BLOCKSIZE is rounded up to the next multiple of 512.
+          long: block-size
+          short: B
+          takes_value: true
+          value_name: BLOCKSIZE
+    - bytes:
+          help: Equivalent to '--apparent-size --block-size=1'.
+          long: bytes
+          short: b
+    - total:
+          help: Produces a grand total.
+          long: total
+          short: c
+    - dereference-args:
+          help: Dereference only symlinks that are given as arguments.
+          long: dereference-args
+          short: D
+    - max-depth:
+          help: Display the total for a directory only if it is N or fewer levels below the FILEs
+          long: max-depth
+          short: d
+          takes_value: true
+          value_name: N
+    - dereference-args-alias:
+          help: Equivalent to '--dereference-args (-D)'
+          long: deref-args
+          short: H
+    - human-readable:
+          help: Display sizes in a human readable format.
+          long: human-readable
+          short: P
+          aliases: h
+          conflicts_with:
+              - si
+              - apparent-size
+              - block-size
+              - block-size-k
+              - block-size-m
+              - bytes
+    - inodes:
+          help: Lists inode usage information instead of block usage.
+          long: inodes
+          short: i
+          conflicts_with:
+              - apparent-size
+              - block-size
+              - block-size-k
+              - block-size-m
+              - bytes
+    - block-size-k:
+          help: Equivalent to '--block-size=1K'
+          short: k
+          long: blocks-k
+    - dereference:
+          help: Dereferences all symbolic links.
+          long: dereference
+          short: L
+    - count-links:
+          help: Counts sizes many times if hard linked.
+          long_help: >
+            Counts sizes many times if hard linked.
+
+            The default behavior of du is to count files with multiple hard
+            links only once.
+
+
+            When the -l option is specified, the hard link
+            checks are disabled, and these files are counted (and displayed) as
+            many times as they are found.
+          long: count-links
+          short: l
+    - block-size-m:
+          help: Equivalent to '--block-size=1M'.
+          long: blocks-m
+          short: m
+    - seperate-dirs:
+          help: For directories do not include size of subdirectories.
+          long: seperate-dirs
+          short: S
+    - si:
+          help: Like -h, but uses powers of 1000 not 1024.
+          long: si
+          short: I
+          conflicts_with:
+              - human-readable
+              - apparent-size
+              - block-size
+              - block-size-k
+              - block-size-m
+              - bytes
+    - summarize:
+          help: Display only a total for each FILE.
+          long: summarize
+          short: s
+          conflicts_with:
+              - all
+    - threshold:
+          help: Exclude entries smaller then THRESHOLD if positive or entries greater than THRESHOLD if negative.
+          long: threshold
+          short: t
+          takes_value: true
+          value_name: SIZE
+    - time:
+          help: Show WORD file timestamp.
+          long: time
+          short: T
+          takes_value: true
+          value_name: WORD
+          possible_values:
+              - mtime
+              - atime
+              - ctime
+              - access
+              - use
+              - status
+    - time-style:
+          help: Show times using STYLE.
+          long: time-style
+          short: j
+          takes_value: true
+          value_name: STYLE
+          requires: time
+    - exclude-pattern:
+          help: Exclude files that match PATTERN.
+          long: exclude
+          short: p
+          takes_value: true
+          value_name: PATTERN
+    - one-file-system:
+          help: Skip directories on different file systems.
+          long: one-file-system
+          short: x

@@ -1,0 +1,21 @@
+name: expand
+version: "0.0.0"
+author: "Victor Tuekam <19honor@gmail.com>, Bojan Durdevic <bojan88@gmail.com>"
+about: |
+    Convert tabs in each FILE to spaces, writing to standard output.
+
+    With no FILE, or when FILE is -, read standard input.
+args:
+    - initial:
+        help: Do not convert tabs after non blanks.
+        short: i
+        long: initial
+    - tabs:
+        help: Have tabs N characters apart instead of 8.
+        short: t
+        long: tabs
+        value_names: N or LIST
+        takes_value: true
+    - FILE:
+        help: Input file.
+        multiple: true

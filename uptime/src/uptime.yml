@@ -1,13 +1,17 @@
 name: uptime
 version: "0.0.0"
-author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Display how long system has been running"
+author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com> and Celeo <celeodor@gmail.com>
+about: Display how long system has been running.
 args:
   - pretty:
-      help: Display uptime in pretty format
+      help: Display uptime in pretty format.
       long: pretty
       short: p
   - since:
-      help: System up since
+      help: System up since.
+      long_help: |
+        System up since.
+
+        Uses <yyyy-mm-dd HH:MM:SS> format.
       long: since
       short: s

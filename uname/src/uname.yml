@@ -1,14 +1,18 @@
 name: uname
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Display certain system information. With no FLAGS, same as -s."
+about: Display certain information about the system.
 args:
     - all:
         help: Display all information. Behave as though the options -o, -m, -n, -r, -s, and -v were specified.
+        long_help: |
+            Display all information.
+
+            Behave as though the options -o, -m, -n, -r, -s, and -v were specified.
         long: all
         short: a
     - sysname:
-        help: Display the name of the operating system implementation.
+        help: Display the name of the operating system implementation. (default)
         long: sysname
         short: s
     - nodename:

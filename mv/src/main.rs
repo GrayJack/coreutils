@@ -3,130 +3,44 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use self::{backup::*, input::Input};
+use coreutils_core::{backup::*, input::*};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
-// TODO(gab): Extract this to core because cp, ln, etc use backups
-pub mod backup {
-    use regex::Regex;
-    use std::{
-        fs,
-        io::{Error, ErrorKind},
-        path::PathBuf,
+fn main() {
+    let yaml = load_yaml!("mv.yml");
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let flags = MvFlags::from_matches(&matches);
+
+    let sources: Vec<PathBuf> = {
+        let strip = flags.strip_trailing_slashes;
+
+        matches
+            .values_of("SOURCE")
+            .unwrap()
+            .map(Path::new)
+            .map(|val| if strip { val.components().as_path() } else { val })
+            .map(|val| val.to_owned())
+            .collect()
     };
 
-    #[derive(Debug, Clone, PartialEq)]
-    pub enum BackupMode {
-        None,
-        Numbered,
-        Existing,
-        Simple,
-    }
+    let success = if flags.target_directory != "" {
+        move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
+    } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
+        let target = sources.last().unwrap();
+        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
+    } else if sources.len() == 2 {
+        rename_file(&sources[0], &sources[1], &flags)
+    } else if sources.len() == 1 {
+        eprintln!("mv: No target supplied");
+        false
+    } else {
+        let target = sources.last().unwrap();
+        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
+    };
 
-    impl BackupMode {
-        pub fn from_string(string: &str) -> Self {
-            match string {
-                "none" | "off" => Self::None,
-                "numbered" | "t" => Self::Numbered,
-                "existing" | "nil" => Self::Existing,
-                "simple" | "never" => Self::Simple,
-                _ => Self::Existing,
-            }
-        }
-    }
-
-    pub fn create_numbered_backup(file: &PathBuf) -> Result<PathBuf, Error> {
-        let mut index = 1_u64;
-        loop {
-            if index == u64::max_value() {
-                return Err(Error::new(
-                    ErrorKind::AlreadyExists,
-                    "Cannot create backup: too many backup files",
-                ));
-            }
-
-            let new = file.with_extension(format!("~{}~", index));
-            if !new.exists() {
-                match fs::rename(file, &new) {
-                    Ok(()) => return Ok(new),
-                    Err(err) => return Err(err),
-                };
-            }
-
-            index += 1;
-        }
-    }
-
-    pub fn create_existing_backup(file: &PathBuf, suffix: &str) -> Result<PathBuf, Error> {
-        let mut has_numbered_backup = false;
-        let regex = Regex::new(r"~\d+~").unwrap();
-        let parent = file.parent().unwrap();
-        for entry in parent.read_dir().unwrap() {
-            if let Ok(entry) = entry {
-                if let Some(ext) = entry.path().extension() {
-                    if regex.is_match(ext.to_str().unwrap()) {
-                        has_numbered_backup = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if has_numbered_backup {
-            create_numbered_backup(file)
-        } else {
-            create_simple_backup(file, suffix)
-        }
-    }
-
-    pub fn create_simple_backup(file: &PathBuf, suffix: &str) -> Result<PathBuf, Error> {
-        let new = PathBuf::from(format!("{}{}", file.display(), suffix));
-
-        match fs::rename(file, &new) {
-            Ok(()) => Ok(new),
-            Err(error) => Err(error),
-        }
-    }
-}
-
-// TODO(gab): extract to core because a tonne of core utils use this
-mod input {
-    use std::{io, io::prelude::*, process};
-
-    #[derive(Debug)]
-    pub struct Input(String);
-
-    impl Input {
-        pub fn new() -> Self {
-            let mut line = String::new();
-            match io::stdin().lock().read_line(&mut line) {
-                Ok(_) => {},
-                Err(err) => {
-                    eprintln!("rm: cannot read input: {}", err);
-                    process::exit(1);
-                },
-            };
-
-            Input(line)
-        }
-
-        pub fn with_msg(msg: &str) -> Self {
-            print!("{}", msg);
-
-            if let Err(err) = io::stdout().lock().flush() {
-                eprintln!("rm: could not flush stdout: {}", err);
-                process::exit(1);
-            }
-
-            Self::new()
-        }
-
-        pub fn is_affirmative(&self) -> bool {
-            let input = self.0.trim().to_uppercase();
-
-            input == "Y" || input == "YES" || input == "1"
-        }
+    if !success {
+        std::process::exit(1);
     }
 }
 
@@ -171,13 +85,7 @@ impl OverwriteMode {
 
 impl MvFlags {
     pub fn from_matches(matches: &ArgMatches) -> MvFlags {
-        let target_dir = {
-            if matches.is_present("targetDirectory") {
-                matches.value_of("targetDirectory").unwrap().to_string()
-            } else {
-                String::from("")
-            }
-        };
+        let target_dir = matches.value_of("targetDirectory").unwrap_or("").to_string();
 
         MvFlags {
             backup: BackupMode::from_string(matches.value_of("backup").unwrap()),
@@ -192,44 +100,6 @@ impl MvFlags {
     }
 }
 
-fn main() {
-    let yaml = load_yaml!("mv.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
-    let flags = MvFlags::from_matches(&matches);
-
-    let sources: Vec<PathBuf> = {
-        let strip = flags.strip_trailing_slashes;
-
-        matches
-            .values_of("SOURCE")
-            .unwrap()
-            .map(Path::new)
-            .map(|val| if strip { val.components().as_path() } else { val })
-            .map(|val| val.to_owned())
-            .collect()
-    };
-
-    let success = if flags.target_directory != "" {
-        move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
-    } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
-        let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
-    } else if sources.len() == 2 {
-        rename_file(&sources[0], &sources[1], &flags)
-    } else if sources.len() == 1 {
-        eprintln!("mv: No target supplied");
-        false
-    } else {
-        let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
-    };
-
-    if !success {
-        std::process::exit(1);
-    } else {
-        std::process::exit(0);
-    }
-}
 
 fn move_files(sources: Vec<PathBuf>, target: &PathBuf, flags: &MvFlags) -> bool {
     if !target.is_dir() {
@@ -259,8 +129,11 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
         match &flags.overwrite {
             OverwriteMode::Force => {},
             OverwriteMode::Interactive => {
-                if !Input::with_msg(&format!("mv: overwrite '{}'?", new.display())).is_affirmative()
-                {
+                let is_affirmative = Input::new()
+                    .with_msg(&format!("mv: overwrite '{}'?", new.display()))
+                    .with_err_msg("mv: could not read user input")
+                    .is_affirmative();
+                if !is_affirmative {
                     return true;
                 }
             },

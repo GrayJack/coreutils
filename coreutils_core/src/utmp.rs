@@ -13,6 +13,7 @@ use crate::types::Time;
 use libc::utmp;
 
 use bstr::{BStr, BString, ByteSlice};
+use time::{self, Timespec, Tm};
 
 /// A struct that represents a __user__ account, where user can be humam users or other
 /// parts of the system that requires the usage of account structure, like some daemons
@@ -64,6 +65,10 @@ impl Utmp {
 
     /// Get the time the entry was created
     pub fn time(&self) -> Time { self.time }
+
+    /// Get the time where the entry was created (often login time) in a more complete
+    /// structure
+    pub fn login_time(&self) -> Tm { time::at(Timespec::new(self.time, 0)) }
 }
 
 #[derive(Debug)]

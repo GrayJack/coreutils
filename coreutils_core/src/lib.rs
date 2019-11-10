@@ -4,13 +4,17 @@ pub use libc;
 pub use time;
 
 // Agnostic Modules
+pub mod backup;
 pub mod consts;
 pub mod env;
 pub mod file_descriptor;
 pub mod group;
+pub mod input;
+pub mod mkfifo;
 pub mod mktemp;
 pub mod passwd;
 pub mod settime;
+pub mod process;
 pub mod tty;
 pub mod types;
 pub mod utsname;

@@ -17,6 +17,10 @@ use crate::types::{Pid, TimeVal};
 
 #[cfg(target_os = "linux")]
 use libc::__exit_status;
+#[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+use libc::c_int;
+#[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+use libc::c_long;
 #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
 use libc::c_short;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -140,8 +144,11 @@ pub struct Utmpx {
     #[cfg(target_os = "linux")]
     exit: __exit_status,
     /// Session ID (used for windowing)
-    #[cfg(target_os = "linux")]
-    session: i32,
+    #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+    session: c_int,
+    /// Session ID (used for windowing)
+    #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+    session: c_long,
     /// Session ID (used for windowing)
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     session: u16,
@@ -152,9 +159,17 @@ pub struct Utmpx {
 impl Utmpx {
     /// Creates a new `Utmpx` entry from the `C` version of the structure
     pub fn from_c_utmpx(utm: utmpx) -> Self {
+        #[cfg(not(any(target_os = "dragonfly")))]
         let user = {
             let cstr: String =
                 utm.ut_user.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
+            BString::from(cstr.as_bytes())
+        };
+
+        #[cfg(any(target_os = "dragonfly"))]
+        let user = {
+            let cstr: String =
+                utm.ut_name.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
             BString::from(cstr.as_bytes())
         };
 
@@ -239,8 +254,12 @@ impl Utmpx {
     }
 
     /// Get the session ID
-    #[cfg(target_os = "linux")]
-    pub fn session(&self) -> i32 { self.session }
+    #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+    pub fn session(&self) -> c_int { self.session }
+
+    /// Get the session ID
+    #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+    pub fn session(&self) -> c_long { self.session }
 
     /// Get the session ID
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
@@ -342,6 +361,9 @@ impl UtmpxSet {
 
     /// Creates a iterator over it's entries
     pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
+
+    /// Size of the collection
+    pub fn len(&self) -> usize { self.0.len() }
 }
 
 impl IntoIterator for UtmpxSet {

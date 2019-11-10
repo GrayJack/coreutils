@@ -6,12 +6,7 @@ fn main() {
 
     let multiple_paths = matches.is_present("multiple") || matches.is_present("suffix");
 
-    let suffix = if matches.is_present("suffix") {
-        // Using unwrap here is ok since we already checked if --suffix/-s was used or not.
-        matches.value_of("suffix").unwrap()
-    } else {
-        ""
-    };
+    let suffix = matches.value_of("suffix").unwrap_or("");
 
     let line_ending = if matches.is_present("zero") { '\0' } else { '\n' };
 

@@ -1,7 +1,9 @@
 name: dirname
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
-about: "Display each NAME with its last non-slash component and trailing slashes removed.\nIf NAME contains no /'s, output '.' (meaning the current directory)."
+about: |
+  Display each NAME with its last non-slash component and trailing slashes removed.
+  If NAME contains no /'s, output '.' (meaning the current directory)."
 args:
     - NAME:
         help: Name of the file to use.
