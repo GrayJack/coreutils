@@ -2,12 +2,12 @@ use std::{fmt, io, io::ErrorKind, path::Path, process};
 
 use coreutils_core::{
     settime::settimeofday,
+    time::{self, Tm},
     types::{Subsec, Time, TimeVal},
-    time::Tm,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 
 fn main() {
