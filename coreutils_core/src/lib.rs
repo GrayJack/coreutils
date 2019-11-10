@@ -14,6 +14,7 @@ pub mod mkfifo;
 pub mod mktemp;
 pub mod passwd;
 pub mod process;
+pub mod settime;
 pub mod tty;
 pub mod types;
 pub mod utsname;

@@ -1,9 +1,14 @@
 use std::{fmt, io, io::ErrorKind, path::Path, process};
 
-use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
-use time::Tm;
+use coreutils_core::{
+    settime::settimeofday,
+    time::{self, Tm},
+    types::{Subsec, Time, TimeVal},
+};
 
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+
 
 fn main() {
     let yaml = load_yaml!("date.yml");
@@ -21,7 +26,7 @@ fn main() {
 /// prints the local datetime.
 /// If `is_utc` is true, the datetime is printed in universal time.
 /// If `date` is Some it will get parsed and printed out instead of the current datetime.
-fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
+fn date(args: &ArgMatches) -> Result<(), String> {
     let is_rfc2822 = args.is_present("RFC2822");
     let is_utc = args.is_present("utc");
     let is_date = args.is_present("date");
@@ -40,9 +45,7 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
             Err(e) => return Err(e),
         }
         if !is_convert {
-            // TODO this should usually set OS' datetime if -j is not given
-            unimplemented!();
-            return Ok(());
+            return set_os_time(datetime);
         }
     }
 
@@ -57,9 +60,7 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
         }
 
         if !is_convert {
-            // TODO this should usually set OS' datetime if -j is not given
-            unimplemented!();
-            return Ok(());
+            return set_os_time(datetime);
         }
     }
 
@@ -82,28 +83,41 @@ fn date<'a>(args: &ArgMatches) -> Result<(), &'a str> {
     Ok(())
 }
 
+/// Sets the os datetime to `datetime`
+fn set_os_time(datetime: DateTime<Local>) -> Result<(), String> {
+    let time = TimeVal {
+        tv_sec:  datetime.timestamp() as Time,
+        tv_usec: datetime.timestamp_subsec_micros() as Subsec,
+    };
+
+    return match settimeofday(time) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err.to_string()),
+    };
+}
+
 /// Reads datetime from `input`. Could be seconds or a filepath.
-fn read<'a>(input: &str) -> Result<DateTime<Local>, &'a str> {
+fn read(input: &str) -> Result<DateTime<Local>, String> {
     let parsed: Result<i32, _> = input.trim().parse();
     let result = match parsed {
         Ok(_) => parse_seconds(input.trim()),
         Err(_) => parse_file(input),
     };
 
-    if let Ok(date) = result { Ok(date) } else { Err("illegal date time format") }
+    if let Ok(date) = result { Ok(date) } else { Err(String::from("illegal date time format")) }
 }
 
 /// Parses datetime from `date_str` with format `[[[[[cc]yy]mm]dd]HH]MM[.ss]`.
-fn read_date<'a>(date_str: &str) -> Result<DateTime<Local>, &'a str> {
+fn read_date(date_str: &str) -> Result<DateTime<Local>, String> {
     let format = build_parse_format(date_str);
     parse_date(date_str, &format)
 }
 
 /// Parsed datetime from `date_str` with `format`.
-fn parse_date<'a>(date_str: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
+fn parse_date(date_str: &str, format: &str) -> Result<DateTime<Local>, String> {
     match parse_datetime_from_str(date_str, format) {
         Ok(d) => Ok(d),
-        Err(_) => Err("illegal date time format"),
+        Err(_) => Err(String::from("illegal date time format")),
     }
 }
 
@@ -111,7 +125,6 @@ fn parse_date<'a>(date_str: &str, format: &str) -> Result<DateTime<Local>, &'a s
 fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
     match NaiveDateTime::parse_from_str(seconds, "%s") {
         Ok(date) => {
-            // let local = TimeZone::from_local_datetime(&Local, &date).unwrap();
             let local = TimeZone::from_utc_datetime(&Local, &date);
             Ok(local)
         },
@@ -184,14 +197,14 @@ fn build_parse_format(date: &str) -> String {
 
 /// This function parses `datetime` of given `format`. If `datetime` is not enough for a
 /// unique `DateTime` it uses die values of today.
-fn parse_datetime_from_str<'a>(datetime: &str, format: &str) -> Result<DateTime<Local>, &'a str> {
+fn parse_datetime_from_str(datetime: &str, format: &str) -> Result<DateTime<Local>, String> {
     match time::strptime(datetime, format) {
         Ok(time) => {
             let datetime = convert_tm_to_datetime(time, format);
             let local = TimeZone::from_local_datetime(&Local, &datetime).unwrap();
             Ok(local)
         },
-        Err(_) => Err("could not parse datetime"),
+        Err(_) => Err(String::from("could not parse datetime")),
     }
 }
 
@@ -215,7 +228,7 @@ fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
     let year = if time.tm_year == 0 && !format_used.contains("%Y") {
         date.format("%Y").to_string().parse().unwrap()
     } else {
-        time.tm_year + 1900
+        time.tm_year + 2000
     };
     let seconds = if time.tm_sec == 0 && !format_used.contains("%S") {
         naivetime.format("%S").to_string().parse().unwrap()
