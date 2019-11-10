@@ -90,10 +90,10 @@ fn set_os_time(datetime: DateTime<Local>) -> Result<(), String> {
         tv_usec: datetime.timestamp_subsec_micros() as Subsec,
     };
 
-    return match settimeofday(time) {
+    match settimeofday(time) {
         Ok(_) => Ok(()),
         Err(err) => Err(err.to_string()),
-    };
+    }
 }
 
 /// Reads datetime from `input`. Could be seconds or a filepath.
