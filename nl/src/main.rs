@@ -270,21 +270,24 @@ impl Nl {
     }
 
     fn check_and_change_section(&mut self, line: &String) -> bool {
+        let mut is_changed = false;
+
         if line == &self.section_delimiters.header {
             self.section = Section::Header;
-            self.ind = self.args.starting_line_number;
-            return true;
+            is_changed = true;
         } else if line == &self.section_delimiters.body {
             self.section = Section::Body;
-            self.ind = self.args.starting_line_number;
-            return true;
+            is_changed = true;
         } else if line == &self.section_delimiters.footer {
             self.section = Section::Footer;
-            self.ind = self.args.starting_line_number;
-            return true;
+            is_changed = true;
         }
 
-        false
+        if is_changed && self.args.no_renumber == false {
+            self.ind = self.args.starting_line_number;
+        }
+
+        is_changed
     }
 }
 
