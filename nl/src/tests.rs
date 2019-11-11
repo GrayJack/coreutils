@@ -73,20 +73,11 @@ mod body_numbering {
 
         let mut nl = Nl::new(args);
 
-        let line = String::from("line 1");
-        assert_eq!(nl.convert_line(line.clone()), "     1\tline 1");
-
-        let line = String::from("line 2");
-        assert_eq!(nl.convert_line(line.clone()), "     2\tline 2");
-
-        let line = String::from("line 22");
-        assert_eq!(nl.convert_line(line.clone()), "       line 22");
-
-        let line = String::from("");
-        assert_eq!(nl.convert_line(line.clone()), line);
-
-        let line = String::from("line 5");
-        assert_eq!(nl.convert_line(line.clone()), "     3\tline 5");
+        assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+        assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+        assert_eq!(nl.convert_line(String::from("line 22")), "       line 22");
+        assert_eq!(nl.convert_line(String::from("")), "");
+        assert_eq!(nl.convert_line(String::from("line 5")), "     3\tline 5");
     }
 }
 
@@ -157,12 +148,10 @@ fn join_blank_lines() {
     let mut nl = Nl::new(args);
 
     assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
-
     nl.convert_line(String::from(""));
     nl.convert_line(String::from(""));
     nl.convert_line(String::from(""));
     nl.convert_line(String::from(""));
-
     assert_eq!(nl.convert_line(String::from("line 6")), "     2\tline 6");
 
     let mut args = get_default_args();
@@ -171,13 +160,35 @@ fn join_blank_lines() {
     let mut nl = Nl::new(args);
 
     assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
-
     nl.convert_line(String::from(""));
     nl.convert_line(String::from(""));
     nl.convert_line(String::from(""));
     nl.convert_line(String::from(""));
-
     assert_eq!(nl.convert_line(String::from("line 6")), "     4\tline 6");
+
+    let mut args = get_default_args();
+    args.join_blank_lines = 3;
+    args.body_numbering = Style::All;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    nl.convert_line(String::from(""));
+    nl.convert_line(String::from(""));
+    nl.convert_line(String::from(""));
+    nl.convert_line(String::from(""));
+    assert_eq!(nl.convert_line(String::from("line 6")), "     3\tline 6");
+
+    let mut args = get_default_args();
+    args.join_blank_lines = 4;
+    args.body_numbering = Style::All;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    nl.convert_line(String::from(""));
+    nl.convert_line(String::from(""));
+    nl.convert_line(String::from(""));
+    assert_eq!(nl.convert_line(String::from("")), "     2\t");
+    assert_eq!(nl.convert_line(String::from("line 6")), "     3\tline 6");
 }
 
 #[test]
@@ -195,12 +206,67 @@ fn section_delimiter() {
 
 #[test]
 fn footer_numbering() {
-    unimplemented!();
+    let args = get_default_args();
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.section, Section::Body);
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "       line 3");
+    assert_eq!(nl.section, Section::Footer);
+
+    let mut args = get_default_args();
+    args.footer_numbering = Style::Nonempty;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "     1\tline 3");
+    assert_eq!(nl.convert_line(String::from("")), "");
+
+    let mut args = get_default_args();
+    args.footer_numbering = Style::All;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "     1\tline 3");
+    assert_eq!(nl.convert_line(String::from("line 4")), "     2\tline 4");
 }
 
 #[test]
 fn header_numbering() {
-    unimplemented!();
+    let args = get_default_args();
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.section, Section::Body);
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:\\:\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "       line 3");
+    assert_eq!(nl.section, Section::Header);
+
+    let mut args = get_default_args();
+    args.header_numbering = Style::Nonempty;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:\\:\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "     1\tline 3");
+    assert_eq!(nl.convert_line(String::from("")), "");
+
+    let mut args = get_default_args();
+    args.header_numbering = Style::All;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:\\:\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "     1\tline 3");
 }
 
 #[test]
@@ -240,5 +306,13 @@ fn number_format() {
 
 #[test]
 fn no_renumber() {
-    unimplemented!();
+    let mut args = get_default_args();
+    args.header_numbering = Style::All;
+    args.no_renumber = true;
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:\\:\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "     3\tline 3");
 }

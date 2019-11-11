@@ -130,6 +130,7 @@ impl NlArgs {
     }
 }
 
+#[derive(Debug, PartialEq)]
 enum Section {
     Body,
     Header,
@@ -155,6 +156,7 @@ impl SectionDelimiters {
 struct Nl {
     ind: i64,
     section: Section,
+    num_of_prev_blank_lines: usize,
     section_delimiters: SectionDelimiters,
     args: NlArgs
 }
@@ -166,6 +168,7 @@ impl Nl {
         Nl {
             ind: args.starting_line_number,
             section: Section::Body,
+            num_of_prev_blank_lines: 0,
             section_delimiters,
             args,
         }
@@ -220,7 +223,10 @@ impl Nl {
         };
 
         let should_number: bool = match numbering {
-            Style::All => true,
+            Style::All => {
+                line != "" ||
+                    self.num_of_prev_blank_lines + 1 == self.args.join_blank_lines
+            },
             Style::None => false,
             Style::Nonempty => line != "",
             Style::Regex(re) => re.is_match(line.as_str()),
@@ -250,9 +256,11 @@ impl Nl {
             new_line.push_str(&self.args.number_separator);
 
             self.ind += self.args.line_increment as i64;
+            self.num_of_prev_blank_lines = 0;
         } else if line != "" {
-            println!("{}", self.args.number_width);
             new_line.push_str(&String::from(" ").repeat(self.args.number_width + 1));
+        } else if line == "" {
+            self.num_of_prev_blank_lines += 1;
         }
 
 
