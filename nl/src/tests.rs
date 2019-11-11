@@ -56,10 +56,10 @@ mod body_numbering {
         let mut nl = Nl::new(args);
 
         let line = String::from("line 1");
-        assert_eq!(nl.convert_line(line.clone()), line);
+        assert_eq!(nl.convert_line(line.clone()), "       line 1");
 
         let line = String::from("line 2");
-        assert_eq!(nl.convert_line(line.clone()), line);
+        assert_eq!(nl.convert_line(line.clone()), "       line 2");
 
         let line = String::from("");
         assert_eq!(nl.convert_line(line.clone()), line);
@@ -80,7 +80,7 @@ mod body_numbering {
         assert_eq!(nl.convert_line(line.clone()), "     2\tline 2");
 
         let line = String::from("line 22");
-        assert_eq!(nl.convert_line(line.clone()), line);
+        assert_eq!(nl.convert_line(line.clone()), "       line 22");
 
         let line = String::from("");
         assert_eq!(nl.convert_line(line.clone()), line);
@@ -182,7 +182,15 @@ fn join_blank_lines() {
 
 #[test]
 fn section_delimiter() {
-    unimplemented!();
+    let args = get_default_args();
+    let mut nl = Nl::new(args);
+
+    assert_eq!(nl.convert_line(String::from("line 1")), "     1\tline 1");
+    assert_eq!(nl.convert_line(String::from("line 2")), "     2\tline 2");
+    assert_eq!(nl.convert_line(String::from("\\:\\:\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 3")), "       line 3");
+    assert_eq!(nl.convert_line(String::from("\\:\\:")), "");
+    assert_eq!(nl.convert_line(String::from("line 4")), "     1\tline 4");
 }
 
 #[test]

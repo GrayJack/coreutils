@@ -130,15 +130,43 @@ impl NlArgs {
     }
 }
 
+enum Section {
+    Body,
+    Header,
+    Footer,
+}
+
+struct SectionDelimiters {
+    body: String,
+    header: String,
+    footer: String,
+}
+
+impl SectionDelimiters {
+    fn new(delimiter: String) -> SectionDelimiters {
+        SectionDelimiters {
+            header: delimiter.repeat(3),
+            body: delimiter.repeat(2),
+            footer: delimiter.repeat(1),
+        }
+    }
+}
+
 struct Nl {
     ind: i64,
+    section: Section,
+    section_delimiters: SectionDelimiters,
     args: NlArgs
 }
 
 impl Nl {
     fn new(args: NlArgs) -> Self {
+        let section_delimiters = SectionDelimiters::new(args.section_delimiter.clone());
+
         Nl {
             ind: args.starting_line_number,
+            section: Section::Body,
+            section_delimiters,
             args,
         }
     }
@@ -179,7 +207,19 @@ impl Nl {
     }
 
     fn convert_line(&mut self, line: String) -> String {
-        let should_number: bool = match &self.args.body_numbering {
+        let is_section_changed = self.check_and_change_section(&line);
+
+        if is_section_changed {
+            return String::new();
+        }
+
+        let numbering = match self.section {
+            Section::Header => &self.args.header_numbering,
+            Section::Body => &self.args.body_numbering,
+            Section::Footer => &self.args.footer_numbering,
+        };
+
+        let should_number: bool = match numbering {
             Style::All => true,
             Style::None => false,
             Style::Nonempty => line != "",
@@ -210,12 +250,33 @@ impl Nl {
             new_line.push_str(&self.args.number_separator);
 
             self.ind += self.args.line_increment as i64;
+        } else if line != "" {
+            println!("{}", self.args.number_width);
+            new_line.push_str(&String::from(" ").repeat(self.args.number_width + 1));
         }
 
 
         new_line.push_str(&line);
 
         new_line
+    }
+
+    fn check_and_change_section(&mut self, line: &String) -> bool {
+        if line == &self.section_delimiters.header {
+            self.section = Section::Header;
+            self.ind = self.args.starting_line_number;
+            return true;
+        } else if line == &self.section_delimiters.body {
+            self.section = Section::Body;
+            self.ind = self.args.starting_line_number;
+            return true;
+        } else if line == &self.section_delimiters.footer {
+            self.section = Section::Footer;
+            self.ind = self.args.starting_line_number;
+            return true;
+        }
+
+        false
     }
 }
 
