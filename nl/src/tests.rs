@@ -55,14 +55,9 @@ mod body_numbering {
 
         let mut nl = Nl::new(args);
 
-        let line = String::from("line 1");
-        assert_eq!(nl.convert_line(line.clone()), "       line 1");
-
-        let line = String::from("line 2");
-        assert_eq!(nl.convert_line(line.clone()), "       line 2");
-
-        let line = String::from("");
-        assert_eq!(nl.convert_line(line.clone()), line);
+        assert_eq!(nl.convert_line(String::from("line 1")), "       line 1");
+        assert_eq!(nl.convert_line(String::from("line 2")), "       line 2");
+        assert_eq!(nl.convert_line(String::from("")), "");
     }
 
     #[test]
