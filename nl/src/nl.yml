@@ -29,65 +29,65 @@ after_help: >
               rz     right justified, leading zeros
 args:
   - body_numbering:
-      help: use STYLE for numbering body lines
+      help: Use STYLE for numbering body lines
       short: b
       long: body-numbering
       value_name: STYLE
       takes_value: true
   - section_delimiter:
-      help: use CC for logical page delimiters
+      help: Use CC for logical page delimiters
       short: d
       long: section-delimiter
       value_name: CC
       takes_value: true
   - footer_numbering:
-      help: use STYLE for numbering footer lines
+      help: Use STYLE for numbering footer lines
       short: f
       long: footer-numbering
       value_name: STYLE
       takes_value: true
   - header_numbering:
-      help: use STYLE for numbering header lines
+      help: Use STYLE for numbering header lines
       short: h
       long: header-numbering
       value_name: STYLE
       takes_value: true
   - line_increment:
-      help: line number increment at each line
+      help: Line number increment at each line
       short: i
       long: line-increment
       value_name: NUMBER
       takes_value: true
   - join_blank_lines:
-      help: group of NUMBER empty lines counted as one
+      help: Group of NUMBER empty lines counted as one
       short: l
       long: join-blank-lines
       value_name: NUMBER
       takes_value: true
   - number_format:
-      help: insert line numbers according to FORMAT
+      help: Insert line numbers according to FORMAT
       short: n
       long: number-format
       value_name: FORMAT
       takes_value: true
   - no_renumber:
-      help: do not reset line numbers for each section
+      help: Do not reset line numbers for each section
       short: p
       long: no-renumber
   - number_separator:
-      help: add STRING after (possible) line number
+      help: Add STRING after (possible) line number
       short: s
       long: number-separator
       value_name: STRING
       takes_value: true
   - starting_line_number:
-      help: first line number for each section
+      help: First line number for each section
       short: v
       long: starting-line-number
       value_name: NUMBER
       takes_value: true
   - number_width:
-      help: use NUMBER columns for line numbers
+      help: Use NUMBER columns for line numbers
       short: w
       long: number-width
       value_name: NUMBER

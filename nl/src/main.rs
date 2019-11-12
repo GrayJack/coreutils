@@ -5,8 +5,40 @@ use std::{
     process,
 };
 
-use clap::{load_yaml, App, ArgMatches};
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use regex::Regex;
+
+fn main() {
+    let yaml = load_yaml!("nl.yml");
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let nl_args = NlArgs::from_matches(&matches);
+    let mut nl = Nl::new(nl_args);
+    let cwd = match current_dir() {
+        Ok(path) => path,
+        Err(err) => {
+            eprintln!("nl: error reading current working directory: {}", err);
+            process::exit(1);
+        },
+    };
+
+    let files: Vec<String> = match matches.values_of("FILE") {
+        Some(files) => files
+            .map(|file| {
+                if file == "-" {
+                    return String::from("-");
+                }
+
+                file.split_whitespace()
+                    .map(|s| cwd.join(s.to_string()).to_str().unwrap().to_string())
+                    .collect()
+            })
+            .collect(),
+        None => vec!["-".to_string()],
+    };
+
+    nl.convert(files);
+}
+
 
 #[cfg(test)]
 mod tests;
@@ -298,35 +330,4 @@ impl Nl {
 
         is_changed
     }
-}
-
-fn main() {
-    let yaml = load_yaml!("nl.yml");
-    let matches = App::from_yaml(yaml).get_matches();
-    let nl_args = NlArgs::from_matches(&matches);
-    let mut nl = Nl::new(nl_args);
-    let cwd = match current_dir() {
-        Ok(path) => path,
-        Err(err) => {
-            eprintln!("nl: error reading current working directory: {}", err);
-            process::exit(1);
-        },
-    };
-
-    let files: Vec<String> = match matches.values_of("FILE") {
-        Some(files) => files
-            .map(|file| {
-                if file == "-" {
-                    return String::from("-");
-                }
-
-                file.split_whitespace()
-                    .map(|s| cwd.join(s.to_string()).to_str().unwrap().to_string())
-                    .collect()
-            })
-            .collect(),
-        None => vec!["-".to_string()],
-    };
-
-    nl.convert(files);
 }
