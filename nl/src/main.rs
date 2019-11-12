@@ -1,12 +1,12 @@
 use std::{
     env::current_dir,
-    io::{prelude::BufRead, stdin, stdout, Write, BufReader},
     fs::File,
+    io::{prelude::BufRead, stdin, stdout, BufReader, Write},
     process,
 };
 
-use regex::Regex;
 use clap::{load_yaml, App, ArgMatches};
+use regex::Regex;
 
 #[cfg(test)]
 mod tests;
@@ -22,11 +22,13 @@ enum Style {
 impl PartialEq for Style {
     fn eq(&self, other: &Style) -> bool {
         match (self, other) {
-            (&Style::All, &Style::All) |
-            (&Style::Nonempty, &Style::Nonempty) |
-            (&Style::None, &Style::None) => true,
-            (&Style::Regex(ref reg1), &Style::Regex(ref reg2)) => reg1.to_string() == reg2.to_string(),
-            (_, _) => false,
+            (&Style::All, &Style::All)
+            | (&Style::Nonempty, &Style::Nonempty)
+            | (&Style::None, &Style::None) => true,
+            (&Style::Regex(ref reg1), &Style::Regex(ref reg2)) => {
+                reg1.to_string() == reg2.to_string()
+            },
+            (..) => false,
         }
     }
 }
@@ -37,16 +39,18 @@ impl Style {
             Some("a") => Style::All,
             Some("t") => Style::Nonempty,
             Some("n") => Style::None,
-            Some(reg) => if reg.starts_with("p") {
-                let regex = Regex::new(&reg[1..]).unwrap_or_else(|err| {
-                    eprintln!("{}", err.to_string());
-                    std::process::exit(1);
-                });
+            Some(reg) => {
+                if reg.starts_with("p") {
+                    let regex = Regex::new(&reg[1..]).unwrap_or_else(|err| {
+                        eprintln!("{}", err.to_string());
+                        std::process::exit(1);
+                    });
 
-                Style::Regex(regex)
-            } else {
-                eprintln!("nl: invalid body numbering style: ‘{}’", reg[1..].to_string());
-                std::process::exit(1);
+                    Style::Regex(regex)
+                } else {
+                    eprintln!("nl: invalid body numbering style: ‘{}’", reg[1..].to_string());
+                    std::process::exit(1);
+                }
             },
             None => default_value,
         }
@@ -69,7 +73,7 @@ impl Format {
             Some(s) => {
                 eprintln!("nl: invalid line numbering format: ‘{}’", s);
                 std::process::exit(1);
-            }
+            },
         }
     }
 }
@@ -138,7 +142,7 @@ enum Section {
 }
 
 struct SectionDelimiters {
-    body: String,
+    body:   String,
     header: String,
     footer: String,
 }
@@ -147,7 +151,7 @@ impl SectionDelimiters {
     fn new(delimiter: String) -> SectionDelimiters {
         SectionDelimiters {
             header: delimiter.repeat(3),
-            body: delimiter.repeat(2),
+            body:   delimiter.repeat(2),
             footer: delimiter.repeat(1),
         }
     }
@@ -158,7 +162,7 @@ struct Nl {
     section: Section,
     num_of_prev_blank_lines: usize,
     section_delimiters: SectionDelimiters,
-    args: NlArgs
+    args: NlArgs,
 }
 
 impl Nl {
@@ -192,7 +196,10 @@ impl Nl {
                 let stdin = stdin();
                 for line in stdin.lock().lines() {
                     stdout
-                        .write_fmt(format_args!("{}\n", self.convert_line(line.unwrap_or_else(read_error))))
+                        .write_fmt(format_args!(
+                            "{}\n",
+                            self.convert_line(line.unwrap_or_else(read_error))
+                        ))
                         .unwrap_or_else(write_error);
                     stdout.flush().unwrap_or_else(write_error);
                 }
@@ -201,7 +208,10 @@ impl Nl {
                 let reader = BufReader::new(fd);
                 for line in reader.lines() {
                     stdout
-                        .write_fmt(format_args!("{}\n", self.convert_line(line.unwrap_or_else(read_error))))
+                        .write_fmt(format_args!(
+                            "{}\n",
+                            self.convert_line(line.unwrap_or_else(read_error))
+                        ))
                         .unwrap_or_else(write_error);
                     stdout.flush().unwrap_or_else(write_error);
                 }
@@ -224,8 +234,7 @@ impl Nl {
 
         let should_number: bool = match numbering {
             Style::All => {
-                line != "" ||
-                    self.num_of_prev_blank_lines + 1 == self.args.join_blank_lines
+                line != "" || self.num_of_prev_blank_lines + 1 == self.args.join_blank_lines
             },
             Style::None => false,
             Style::Nonempty => line != "",
