@@ -21,6 +21,8 @@ members = [
     "mkfifo",
     "mv",
     "nice",
+    "nl",
+    "nohup",
     "pwd",
     "rm",
     "rmdir",
@@ -36,5 +38,4 @@ members = [
     "who",
     "whoami",
     "yes",
-    "nl",
 ]

@@ -21,6 +21,7 @@ members = [
     "mktemp",
     "mkfifo",
     "mv",
+    "nl",
     "nohup",
     "pwd",
     "rm",
@@ -34,5 +35,4 @@ members = [
     "wc",
     "whoami",
     "yes",
-    "nl",
 ]

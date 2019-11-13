@@ -5,7 +5,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_shield)
 
 
-An attempt to make safe coreutils aiming a minimal and yet complete set of utilities. This project aims to have **at least** the common features between several implementations of the utility.
+An attempt to make a safe re-implementation coreutils aiming for a minimal and yet complete set of utilities. This project aims to have **at least** the common features between several implementations of the utility.
 
 This project has no intent to be 100% compatible with GNU's coreutils, like [Uutils' coreutils](https://github.com/uutils/coreutils), but if happens to be, that's ok too.
 
@@ -91,7 +91,7 @@ cargo install --path .
 |  mkfifo  |      X      |         |      |
 |    mv    |             |         |   X  |
 |   nice   |             |         |   X  |
-|    nl    |      X      |         |      |
+|    nl    |             |         |   X  |
 |   nohup  |             |         |   X  |
 |    od    |      X      |         |      |
 |   paste  |      X      |         |      |
