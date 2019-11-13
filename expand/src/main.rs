@@ -12,7 +12,12 @@ use tab_stops::*;
 
 fn main() {
     let yaml = load_yaml!("expand.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
+
     let mut expand = Expand::from_matches(&matches);
     let cwd = match current_dir() {
         Ok(path) => path,

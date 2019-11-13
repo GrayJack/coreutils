@@ -9,7 +9,12 @@ use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("tty.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
+
     let desc_stdin = FileDescriptor::StdIn;
 
     let silent_flag = matches.is_present("silent");

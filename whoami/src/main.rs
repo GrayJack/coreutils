@@ -6,7 +6,11 @@ use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("whoami.yml");
-    let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let _matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
 
     let user = if let Ok(pw) = Passwd::effective() {
         pw

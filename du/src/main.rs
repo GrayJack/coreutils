@@ -17,7 +17,11 @@ mod tests;
 
 fn main() {
     let yaml = load_yaml!("du.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
 
     let flags = DuFlagsAndOptions::from_matches(&matches);
     let paths = parse_files(&matches);

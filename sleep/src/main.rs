@@ -5,7 +5,11 @@ use sugars::sleep;
 
 fn main() {
     let yaml = load_yaml!("sleep.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
 
     let numbers = if let Some(values) = matches.values_of("NUMBER") {
         values

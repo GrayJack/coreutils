@@ -10,7 +10,11 @@ use regex::Regex;
 
 fn main() {
     let yaml = load_yaml!("nl.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
 
     let nl_args = NlArgs::from_matches(&matches);
 

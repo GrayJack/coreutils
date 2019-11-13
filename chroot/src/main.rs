@@ -10,7 +10,11 @@ use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
 fn main() {
     let yaml = load_yaml!("chroot.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
 
     let root = matches.value_of("NEWROOT").unwrap();
     let cmd = matches.value_of("COMMAND").unwrap_or("/bin/sh");

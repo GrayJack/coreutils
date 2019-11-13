@@ -12,7 +12,11 @@ use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 fn main() {
     let yaml = load_yaml!("date.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp])
+        .help_message("Display help information")
+        .version_message("Display version information")
+        .get_matches();
 
     match date(&matches) {
         Ok(_) => (),
