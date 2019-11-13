@@ -253,7 +253,7 @@ fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     ut_vec
 }
 
-// TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
+// TODO(grayjack): Fix that code reuse after sttributtes on expression hits stabe Rust
 #[cfg(not(target_os = "openbsd"))]
 fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
     if flags.is_all_false() {
@@ -333,7 +333,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
     }
 }
 
-// TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
+// TODO(grayjack): Fix that code reuse after sttributtes on expression hits stabe Rust
 #[cfg(target_os = "openbsd")]
 fn print_info(uts: &[&Utmp], flags: WhoFlags) {
     if flags.is_all_false() {
@@ -412,51 +412,9 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
     }
 }
 
-// TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
-#[cfg(not(target_os = "openbsd"))]
-fn def_status(utmp: &Utmpx) -> (char, String) {
-    let mut dev_file = PathBuf::from("/dev");
-    let dev_name = match utmp.device_name().to_str() {
-        Ok(d) => d,
-        Err(err) => {
-            eprintln!("who: failed to UTF-8 device name: {}", err);
-            process::exit(1);
-        },
-    };
-    dev_file.push(dev_name);
-
-    let msg;
-    let last_change;
-    if let Ok(meta) = dev_file.metadata() {
-        msg = if meta.mode() & (S_IWGRP as u32) == 0 { '-' } else { '+' };
-        last_change = meta.atime();
-    } else {
-        msg = '?';
-        last_change = 0;
-    };
-
-    let idle = if last_change == 0 {
-        "?".to_string()
-    } else {
-        let now = time::now().to_timespec().sec;
-        if 0 < last_change && now - 24 * 3600 < last_change && last_change <= now {
-            let seconds_idle = now - last_change;
-            if seconds_idle < 60 {
-                ".".to_string()
-            } else {
-                format!("{:02}:{:02}", seconds_idle / 3600, (seconds_idle % 3600) / 60)
-            }
-        } else {
-            "old".to_string()
-        }
-    };
-
-    (msg, idle)
-}
-
-// TODO(grayjack): Fix that code reuse after 1.39 release using param_attrs
-#[cfg(target_os = "openbsd")]
-fn def_status(utmp: &Utmp) -> (char, String) {
+fn def_status(
+    #[cfg(target_os = "openbsd")] utmp: &Utmp, #[cfg(not(target_os = "openbsd"))] utmp: &Utmpx,
+) -> (char, String) {
     let mut dev_file = PathBuf::from("/dev");
     let dev_name = match utmp.device_name().to_str() {
         Ok(d) => d,

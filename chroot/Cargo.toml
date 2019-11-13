@@ -1,6 +1,6 @@
 [package]
 name = "chroot"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["ladysamantha <ladysamantha@protonmail.com>"]
 build = "build.rs"
 edition = "2018"

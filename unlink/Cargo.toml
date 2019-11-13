@@ -1,6 +1,6 @@
 [package]
 name = "unlink"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Torbjörn Lönnemark <tobbez@ryara.net>"]
 build = "build.rs"
 edition = "2018"
