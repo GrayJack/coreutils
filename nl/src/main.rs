@@ -11,8 +11,11 @@ use regex::Regex;
 fn main() {
     let yaml = load_yaml!("nl.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+
     let nl_args = NlArgs::from_matches(&matches);
+
     let mut nl = Nl::new(nl_args);
+
     let cwd = match current_dir() {
         Ok(path) => path,
         Err(err) => {
@@ -72,7 +75,7 @@ impl Style {
             Some("t") => Style::Nonempty,
             Some("n") => Style::None,
             Some(reg) => {
-                if reg.starts_with("p") {
+                if reg.starts_with('p') {
                     let regex = Regex::new(&reg[1..]).unwrap_or_else(|err| {
                         eprintln!("{}", err.to_string());
                         std::process::exit(1);
@@ -110,6 +113,7 @@ impl Format {
     }
 }
 
+#[derive(Debug)]
 struct NlArgs {
     body_numbering: Style,
     section_delimiter: String,
@@ -310,21 +314,21 @@ impl Nl {
         new_line
     }
 
-    fn check_and_change_section(&mut self, line: &String) -> bool {
+    fn check_and_change_section(&mut self, line: &str) -> bool {
         let mut is_changed = false;
 
-        if line == &self.section_delimiters.header {
+        if line == self.section_delimiters.header {
             self.section = Section::Header;
             is_changed = true;
-        } else if line == &self.section_delimiters.body {
+        } else if line == self.section_delimiters.body {
             self.section = Section::Body;
             is_changed = true;
-        } else if line == &self.section_delimiters.footer {
+        } else if line == self.section_delimiters.footer {
             self.section = Section::Footer;
             is_changed = true;
         }
 
-        if is_changed && self.args.no_renumber == false {
+        if is_changed && !self.args.no_renumber {
             self.ind = self.args.starting_line_number;
         }
 
