@@ -77,11 +77,18 @@ struct DuFlagsAndOptions<'a> {
 
 impl<'a> DuFlagsAndOptions<'a> {
     pub fn from_matches(matches: &'a ArgMatches) -> Self {
+        let def_index = matches.index_of("dereference").unwrap_or(0);
+        let no_def_index = matches.index_of("no-dereference").unwrap_or(0);
+
         DuFlagsAndOptions {
             show_all: matches.is_present("all"),
             use_apparent_size: matches.is_present("apparent-size") || matches.is_present("bytes"),
             count_links: matches.is_present("count-links"),
-            dereference: matches.is_present("dereference"),
+            dereference: if def_index > no_def_index {
+                matches.is_present("dereference")
+            } else {
+                matches.is_present("no-dereference")
+            },
             dereference_args: matches.is_present("dereference-args")
                 || matches.is_present("dereference-args-alias"),
             print_human_readable: matches.is_present("human-readable")
