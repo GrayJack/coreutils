@@ -63,7 +63,7 @@ cargo install --path .
 |   clear  |             |         |   X  |
 |   comm   |      X      |         |      |
 |    cp    |      X      |         |      |
-|  csplit  |      X      |         |      |
+|  csplit  |             |    X    |      |
 |    cut   |             |         |   X  |
 |   date   |             |    X    |      |
 |    dd    |      X      |         |      |
