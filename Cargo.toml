@@ -5,6 +5,7 @@ members = [
     "clear",
     "coreutils_core",
     "cut",
+    "csplit",
     "date",
     "du",
     "dirname",
