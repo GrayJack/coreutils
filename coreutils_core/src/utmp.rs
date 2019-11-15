@@ -64,7 +64,7 @@ impl Utmp {
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
     /// Get the time the entry was created
-    pub fn time(&self) -> Time { self.time }
+    pub const fn time(&self) -> Time { self.time }
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure

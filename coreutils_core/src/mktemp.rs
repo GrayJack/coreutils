@@ -41,7 +41,9 @@ pub fn mkstemp(template: &str) -> Result<Mktemp, Error> {
         t.push('\0');
         t
     };
+
     let fd = unsafe { libc::mkstemp(template_cstr.as_mut_ptr() as *mut libc::c_char) };
+
     if fd == -1 {
         let error_str = match IOError::last_os_error().raw_os_error().unwrap() {
             22 => "Too few X's in template".to_string(), // EINVAL
@@ -74,6 +76,7 @@ pub fn mkdtemp(template: &str) -> Result<String, Error> {
     let ptr = unsafe {
         libc::mkdtemp(template_cstr.as_mut_ptr() as *mut libc::c_char) as *const libc::c_char
     };
+
     if ptr.is_null() {
         let error_str = match IOError::last_os_error().raw_os_error().unwrap() {
             22 => "Too few X's in template".to_string(), // EINVAL

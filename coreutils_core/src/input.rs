@@ -32,7 +32,7 @@ pub struct Input<'a> {
 
 impl<'a> Input<'a> {
     /// Initializes a new Input builder
-    pub fn new() -> Input<'a> { Input::default() }
+    pub const fn new() -> Self { Input { msg: None, err_msg: None } }
 
     /// Specifies the message to display to the user
     pub fn with_msg(&mut self, msg: &'a str) -> &mut Self {

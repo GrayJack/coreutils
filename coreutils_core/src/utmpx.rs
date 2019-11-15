@@ -242,10 +242,10 @@ impl Utmpx {
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
     /// Get the type kind if the entry
-    pub fn utype(&self) -> UtmpxType { self.ut_type }
+    pub const fn utype(&self) -> UtmpxType { self.ut_type }
 
     /// Get the time where the entry was created (often login time)
-    pub fn timeval(&self) -> TimeVal { self.timeval }
+    pub const fn timeval(&self) -> TimeVal { self.timeval }
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure
@@ -255,18 +255,19 @@ impl Utmpx {
 
     /// Get the session ID
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
-    pub fn session(&self) -> c_int { self.session }
+    pub const fn session(&self) -> c_int { self.session }
 
     /// Get the session ID
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
-    pub fn session(&self) -> c_long { self.session }
+    pub const fn session(&self) -> c_long { self.session }
 
     /// Get the session ID
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
-    pub fn session(&self) -> u16 { self.session }
+    pub const fn session(&self) -> u16 { self.session }
 
     #[cfg(target_os = "linux")]
-    pub fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
+    pub const fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
+}
 }
 
 /// A collection of Utmpx entries
