@@ -14,7 +14,7 @@
 //! GNU standard or not is up to the user of this module.
 //!
 //! ### None
-//! Can be specified by either supplying the strings `none` or `off`.  
+//! Can be specified by either supplying the strings `none` or `off`.
 //! Fairly self-explanatory: Never make backups.
 //!
 //! ### Numbered
@@ -136,9 +136,9 @@ pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Erro
     }
 
     if has_numbered_backup {
-        return create_numbered_backup(file);
+        create_numbered_backup(file)
     } else {
-        return create_simple_backup(file, suffix);
+        create_simple_backup(file, suffix)
     }
 }
 
