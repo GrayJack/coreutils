@@ -103,7 +103,6 @@ impl From<PwError> for Error {
 /// This struct holds information about a group of UNIX/UNIX-like systems.
 ///
 /// Contains `sys/types.h` `group` struct attributes as Rust powefull types.
-// It also contains a pointer to the libc::group type for more complex manipulations.
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Group {
     /// Group name.
@@ -330,7 +329,7 @@ pub struct Groups {
 impl Groups {
     /// Creates a empty new `Groups`.
     #[inline]
-    pub fn new() -> Self { Groups { inner: Vec::new() } }
+    pub const fn new() -> Self { Groups { inner: Vec::new() } }
 
     /// Get all the process caller groups
     pub fn caller() -> Result<Self> {
@@ -479,7 +478,7 @@ impl Groups {
     /// Get groups from a list of group names
     pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
         let groups: Result<Vec<Group>> =
-            group_list.into_iter().map(|&group_name| Group::from_name(group_name)).collect();
+            group_list.iter().map(|&group_name| Group::from_name(group_name)).collect();
 
         match groups {
             Ok(gs) => {
