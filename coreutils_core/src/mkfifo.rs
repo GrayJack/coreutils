@@ -1,7 +1,7 @@
 use libc::{self, mode_t};
 use std::{ffi::CString, io, io::Error, path::Path};
 
-/// Creates FIFO special file with name `filepath` with `mode` permissions. 
+/// Creates FIFO special file with name `filepath` with `mode` permissions.
 /// Inspired by crate `unix_named_pipe`
 pub fn mkfifo(filepath: &str, mode: u32) -> io::Result<()> {
     let path: &Path = Path::new(filepath);

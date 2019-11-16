@@ -72,7 +72,7 @@ impl Display for TTYName {
 ///
 /// ## Example
 /// ```rust
-/// let istty = isatty(FileDescriptor::StdIn);
+/// let istty = isatty(FileDescriptor::StdIn); 
 /// ```
 #[inline]
 pub fn isatty(file_descriptor: FileDescriptor) -> bool {

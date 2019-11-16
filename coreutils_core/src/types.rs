@@ -1,6 +1,8 @@
 //! Module for more widelly used types in this crate and helper functions related to these
 //! times.
-use libc::{c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t};
+use libc::{
+    c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t,
+};
 
 /// Time stamp type used on system structures
 pub type TimeVal = timeval;
