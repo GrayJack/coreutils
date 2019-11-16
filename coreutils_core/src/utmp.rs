@@ -30,6 +30,7 @@ pub struct Utmp {
 }
 
 impl Utmp {
+    /// Creates a `Utmp` from the c structure `utmp`
     pub fn from_c_utmp(utm: utmp) -> Self {
         let user = {
             let cstr: String =
@@ -75,7 +76,7 @@ impl Utmp {
 pub struct UtmpSet(HashSet<Utmp>);
 
 impl UtmpSet {
-    /// Creates a new collection over a utmpx entry binary file
+    /// Creates a new collection over a `utmpx` entry binary file
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmp>();
         let num_bytes = fs::metadata(&path)?.len() as usize;

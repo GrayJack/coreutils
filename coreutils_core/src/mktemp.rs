@@ -28,11 +28,11 @@ impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.err) }
 }
 
-/// Creates a temporary file based on the given template.
+/// Creates a temporary file based on the given `template`.
 ///
-/// The template should end with a number of `X` characters.
+/// The `template` should end with a number of `X` characters.
 ///
-/// Some libc implementations requires the template to end with a minimum number of X
+/// Some libc implementations requires the `template` to end with a minimum number of X
 /// characters (for example, 6 in glibc as of version 2.29).
 pub fn mkstemp(template: &str) -> Result<Mktemp, Error> {
     let mut template_cstr = {
@@ -59,11 +59,11 @@ pub fn mkstemp(template: &str) -> Result<Mktemp, Error> {
     Ok(Mktemp { file: unsafe { File::from_raw_fd(fd) }, path: template_cstr })
 }
 
-/// Creates a temporary directory based on the given template.
+/// Creates a temporary directory based on the given `template`.
 ///
-/// The template should end with a number of `X` characters.
+/// The `template` should end with a number of `X` characters.
 ///
-/// Some libc implementations requires the template to end with a minimum number of X
+/// Some libc implementations requires the `template` to end with a minimum number of X
 /// characters (for example, 6 in glibc as of version 2.29).
 pub fn mkdtemp(template: &str) -> Result<String, Error> {
     let mut template_cstr = {

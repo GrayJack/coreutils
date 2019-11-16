@@ -7,7 +7,7 @@ use crate::{
     types::Gid,
 };
 
-/// Change the root of the running process
+/// Change the root of the running process to `newroot`.
 #[cfg(not(any(target_os = "fuchsia")))]
 pub fn change_root(newroot: &str) -> io::Result<()> {
     std::env::set_current_dir(newroot)?;
@@ -22,7 +22,7 @@ pub fn change_root(newroot: &str) -> io::Result<()> {
     }
 }
 
-/// Set the user for the current process
+/// Set the `user` for the current process
 pub fn set_user(user: Passwd) -> io::Result<()> {
     match unsafe { libc::setuid(user.uid()) } {
         0 => Ok(()),
@@ -30,7 +30,7 @@ pub fn set_user(user: Passwd) -> io::Result<()> {
     }
 }
 
-/// Set the groups for the current process
+/// Set the `groups` for the current process
 pub fn set_groups(groups: Groups) -> io::Result<()> {
     let groups: Vec<Gid> = groups.iter().map(|g| g.id()).collect();
     match unsafe { libc::setgroups(groups.len().try_into().unwrap(), groups.as_ptr()) } {
@@ -39,7 +39,7 @@ pub fn set_groups(groups: Groups) -> io::Result<()> {
     }
 }
 
-/// Set the group for the current process
+/// Set the `group` for the current process
 pub fn set_group(group: Group) -> std::io::Result<()> {
     match unsafe { libc::setgid(group.id()) } {
         0 => Ok(()),

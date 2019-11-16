@@ -69,12 +69,10 @@ impl Display for TTYName {
 }
 
 /// Check if the given `FileDescriptor` is a TTY
+///
 /// ## Example
-/// ```
-/// # use coreutils_core::{file_descriptor::FileDescriptor, tty::isatty};
-/// # fn main() {
+/// ```rust
 /// let istty = isatty(FileDescriptor::StdIn);
-/// # }
 /// ```
 #[inline]
 pub fn isatty(file_descriptor: FileDescriptor) -> bool {
