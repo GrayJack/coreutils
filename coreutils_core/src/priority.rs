@@ -1,4 +1,4 @@
-//! Module for safe API for
+//! Module for safe API for getting and setting process priority
 
 use std::{
     error::Error as StdError,
@@ -71,11 +71,11 @@ pub fn get_priority(which: c_int, who: id_t) -> Result<c_int, Error> {
 /// Get the highest priority (lowest numerical value) enjoyed by any of
 /// the specified processes.
 #[cfg(target_os = "linux")]
-pub fn get_priority(which: c_uint, who: id_t) -> Result<c_int, Error> {
-    #[cfg(target_env = "musl")]
-    let res = unsafe { getpriority(which as c_int, who) };
-
-    #[cfg(not(target_env = "musl"))]
+pub fn get_priority(
+    #[cfg(target_env = "musl")] which: c_int, #[cfg(not(target_env = "musl"))] which: c_uint,
+    who: id_t,
+) -> Result<c_int, Error>
+{
     let res = unsafe { getpriority(which, who) };
 
     if IOError::last_os_error().raw_os_error().unwrap() != 0 {
@@ -111,11 +111,11 @@ pub fn set_priority(which: c_int, who: id_t, prio: c_int) -> Result<(), Error> {
 
 /// Set the priority of a specified process.
 #[cfg(target_os = "linux")]
-pub fn set_priority(which: c_uint, who: id_t, prio: c_int) -> Result<(), Error> {
-    #[cfg(target_env = "musl")]
-    let res = unsafe { setpriority(which as c_int, who, prio) };
-
-    #[cfg(not(target_env = "musl"))]
+pub fn set_priority(
+    #[cfg(target_env = "musl")] which: c_int, #[cfg(not(target_env = "musl"))] which: c_uint,
+    who: id_t, prio: c_int,
+) -> Result<(), Error>
+{
     let res = unsafe { setpriority(which, who, prio) };
 
     if res < 0 {
