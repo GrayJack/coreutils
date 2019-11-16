@@ -1,7 +1,7 @@
 use std::{fmt, io, io::ErrorKind, path::Path, process};
 
 use coreutils_core::{
-    settime::settimeofday,
+    settime::set_time_of_day,
     time::{self, Tm},
     types::{Subsec, Time, TimeVal},
 };
@@ -94,7 +94,7 @@ fn set_os_time(datetime: DateTime<Local>) -> Result<(), String> {
         tv_usec: datetime.timestamp_subsec_micros() as Subsec,
     };
 
-    match settimeofday(time) {
+    match set_time_of_day(time) {
         Ok(_) => Ok(()),
         Err(err) => Err(err.to_string()),
     }
