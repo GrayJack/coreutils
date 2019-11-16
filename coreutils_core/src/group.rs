@@ -3,6 +3,7 @@
 #[cfg(target_os = "solaris")]
 use std::os::raw::c_int;
 use std::{
+    convert::TryFrom,
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
@@ -10,13 +11,14 @@ use std::{
     mem::MaybeUninit,
     os::raw::c_char,
     ptr,
+    result::Result as StdResult,
     slice::Iter,
 };
 
 #[cfg(target_os = "macos")]
 use std::convert::TryInto;
 
-use libc::{getegid, getgrgid_r, getgrnam_r, getgroups};
+use libc::{getegid, getgrgid_r, getgrnam_r, getgroups, group};
 #[cfg(not(target_os = "solaris"))]
 use libc::{getgrouplist, getpwnam_r};
 #[cfg(target_os = "solaris")]
@@ -140,39 +142,7 @@ impl Group {
         // Now that pw is initialized we get it
         let gr = unsafe { gr.assume_init() };
 
-        let name = if gr.gr_name.is_null() {
-            return Err(NameCheckFailed);
-        } else {
-            let name_cstr = unsafe { CStr::from_ptr(gr.gr_name) };
-            BString::from(name_cstr.to_bytes())
-        };
-
-        let id = gr.gr_gid;
-        let passwd = if gr.gr_passwd.is_null() {
-            return Err(PasswdCheckFailed);
-        } else {
-            let passwd_cstr = unsafe { CStr::from_ptr(gr.gr_passwd) };
-            BString::from(passwd_cstr.to_bytes())
-        };
-
-        // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
-        // group.gr_mem is of type `**c_char`
-        let mut mem_list_ptr = gr.gr_mem;
-        let mut mem_ptr = unsafe { *mem_list_ptr };
-        let mem = if !mem_list_ptr.is_null() && !mem_ptr.is_null() {
-            let mut members: Members = Members::new();
-            while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
-                let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
-                members.push(BString::from(mem_cstr.to_bytes()));
-                mem_list_ptr = unsafe { mem_list_ptr.add(1) };
-                mem_ptr = unsafe { *mem_list_ptr };
-            }
-            members
-        } else {
-            Members::new()
-        };
-
-        Ok(Group { name, id, passwd, mem })
+        Ok(Group::try_from(gr)?)
     }
 
     /// Creates a `Group` using a `id` to get all attributes.
@@ -197,9 +167,69 @@ impl Group {
         // Now that pw is initialized we get it
         let gr = unsafe { gr.assume_init() };
 
+        Ok(Group::try_from(gr)?)
+    }
+
+    /// Creates a `Group` using a `name` to get all attributes.
+    ///
+    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
+    /// a `Error` wrapped in a `Err`.
+    pub fn from_name(name: &str) -> Result<Self> {
+        let mut gr = MaybeUninit::zeroed();
+        let mut gr_ptr = ptr::null_mut();
+        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
+
+        let name = BString::from(name);
+
+        let res = unsafe {
+            getgrnam_r(
+                name.as_ptr() as *const c_char,
+                gr.as_mut_ptr(),
+                &mut buff[0],
+                buff.len(),
+                &mut gr_ptr,
+            )
+        };
+
+        if gr_ptr.is_null() {
+            if res == 0 {
+                return Err(GroupNotFound);
+            } else {
+                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+            }
+        }
+
+        // Now that pw is initialized we get it
+        let gr = unsafe { gr.assume_init() };
+
+        Ok(Group::try_from(gr)?)
+    }
+
+    /// Get the `Group` name.
+    #[inline]
+    pub fn name(&self) -> &BStr { self.name.as_bstr() }
+
+    /// Get the `Group` id.
+    #[inline]
+    pub fn id(&self) -> Gid { self.id }
+
+    /// Get the `Group` encrypted password.
+    #[inline]
+    pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
+
+    /// Get the `Group` list of members.
+    #[inline]
+    pub fn mem(&self) -> &Members { &self.mem }
+}
+
+impl TryFrom<group> for Group {
+    type Error = Error;
+
+    fn try_from(gr: group) -> StdResult<Self, Self::Error> {
         let name_ptr = gr.gr_name;
         let pw_ptr = gr.gr_passwd;
         let mut mem_list_ptr = gr.gr_mem;
+        let id = gr.gr_gid;
 
         let name = if name_ptr.is_null() {
             return Err(NameCheckFailed);
@@ -236,88 +266,6 @@ impl Group {
 
         Ok(Group { name, id, passwd, mem })
     }
-
-    /// Creates a `Group` using a `name` to get all attributes.
-    ///
-    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
-    pub fn from_name(name: &str) -> Result<Self> {
-        let mut gr = MaybeUninit::zeroed();
-        let mut gr_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
-
-        let name = BString::from(name);
-
-        let res = unsafe {
-            getgrnam_r(
-                name.as_ptr() as *const c_char,
-                gr.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut gr_ptr,
-            )
-        };
-
-        if gr_ptr.is_null() {
-            if res == 0 {
-                return Err(GroupNotFound);
-            } else {
-                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
-            }
-        }
-
-        // Now that pw is initialized we get it
-        let gr = unsafe { gr.assume_init() };
-
-        let pw_ptr = gr.gr_passwd;
-        let mut mem_list_ptr = gr.gr_mem;
-
-        let id = gr.gr_gid;
-
-        let passwd = if pw_ptr.is_null() {
-            return Err(PasswdCheckFailed);
-        } else {
-            let passwd_cstr = unsafe { CStr::from_ptr(pw_ptr) };
-            BString::from(passwd_cstr.to_bytes())
-        };
-
-        // Check if both `mem_ptr` and `*mem_ptr` are NULL since by "sys/types.h" definition
-        // group.gr_mem is of type `**c_char`
-        let mut mem_ptr = unsafe { *mem_list_ptr };
-        let mem = if !mem_list_ptr.is_null() && !mem_ptr.is_null() {
-            let mut members: Members = Members::new();
-
-            while !mem_list_ptr.is_null() && !mem_ptr.is_null() {
-                let mem_cstr = unsafe { CStr::from_ptr(mem_ptr) };
-                members.push(BString::from(mem_cstr.to_bytes()));
-
-                // Update pointers
-                mem_list_ptr = unsafe { mem_list_ptr.add(1) };
-                mem_ptr = unsafe { *mem_list_ptr };
-            }
-            members
-        } else {
-            Members::new()
-        };
-
-        Ok(Group { name, id, passwd, mem })
-    }
-
-    /// Get the `Group` name.
-    #[inline]
-    pub fn name(&self) -> &BStr { self.name.as_bstr() }
-
-    /// Get the `Group` id.
-    #[inline]
-    pub fn id(&self) -> Gid { self.id }
-
-    /// Get the `Group` encrypted password.
-    #[inline]
-    pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
-
-    /// Get the `Group` list of members.
-    #[inline]
-    pub fn mem(&self) -> &Members { &self.mem }
 }
 
 /// A collection of `Group`.
@@ -513,4 +461,20 @@ impl IntoIterator for Groups {
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter { self.inner.into_iter() }
+}
+
+
+// Extra traits
+impl From<Group> for group {
+    fn from(mut gr: Group) -> Self {
+        let mut vec: Vec<*mut c_char> =
+            gr.mem.iter().map(|s| s.clone().as_mut_ptr() as *mut c_char).collect();
+
+        group {
+            gr_name:   gr.name.as_mut_ptr() as *mut c_char,
+            gr_gid:    gr.id,
+            gr_passwd: gr.passwd.as_mut_ptr() as *mut c_char,
+            gr_mem:    vec.as_mut_ptr(),
+        }
+    }
 }
