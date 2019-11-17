@@ -31,7 +31,27 @@ pub struct Utmp {
 
 impl Utmp {
     /// Creates a `Utmp` from the c structure `utmp`
-    pub fn from_c_utmp(utm: utmp) -> Self {
+    pub fn from_c_utmp(utm: utmp) -> Self { Self::from(utm) }
+
+    /// Get user name
+    pub fn user(&self) -> &BStr { self.user.as_bstr() }
+
+    /// Get host name
+    pub fn host(&self) -> &BStr { self.host.as_bstr() }
+
+    /// Get the device name of the entry (usually a tty or console)
+    pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
+
+    /// Get the time the entry was created
+    pub const fn time(&self) -> Time { self.time }
+
+    /// Get the time where the entry was created (often login time) in a more complete
+    /// structure
+    pub fn login_time(&self) -> Tm { time::at(Timespec::new(self.time, 0)) }
+}
+
+impl From<utmp> for Utmp {
+    fn from(utm: utmp) -> Self {
         let user = {
             let cstr: String =
                 utm.ut_name.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
@@ -54,22 +74,6 @@ impl Utmp {
 
         Utmp { user, host, line, time }
     }
-
-    /// Get user name
-    pub fn user(&self) -> &BStr { self.user.as_bstr() }
-
-    /// Get host name
-    pub fn host(&self) -> &BStr { self.host.as_bstr() }
-
-    /// Get the device name of the entry (usually a tty or console)
-    pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
-
-    /// Get the time the entry was created
-    pub const fn time(&self) -> Time { self.time }
-
-    /// Get the time where the entry was created (often login time) in a more complete
-    /// structure
-    pub fn login_time(&self) -> Tm { time::at(Timespec::new(self.time, 0)) }
 }
 
 #[derive(Debug)]
