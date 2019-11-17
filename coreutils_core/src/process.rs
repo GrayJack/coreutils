@@ -9,6 +9,9 @@ use crate::{
     types::Gid,
 };
 
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+pub mod priority;
+
 /// Change the root of the running process to `newroot`.
 #[cfg(not(any(target_os = "fuchsia")))]
 pub fn change_root(newroot: &str) -> io::Result<()> {

@@ -23,9 +23,6 @@ pub mod utsname;
 pub mod load;
 
 // Specific Modules
-#[cfg(not(target_os = "fuchsia"))]
-pub mod priority;
-
 #[cfg(any(target_os = "openbsd"))]
 pub mod utmp;
 
