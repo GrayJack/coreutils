@@ -1,4 +1,6 @@
-use std::{convert::TryInto, ffi::CString, io};
+#[cfg(not(any(target_os = "fuchsia")))]
+use std::ffi::CString;
+use std::{convert::TryInto, io};
 
 use crate::{
     group::{Group, Groups},
