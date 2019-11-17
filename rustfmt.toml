@@ -20,9 +20,7 @@ format_macro_bodies = true
 format_macro_matchers = true
 format_strings = true
 hard_tabs = false
-ignore = [
-    "coreutils_core/src/passwd.rs",
-]
+ignore = []
 imports_indent = "Block"
 imports_layout = "Mixed"
 indent_style = "Block"

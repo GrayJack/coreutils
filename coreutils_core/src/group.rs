@@ -36,7 +36,7 @@ extern "C" {
     ) -> c_int;
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = StdResult<T, Error>;
 
 /// A iterator of group members.
 pub type Members = Vec<BString>;
