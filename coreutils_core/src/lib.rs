@@ -19,10 +19,10 @@ pub mod tty;
 pub mod types;
 pub mod utsname;
 
+// Specific Modules
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub mod load;
 
-// Specific Modules
 #[cfg(any(target_os = "openbsd"))]
 pub mod utmp;
 

@@ -119,3 +119,31 @@ impl IntoIterator for UtmpSet {
     #[inline]
     fn into_iter(self) -> Self::IntoIter { self.0.into_iter() }
 }
+
+// Extra traits
+pub(crate) mod consts {
+    const USER_SIZE: usize: 32;
+    const LINE_SIZE: usize: 8;
+    const HOST_SIZE: usize: 256;
+}
+
+impl From<Utmp> for utmp {
+    fn from(utm: Utmp) -> Self {
+        use self::consts::*;
+
+        let mut ut_name = [0; USER_SIZE];
+        let mut ut_host = [0; HOST_SIZE];
+        let mut ut_line = [0; LINE_SIZE];
+
+        utm.user.iter().enumerate().for_each(|(i, c)| ut_name[i] = *c as c_char);
+        utm.host.iter().enumerate().for_each(|(i, c)| ut_host[i] = *c as c_char);
+        utm.line.iter().enumerate().for_each(|(i, c)| ut_line[i] = *c as c_char);
+
+        utmp {
+            ut_name,
+            ut_host,
+            ut_line,
+            ut_time: utm.time,
+        }
+    }
+}
