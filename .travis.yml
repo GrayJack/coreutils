@@ -9,8 +9,14 @@ matrix:
     - rust: nightly
   fast_finish: true
   include:
+    - name: "Miri Check"
+      rust: nightly
+      before_script:
+        - rustup component add miri
+      script:
+        - cargo miri test -j16 --verbose
     - name: "Check formatting"
-      rust: nightly-2019-10-14 # Nightly because some of the settings are unstable; not "nightly" to avoid the allow_failures check!
+      rust: nightly # Nightly because some of the settings are unstable; not "nightly" to avoid the allow_failures check!
       before_script:
         - rustup component add rustfmt-preview
       script:
