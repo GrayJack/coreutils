@@ -9,6 +9,7 @@ members = [
     "date",
     "du",
     "dirname",
+    "cat",
     "echo",
     "env",
     "expand",
