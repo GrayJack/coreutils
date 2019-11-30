@@ -23,9 +23,9 @@ use libc::c_int;
 use libc::c_long;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use libc::utmpxname;
-#[cfg(target_os = "solaris")]
-use libc::{short, exit_status as ExitStatus};
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
+#[cfg(target_os = "solaris")]
+use libc::{exit_status as ExitStatus, short};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -199,7 +199,8 @@ impl From<utmpx> for Utmpx {
 
         let id = {
             let cstr: String =
-                c_utmpx.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc !=&'\0').collect(); BString::from(cstr.as_bytes())
+                c_utmpx.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
+            BString::from(cstr.as_bytes())
         };
 
         let line = {
@@ -219,7 +220,12 @@ impl From<utmpx> for Utmpx {
             tv_usec: c_utmpx.ut_tv.tv_usec as suseconds_t,
         };
 
-        #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly", target_os = "solaris"))]
+        #[cfg(any(
+            target_os = "linux",
+            target_os = "netbsd",
+            target_os = "dragonfly",
+            target_os = "solaris"
+        ))]
         let session = c_utmpx.ut_session;
 
         #[cfg(target_os = "linux")]
@@ -241,7 +247,12 @@ impl From<utmpx> for Utmpx {
             timeval,
             #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
             exit,
-            #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly", target_os = "solaris"))]
+            #[cfg(any(
+                target_os = "linux",
+                target_os = "netbsd",
+                target_os = "dragonfly",
+                target_os = "solaris"
+            ))]
             session,
             #[cfg(target_os = "linux")]
             addr_v6,

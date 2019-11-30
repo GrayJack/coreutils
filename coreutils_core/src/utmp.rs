@@ -10,7 +10,7 @@ use std::{
 
 use crate::types::Time;
 
-use libc::{utmp, c_char};
+use libc::{c_char, utmp};
 
 use bstr::{BStr, BString, ByteSlice};
 use time::{self, Timespec, Tm};
