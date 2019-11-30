@@ -15,14 +15,16 @@ use std::{
 
 use crate::types::{Pid, TimeVal};
 
-#[cfg(target_os = "linux")]
-use libc::__exit_status;
+#[cfg(any(target_os = "linux", target_os = "netbsd"))]
+use libc::__exit_status as ExitStatus;
 #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
 use libc::c_int;
 #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
 use libc::c_long;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use libc::utmpxname;
+#[cfg(target_os = "solaris")]
+use libc::{short, exit_status as ExitStatus};
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
@@ -57,6 +59,8 @@ pub enum UtmpxType {
     ShutdownProcess,
     // A user process.
     UserProcess,
+    // Not sure yet
+    DownTime,
     /// Invalid entry
     Invalid,
 }
@@ -79,10 +83,13 @@ pub struct Utmpx {
     ut_type: UtmpxType,
     /// The time entry was created
     timeval: TimeVal, // tv
-    #[cfg(target_os = "linux")]
-    exit: __exit_status,
+    #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
+    exit: ExitStatus,
     /// Session ID (used for windowing)
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+    session: c_int,
+    /// Session ID (used for windowing)
+    #[cfg(target_os = "solaris")]
     session: c_int,
     /// Session ID (used for windowing)
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
@@ -92,6 +99,10 @@ pub struct Utmpx {
     session: u16,
     #[cfg(target_os = "linux")]
     addr_v6: [i32; 4],
+    #[cfg(target_os = "netbsd")]
+    ss: libc::sockaddr_storage,
+    #[cfg(target_os = "solaris")]
+    syslen: c_short,
 }
 
 impl Utmpx {
@@ -125,25 +136,34 @@ impl Utmpx {
         time::at(Timespec::new(self.timeval.tv_sec as i64, self.timeval.tv_usec as i32))
     }
 
-    /// Get the session ID
+    /// Get the session ID of the entry
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     pub const fn session(&self) -> c_int { self.session }
 
-    /// Get the session ID
+    /// Get the session ID of the entry
+    #[cfg(target_os = "solaris")]
+    pub const fn session(&self) -> c_int { self.session }
+
+    /// Get the session ID of the entry
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
     pub const fn session(&self) -> c_long { self.session }
 
-    /// Get the session ID
+    /// Get the session ID of the entry
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     pub const fn session(&self) -> u16 { self.session }
 
+    /// Get v6 address of the entry
     #[cfg(target_os = "linux")]
     pub const fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
+
+    /// Get exit status of the entry
+    #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
+    pub const fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
 impl From<utmpx> for Utmpx {
     fn from(c_utmpx: utmpx) -> Self {
-        #[cfg(not(any(target_os = "dragonfly")))]
+        #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
         let user = {
             let cstr: String = c_utmpx
                 .ut_user
@@ -154,7 +174,7 @@ impl From<utmpx> for Utmpx {
             BString::from(cstr.as_bytes())
         };
 
-        #[cfg(any(target_os = "dragonfly"))]
+        #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
         let user = {
             let cstr: String = c_utmpx
                 .ut_name
@@ -179,8 +199,7 @@ impl From<utmpx> for Utmpx {
 
         let id = {
             let cstr: String =
-                c_utmpx.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+                c_utmpx.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc !=&'\0').collect(); BString::from(cstr.as_bytes())
         };
 
         let line = {
@@ -200,14 +219,17 @@ impl From<utmpx> for Utmpx {
             tv_usec: c_utmpx.ut_tv.tv_usec as suseconds_t,
         };
 
-        #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly"))]
+        #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly", target_os = "solaris"))]
         let session = c_utmpx.ut_session;
 
         #[cfg(target_os = "linux")]
         let addr_v6 = c_utmpx.ut_addr_v6;
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
         let exit = c_utmpx.ut_exit;
+
+        #[cfg(any(target_os = "netbsd"))]
+        let ss = c_utmpx.ut_ss;
 
         Utmpx {
             user,
@@ -217,12 +239,14 @@ impl From<utmpx> for Utmpx {
             line,
             ut_type,
             timeval,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
             exit,
-            #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly"))]
+            #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "dragonfly", target_os = "solaris"))]
             session,
             #[cfg(target_os = "linux")]
             addr_v6,
+            #[cfg(target_os = "netbsd")]
+            ss,
         }
     }
 }
@@ -355,7 +379,66 @@ macro_rules! utmpxtype_impl_from {
                 }
             }
 
-            #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly", target_os = "freebsd")))]
+            #[cfg(target_os = "netbsd")]
+            impl From<$t> for UtmpxType {
+                fn from(num: $t) -> Self {
+                    match num {
+                        0 => Self::Empty,
+                        1 => Self::RunLevel,
+                        2 => Self::BootTime,
+                        3 => Self::OldTime,
+                        4 => Self::NewTime,
+                        5 => Self::InitProcess,
+                        6 => Self::LoginProcess,
+                        7 => Self::UserProcess,
+                        8 => Self::DeadProcess,
+                        9 => Self::Accounting,
+                        10 => Self::Signature,
+                        11 => Self::DownTime,
+                        _ => Self::Invalid,
+                    }
+                }
+            }
+
+            #[cfg(any(target_os = "dragonfly"))]
+            impl From<$t> for UtmpxType {
+                fn from(num: $t) -> Self {
+                    match num {
+                        0 => Self::Empty,
+                        1 => Self::RunLevel,
+                        2 => Self::BootTime,
+                        3 => Self::NewTime,
+                        4 => Self::OldTime,
+                        5 => Self::InitProcess,
+                        6 => Self::LoginProcess,
+                        7 => Self::UserProcess,
+                        8 => Self::DeadProcess,
+                        _ => Self::Invalid,
+                    }
+                }
+            }
+
+            #[cfg(target_os = "solaris")]
+            impl From<$t> for UtmpxType {
+                fn from(num: $t) -> Self {
+                    match num {
+                        0 => Self::Empty,
+                        1 => Self::RunLevel,
+                        2 => Self::BootTime,
+                        3 => Self::OldTime,
+                        4 => Self::NewTime,
+                        5 => Self::InitProcess,
+                        6 => Self::LoginProcess,
+                        7 => Self::UserProcess,
+                        8 => Self::DeadProcess,
+                        9 => Self::Accounting,
+                        10 => Self::DownTime,
+                        _ => Self::Invalid,
+                    }
+                }
+            }
+
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
             impl From<$t> for UtmpxType {
                 fn from(num: $t) -> Self {
                     match num {
@@ -379,43 +462,6 @@ macro_rules! utmpxtype_impl_from {
                 }
             }
 
-            #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
-            impl From<$t> for UtmpxType {
-                fn from(num: $t) -> Self {
-                    match num {
-                        0 => Self::Empty,
-                        1 => Self::RunLevel,
-                        2 => Self::BootTime,
-                        3 => Self::NewTime,
-                        4 => Self::OldTime,
-                        5 => Self::InitProcess,
-                        6 => Self::LoginProcess,
-                        7 => Self::UserProcess,
-                        8 => Self::DeadProcess,
-                        _ => Self::Invalid,
-                    }
-                }
-            }
-
-            #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
-            impl From<UtmpxType> for $t {
-                fn from(utype: UtmpxType) -> Self {
-                    match utype {
-                        UtmpxType::Empty => 0,
-                        UtmpxType::RunLevel => 1,
-                        UtmpxType::BootTime => 2,
-                        UtmpxType::NewTime => 3,
-                        UtmpxType::OldTime => 4,
-                        UtmpxType::InitProcess => 5,
-                        UtmpxType::LoginProcess => 6,
-                        UtmpxType::UserProcess => 7,
-                        UtmpxType::DeadProcess => 8,
-                        UtmpxType::Invalid => 12,
-                        _ => 12,
-                    }
-                }
-            }
-
             #[cfg(target_os = "freebsd")]
             impl From<UtmpxType> for $t {
                 fn from(utype: UtmpxType) -> Self {
@@ -435,7 +481,69 @@ macro_rules! utmpxtype_impl_from {
                 }
             }
 
-            #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly", target_os = "freebsd")))]
+            #[cfg(target_os = "netbsd")]
+            impl From<UtmpxType> for $t {
+                fn from(utype: UtmpxType) -> Self {
+                    match utype {
+                        UtmpxType::Empty => 0,
+                        UtmpxType::RunLevel => 1,
+                        UtmpxType::BootTime => 2,
+                        UtmpxType::OldTime => 3,
+                        UtmpxType::NewTime => 4,
+                        UtmpxType::InitProcess => 5,
+                        UtmpxType::LoginProcess => 6,
+                        UtmpxType::UserProcess => 7,
+                        UtmpxType::DeadProcess => 8,
+                        UtmpxType::Accounting => 9,
+                        UtmpxType::Signature => 10,
+                        UtmpxType::DownTime => 11,
+                        UtmpxType::Invalid => 12,
+                        _ => 12,
+                    }
+                }
+            }
+
+            #[cfg(any(target_os = "dragonfly"))]
+            impl From<UtmpxType> for $t {
+                fn from(utype: UtmpxType) -> Self {
+                    match utype {
+                        UtmpxType::Empty => 0,
+                        UtmpxType::RunLevel => 1,
+                        UtmpxType::BootTime => 2,
+                        UtmpxType::NewTime => 3,
+                        UtmpxType::OldTime => 4,
+                        UtmpxType::InitProcess => 5,
+                        UtmpxType::LoginProcess => 6,
+                        UtmpxType::UserProcess => 7,
+                        UtmpxType::DeadProcess => 8,
+                        UtmpxType::Invalid => 12,
+                        _ => 12,
+                    }
+                }
+            }
+
+            #[cfg(target_os = "solaris")]
+            impl From<UtmpxType> for $t {
+                fn from(utype: UtmpxType) -> Self {
+                    match utype {
+                        UtmpxType::Empty => 0,
+                        UtmpxType::RunLevel => 1,
+                        UtmpxType::BootTime => 2,
+                        UtmpxType::OldTime => 3,
+                        UtmpxType::NewTime => 4,
+                        UtmpxType::InitProcess => 5,
+                        UtmpxType::LoginProcess => 6,
+                        UtmpxType::UserProcess => 7,
+                        UtmpxType::DeadProcess => 8,
+                        UtmpxType::Accounting => 9,
+                        UtmpxType::DownTime => 10,
+                        UtmpxType::Invalid => 12,
+                        _ => 12,
+                    }
+                }
+            }
+
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
             impl From<UtmpxType> for $t {
                 fn from(utype: UtmpxType) -> Self {
                     match utype {

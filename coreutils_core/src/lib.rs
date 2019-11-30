@@ -23,11 +23,10 @@ pub mod utsname;
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub mod load;
 
-#[cfg(any(target_os = "openbsd"))]
+#[cfg(any(target_os = "netbsd", target_os = "openbsd", target_os = "solaris"))]
 pub mod utmp;
 
-// Remove after libc supports utmpx for these plataforms
-#[cfg(not(any(target_os = "netbsd", target_os = "solaris")))]
+#[cfg(target_os = "solaris")] // Due to a libc break compilation
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
 pub mod utmpx;
 

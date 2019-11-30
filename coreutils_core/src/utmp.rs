@@ -10,10 +10,15 @@ use std::{
 
 use crate::types::Time;
 
-use libc::utmp;
+use libc::{utmp, c_char};
 
 use bstr::{BStr, BString, ByteSlice};
 use time::{self, Timespec, Tm};
+
+#[cfg(target_os = "solaris")]
+use crate::utmpx::UtmpxType;
+#[cfg(target_os = "solaris")]
+use libc::{c_short, exit_status};
 
 /// A struct that represents a __user__ account, where user can be humam users or other
 /// parts of the system that requires the usage of account structure, like some daemons
@@ -23,10 +28,19 @@ pub struct Utmp {
     user: BString,
     /// Device name (console/tty, lnxx)
     line: BString,
-    /// Host name
-    host: BString,
     /// The time entry was created
     time: Time,
+    /// Host name
+    #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
+    host: BString,
+    #[cfg(target_os = "solaris")]
+    id: BString,
+    #[cfg(target_os = "solaris")]
+    pid: c_short,
+    #[cfg(target_os = "solaris")]
+    ut_type: UtmpxType,
+    #[cfg(target_os = "solaris")]
+    exit: exit_status,
 }
 
 impl Utmp {
@@ -37,7 +51,12 @@ impl Utmp {
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
     /// Get host name
+    #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
+
+    /// Get `/etc/inittab` id
+    #[cfg(target_os = "solaris")]
+    pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
     /// Get the device name of the entry (usually a tty or console)
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
@@ -48,19 +67,47 @@ impl Utmp {
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure
     pub fn login_time(&self) -> Tm { time::at(Timespec::new(self.time, 0)) }
+
+    /// Get the process ID of the entry
+    #[cfg(target_os = "solaris")]
+    pub fn pid(&self) -> c_short { self.pid }
+
+    /// Get the entry type
+    #[cfg(target_os = "solaris")]
+    pub fn entry_type(&self) -> UtmpxType { self.ut_type }
+
+    /// Get the exit status of the entry
+    #[cfg(target_os = "solaris")]
+    pub fn exit_status(&self) -> exit_status { self.exit }
 }
 
 impl From<utmp> for Utmp {
     fn from(utm: utmp) -> Self {
+        #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         let user = {
             let cstr: String =
                 utm.ut_name.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
             BString::from(cstr.as_bytes())
         };
 
+        #[cfg(target_os = "solaris")]
+        let user = {
+            let cstr: String =
+                utm.ut_user.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
+            BString::from(cstr.as_bytes())
+        };
+
+        #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         let host = {
             let cstr: String =
                 utm.ut_host.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
+            BString::from(cstr.as_bytes())
+        };
+
+        #[cfg(target_os = "solaris")]
+        let id = {
+            let cstr: String =
+                utm.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
             BString::from(cstr.as_bytes())
         };
 
@@ -72,7 +119,21 @@ impl From<utmp> for Utmp {
 
         let time = utm.ut_time;
 
-        Utmp { user, host, line, time }
+        Utmp {
+            user,
+            line,
+            time,
+            #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
+            host,
+            #[cfg(target_os = "solaris")]
+            id,
+            #[cfg(target_os = "solaris")]
+            pid: utm.ut_pid,
+            #[cfg(target_os = "solaris")]
+            ut_type: UtmpxType::from(utm.ut_type),
+            #[cfg(target_os = "solaris")]
+            exit: utm.ut_exit,
+        }
     }
 }
 
@@ -121,29 +182,63 @@ impl IntoIterator for UtmpSet {
 }
 
 // Extra traits
+#[cfg(target_os = "netbsd")]
 pub(crate) mod consts {
-    const USER_SIZE: usize: 32;
-    const LINE_SIZE: usize: 8;
-    const HOST_SIZE: usize: 256;
+    pub const USER_SIZE: usize = 8;
+    pub const LINE_SIZE: usize = 8;
+    pub const HOST_SIZE: usize = 16;
 }
+
+#[cfg(target_os = "solaris")]
+pub(crate) mod consts {
+    pub const USER_SIZE: usize = 8;
+    pub const LINE_SIZE: usize = 12;
+    pub const ID_SIZE: usize = 4;
+}
+
+#[cfg(target_os = "openbsd")]
+pub(crate) mod consts {
+    pub const USER_SIZE: usize = 32;
+    pub const LINE_SIZE: usize = 8;
+    pub const HOST_SIZE: usize = 256;
+}
+
 
 impl From<Utmp> for utmp {
     fn from(utm: Utmp) -> Self {
         use self::consts::*;
 
         let mut ut_name = [0; USER_SIZE];
-        let mut ut_host = [0; HOST_SIZE];
         let mut ut_line = [0; LINE_SIZE];
+        #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
+        let mut ut_host = [0; HOST_SIZE];
+        #[cfg(target_os = "solaris")]
+        let mut ut_id = [0; ID_SIZE];
 
         utm.user.iter().enumerate().for_each(|(i, c)| ut_name[i] = *c as c_char);
-        utm.host.iter().enumerate().for_each(|(i, c)| ut_host[i] = *c as c_char);
         utm.line.iter().enumerate().for_each(|(i, c)| ut_line[i] = *c as c_char);
+        #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
+        utm.host.iter().enumerate().for_each(|(i, c)| ut_host[i] = *c as c_char);
+        #[cfg(target_os = "solaris")]
+        utm.id.iter().enumerate().for_each(|(i, c)| ut_id[i] = *c as c_char);
 
         utmp {
+            #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
             ut_name,
-            ut_host,
+            #[cfg(target_os = "solaris")]
+            ut_user: ut_name,
             ut_line,
             ut_time: utm.time,
+            #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
+            ut_host,
+            #[cfg(target_os = "solaris")]
+            ut_id,
+            #[cfg(target_os = "solaris")]
+            ut_pid: utm.pid,
+            #[cfg(target_os = "solaris")]
+            ut_type: utm.ut_type.into(),
+            #[cfg(target_os = "solaris")]
+            ut_exit: utm.exit,
         }
     }
 }

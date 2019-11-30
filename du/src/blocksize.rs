@@ -36,7 +36,7 @@ impl BlocksizeSuffix {
     fn iter() -> Iter<'static, BlocksizeSuffix> {
         static SUFFIXES: [BlocksizeSuffix; 18] =
             [KB, K, KiB, MB, M, MiB, GB, G, GiB, TB, T, TiB, PB, P, PiB, EB, E, EiB];
-        SUFFIXES.into_iter()
+        SUFFIXES.iter()
     }
 
     fn value(&self) -> u64 {
