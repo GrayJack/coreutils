@@ -26,7 +26,7 @@ pub mod load;
 #[cfg(any(target_os = "netbsd", target_os = "openbsd", target_os = "solaris"))]
 pub mod utmp;
 
-#[cfg(target_os = "solaris")] // Due to a libc break compilation
+#[cfg(not(target_os = "solaris"))] // Due to a libc break compilation
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
 pub mod utmpx;
 
