@@ -1,0 +1,25 @@
+name: cat
+version: "0.0.0"
+author: Anubhab Ghosh <anubhabghosh.me@gmail.com>
+about: "Concatenate and display files"
+args:
+    - number:
+        help: Number all output lines
+        long: number
+        short: n
+    - numberNonblank:
+        help: Number nonempty output lines, overrides -n
+        long: number-nonblank
+        short: b
+    - showEnds:
+        help: Display $ at end of each line
+        long: show-ends
+        short: E
+    - squeezeBlank:
+        help: Squeeze multiple adjacent empty lines, causing the output to be single spaced
+        long: squeeze-blank
+        short: s
+    - FILE:
+        help: "The file operands are processed in command-line order"
+        long_help: "The file operands are processed in command-line order. If file is a single dash (‘-’) or absent, cat reads from the standard input."
+        multiple: true

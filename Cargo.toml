@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "basename",
+    "cat",
     "chroot",
     "clear",
     "coreutils_core",
