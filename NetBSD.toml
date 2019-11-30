@@ -1,14 +1,14 @@
 [workspace]
 members = [
-    "coreutils_core",
     "basename",
     "chroot",
     "clear",
+    "coreutils_core",
     "cut",
     "csplit",
     "date",
-    "dirname",
     "du",
+    "dirname",
     "echo",
     "env",
     "expand",
@@ -34,7 +34,10 @@ members = [
     "uname",
     "unexpand",
     "unlink",
+    "uptime",
+    "users",
     "wc",
+    "who",
     "whoami",
     "yes",
 ]
