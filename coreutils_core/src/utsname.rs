@@ -14,15 +14,15 @@ use libc::{c_char, uname, utsname};
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UtsName {
     /// Name of the operating system implementation.
-    sysname: BString,
+    sysname:    BString,
     /// Network name of this machine.
-    nodename: BString,
+    nodename:   BString,
     /// Release level of the operating system. (Often the kernel version)
-    release: BString,
+    release:    BString,
     /// Version level of the operating system.
-    version: BString,
+    version:    BString,
     /// Machine hardware platform.
-    machine: BString,
+    machine:    BString,
     /// NIS or YP domain name
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
     domainname: BString,

@@ -108,13 +108,13 @@ impl From<PwError> for Error {
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Group {
     /// Group name.
-    name: BString,
+    name:   BString,
     /// Group ID.
-    id: Gid,
+    id:     Gid,
     /// Group encrypted password
     passwd: BString,
     /// Group list of members
-    mem: Members,
+    mem:    Members,
 }
 
 impl Group {

@@ -25,22 +25,22 @@ use libc::{c_short, exit_status};
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmp {
     /// User login name
-    user: BString,
+    user:    BString,
     /// Device name (console/tty, lnxx)
-    line: BString,
+    line:    BString,
     /// The time entry was created
-    time: Time,
+    time:    Time,
     /// Host name
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
-    host: BString,
+    host:    BString,
     #[cfg(target_os = "solaris")]
-    id: BString,
+    id:      BString,
     #[cfg(target_os = "solaris")]
-    pid: c_short,
+    pid:     c_short,
     #[cfg(target_os = "solaris")]
     ut_type: UtmpxType,
     #[cfg(target_os = "solaris")]
-    exit: exit_status,
+    exit:    exit_status,
 }
 
 impl Utmp {

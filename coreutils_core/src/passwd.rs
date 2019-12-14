@@ -111,19 +111,19 @@ impl From<GrError> for Error {
 #[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
 pub struct Passwd {
     /// User login name.
-    name: BString,
+    name:     BString,
     /// User encrypted password.
-    passwd: BString,
+    passwd:   BString,
     /// User ID.
-    user_id: Uid,
+    user_id:  Uid,
     /// User Group ID.
     group_id: Gid,
     /// User full name.
-    gecos: BString,
+    gecos:    BString,
     /// User directory.
-    dir: BString,
+    dir:      BString,
     /// User login shell
-    shell: BString,
+    shell:    BString,
     /// Password change time
     #[cfg(not(any(
         target_os = "linux",
@@ -131,7 +131,7 @@ pub struct Passwd {
         target_os = "fuchsia",
         target_os = "solaris"
     )))]
-    change: Time,
+    change:   Time,
     /// User access class
     #[cfg(not(any(
         target_os = "linux",
@@ -139,7 +139,7 @@ pub struct Passwd {
         target_os = "fuchsia",
         target_os = "solaris"
     )))]
-    class: BString,
+    class:    BString,
     /// Account expiration
     #[cfg(not(any(
         target_os = "linux",
@@ -147,14 +147,14 @@ pub struct Passwd {
         target_os = "fuchsia",
         target_os = "solaris"
     )))]
-    expire: Time,
+    expire:   Time,
     /// Fields filled in
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    fields: Fields,
+    fields:   Fields,
     #[cfg(target_os = "solaris")]
-    age: BString,
+    age:      BString,
     #[cfg(target_os = "solaris")]
-    comment: BString,
+    comment:  BString,
 }
 
 impl Passwd {

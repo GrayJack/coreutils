@@ -70,21 +70,21 @@ pub enum UtmpxType {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmpx {
     /// User login name
-    user: BString,
+    user:    BString,
     /// Host name
-    host: BString,
+    host:    BString,
     /// Process id creating the entry
-    pid: Pid,
+    pid:     Pid,
     /// Record identifier (/etc/inittab id)
-    id: BString,
+    id:      BString,
     /// Device name (console/tty, lnxx)
-    line: BString,
+    line:    BString,
     /// Type of the entry
     ut_type: UtmpxType,
     /// The time entry was created
     timeval: TimeVal, // tv
     #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
-    exit: ExitStatus,
+    exit:    ExitStatus,
     /// Session ID (used for windowing)
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     session: c_int,
@@ -100,9 +100,9 @@ pub struct Utmpx {
     #[cfg(target_os = "linux")]
     addr_v6: [i32; 4],
     #[cfg(target_os = "netbsd")]
-    ss: libc::sockaddr_storage,
+    ss:      libc::sockaddr_storage,
     #[cfg(target_os = "solaris")]
-    syslen: c_short,
+    syslen:  c_short,
 }
 
 impl Utmpx {
