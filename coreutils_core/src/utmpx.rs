@@ -23,9 +23,9 @@ use libc::c_int;
 use libc::c_long;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use libc::utmpxname;
-use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 #[cfg(target_os = "solaris")]
-use libc::{exit_status as ExitStatus, c_short, c_int};
+use libc::{c_int, c_short, exit_status as ExitStatus};
+use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
 
