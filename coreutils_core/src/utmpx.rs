@@ -25,7 +25,7 @@ use libc::c_long;
 use libc::utmpxname;
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 #[cfg(target_os = "solaris")]
-use libc::{exit_status as ExitStatus, short};
+use libc::{exit_status as ExitStatus, c_short, c_int};
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -237,6 +237,9 @@ impl From<utmpx> for Utmpx {
         #[cfg(any(target_os = "netbsd"))]
         let ss = c_utmpx.ut_ss;
 
+        #[cfg(target_os = "solaris")]
+        let syslen = c_utmpx.ut_syslen;
+
         Utmpx {
             user,
             host,
@@ -258,6 +261,8 @@ impl From<utmpx> for Utmpx {
             addr_v6,
             #[cfg(target_os = "netbsd")]
             ss,
+            #[cfg(target_os = "solaris")]
+            syslen,
         }
     }
 }
