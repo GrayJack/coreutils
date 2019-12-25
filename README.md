@@ -12,15 +12,15 @@ This project has no intent to be 100% compatible with GNU's coreutils, like [Uut
 ## Contributing
 Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contribute to the project, including issue reports, git commits messages, etc.
 
-## Minimum Rust Version Policy
+<!-- ## Minimum Rust Version Policy
 This project's minimum supported `rustc` version (MSRV) is 1.39.0.
 
-In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot).
+In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot). -->
 
 ## Compilation tests guarantees
-The compilations is tested for Rust x86_64 Unix/Unix-like platforms, with exception of redox target, with Github Actions.
+The compilations is tested for Rust Tier 1 and Tier 2 x86_64 Unix/Unix-like platforms, with exception of redox target, with Github Actions.
 
-The Tier1 platforms are tested on MSRV, stable, beta and nightly Rust, while Tier2 and Tier3 platforms are tested on MSRV and stable only, since they are no guarantees to be available in beta and nightly Rust.
+The Tier1 platforms are tested on stable, beta and nightly Rust, while Tier2 and Tier3 platforms are tested on stable only, since they are no guarantees to be available in beta and nightly Rust.
 
 Also note that Tier3 Rust Platform will probably fail before hits the compilation check, since my only options is to use a Linux OS, add the target and do `cargo check --target`, and they often are not available as a target for any Tier1 platforms. If you use one of these platforms and have the right MSRV requirements and it build successfully, let me know, if it fails, open a issue with the compilation error.
 
