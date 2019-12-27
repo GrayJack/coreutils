@@ -18,7 +18,7 @@ use std::convert::TryInto;
 use coreutils_core::{
     libc::time_t,
     load::load_average,
-    time,
+    time::PrimitiveDateTime as DateTime,
     utmpx::{
         UtmpxSet,
         UtmpxType::{BootTime, UserProcess},
@@ -41,7 +41,7 @@ fn main() {
     let utmpxs = UtmpxSet::system();
 
     let mut num_users = 0;
-    let mut boot_time = time::empty_tm();
+    let mut boot_time = DateTime::unix_epoch();
     for utmpx in utmpxs {
         match utmpx.utype() {
             BootTime => boot_time = utmpx.login_time(),
@@ -50,34 +50,7 @@ fn main() {
         }
     }
 
-    let up_time = match uptime(
-        #[cfg(any(
-            target_arch = "x86_64",
-            target_arch = "aarch64",
-            target_arch = "mips64",
-            target_arch = "mips64el",
-            target_arch = "powerpc64",
-            target_arch = "powerpc64le",
-            target_arch = "sparc64"
-        ))]
-        boot_time.to_timespec().sec,
-        #[cfg(not(any(
-            target_arch = "x86_64",
-            target_arch = "aarch64",
-            target_arch = "mips64",
-            target_arch = "mips64el",
-            target_arch = "powerpc64",
-            target_arch = "powerpc64le",
-            target_arch = "sparc64"
-        )))]
-        match boot_time.to_timespec().sec.try_into() {
-            Ok(time) => time,
-            Err(err) => {
-                eprintln!("uptime: failed to change from u64 to u32: {}", err);
-                process::exit(1);
-            },
-        },
-    ) {
+    let up_time = match uptime(boot_time) {
         Ok(t) => t,
         Err(err) => {
             eprintln!("uptime: could not retrieve system uptime: {}", err);
@@ -86,13 +59,7 @@ fn main() {
     };
 
     if since_flag {
-        let fmt = match boot_time.strftime("%F %T") {
-            Ok(f) => f,
-            Err(err) => {
-                eprintln!("uptime: failed to format time: {}", err);
-                process::exit(1);
-            },
-        };
+        let fmt = boot_time.format("%F %T");
         println!("{}", fmt);
         return;
     }
@@ -111,7 +78,7 @@ fn main() {
     )
 }
 
-fn uptime(boot_time: time_t) -> io::Result<time_t> {
+fn uptime(boot_time: DateTime) -> io::Result<time_t> {
     let mut file_uptime = String::new();
 
     if let Ok(mut f) = File::open("/proc/uptime") {
@@ -124,15 +91,15 @@ fn uptime(boot_time: time_t) -> io::Result<time_t> {
             .parse()
             .or_else(|_| Err(io::Error::last_os_error()))
     } else {
-        let now = time::get_time().sec as time_t;
-        Ok(now - boot_time)
+        let now = DateTime::now();
+        Ok((now.timestamp() - boot_time.timestamp()) as time_t)
     }
 }
 
 fn fmt_time() -> String {
-    let now = time::now();
+    let now = DateTime::now();
 
-    format!(" {:02}:{:02}:{:02}", now.tm_hour, now.tm_min, now.tm_sec)
+    format!(" {:02}:{:02}:{:02}", now.hour(), now.minute(), now.second())
 }
 
 fn fmt_load() -> String {
@@ -144,7 +111,7 @@ fn fmt_load() -> String {
         Ok(slice) => {
             let mut msg = String::from("load average: ");
             for item in &slice {
-                if item == &slice[2] {
+                if (item - slice[2]).abs() < std::f64::EPSILON {
                     msg.push_str(&format!("{:.2}", item));
                 } else {
                     msg.push_str(&format!("{:.2}, ", item));
