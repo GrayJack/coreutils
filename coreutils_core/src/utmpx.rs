@@ -29,7 +29,7 @@ use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
 
-use time::{Timespec, Tm};
+use time::{Duration, PrimitiveDateTime as DateTime};
 
 /// Possible types of a `Utmpx` instance
 #[repr(u16)]
@@ -132,8 +132,9 @@ impl Utmpx {
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure
-    pub fn login_time(&self) -> Tm {
-        time::at(Timespec::new(self.timeval.tv_sec as i64, self.timeval.tv_usec as i32))
+    pub fn login_time(&self) -> DateTime {
+        DateTime::from_unix_timestamp(self.timeval.tv_sec)
+            + Duration::microseconds(self.timeval.tv_usec)
     }
 
     /// Get the session ID of the entry
