@@ -13,7 +13,7 @@ use crate::types::Time;
 use libc::{c_char, utmp};
 
 use bstr::{BStr, BString, ByteSlice};
-use time::{self, Timespec, Tm};
+use time::{PrimitiveDateTime as DataTime};
 
 #[cfg(target_os = "solaris")]
 use crate::utmpx::UtmpxType;
@@ -66,7 +66,7 @@ impl Utmp {
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure
-    pub fn login_time(&self) -> Tm { time::at(Timespec::new(self.time, 0)) }
+    pub fn login_time(&self) -> DataTime { DataTime::from_unix_timestamp(self.time) }
 
     /// Get the process ID of the entry
     #[cfg(target_os = "solaris")]
