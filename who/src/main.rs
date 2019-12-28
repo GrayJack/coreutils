@@ -49,7 +49,7 @@ fn main() {
         match UtmpSet::system() {
             Ok(u) => u,
             Err(err) => {
-                eprintln!("users: failed to get utsp: {}", err);
+                eprintln!("users: failed to get utmp: {}", err);
                 process::exit(1);
             },
         }
@@ -64,7 +64,7 @@ fn main() {
     if flags.count {
         let mut counter = 0;
         #[cfg(not(target_os = "openbsd"))]
-        for ut in ut_vec.iter().filter(|u| u.utype() == UserProcess) {
+        for ut in ut_vec.iter().filter(|u| u.entry_type() == UserProcess) {
             print!("{} ", ut.user());
             counter += 1;
         }
@@ -204,21 +204,21 @@ fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
         };
         let uts_iter = uts.iter().filter(|u| format!("{}", u.device_name()) == curr_tty_name);
 
-        uts_user = uts_iter.clone().filter(|u| u.utype() == UserProcess).collect();
-        uts_boot = uts_iter.clone().filter(|u| u.utype() == BootTime).collect();
-        uts_dead = uts_iter.clone().filter(|u| u.utype() == DeadProcess).collect();
-        uts_login = uts_iter.clone().filter(|u| u.utype() == LoginProcess).collect();
-        uts_runlv = uts_iter.clone().filter(|u| u.utype() == RunLevel).collect();
-        uts_init = uts_iter.clone().filter(|u| u.utype() == InitProcess).collect();
-        uts_time = uts_iter.filter(|u| u.utype() == NewTime).collect();
+        uts_user = uts_iter.clone().filter(|u| u.entry_type() == UserProcess).collect();
+        uts_boot = uts_iter.clone().filter(|u| u.entry_type() == BootTime).collect();
+        uts_dead = uts_iter.clone().filter(|u| u.entry_type() == DeadProcess).collect();
+        uts_login = uts_iter.clone().filter(|u| u.entry_type() == LoginProcess).collect();
+        uts_runlv = uts_iter.clone().filter(|u| u.entry_type() == RunLevel).collect();
+        uts_init = uts_iter.clone().filter(|u| u.entry_type() == InitProcess).collect();
+        uts_time = uts_iter.filter(|u| u.entry_type() == NewTime).collect();
     } else {
-        uts_user = uts.iter().filter(|u| u.utype() == UserProcess).collect();
-        uts_boot = uts.iter().filter(|u| u.utype() == BootTime).collect();
-        uts_dead = uts.iter().filter(|u| u.utype() == DeadProcess).collect();
-        uts_login = uts.iter().filter(|u| u.utype() == LoginProcess).collect();
-        uts_runlv = uts.iter().filter(|u| u.utype() == RunLevel).collect();
-        uts_init = uts.iter().filter(|u| u.utype() == InitProcess).collect();
-        uts_time = uts.iter().filter(|u| u.utype() == NewTime).collect();
+        uts_user = uts.iter().filter(|u| u.entry_type() == UserProcess).collect();
+        uts_boot = uts.iter().filter(|u| u.entry_type() == BootTime).collect();
+        uts_dead = uts.iter().filter(|u| u.entry_type() == DeadProcess).collect();
+        uts_login = uts.iter().filter(|u| u.entry_type() == LoginProcess).collect();
+        uts_runlv = uts.iter().filter(|u| u.entry_type() == RunLevel).collect();
+        uts_init = uts.iter().filter(|u| u.entry_type() == InitProcess).collect();
+        uts_time = uts.iter().filter(|u| u.entry_type() == NewTime).collect();
     }
 
     if flags.is_all_false() {
