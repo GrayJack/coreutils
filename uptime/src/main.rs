@@ -4,25 +4,17 @@ use std::{
     process,
 };
 
-#[cfg(not(any(
-    target_arch = "x86_64",
-    target_arch = "aarch64",
-    target_arch = "mips64",
-    target_arch = "mips64el",
-    target_arch = "powerpc64",
-    target_arch = "powerpc64le",
-    target_arch = "sparc64"
-)))]
-use std::convert::TryInto;
-
 use coreutils_core::{
     libc::time_t,
     load::load_average,
     time::PrimitiveDateTime as DateTime,
-    utmpx::{
-        UtmpxSet,
-        UtmpxType::{BootTime, UserProcess},
-    },
+};
+#[cfg(target_os = "openbsd")]
+use coreutils_core::utmp::{UtmpSet};
+#[cfg(not(target_os = "openbsd"))]
+use coreutils_core::utmpx::{
+    UtmpxSet as UtmpSet,
+    UtmpxType::{BootTime, UserProcess},
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
@@ -34,13 +26,18 @@ fn main() {
     let pretty_flag = matches.is_present("pretty");
     let since_flag = matches.is_present("since");
 
-    let utmpxs = UtmpxSet::system();
+    let utmps = UtmpSet::system();
 
+    #[cfg(target_os = "openbsd")]
+    let num_users = utmps.len();
+    #[cfg(not(target_os = "openbsd"))]
     let mut num_users = 0;
+
     let mut boot_time = DateTime::unix_epoch();
-    for utmpx in utmpxs {
-        match utmpx.utype() {
-            BootTime => boot_time = utmpx.login_time(),
+    #[cfg(not(target_os = "openbsd"))]
+    for utmp in utmps {
+        match utmp.entry_type() {
+            BootTime => boot_time = utmp.login_time(),
             UserProcess => num_users += 1,
             _ => continue,
         }
