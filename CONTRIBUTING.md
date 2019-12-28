@@ -69,6 +69,9 @@ Id: Implement flag '-a'
 * Documentation should always be included when needed, for both functions, methods, modules, etc.
 * Tests, when possible, should always be included/updated with your changes.
 * Always comment what you're doing if it's not obvious, should be before the code that need explaining.
+* Try to be conservative about dependencies, only add if it is very necessary or if it will add good amount of ergonomics with few sub-dependencies. (you can check the dependency tree using `cargo-tree` crate)
+  * As for dependencies versions, use `"~<Version>"` for crates below 1.0 and `"^<Version>"` for crates above 1.0.
+* Avoid unsafe Rust in the tools code, if necessary, add a function in `coreutils_core` crate with necessary abstractions.
 
 ## References
 ### Manual pages online
