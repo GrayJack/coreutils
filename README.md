@@ -12,10 +12,12 @@ This project has no intent to be 100% compatible with GNU's coreutils, like [Uut
 ## Contributing
 Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file for the guidelines to contribute to the project, including issue reports, git commits messages, etc.
 
-<!-- ## Minimum Rust Version Policy
-This project's minimum supported `rustc` version (MSRV) is 1.39.0.
+## Minimum Rust Version Policy
+This project's minimum supported `rustc` version (MSRV) is 1.40.0.
 
-In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot). -->
+This will not be conservative until we get to a 1.0 version. So it can be changed at any point in time.
+
+<!-- In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot). -->
 
 ## Compilation tests guarantees
 The compilations is tested for Rust Tier 1 and Tier 2 x86_64 Unix/Unix-like platforms, with exception of redox target, with Github Actions.
