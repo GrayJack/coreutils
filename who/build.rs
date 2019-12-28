@@ -8,9 +8,7 @@ fn main() {
     #[cfg(target_os = "openbsd")]
     let yaml = load_yaml!("src/who_openbsd.yml");
 
-    let mut app = App::from_yaml(yaml)
-        .help_message("Display help information")
-        .version_message("Display version information");
+    let mut app = App::from_yaml(yaml);
 
     let out_dir = match env::var("OUT_DIR") {
         Ok(dir) => dir,
