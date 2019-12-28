@@ -20,11 +20,7 @@ fn main() {
     #[cfg(target_os = "openbsd")]
     let yaml = load_yaml!("who_openbsd.yml");
 
-    let matches = App::from_yaml(yaml)
-        .settings(&[ColoredHelp])
-        .help_message("Display help information")
-        .version_message("Display version information")
-        .get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     let flags = WhoFlags::from_matches(&matches);
 
@@ -121,7 +117,9 @@ impl WhoFlags {
                 && !(matches.is_present("idle") || matches.is_present("all")),
             time: matches.is_present("time") || matches.is_present("all"),
             message: matches.is_present("message") || matches.is_present("all"),
-            idle: matches.is_present("idle") || matches.is_present("users") || matches.is_present("all"),
+            idle: matches.is_present("idle")
+                || matches.is_present("users")
+                || matches.is_present("all"),
         }
     }
 

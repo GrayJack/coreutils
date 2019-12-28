@@ -17,6 +17,8 @@ about: |
   \v      vertical tab\n
   \0NNN   byte with octal value NNN (1 to 3 digits)\n
   \xHH    byte with hexadecimal value HH (1 to 2 digits)
+help_message: Display help information.
+version_message: Display version information.
 args:
     - STRING:
         help: The text to be printed.

@@ -13,7 +13,7 @@ use crate::types::Time;
 use libc::{c_char, utmp};
 
 use bstr::{BStr, BString, ByteSlice};
-use time::{PrimitiveDateTime as DataTime};
+use time::PrimitiveDateTime as DataTime;
 
 #[cfg(target_os = "solaris")]
 use crate::utmpx::UtmpxType;

@@ -1,7 +1,9 @@
 name: mktemp
 version: "0.0.0"
 author: "Torbjörn Lönnemark <tobbez@ryara.net>"
-about: Create a temporary file or directory
+about: Create a temporary file or directory.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - TEMPLATE:
         help: Template to use when creating the temporary file/directory.

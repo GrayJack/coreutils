@@ -3,7 +3,10 @@ version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: |
     Display NAME with any leading directory components removed.
+
     If specified, also remove a trailing SUFFIX".
+help_message: Display help information.
+version_message: Display version information.
 args:
     - NAME:
         help: Name of the file to use.

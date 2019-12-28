@@ -1,9 +1,11 @@
 name: clear
 version: "0.0.0"
 author: Ashwin-A-K <ashwinkumar3098@gmail.com>
-about: "Clear the terminal screen"
+about: Clear the terminal screen.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - x:
-        help: Do not try to clear scrollback
+        help: Do not try to clear scrollback.
         long: no-scrollback
         short: x

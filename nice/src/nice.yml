@@ -6,6 +6,8 @@ about: >
 
     Niceness values range from at least -20 (most favorable to the process) to
     20 (least favorable to the process).
+help_message: Display help information.
+version_message: Display version information.
 args:
     - COMMAND:
         help: Command to be run with modified niceness.

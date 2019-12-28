@@ -9,6 +9,8 @@ about: >
 
   If more than a single file is specified, each file is preceded by a header
   consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - FILE:
         help: One or more file names.

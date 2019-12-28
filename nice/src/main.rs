@@ -22,11 +22,7 @@ const P_PROCESS: c_int = PRIO_PROCESS;
 
 fn main() {
     let yaml = load_yaml!("nice.yml");
-    let matches = App::from_yaml(yaml)
-        .settings(&[ColoredHelp, AllowNegativeNumbers])
-        .help_message("Display help information")
-        .version_message("Display version information")
-        .get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, AllowNegativeNumbers]).get_matches();
 
     let adjustment: c_int = {
         let str_n = matches.value_of("N").unwrap();

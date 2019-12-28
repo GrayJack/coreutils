@@ -5,6 +5,8 @@ about: >
   Display selected parts of lines from each FILE to standard output.
 
   With no FILE, or when FILE is -, read standard input.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - FILE:
         help: File(s) to read, or '-' to read from stdin.

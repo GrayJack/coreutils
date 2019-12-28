@@ -5,6 +5,8 @@ about: |
     Convert tabs in each FILE to spaces, writing to standard output.
 
     With no FILE, or when FILE is -, read standard input.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - initial:
         help: Do not convert tabs after non blanks.

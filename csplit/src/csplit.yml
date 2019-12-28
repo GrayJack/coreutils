@@ -3,7 +3,7 @@ version: "0.1.0"
 author: Mats Kindahl <mats.kindahl@gmail.com>
 about: |-
   Split FILE by each PATTERN into a series of files 'xx00', 'xx01',
-  ... 
+  ...
 
   A file name has to be provided, but if it is '-', input will read
   from standard input.
@@ -13,6 +13,8 @@ about: |-
 
   The number of bytes in each file will be displayed on standard
   output with one line for each file.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - FILE:
         help: File to read, or '-' to read from standard input.

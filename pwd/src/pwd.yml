@@ -4,6 +4,8 @@ author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: >
     Display the current directory. If no options are specified, the -p option
     is assumed.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - logical:
         help: Display the logical current working directory.

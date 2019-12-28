@@ -2,6 +2,8 @@ name: mv
 version: "0.0.0"
 author: Gab David <g.bianchetdavid@gmail.com>
 about: Move or rename files.
+help_message: Display help information.
+version_message: Display version information.
 args:
   - backup:
       help: Make a backup of each existing destination file.

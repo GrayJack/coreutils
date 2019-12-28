@@ -20,6 +20,8 @@ after_help: >
     ln     left justified, no leading zeros
     rn     right justified, no leading zeros
     rz     right justified, leading zeros
+help_message: Display help information.
+version_message: Display version information.
 args:
   - body_numbering:
       help: Use STYLE for numbering body lines.

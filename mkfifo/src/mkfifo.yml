@@ -1,7 +1,9 @@
 name: mkfifo
 version: "0.0.0"
 author: Federico Ponzi <federico.ponzi92@gmail.com>
-about: Make FIFOs (named pipes)
+about: Make FIFOs. (named pipes)
+help_message: Display help information.
+version_message: Display version information.
 args:
     - NAME:
         help: Name of the fifo.

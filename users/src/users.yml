@@ -2,6 +2,8 @@ name: users
 version: "0.0.0"
 author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: Display all current logged users.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - FILE:
         help: A file to use to get the user information.

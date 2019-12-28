@@ -8,6 +8,8 @@ about: >
 
 
     With no FILE, or when FILE is -, read standard input.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - FILE:
         help: One or more file names.

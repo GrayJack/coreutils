@@ -2,6 +2,8 @@ name: link
 version: "0.0.0"
 author: "Torbjörn Lönnemark <tobbez@ryara.net>"
 about: Creates a (hard) link to a file.
+help_message: Display help information.
+version_message: Display version information.
 args:
     - FILE1:
         help: Existing file to be linked.
