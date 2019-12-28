@@ -53,8 +53,8 @@ Id: Implement flag '-a'
 ```
 
 ### Tools Styleguide
-* Always use `clap` with `yaml` support to create the tools arguments.
-* Always create a `build.rs` that creates every shell completions.
+* Always use `clap` with `yaml` support to create the tools arguments. (there is a `.template` folder where you can use the `template.yml`)
+* Always create a `build.rs` that creates every shell completions. (there is a `.template` folder where you can use the `build.rs`, just need to change the YAML file name)
 * Every argument have to have the `help` text.
 * Help messages should start with upper case letter.
 * Every parameter have to have the `long` and `short` options.
