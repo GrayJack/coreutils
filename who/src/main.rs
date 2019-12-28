@@ -8,7 +8,8 @@ use coreutils_core::utmpx::{
     UtmpxType::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
 };
 use coreutils_core::{
-    file_descriptor::FileDescriptor, libc::S_IWGRP, time, tty::TTYName, ByteSlice,
+    file_descriptor::FileDescriptor, libc::S_IWGRP, time::PrimitiveDateTime as DataTime,
+    tty::TTYName, ByteSlice,
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
@@ -102,7 +103,6 @@ struct WhoFlags {
     short: bool,
     time: bool,
     message: bool,
-    users: bool,
     idle: bool,
 }
 
@@ -117,16 +117,16 @@ impl WhoFlags {
             process: matches.is_present("process") || matches.is_present("all"),
             count: matches.is_present("count"),
             run_level: matches.is_present("runlevel") || matches.is_present("all"),
-            short: matches.is_present("short"),
+            short: matches.is_present("short")
+                && !(matches.is_present("idle") || matches.is_present("all")),
             time: matches.is_present("time") || matches.is_present("all"),
             message: matches.is_present("message") || matches.is_present("all"),
-            users: matches.is_present("users") || matches.is_present("all"),
-            idle: matches.is_present("idle") || matches.is_present("all"),
+            idle: matches.is_present("idle") || matches.is_present("users") || matches.is_present("all"),
         }
     }
 
     fn is_all_false(&self) -> bool {
-        if let (false, false, false, false, false, false, false, false, false) = (
+        if let (false, false, false, false, false, false, false, false) = (
             self.boot,
             self.dead,
             self.login,
@@ -134,7 +134,6 @@ impl WhoFlags {
             self.run_level,
             self.short,
             self.time,
-            self.users,
             self.idle,
         ) {
             return true;
@@ -227,7 +226,7 @@ fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     if flags.is_all_false() {
         ut_vec.append(&mut uts_user);
     } else {
-        if flags.users {
+        if flags.short || flags.idle {
             ut_vec.append(&mut uts_user);
         }
         if flags.boot {
@@ -253,7 +252,7 @@ fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     ut_vec
 }
 
-// TODO(grayjack): Fix that code reuse after sttributtes on expression hits stabe Rust
+// TODO(grayjack): Fix that code reuse after attributtes on expression hits stabe Rust
 #[cfg(not(target_os = "openbsd"))]
 fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
     if flags.is_all_false() {
@@ -264,13 +263,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
                 format!("({})", u.host())
             )
         });
@@ -282,13 +275,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
             )
         });
     } else if flags.idle {
@@ -299,13 +286,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
                 idle,
                 format!("({})", u.host())
             )
@@ -319,13 +300,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
                 u.process_id(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
                 idle,
                 format!("({})", u.host())
             )
@@ -333,7 +308,7 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
     }
 }
 
-// TODO(grayjack): Fix that code reuse after sttributtes on expression hits stabe Rust
+// TODO(grayjack): Fix that code reuse after attributtes on expression hits stabe Rust
 #[cfg(target_os = "openbsd")]
 fn print_info(uts: &[&Utmp], flags: WhoFlags) {
     if flags.is_all_false() {
@@ -344,13 +319,7 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
                 format!("({})", u.host())
             )
         });
@@ -362,13 +331,7 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
             )
         });
     } else if flags.idle {
@@ -379,13 +342,7 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
                 idle,
                 format!("({})", u.host())
             )
@@ -398,13 +355,7 @@ fn print_info(uts: &[&Utmp], flags: WhoFlags) {
                 u.user(),
                 if flags.message { msg } else { ' ' },
                 u.device_name(),
-                match u.login_time().strftime("%Y-%m-%d %H:%M") {
-                    Ok(t) => t,
-                    Err(err) => {
-                        eprintln!("who: failed to format string: {}", err);
-                        process::exit(1);
-                    },
-                },
+                u.login_time().format("%Y-%m-%d %H:%M"),
                 idle,
                 format!("({})", u.host())
             )
@@ -438,7 +389,7 @@ fn def_status(
     let idle = if last_change == 0 {
         "?".to_string()
     } else {
-        let now = time::now().to_timespec().sec;
+        let now = DataTime::now().timestamp();
         if 0 < last_change && now - 24 * 3600 < last_change && last_change <= now {
             let seconds_idle = now - last_change;
             if seconds_idle < 60 {
