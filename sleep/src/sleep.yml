@@ -6,6 +6,7 @@ about: |
     SUFFIX can be 'sec' or 's' for seconds, 'min' or 'm' for minutes, 'hour' or 'h' for hours.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - NUMBER:
         help: Number to set the sleep. If more than one, will sleep the sum of the numbers.

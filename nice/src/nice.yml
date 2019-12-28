@@ -8,6 +8,7 @@ about: >
     20 (least favorable to the process).
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - COMMAND:
         help: Command to be run with modified niceness.

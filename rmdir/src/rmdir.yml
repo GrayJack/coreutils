@@ -4,6 +4,7 @@ author: Giacomo Parolini <silverweed1991@gmail.com> and Eric Shimizu Karbstein <
 about: Remove empty directories.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - DIRECTORY:
         help: The directory(ies) to be removed.

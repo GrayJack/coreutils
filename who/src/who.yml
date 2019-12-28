@@ -7,6 +7,7 @@ about: |
     By default shows only logged users name, line, time and host.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - FILE:
         help: A file to use to get the user information.

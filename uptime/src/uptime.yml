@@ -4,6 +4,7 @@ author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com> and Celeo <celeodor@gmail.c
 about: Display how long system has been running.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
   - pretty:
       help: Display uptime in pretty format.

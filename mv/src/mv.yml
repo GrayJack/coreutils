@@ -4,6 +4,7 @@ author: Gab David <g.bianchetdavid@gmail.com>
 about: Move or rename files.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
   - backup:
       help: Make a backup of each existing destination file.

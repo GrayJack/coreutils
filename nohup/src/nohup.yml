@@ -14,6 +14,7 @@ about: >
     output to FILE, use 'nohup COMMAND > FILE'.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - COMMAND:
         help: Command to be run which will ignore hangup signals.

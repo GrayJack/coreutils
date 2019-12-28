@@ -4,6 +4,7 @@ author: Federico Ponzi <federico.ponzi92@gmail.com>
 about: Make FIFOs. (named pipes)
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - NAME:
         help: Name of the fifo.

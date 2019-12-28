@@ -4,6 +4,7 @@ author: 'Julian Kaindl <kaindl745@gmail.com>'
 about: Summarize disk usage for the set FILEs, recursively for directories.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - FILE:
         help: Files to be used by the program.
@@ -70,8 +71,7 @@ args:
     - human-readable:
         help: Display sizes in a human readable format.
         long: human-readable
-        short: r
-        aliases: h
+        short: h
         conflicts_with:
           - si
           - apparent-size

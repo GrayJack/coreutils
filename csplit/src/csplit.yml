@@ -15,6 +15,7 @@ about: |-
   output with one line for each file.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - FILE:
         help: File to read, or '-' to read from standard input.

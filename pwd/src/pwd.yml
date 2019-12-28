@@ -6,6 +6,7 @@ about: >
     is assumed.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - logical:
         help: Display the logical current working directory.

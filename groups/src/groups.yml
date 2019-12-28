@@ -8,6 +8,7 @@ about: >
   for the named user.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - USER:
         help: Name of a user.

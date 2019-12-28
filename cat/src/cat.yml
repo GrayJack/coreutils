@@ -4,6 +4,7 @@ author: Anubhab Ghosh <anubhabghosh.me@gmail.com>
 about: Concatenate and display files.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - number:
         help: Number all output lines.

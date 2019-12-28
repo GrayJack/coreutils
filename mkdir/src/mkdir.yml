@@ -4,6 +4,7 @@ author: Rodrigo Oliveira Campos <rodrigo.redcode@gmail.com>
 about: Create directory(ies), if they do not already exist.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
   - mode:
       help: Set file mode (as in chmod), not a=rwx - umask

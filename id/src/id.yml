@@ -6,11 +6,12 @@ about: >
   omitted) for the current user.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - USER:
         help: Name of a user.
     - audit:
-        help: Display the process audit user ID and other process audit proper-ties, which requires privilege. (FreeBSD and MacOS only, ignored otherwise)
+        help: Display the process audit user ID and other process audit properties, which requires privilege. (FreeBSD and MacOS only, ignored otherwise)
         long: audit
         short: A
     - rtable:
@@ -81,7 +82,7 @@ args:
     - human:
         help: Make the output human-readable.
         long: human-readable
-        short: H
+        short: h
         conflicts_with:
             - group
             - groups

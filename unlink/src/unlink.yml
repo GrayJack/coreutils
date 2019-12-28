@@ -4,6 +4,7 @@ author: "Torbjörn Lönnemark <tobbez@ryara.net>"
 about: Call the unlink function to remove a specified FILE.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - FILE:
         help: File to be unlinked.

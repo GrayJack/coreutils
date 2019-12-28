@@ -4,6 +4,7 @@ author: "Torbjörn Lönnemark <tobbez@ryara.net>"
 about: Creates a (hard) link to a file.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - FILE1:
         help: Existing file to be linked.

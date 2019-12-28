@@ -11,6 +11,7 @@ about: >
   consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - FILE:
         help: One or more file names.

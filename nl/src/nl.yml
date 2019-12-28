@@ -22,6 +22,7 @@ after_help: >
     rz     right justified, leading zeros
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
   - body_numbering:
       help: Use STYLE for numbering body lines.

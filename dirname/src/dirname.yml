@@ -6,6 +6,7 @@ about: |
   If NAME contains no /'s, output '.' (meaning the current directory).
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - NAME:
         help: Name of the file to use.

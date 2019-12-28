@@ -4,6 +4,7 @@ author: Ashwin-A-K <ashwinkumar3098@gmail.com>
 about: Clear the terminal screen.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - x:
         help: Do not try to clear scrollback.

@@ -4,6 +4,7 @@ author: ladysamantha <ladysamantha@protonmail.com>
 about: Run command or interactive shell with special root directory.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
   - user:
       help: Specify the user ID or name.

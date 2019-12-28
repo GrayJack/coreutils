@@ -4,6 +4,7 @@ author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: Display the file name of the terminal connected to standard input.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - silent:
         help: Display nothing, only return an exit status.

@@ -4,6 +4,7 @@ author: "Jonas Geschke <mail@yonny.de>"
 about: Display the current date and time.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
   - utc:
       help: Display Coordinated Universal Time (UTC).

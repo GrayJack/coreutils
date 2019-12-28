@@ -4,6 +4,7 @@ author: Eric Shimizu Karbstein <gr41.j4ck@gmail.com>
 about: Display certain information about the system.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - all:
         help: Display all information. Behave as though the options -o, -m, -n, -r, -s, and -v were specified.

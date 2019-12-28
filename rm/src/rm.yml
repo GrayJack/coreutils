@@ -4,6 +4,7 @@ author: "Gab David <g.bianchetdavid@gmail.com>, Eric Shimizu Karbstein <gr41.j4c
 about: Remove files or directories.
 help_message: Display help information.
 version_message: Display version information.
+help_short: "?"
 args:
     - force:
         help: Ignore nonexistent files, never prompt regardless of the file's permissions.
