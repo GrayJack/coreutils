@@ -134,7 +134,7 @@ impl Utmpx {
     /// structure
     pub fn login_time(&self) -> DateTime {
         DateTime::from_unix_timestamp(self.timeval.tv_sec)
-            + Duration::microseconds(self.timeval.tv_usec)
+            + Duration::microseconds(self.timeval.tv_usec as i64)
     }
 
     /// Get the session ID of the entry
