@@ -133,7 +133,7 @@ impl Utmpx {
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure
     pub fn login_time(&self) -> DateTime {
-        DateTime::from_unix_timestamp(self.timeval.tv_sec)
+        DateTime::from_unix_timestamp(self.timeval.tv_sec as i64)
             + Duration::microseconds(self.timeval.tv_usec as i64)
     }
 
