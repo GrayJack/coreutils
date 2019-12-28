@@ -125,7 +125,7 @@ impl Utmpx {
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
     /// Get the type kind if the entry
-    pub const fn utype(&self) -> UtmpxType { self.ut_type }
+    pub const fn entry_type(&self) -> UtmpxType { self.ut_type }
 
     /// Get the time where the entry was created (often login time)
     pub const fn timeval(&self) -> TimeVal { self.timeval }
