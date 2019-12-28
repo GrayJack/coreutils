@@ -60,7 +60,7 @@ fn main() {
 
         #[cfg(not(any(target_os = "openbsd")))]
         uts.iter()
-            .filter(|u| u.utype() == UtmpxType::UserProcess)
+            .filter(|u| u.entry_type() == UtmpxType::UserProcess)
             .for_each(|u| print!("{} ", u.user()));
 
         println!();
