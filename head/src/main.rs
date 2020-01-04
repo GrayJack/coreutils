@@ -120,22 +120,22 @@ mod tests {
 
     #[test]
     fn read_stream_lines_count() {
-        let buffer = "foo\nbar\nbaz".as_bytes();
+        let buffer = b"foo\nbar\nbaz";
         let flags = Flags::LinesCount(2);
         let mut out = Vec::new();
 
-        read_stream(&flags, BufReader::new(buffer), &mut out).unwrap();
+        read_stream(&flags, BufReader::new(&buffer[..]), &mut out).unwrap();
 
         assert_eq!(String::from_utf8(out).unwrap(), "foo\nbar\n".to_string());
     }
 
     #[test]
     fn read_stream_bytes_count() {
-        let buffer = "foo\nbar\nbaz".as_bytes();
+        let buffer = b"foo\nbar\nbaz";
         let flags = Flags::BytesCount(2);
         let mut out = Vec::new();
 
-        read_stream(&flags, BufReader::new(buffer), &mut out).unwrap();
+        read_stream(&flags, BufReader::new(&buffer[..]), &mut out).unwrap();
 
         assert_eq!(String::from_utf8(out).unwrap(), "fo".to_string());
     }
