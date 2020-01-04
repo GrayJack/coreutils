@@ -10,9 +10,8 @@ pub fn mkfifo(filepath: &str, mode: u32) -> io::Result<()> {
     let path = CString::new(path.to_str().unwrap())?;
     let result = unsafe { libc::mkfifo(path.as_ptr(), mode as mode_t) };
 
-    let result: i32 = result;
-    if result == 0 {
-        return Ok(());
+    match result {
+        0 => Ok(()),
+        _ => Err(Error::last_os_error()),
     }
-    Err(Error::last_os_error())
 }
