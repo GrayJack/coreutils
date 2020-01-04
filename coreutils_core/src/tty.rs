@@ -9,7 +9,7 @@ use std::{
 
 use libc::ttyname;
 
-use crate::file_descriptor::FileDescriptor;
+// use crate::file_descriptor::FileDescriptor;
 
 use bstr::{BStr, BString, ByteSlice};
 
@@ -38,8 +38,34 @@ impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
 }
 
+/// A `FileDescriptor` that can be `StdIn`, `StdOut` or `StdErr`
+/// Usefull when dealing with C call to `ttyname` and `ttyname_r`
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
+pub enum FileDescriptor {
+    StdIn  = 0,
+    StdOut = 1,
+    StdErr = 2,
+}
+
+impl FileDescriptor {
+    /// Check if the `FileDescriptor` is a TTY.
+    ///
+    /// ## Example
+    /// ```rust,ignore
+    /// let istty = FileDescriptor::StdIn.is_tty();
+    /// ```
+    pub fn is_tty(self) -> bool {
+        is_tty(self)
+    }
+
+    /// Get the tty name from the `FileDescriptor`
+    pub fn ttyname(self) -> Result<TTYName, Error> {
+        TTYName::new(self)
+    }
+}
+
 /// A struct that holds the name of a TTY with a `Display` trait implementation
-/// to be easy to print
+/// to be easy to print.
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct TTYName(BString);
 
@@ -58,8 +84,10 @@ impl TTYName {
         Ok(TTYName(name))
     }
 
+    /// Extracts a bstring slice containing the entire `BString`.
     pub fn as_bstr(&self) -> &BStr { self.0.as_bstr() }
 
+    /// Return a clone of the tty name.
     pub fn to_bstring(&self) -> BString { self.0.clone() }
 }
 
@@ -68,13 +96,13 @@ impl Display for TTYName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
-/// Check if the given `FileDescriptor` is a TTY
+/// Check if the given `FileDescriptor` is a TTY.
 ///
 /// ## Example
 /// ```rust,ignore
 /// let istty = isatty(FileDescriptor::StdIn);
 /// ```
 #[inline]
-pub fn isatty(file_descriptor: FileDescriptor) -> bool {
+pub fn is_tty(file_descriptor: FileDescriptor) -> bool {
     unsafe { libc::isatty(file_descriptor as c_int) == 1 }
 }

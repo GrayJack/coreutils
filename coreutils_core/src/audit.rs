@@ -1,4 +1,4 @@
-//! Module of audit session compability for FreeBSD (I think it's the only one)
+//! Module of audit session compability for FreeBSD and MacOS.
 //!
 //! I got the info from FreeBSD man pages `GETAUDIT(2)`
 //! the names defined on `GETAUDIT(2)` will have a '¹' on them.
@@ -154,7 +154,7 @@ extern "C" {
     pub fn getaudit_addr(auditinfo_addr: *mut AuditInfoAddr, length: c_int) -> c_int;
 }
 
-/// Prints the `AuditInfo` if `getaudit()` call was successful, return a Err otherwise.
+/// Display the `AuditInfo` if `getaudit()` call was successful, return a Err otherwise.
 pub fn auditid() -> Result<(), AuditError> {
     let mut auditinfo: MaybeUninit<AuditInfo> = MaybeUninit::zeroed();
     let address = auditinfo.as_mut_ptr() as *mut AuditInfo;

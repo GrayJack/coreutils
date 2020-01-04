@@ -7,7 +7,6 @@ pub use time;
 pub mod backup;
 pub mod consts;
 pub mod env;
-pub mod file_descriptor;
 pub mod group;
 pub mod input;
 pub mod login_name;
