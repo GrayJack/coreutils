@@ -45,7 +45,7 @@ pub fn set_groups(groups: Groups) -> io::Result<()> {
 }
 
 /// Set the `group` for the current process
-pub fn set_group(group: Group) -> std::io::Result<()> {
+pub fn set_group(group: Group) -> io::Result<()> {
     match unsafe { libc::setgid(group.id()) } {
         0 => Ok(()),
         _ => Err(std::io::Error::last_os_error()),

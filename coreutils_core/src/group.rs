@@ -139,7 +139,7 @@ impl Group {
             }
         }
 
-        // Now that pw is initialized we get it
+        // Now that gr is initialized we get it
         let gr = unsafe { gr.assume_init() };
 
         Ok(Group::try_from(gr)?)
@@ -164,7 +164,7 @@ impl Group {
             }
         }
 
-        // Now that pw is initialized we get it
+        // Now that gr is initialized we get it
         let gr = unsafe { gr.assume_init() };
 
         Ok(Group::try_from(gr)?)
@@ -199,7 +199,7 @@ impl Group {
             }
         }
 
-        // Now that pw is initialized we get it
+        // Now that gr is initialized we get it
         let gr = unsafe { gr.assume_init() };
 
         Ok(Group::try_from(gr)?)
