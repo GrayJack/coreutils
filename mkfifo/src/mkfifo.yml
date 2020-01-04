@@ -7,7 +7,8 @@ version_message: Display version information.
 help_short: "?"
 args:
     - NAME:
-        help: Name of the fifo.
+        help: Name of the FIFO.
+        required: true
     - mode:
         help: Set file permission bits to MODE, not a=rw - umask
         long: mode
