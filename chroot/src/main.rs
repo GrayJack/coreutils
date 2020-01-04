@@ -49,7 +49,7 @@ fn main() {
 }
 
 fn set_groups_from_list(groups_list: &str) -> io::Result<()> {
-    let groups: Vec<&str> = groups_list.split(",").collect();
+    let groups: Vec<&str> = groups_list.split(',').collect();
     let groups = Groups::from_group_list(&groups).expect("unable to get groups from group list");
     set_groups(groups)
 }
