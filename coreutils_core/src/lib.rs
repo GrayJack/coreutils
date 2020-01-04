@@ -18,6 +18,7 @@ pub mod settime;
 pub mod tty;
 pub mod types;
 pub mod utsname;
+pub mod login_name;
 
 // Specific Modules
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
