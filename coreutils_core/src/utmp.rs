@@ -18,7 +18,7 @@ use time::PrimitiveDateTime as DataTime;
 #[cfg(target_os = "solaris")]
 use crate::utmpx::UtmpxType;
 #[cfg(target_os = "solaris")]
-use libc::{c_short, exit_status};
+use libc::{c_short, exit_status as ExitStatus};
 
 /// A struct that represents a __user__ account, where user can be humam users or other
 /// parts of the system that requires the usage of account structure, like some daemons
@@ -33,14 +33,18 @@ pub struct Utmp {
     /// Host name
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
     host:    BString,
+    /// Entry ID
     #[cfg(target_os = "solaris")]
     id:      BString,
+    /// Process ID
     #[cfg(target_os = "solaris")]
     pid:     c_short,
+    /// Entry type
     #[cfg(target_os = "solaris")]
     ut_type: UtmpxType,
+    /// Exit status
     #[cfg(target_os = "solaris")]
-    exit:    exit_status,
+    exit:    ExitStatus,
 }
 
 impl Utmp {
@@ -78,7 +82,7 @@ impl Utmp {
 
     /// Get the exit status of the entry
     #[cfg(target_os = "solaris")]
-    pub fn exit_status(&self) -> exit_status { self.exit }
+    pub fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
 impl From<utmp> for Utmp {

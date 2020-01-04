@@ -1,3 +1,5 @@
+//! Helper functions to deal with FIFO special file.
+
 use libc::{self, mode_t};
 use std::{ffi::CString, io, io::Error, path::Path};
 
