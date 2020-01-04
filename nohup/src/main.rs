@@ -7,9 +7,8 @@ use std::{
 };
 
 use coreutils_core::{
-    file_descriptor::FileDescriptor,
     libc::{signal, ENOENT, SIGHUP, SIG_IGN},
-    tty::isatty,
+    tty::{FileDescriptor},
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
@@ -32,11 +31,11 @@ fn main() {
     open_opts.write(true).create(true).append(true);
 
     // If standard input is a terminal, redirect it from an unreadable file.
-    if isatty(FileDescriptor::StdIn) {
+    if FileDescriptor::StdIn.is_tty() {
         command_c = command_c.stdin(Stdio::null());
     }
 
-    if isatty(FileDescriptor::StdOut) {
+    if FileDescriptor::StdOut.is_tty() {
         // Try to open in write append nohup.out else open $HOME/nohup.out
         let stdout = match get_stdout(&open_opts) {
             Ok(f) => {
@@ -53,7 +52,7 @@ fn main() {
     }
 
     // If standard error is a terminal, redirect it to standard output.
-    if isatty(FileDescriptor::StdErr) {
+    if FileDescriptor::StdErr.is_tty() {
         let stderr = match get_stdout(&open_opts) {
             Ok(f) => {
                 println!("nohup: stderr is redirected to 'nohup.out'");

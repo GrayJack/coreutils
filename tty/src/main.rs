@@ -1,8 +1,7 @@
 use std::process;
 
 use coreutils_core::{
-    file_descriptor::FileDescriptor,
-    tty::{isatty, Error::*, TTYName},
+    tty::{FileDescriptor, Error::*, TTYName},
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
@@ -28,7 +27,7 @@ fn main() {
         }
     }
 
-    if !isatty(desc_stdin) {
+    if !desc_stdin.is_tty() {
         process::exit(1);
     }
 }

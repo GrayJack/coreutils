@@ -8,8 +8,10 @@ use coreutils_core::utmpx::{
     UtmpxType::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
 };
 use coreutils_core::{
-    file_descriptor::FileDescriptor, libc::S_IWGRP, time::PrimitiveDateTime as DataTime,
-    tty::TTYName, ByteSlice,
+    libc::S_IWGRP,
+    time::PrimitiveDateTime as DataTime,
+    tty::{FileDescriptor, TTYName},
+    ByteSlice,
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
