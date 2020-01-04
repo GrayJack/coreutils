@@ -6,9 +6,10 @@ use std::ffi::CStr;
 // use libc::{getlogin, getlogin_r, cuserid};
 use libc::getlogin;
 
-use bstr::{BString};
+use bstr::BString;
 
-/// This function return the the name of the user logged in on the controlling terminal of the process if found.
+/// This function return the the name of the user logged in on the controlling terminal of
+/// the process if found.
 pub fn user_login_name() -> Option<BString> {
     let res = unsafe { getlogin() };
 
