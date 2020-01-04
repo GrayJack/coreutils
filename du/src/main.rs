@@ -202,7 +202,7 @@ fn parse_depth(matches: &ArgMatches) -> Option<usize> {
 
 fn parse_threshold(value: Option<&str>) -> Option<(bool, Blocksize)> {
     if let Some(threshold) = value {
-        let is_negative = threshold.starts_with("-");
+        let is_negative = threshold.starts_with('-');
 
         let threshold_slice = if is_negative { &threshold[1..] } else { threshold };
 
@@ -247,24 +247,24 @@ fn parse_time(matches: &ArgMatches) -> Option<TimeOption> {
 
 fn parse_time_style(value: Option<&str>) -> TimeStyleOption {
     if let Some(style) = value {
-        if style.starts_with("+") {
-            let f = match style.chars().skip(1).next() {
+        if style.starts_with('+') {
+            let f = match style.chars().nth(1) {
                 Some(_) => &style[1..],
                 None => "",
             };
             return TimeStyleOption::Format(f);
         }
         match style {
-            "full-iso" => return TimeStyleOption::FullIso,
-            "long-iso" | "" => return TimeStyleOption::LongIso,
-            "iso" => return TimeStyleOption::Iso,
+            "full-iso" => TimeStyleOption::FullIso,
+            "long-iso" | "" => TimeStyleOption::LongIso,
+            "iso" => TimeStyleOption::Iso,
             _ => {
                 eprintln!("du: invalid --time-style argument: {}", &style);
                 process::exit(1);
             },
-        };
+        }
     } else {
-        return TimeStyleOption::LongIso;
+        TimeStyleOption::LongIso
     }
 }
 
@@ -293,7 +293,7 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions, total_ref: &mut u64)
         })
         .for_each(|entry| {
             current_depth = entry.depth();
-            if let Some(meta) = entry.metadata().ok() {
+            if let Ok(meta) = entry.metadata() {
                 if meta.is_dir() {
                     let value =
                         process_value(&meta, flags_opts, &mut subdir_sizes, current_depth, true);

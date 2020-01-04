@@ -39,8 +39,8 @@ impl BlocksizeSuffix {
         SUFFIXES.iter()
     }
 
-    fn value(&self) -> u64 {
-        match *self {
+    fn value(self) -> u64 {
+        match self {
             KB => 10u64.pow(3),
             K | KiB => 2u64.pow(10),
             MB => 10u64.pow(6),
@@ -56,7 +56,7 @@ impl BlocksizeSuffix {
         }
     }
 
-    fn to_str(&self) -> &'static str {
+    fn to_str(self) -> &'static str {
         match self {
             KB => "kB",
             K => "K",
@@ -81,22 +81,16 @@ impl BlocksizeSuffix {
 
     fn largest_from_value(value: u64, use_si: bool) -> Option<BlocksizeSuffix> {
         let mut largest_suffix: Option<BlocksizeSuffix> = None;
-        let mut count = 0;
 
-        for suffix in BlocksizeSuffix::iter() {
+        for (count, suffix) in BlocksizeSuffix::iter().enumerate() {
             // take base 10 suffixes
-            if use_si && count % 3 == 0 {
-                if value / suffix.value() > 1 {
-                    largest_suffix = Some(suffix.clone());
-                }
+            if use_si && count % 3 == 0 && value / suffix.value() > 1 {
+                largest_suffix = Some(*suffix);
             }
             // take single letter base 2 suffixes
-            if !use_si && count % 3 == 1 {
-                if value / suffix.value() > 1 {
-                    largest_suffix = Some(suffix.clone());
-                }
+            if !use_si && count % 3 == 1 && value / suffix.value() > 1 {
+                largest_suffix = Some(*suffix);
             }
-            count += 1;
         }
 
         largest_suffix
@@ -111,9 +105,9 @@ pub struct Blocksize {
 }
 
 impl Blocksize {
-    pub fn new() -> Blocksize { Blocksize { value: init_blocksize(), suffix: None, use_si: false } }
+    pub fn new() -> Self { Blocksize { value: init_blocksize(), suffix: None, use_si: false } }
 
-    pub fn from_str(size: &str) -> Result<Blocksize, BlocksizeError> {
+    pub fn from_str(size: &str) -> Result<Self, BlocksizeError> {
         let init = Blocksize::new();
 
         let value = size
@@ -130,7 +124,7 @@ impl Blocksize {
                     if blocksize.suffix.is_some() {
                         Ok(blocksize.with_value(1))
                     } else {
-                        return Err(BlocksizeError::InvalidBlocksize);
+                        Err(BlocksizeError::InvalidBlocksize)
                     }
                 } else {
                     Ok(blocksize.with_value(value))
@@ -138,7 +132,7 @@ impl Blocksize {
             },
             Err(err) => {
                 if value == 0 {
-                    return Err(BlocksizeError::InvalidBlocksize);
+                    Err(BlocksizeError::InvalidBlocksize)
                 } else {
                     Err(err)
                 }
@@ -146,12 +140,12 @@ impl Blocksize {
         }
     }
 
-    pub fn with_value(mut self, size: u64) -> Blocksize {
+    pub fn with_value(mut self, size: u64) -> Self {
         self.value = size;
         self
     }
 
-    pub fn with_suffix<'a>(mut self, suffix: &'a str) -> Result<Blocksize, BlocksizeError> {
+    pub fn with_suffix(mut self, suffix: &str) -> Result<Self, BlocksizeError> {
         match suffix {
             "KB" | "kB" => self.suffix = Some(KB),
             "K" | "k" => self.suffix = Some(K),
@@ -179,7 +173,7 @@ impl Blocksize {
 
     pub fn use_si(&mut self) { self.use_si = true; }
 
-    pub fn use_largest_suffix(self) -> Blocksize {
+    pub fn use_largest_suffix(self) -> Self {
         let total = self.value();
         let suffix = BlocksizeSuffix::largest_from_value(total, self.use_si);
 
@@ -204,7 +198,4 @@ impl fmt::Display for Blocksize {
     }
 }
 
-fn init_blocksize() -> u64 {
-    let default = 1024;
-    default
-}
+fn init_blocksize() -> u64 { 1024 }
