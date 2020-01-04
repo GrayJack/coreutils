@@ -1,6 +1,7 @@
 //! Module with wrappers for libc mkstemp(3), mkdtemp(3)
 
 use std::{
+    error::Error as StdError,
     fmt::{self, Display},
     fs::File,
     io::Error as IOError,
@@ -26,6 +27,12 @@ impl Display for Mktemp {
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.err) }
+}
+
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
+    }
 }
 
 /// Creates a temporary file based on the given `template`.
