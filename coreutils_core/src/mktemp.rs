@@ -30,9 +30,7 @@ impl Display for Error {
 }
 
 impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        None
-    }
+    fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
 }
 
 /// Creates a temporary file based on the given `template`.

@@ -66,9 +66,7 @@ pub enum BackupMode {
 impl BackupMode {
     /// Creates an instance of `BackupMode` from a string slice. Any invalid input will
     /// result in `BackupMode::Existing` to be returned.
-    pub fn from_string(string: impl AsRef<str>) -> Self {
-        Self::from(string.as_ref())
-    }
+    pub fn from_string(string: impl AsRef<str>) -> Self { Self::from(string.as_ref()) }
 }
 
 impl From<&str> for BackupMode {
