@@ -64,7 +64,7 @@ impl UtsName {
     #[inline]
     pub fn machine(&self) -> &BStr { self.machine.as_bstr() }
 
-    /// NIS or YP domain name
+    /// Get the NIS or YP domain name
     #[inline]
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
     pub fn domain_name(&self) -> &BStr { self.domainname.as_bstr() }
