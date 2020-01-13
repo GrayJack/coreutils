@@ -8,7 +8,7 @@ use std::{
 
 use coreutils_core::{
     libc::{signal, ENOENT, SIGHUP, SIG_IGN},
-    tty::{FileDescriptor},
+    tty::FileDescriptor,
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};

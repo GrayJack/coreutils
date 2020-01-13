@@ -54,14 +54,10 @@ impl FileDescriptor {
     /// ```rust,ignore
     /// let istty = FileDescriptor::StdIn.is_tty();
     /// ```
-    pub fn is_tty(self) -> bool {
-        is_tty(self)
-    }
+    pub fn is_tty(self) -> bool { is_tty(self) }
 
     /// Get the tty name from the `FileDescriptor`
-    pub fn ttyname(self) -> Result<TTYName, Error> {
-        TTYName::new(self)
-    }
+    pub fn ttyname(self) -> Result<TTYName, Error> { TTYName::new(self) }
 }
 
 /// A struct that holds the name of a TTY with a `Display` trait implementation

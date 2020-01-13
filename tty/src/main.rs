@@ -1,8 +1,6 @@
 use std::process;
 
-use coreutils_core::{
-    tty::{FileDescriptor, Error::*, TTYName},
-};
+use coreutils_core::tty::{Error::*, FileDescriptor, TTYName};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
