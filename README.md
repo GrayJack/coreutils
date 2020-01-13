@@ -57,7 +57,7 @@ cargo install --path .
 |   Name   | Not Started | Started | Done |
 |:--------:|:-----------:|:-------:|:----:|
 | basename |             |         |   X  |
-|    cat   |      X      |         |      |
+|    cat   |             |    X    |      |
 |   chgrp  |      X      |         |      |
 |   chmod  |      X      |         |      |
 |   chown  |      X      |         |      |
