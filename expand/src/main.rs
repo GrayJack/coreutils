@@ -103,16 +103,9 @@ impl Expand {
                 b'\t' => {
                     let spaces = match self.tabstops.repetable {
                         Some(t) => t - column % t,
-                        None => {
-                            match self
-                                .tabstops
-                                .positions
-                                .iter()
-                                .find(|&&t| t <= column)
-                            {
-                                Some(t) => t - column,
-                                None => 1,
-                            }
+                        None => match self.tabstops.positions.iter().find(|&&t| t <= column) {
+                            Some(t) => t - column,
+                            None => 1,
                         },
                     };
 
