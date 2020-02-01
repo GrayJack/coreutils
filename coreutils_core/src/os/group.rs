@@ -27,7 +27,7 @@ use libc::{sysconf, _SC_NGROUPS_MAX};
 use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
-use crate::{passwd::Error as PwError, types::Gid};
+use super::{passwd::Error as PwError, Gid};
 
 #[cfg(target_os = "solaris")]
 extern "C" {

@@ -13,7 +13,7 @@ use std::{
     mem, slice,
 };
 
-use crate::types::{Pid, TimeVal};
+use super::{Pid, TimeVal};
 
 #[cfg(any(target_os = "linux", target_os = "netbsd"))]
 use libc::__exit_status as ExitStatus;

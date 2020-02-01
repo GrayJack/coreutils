@@ -4,7 +4,7 @@
 //! the names defined on `GETAUDIT(2)` will have a '¹' on them.
 
 use std::{
-    error::Error,
+    io,
     fmt::{self, Display},
     mem::MaybeUninit,
 };
@@ -12,20 +12,6 @@ use std::{
 #[cfg(target_os = "macos")]
 use libc::dev_t;
 use libc::{c_int, c_uint, pid_t, uid_t};
-
-/// Struct for errors that happens on calls to `C` audit functions
-#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
-pub struct AuditError {
-    err: String,
-}
-
-impl Display for AuditError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.err) }
-}
-
-impl Error for AuditError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> { None }
-}
 
 /// This type contains the audit identifier which is recorded in the audit log for each
 /// event the process caused.
@@ -155,12 +141,12 @@ extern "C" {
 }
 
 /// Display the `AuditInfo` if `getaudit()` call was successful, return a Err otherwise.
-pub fn auditid() -> Result<(), AuditError> {
+pub fn auditid() -> io::Result<()> {
     let mut auditinfo: MaybeUninit<AuditInfo> = MaybeUninit::zeroed();
     let address = auditinfo.as_mut_ptr() as *mut AuditInfo;
 
-    if unsafe { getaudit(address) } < 0 {
-        return Err(AuditError { err: "getaudit: Operation not permitted".to_string() });
+    if unsafe { getaudit(address) } == -1 {
+        return Err(io::Error::last_os_error());
     }
 
     let auditinfo = unsafe { auditinfo.assume_init() };

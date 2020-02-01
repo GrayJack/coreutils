@@ -48,11 +48,10 @@ impl StdError for Error {
 pub fn get_priority(which: c_int, who: c_int) -> Result<c_int, Error> {
     let res = unsafe { getpriority(which, who) };
 
-    if IOError::last_os_error().raw_os_error().unwrap() != 0 {
-        return Err(Error::GetPriority(IOError::last_os_error()));
+    match IOError::last_os_error().raw_os_error().unwrap() {
+        0 => Ok(res),
+        _ => Err(Error::GetPriority(IOError::last_os_error()))
     }
-
-    Ok(res)
 }
 
 /// This function returns the highest priority (lowest numerical value) enjoyed by any of
@@ -61,11 +60,10 @@ pub fn get_priority(which: c_int, who: c_int) -> Result<c_int, Error> {
 pub fn get_priority(which: c_int, who: id_t) -> Result<c_int, Error> {
     let res = unsafe { getpriority(which, who) };
 
-    if IOError::last_os_error().raw_os_error().unwrap() != 0 {
-        return Err(Error::GetPriority(IOError::last_os_error()));
+    match IOError::last_os_error().raw_os_error().unwrap() {
+        0 => Ok(res),
+        _ => Err(Error::GetPriority(IOError::last_os_error()))
     }
-
-    Ok(res)
 }
 
 /// Get the highest priority (lowest numerical value) enjoyed by any of
@@ -78,35 +76,28 @@ pub fn get_priority(
 {
     let res = unsafe { getpriority(which, who) };
 
-    if IOError::last_os_error().raw_os_error().unwrap() != 0 {
-        return Err(Error::GetPriority(IOError::last_os_error()));
+    match IOError::last_os_error().raw_os_error().unwrap() {
+        0 => Ok(res),
+        _ => Err(Error::GetPriority(IOError::last_os_error()))
     }
-
-    Ok(res)
 }
 
 /// Set the priority of a specified process.
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 pub fn set_priority(which: c_int, who: c_int, prio: c_int) -> Result<(), Error> {
-    let res = unsafe { setpriority(which, who, prio) };
-
-    if res < 0 {
-        return Err(Error::SetPriority(IOError::last_os_error()));
+    match unsafe { setpriority(which, who, prio) } {
+        0 => Ok(()),
+        _ => Err(Error::SetPriority(IOError::last_os_error())),
     }
-
-    Ok(())
 }
 
 /// Set the priority of a specified process.
 #[cfg(not(any(target_os = "freebsd", target_os = "dragonfly", target_os = "linux")))]
 pub fn set_priority(which: c_int, who: id_t, prio: c_int) -> Result<(), Error> {
-    let res = unsafe { setpriority(which, who, prio) };
-
-    if res < 0 {
-        return Err(Error::SetPriority(IOError::last_os_error()));
+    match unsafe { setpriority(which, who, prio) } {
+        0 => Ok(()),
+        _ => Err(Error::SetPriority(IOError::last_os_error())),
     }
-
-    Ok(())
 }
 
 /// Set the priority of a specified process.
@@ -116,11 +107,8 @@ pub fn set_priority(
     who: id_t, prio: c_int,
 ) -> Result<(), Error>
 {
-    let res = unsafe { setpriority(which, who, prio) };
-
-    if res < 0 {
-        return Err(Error::SetPriority(IOError::last_os_error()));
+    match unsafe { setpriority(which, who, prio) } {
+        0 => Ok(()),
+        _ => Err(Error::SetPriority(IOError::last_os_error())),
     }
-
-    Ok(())
 }

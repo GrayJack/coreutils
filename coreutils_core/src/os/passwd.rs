@@ -11,19 +11,19 @@ use std::{
     result::Result as StdResult,
 };
 
+use super::{
+    group::{Error as GrError, Groups},
+    Gid, Uid,
+};
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-use crate::types::Fields;
+use super::Fields;
 #[cfg(not(any(
     target_os = "linux",
     target_os = "haiku",
     target_os = "fuchsia",
     target_os = "solaris"
 )))]
-use crate::types::Time;
-use crate::{
-    group::{Error as GrError, Groups},
-    types::{Gid, Uid},
-};
+use super::Time;
 
 use self::Error::*;
 

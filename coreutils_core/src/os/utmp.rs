@@ -8,7 +8,7 @@ use std::{
     slice,
 };
 
-use crate::types::Time;
+use super::Time;
 
 use libc::{c_char, utmp};
 

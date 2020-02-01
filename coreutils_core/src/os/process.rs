@@ -3,10 +3,12 @@ use std::ffi::CString;
 use std::{convert::TryInto, io};
 
 use crate::{
-    group::{Group, Groups},
     libc,
-    passwd::Passwd,
-    types::Gid,
+    os::{
+        group::{Group, Groups},
+        passwd::Passwd,
+        Gid,
+    },
 };
 
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]

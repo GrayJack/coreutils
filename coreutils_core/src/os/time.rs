@@ -2,7 +2,7 @@
 //!
 //! It will probably be moved to a `time` module or `ostime` module.
 
-use super::types::TimeVal;
+use super::TimeVal;
 use std::{io, ptr};
 
 /// Set the system time as `timeval`

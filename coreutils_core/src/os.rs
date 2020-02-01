@@ -1,5 +1,28 @@
-//! Module for more widelly used types in this crate and helper functions related to these
-//! times.
+//! Module for OS processes and types abstractions.
+pub mod group;
+pub mod login_name;
+pub mod passwd;
+pub mod process;
+pub mod time;
+pub mod tty;
+pub mod utsname;
+
+// Specific Modules
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+pub mod load;
+
+#[cfg(any(target_os = "netbsd", target_os = "openbsd", target_os = "solaris"))]
+pub mod utmp;
+
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
+pub mod utmpx;
+
+#[cfg(any(target_os = "freebsd", target_os = "macos"))]
+pub mod audit;
+
+#[cfg(target_os = "openbsd")]
+pub mod routing_table;
+
 use libc::{
     c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t,
 };
@@ -23,7 +46,7 @@ pub type Time = time_t;
 pub type Fields = c_int;
 
 /// Field for `TimeStamp` in microseconds
-pub type Subsec = suseconds_t;
+pub type Susec = suseconds_t;
 
 /// Get the current running process user effective group id.
 #[inline]
