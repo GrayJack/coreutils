@@ -108,8 +108,7 @@ impl Expand {
                                 .tabstops
                                 .positions
                                 .iter()
-                                .skip_while(|&&t| t <= column)
-                                .next()
+                                .find(|&&t| t <= column)
                             {
                                 Some(t) => t - column,
                                 None => 1,
