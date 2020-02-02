@@ -2,7 +2,7 @@
 use std::process;
 
 #[cfg(not(any(target_os = "openbsd")))]
-use coreutils_core::os::utmpx::{UtmpxSet, UtmpxType};
+use coreutils_core::os::utmpx::{UtmpxSet as UtmpSet, UtmpxType};
 #[cfg(any(target_os = "openbsd"))]
 use coreutils_core::os::{utmp::UtmpSet, ByteSlice};
 
@@ -15,15 +15,11 @@ fn main() {
     let uts = if matches.is_present("FILE") {
         let file = matches.value_of("FILE").unwrap();
 
-        #[cfg(not(any(target_os = "openbsd")))]
-        match UtmpxSet::from_file(&file) {
-            Ok(u) => u,
-            Err(_) => UtmpxSet::system(),
-        }
-
-        #[cfg(any(target_os = "openbsd"))]
         match UtmpSet::from_file(&file) {
             Ok(u) => u,
+            #[cfg(not(any(target_os = "openbsd")))]
+            Err(_) => UtmpSet::system(),
+            #[cfg(any(target_os = "openbsd"))]
             Err(_) => match UtmpSet::system() {
                 Ok(uu) => uu,
                 Err(err) => {
@@ -43,7 +39,7 @@ fn main() {
         }
 
         #[cfg(not(any(target_os = "openbsd")))]
-        UtmpxSet::system()
+        UtmpSet::system()
     };
 
     if !uts.is_empty() {

@@ -4,7 +4,7 @@ use std::{os::unix::fs::MetadataExt, path::PathBuf, process};
 use coreutils_core::os::utmp::{Utmp, UtmpSet};
 #[cfg(not(target_os = "openbsd"))]
 use coreutils_core::os::utmpx::{
-    Utmpx, UtmpxSet,
+    Utmpx, UtmpxSet as UtmpSet,
     UtmpxType::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
 };
 use coreutils_core::{
@@ -29,9 +29,11 @@ fn main() {
     let uts = if matches.is_present("FILE") {
         let file = PathBuf::from(matches.value_of("FILE").unwrap());
 
-        #[cfg(any(target_os = "openbsd"))]
         match UtmpSet::from_file(&file) {
             Ok(u) => u,
+            #[cfg(not(any(target_os = "openbsd")))]
+            Err(_) => UtmpSet::system(),
+            #[cfg(any(target_os = "openbsd"))]
             Err(_) => match UtmpSet::system() {
                 Ok(uu) => uu,
                 Err(err) => {
@@ -39,12 +41,6 @@ fn main() {
                     process::exit(1);
                 },
             },
-        }
-
-        #[cfg(not(any(target_os = "openbsd")))]
-        match UtmpxSet::from_file(&file) {
-            Ok(u) => u,
-            Err(_) => UtmpxSet::system(),
         }
     } else {
         #[cfg(any(target_os = "openbsd"))]
@@ -57,7 +53,7 @@ fn main() {
         }
 
         #[cfg(not(any(target_os = "openbsd")))]
-        UtmpxSet::system()
+        UtmpSet::system()
     };
 
     let mut ut_vec = filter_entries(&uts, flags);
@@ -182,7 +178,7 @@ fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmp> {
 }
 
 #[cfg(not(target_os = "openbsd"))]
-fn filter_entries<'a>(uts: &'a UtmpxSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
+fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     let mut uts_user: Vec<_>;
     let mut uts_boot: Vec<_>;
     let mut uts_dead: Vec<_>;
