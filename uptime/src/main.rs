@@ -22,7 +22,20 @@ fn main() {
     let pretty_flag = matches.is_present("pretty");
     let since_flag = matches.is_present("since");
 
-    let utmps = UtmpSet::system();
+
+    let utmps = {
+        #[cfg(target_os = "openbsd")]
+        match UtmpSet::system() {
+            Ok(u) => u,
+            Err(err) => {
+                eprintln!("uptime: failed to get utmp: {}", err);
+                process::exit(1);
+            },
+        }
+
+        #[cfg(not(target_os = "openbsd"))]
+        UtmpSet::system()
+    };
 
     #[cfg(target_os = "openbsd")]
     let num_users = utmps.len();
