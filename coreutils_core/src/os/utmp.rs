@@ -16,7 +16,7 @@ use bstr::{BStr, BString, ByteSlice};
 use time::PrimitiveDateTime as DataTime;
 
 #[cfg(target_os = "solaris")]
-use crate::utmpx::UtmpxType;
+use super::utmpx::UtmpxType;
 #[cfg(target_os = "solaris")]
 use libc::{c_short, exit_status as ExitStatus};
 
