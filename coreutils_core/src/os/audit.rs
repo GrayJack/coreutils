@@ -4,8 +4,8 @@
 //! the names defined on `GETAUDIT(2)` will have a '¹' on them.
 
 use std::{
-    io,
     fmt::{self, Display},
+    io,
     mem::MaybeUninit,
 };
 

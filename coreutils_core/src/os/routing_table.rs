@@ -1,8 +1,8 @@
 //! Module for abstractions for routing table system calls on OpenBSD
 
 use std::{
-    io,
     fmt::{self, Display},
+    io,
     os::raw::c_int,
 };
 

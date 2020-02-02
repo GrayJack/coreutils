@@ -2,7 +2,7 @@ use std::process;
 
 use coreutils_core::{
     consts::{HOST_OS, MACHINE_ARCH},
-    utsname::UtsName,
+    os::utsname::UtsName,
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};

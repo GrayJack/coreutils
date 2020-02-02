@@ -1,6 +1,6 @@
 use std::process;
 
-use coreutils_core::{group::Group, passwd::Passwd};
+use coreutils_core::os::{group::Group, passwd::Passwd};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
@@ -237,7 +237,7 @@ fn audit_logic() {}
 
 #[cfg(target_os = "freebsd")]
 fn audit_logic() {
-    match coreutils_core::audit::auditid() {
+    match coreutils_core::os::audit::auditid() {
         Ok(_) => (),
         Err(err) => {
             println!("id: {}", err);

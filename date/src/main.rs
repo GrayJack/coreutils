@@ -1,9 +1,6 @@
 use std::{fmt, io, io::ErrorKind, path::Path, process};
 
-use coreutils_core::{
-    settime::set_time_of_day,
-    types::{Subsec, Time, TimeVal},
-};
+use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
 
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
@@ -86,7 +83,7 @@ fn date(args: &ArgMatches) -> Result<(), String> {
 fn set_os_time(datetime: DateTime<Local>) -> Result<(), String> {
     let time = TimeVal {
         tv_sec:  datetime.timestamp() as Time,
-        tv_usec: datetime.timestamp_subsec_micros() as Subsec,
+        tv_usec: datetime.timestamp_subsec_micros() as Susec,
     };
 
     match set_time_of_day(time) {

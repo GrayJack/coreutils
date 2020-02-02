@@ -1,16 +1,16 @@
 use std::{os::unix::fs::MetadataExt, path::PathBuf, process};
 
 #[cfg(target_os = "openbsd")]
-use coreutils_core::utmp::{Utmp, UtmpSet};
+use coreutils_core::os::utmp::{Utmp, UtmpSet};
 #[cfg(not(target_os = "openbsd"))]
-use coreutils_core::utmpx::{
+use coreutils_core::os::utmpx::{
     Utmpx, UtmpxSet,
     UtmpxType::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
 };
 use coreutils_core::{
     libc::S_IWGRP,
+    os::tty::{FileDescriptor, TTYName},
     time::PrimitiveDateTime as DataTime,
-    tty::{FileDescriptor, TTYName},
     ByteSlice,
 };
 

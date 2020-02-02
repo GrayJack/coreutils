@@ -1,6 +1,6 @@
 use std::{env, process};
 
-use coreutils_core::login_name::user_login_name;
+use coreutils_core::os::login_name::user_login_name;
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 

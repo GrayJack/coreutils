@@ -1,4 +1,4 @@
-use coreutils_core::{
+use coreutils_core::os::{
     group::{Error as GrError, Groups},
     passwd::Error as PwError,
 };

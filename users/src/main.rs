@@ -2,9 +2,9 @@
 use std::process;
 
 #[cfg(not(any(target_os = "openbsd")))]
-use coreutils_core::utmpx::{UtmpxSet, UtmpxType};
+use coreutils_core::os::utmpx::{UtmpxSet, UtmpxType};
 #[cfg(any(target_os = "openbsd"))]
-use coreutils_core::{utmp::UtmpSet, ByteSlice};
+use coreutils_core::os::{utmp::UtmpSet, ByteSlice};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 

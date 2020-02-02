@@ -5,13 +5,13 @@ use std::{
 };
 
 #[cfg(target_os = "openbsd")]
-use coreutils_core::utmp::UtmpSet;
+use coreutils_core::os::utmp::UtmpSet;
 #[cfg(not(target_os = "openbsd"))]
-use coreutils_core::utmpx::{
+use coreutils_core::os::utmpx::{
     UtmpxSet as UtmpSet,
     UtmpxType::{BootTime, UserProcess},
 };
-use coreutils_core::{libc::time_t, load::load_average, time::PrimitiveDateTime as DateTime};
+use coreutils_core::{libc::time_t, os::load::load_average, time::PrimitiveDateTime as DateTime};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 

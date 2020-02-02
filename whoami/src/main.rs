@@ -1,6 +1,6 @@
 use std::{env, process};
 
-use coreutils_core::passwd::Passwd;
+use coreutils_core::os::passwd::Passwd;
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 

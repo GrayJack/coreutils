@@ -11,10 +11,6 @@ use std::{
     result::Result as StdResult,
 };
 
-use super::{
-    group::{Error as GrError, Groups},
-    Gid, Uid,
-};
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use super::Fields;
 #[cfg(not(any(
@@ -24,6 +20,10 @@ use super::Fields;
     target_os = "solaris"
 )))]
 use super::Time;
+use super::{
+    group::{Error as GrError, Groups},
+    Gid, Uid,
+};
 
 use self::Error::*;
 

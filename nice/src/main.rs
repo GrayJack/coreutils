@@ -7,7 +7,7 @@ use std::{
 
 use coreutils_core::{
     libc::ENOENT,
-    process::priority::{get_priority, set_priority, PRIO_PROCESS},
+    os::process::priority::{get_priority, set_priority, PRIO_PROCESS},
 };
 
 use clap::{

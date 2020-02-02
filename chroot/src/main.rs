@@ -1,6 +1,6 @@
 use std::io;
 
-use coreutils_core::{
+use coreutils_core::os::{
     group::{Group, Groups},
     passwd::Passwd,
     process::{change_root, set_group, set_groups, set_user},

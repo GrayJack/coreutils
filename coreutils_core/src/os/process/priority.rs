@@ -50,7 +50,7 @@ pub fn get_priority(which: c_int, who: c_int) -> Result<c_int, Error> {
 
     match IOError::last_os_error().raw_os_error().unwrap() {
         0 => Ok(res),
-        _ => Err(Error::GetPriority(IOError::last_os_error()))
+        _ => Err(Error::GetPriority(IOError::last_os_error())),
     }
 }
 
@@ -62,7 +62,7 @@ pub fn get_priority(which: c_int, who: id_t) -> Result<c_int, Error> {
 
     match IOError::last_os_error().raw_os_error().unwrap() {
         0 => Ok(res),
-        _ => Err(Error::GetPriority(IOError::last_os_error()))
+        _ => Err(Error::GetPriority(IOError::last_os_error())),
     }
 }
 
@@ -78,7 +78,7 @@ pub fn get_priority(
 
     match IOError::last_os_error().raw_os_error().unwrap() {
         0 => Ok(res),
-        _ => Err(Error::GetPriority(IOError::last_os_error()))
+        _ => Err(Error::GetPriority(IOError::last_os_error())),
     }
 }
 
