@@ -2,7 +2,7 @@ use std::{env, fs, path::PathBuf, process};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
-use coreutils_core::mktemp::{mkdtemp, mkstemp};
+use coreutils_core::{libc::EINVAL, mktemp::{mkdtemp, mkstemp}};
 
 fn main() {
     let yaml = load_yaml!("mktemp.yml");
@@ -64,8 +64,15 @@ fn main() {
                 if !quiet {
                     eprintln!(
                         "mktemp: failed to create directory using template '{}': {}",
+                        // Ok to unwrap cause the template is created over already checked UTF-8
+                        // strings
                         template.to_str().unwrap(),
-                        err
+                        // Ok to unwrap cause the function can only return an OS error kind
+                        if err.raw_os_error().unwrap() == EINVAL {
+                            "Too few X's in template".to_string()
+                        } else {
+                            format!("{}", err)
+                        }
                     );
                 }
                 process::exit(1);
@@ -92,8 +99,15 @@ fn main() {
                 if !quiet {
                     eprintln!(
                         "mktemp: failed to create file using template '{}': {}",
+                        // Ok to unwrap cause the template is created over already checked UTF-8
+                        // strings
                         template.to_str().unwrap(),
-                        err
+                        // Ok to unwrap cause the function can only return an OS error kind
+                        if err.raw_os_error().unwrap() == EINVAL {
+                            "Too few X's in template".to_string()
+                        } else {
+                            format!("{}", err)
+                        }
                     );
                 }
                 process::exit(1);
