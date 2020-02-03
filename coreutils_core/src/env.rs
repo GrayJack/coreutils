@@ -15,7 +15,7 @@ use libc::stat;
 
 type Result<T> = std::result::Result<T, Error>;
 
-/// Possible errors when calling this module functions
+/// Possible errors when calling this module functions.
 #[derive(Debug)]
 pub enum Error {
     Var(VarError),

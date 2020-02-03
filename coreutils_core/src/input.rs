@@ -31,10 +31,10 @@ pub struct Input<'a> {
 }
 
 impl<'a> Input<'a> {
-    /// Initializes a new Input builder
+    /// Initializes a new Input builder.
     pub const fn new() -> Self { Input { msg: None, err_msg: None } }
 
-    /// Specifies the message to display to the user
+    /// Specifies the message to display to the user.
     pub fn with_msg(&mut self, msg: &'a str) -> &mut Self {
         self.msg = Some(msg);
 
@@ -72,7 +72,7 @@ impl<'a> Input<'a> {
         Some(line)
     }
 
-    /// Gets the input value the user entered as a `String`
+    /// Gets the input value the user entered as a `String`.
     pub fn get(&self) -> Option<String> {
         match self.get_input() {
             Some(input) => Some(input.trim().to_string()),
@@ -80,7 +80,7 @@ impl<'a> Input<'a> {
         }
     }
 
-    /// Verifies whether the user input is considered an 'affirmative' answer
+    /// Verifies whether the user input is considered an 'affirmative' answer.
     pub fn is_affirmative(&self) -> bool {
         if let Some(input) = self.get_input() {
             let input = input.trim().to_uppercase();

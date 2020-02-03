@@ -315,7 +315,7 @@ impl Passwd {
     )))]
     pub fn class(&self) -> &BStr { &self.class.as_bstr() }
 
-    /// Get `Passwd` password change time
+    /// Get `Passwd` password change time.
     #[inline]
     #[cfg(not(any(
         target_os = "linux",
@@ -325,7 +325,7 @@ impl Passwd {
     )))]
     pub fn password_change(&self) -> Time { self.change }
 
-    /// Get `Passwd` expiration time
+    /// Get `Passwd` expiration time.
     #[inline]
     #[cfg(not(any(
         target_os = "linux",
@@ -335,7 +335,7 @@ impl Passwd {
     )))]
     pub fn expire(&self) -> Time { self.expire }
 
-    /// Get `Passwd` fields filled in
+    /// Get `Passwd` fields filled in.
     #[inline]
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn fields(&self) -> Fields { self.fields }

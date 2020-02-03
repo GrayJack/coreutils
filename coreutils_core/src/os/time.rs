@@ -1,6 +1,4 @@
-//! Temporary _settimeofday(3)_ host.
-//!
-//! It will probably be moved to a `time` module or `ostime` module.
+//! Module for time related abstractions more close to the OS.
 
 use super::TimeVal;
 use std::{io, ptr};

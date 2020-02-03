@@ -51,12 +51,13 @@ use std::{
 /// an in-depth overview of what each backup mode means/does.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BackupMode {
-    /// No backups will be made
+    /// No backups will be made.
     None,
     /// Backups will be made of the form `<filename>~<X>~` where `X` is the next backup
-    /// number
+    /// number.
     Numbered,
-    /// The backup method will be consistant with what already exists for the current file
+    /// The backup method will be consistant with what already exists for the current
+    /// file.
     Existing,
     /// Backups will be made of the form `<filename><suffix>` where `suffix` is any
     /// suffix.

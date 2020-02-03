@@ -1,4 +1,4 @@
-//! Module for TTY abstractions
+//! Module for TTY abstractions.
 
 use std::{
     error::Error as StdError,

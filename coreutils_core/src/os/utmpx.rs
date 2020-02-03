@@ -1,4 +1,4 @@
-//! Extended account database module
+//! Extended account database module.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::ffi::CString;
 use std::{
@@ -58,12 +58,12 @@ impl Display for Error {
     }
 }
 
-/// Possible types of a `Utmpx` instance
+/// Possible types of a `Utmpx` instance.
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum UtmpxKind {
-    /// Not sure yet (Linux and MacOS exclusive)
+    /// Not sure yet. (Linux and MacOS exclusive)
     Accounting,
     /// Time of a system boot.
     BootTime,
@@ -81,46 +81,46 @@ pub enum UtmpxKind {
     OldTime,
     /// Run level. Provided for compatibility, not used on NetBSD.
     RunLevel,
-    /// Not sure yet (MacOS exclusive)
+    /// Not sure yet. (MacOS exclusive)
     Signature,
     /// The session leader of a time of system shutdown.
     ShutdownProcess,
     // A user process.
     UserProcess,
-    // Not sure yet
+    // Not sure yet.
     DownTime,
 }
 
 /// A struct that represents a __user__ account, where user can be humam users or other
-/// parts of the system that requires the usage of account structure, like some daemons
+/// parts of the system that requires the usage of account structure, like some daemons.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmpx {
-    /// User login name
+    /// User login name.
     user:    BString,
-    /// Host name
+    /// Host name.
     host:    BString,
-    /// Process id creating the entry
+    /// Process id creating the entry.
     pid:     Pid,
-    /// Record identifier (/etc/inittab id)
+    /// Record identifier. (/etc/inittab id)
     id:      BString,
-    /// Device name (console/tty, lnxx)
+    /// Device name. (console/tty, lnxx)
     line:    BString,
-    /// Type of the entry
+    /// Type of the entry.
     ut_type: UtmpxKind,
-    /// The time entry was created
+    /// The time entry was created.
     timeval: TimeVal, // tv
     #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
     exit:    ExitStatus,
-    /// Session ID (used for windowing)
+    /// Session ID. (used for windowing)
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     session: c_int,
-    /// Session ID (used for windowing)
+    /// Session ID. (used for windowing)
     #[cfg(target_os = "solaris")]
     session: c_int,
-    /// Session ID (used for windowing)
+    /// Session ID. (used for windowing)
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
     session: c_long,
-    /// Session ID (used for windowing)
+    /// Session ID. (used for windowing)
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     session: u16,
     #[cfg(target_os = "linux")]
@@ -132,58 +132,58 @@ pub struct Utmpx {
 }
 
 impl Utmpx {
-    /// Creates a new `Utmpx` entry from the `C` version of the structure
+    /// Creates a new `Utmpx` entry from the `C` version of the structure.
     pub fn from_c_utmpx(utm: utmpx) -> Self { Self::from(utm) }
 
-    /// Get user name
+    /// Get user name.
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
-    /// Get host name
+    /// Get host name.
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
 
-    /// Get the process ID
+    /// Get the process ID.
     pub fn process_id(&self) -> Pid { self.pid }
 
-    /// Get the record ID
+    /// Get the record ID.
     pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
-    /// Get the device name of the entry (usually a tty or console)
+    /// Get the device name of the entry (usually a tty or console).
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
-    /// Get the type kind if the entry
+    /// Get the type kind if the entry.
     pub const fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
-    /// Get the time where the entry was created (often login time)
+    /// Get the time where the entry was created. (often login time)
     pub const fn timeval(&self) -> TimeVal { self.timeval }
 
     /// Get the time where the entry was created (often login time) in a more complete
-    /// structure
+    /// structure.
     pub fn login_time(&self) -> DateTime {
         DateTime::from_unix_timestamp(self.timeval.tv_sec as i64)
             + Duration::microseconds(self.timeval.tv_usec as i64)
     }
 
-    /// Get the session ID of the entry
+    /// Get the session ID of the entry.
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     pub const fn session(&self) -> c_int { self.session }
 
-    /// Get the session ID of the entry
+    /// Get the session ID of the entry.
     #[cfg(target_os = "solaris")]
     pub const fn session(&self) -> c_int { self.session }
 
-    /// Get the session ID of the entry
+    /// Get the session ID of the entry.
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
     pub const fn session(&self) -> c_long { self.session }
 
-    /// Get the session ID of the entry
+    /// Get the session ID of the entry.
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     pub const fn session(&self) -> u16 { self.session }
 
-    /// Get v6 address of the entry
+    /// Get v6 address of the entry.
     #[cfg(target_os = "linux")]
     pub const fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
 
-    /// Get exit status of the entry
+    /// Get exit status of the entry.
     #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
     pub const fn exit_status(&self) -> ExitStatus { self.exit }
 }
@@ -303,12 +303,12 @@ impl From<utmpx> for Utmpx {
     }
 }
 
-/// A collection of Utmpx entries
+/// A collection of Utmpx entries.
 #[derive(Debug)]
 pub struct UtmpxSet(HashSet<Utmpx>);
 
 impl UtmpxSet {
-    /// Creates a new collection over a utmpx entry binary file
+    /// Creates a new collection over a utmpx entry binary file.
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
@@ -344,7 +344,7 @@ impl UtmpxSet {
         Ok(UtmpxSet(set))
     }
 
-    /// Creates a new collection over a utmpx entry binary file
+    /// Creates a new collection over a utmpx entry binary file.
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmpx>();
@@ -367,7 +367,7 @@ impl UtmpxSet {
         Ok(UtmpxSet(set))
     }
 
-    /// Creates a new collection geting all entries from the running system
+    /// Creates a new collection geting all entries from the running system.
     pub fn system() -> Self {
         let mut set = HashSet::new();
 
@@ -390,13 +390,13 @@ impl UtmpxSet {
         UtmpxSet(set)
     }
 
-    /// Returns `true` if collection nas no elements
+    /// Returns `true` if collection nas no elements.
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
-    /// Creates a iterator over it's entries
+    /// Creates a iterator over it's entries.
     pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
 
-    /// Size of the collection
+    /// Size of the collection.
     pub fn len(&self) -> usize { self.0.len() }
 }
 

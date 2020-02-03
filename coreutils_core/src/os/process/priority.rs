@@ -1,4 +1,4 @@
-//! Module for safe API for getting and setting process priority
+//! Module for safe API for getting and setting process priority.
 
 use std::{
     io::{self, Error as IOError},

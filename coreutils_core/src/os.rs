@@ -27,7 +27,7 @@ use libc::{
     c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t,
 };
 
-/// Time stamp type used on system structures
+/// Time stamp type used on system structures.
 pub type TimeVal = timeval;
 
 /// Group ID type.
@@ -36,16 +36,16 @@ pub type Gid = gid_t;
 /// User ID type.
 pub type Uid = uid_t;
 
-/// Process ID type
+/// Process ID Type.
 pub type Pid = pid_t;
 
-/// `Passwd` time type
+/// `Passwd` time type.
 pub type Time = time_t;
 
-/// `Passwd` field type
+/// `Passwd` field type.
 pub type Fields = c_int;
 
-/// Field for `TimeStamp` in microseconds
+/// Field for `TimeStamp` in microseconds.
 pub type Susec = suseconds_t;
 
 /// Get the current running process user effective group id.

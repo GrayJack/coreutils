@@ -111,9 +111,9 @@ pub struct Group {
     name:   BString,
     /// Group ID.
     id:     Gid,
-    /// Group encrypted password
+    /// Group encrypted password.
     passwd: BString,
-    /// Group list of members
+    /// Group list of members.
     mem:    Members,
 }
 
@@ -279,7 +279,7 @@ impl Groups {
     #[inline]
     pub const fn new() -> Self { Groups { inner: Vec::new() } }
 
-    /// Get all the process caller groups
+    /// Get all the process caller groups.
     pub fn caller() -> Result<Self> {
         // First we check if we indeed have groups.
         // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary
@@ -423,7 +423,7 @@ impl Groups {
         Ok(Groups { inner: groups })
     }
 
-    /// Get groups from a list of group names
+    /// Get groups from a list of group names.
     pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
         let groups: Result<Vec<Group>> =
             group_list.iter().map(|&group_name| Group::from_name(group_name)).collect();
@@ -452,6 +452,7 @@ impl Groups {
     #[inline]
     pub fn into_vec(self) -> Vec<Group> { self.inner }
 
+    /// Creates a iterator over it's entries.
     pub fn iter(&self) -> Iter<'_, Group> { self.inner.iter() }
 }
 

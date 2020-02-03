@@ -68,7 +68,7 @@ pub struct AuditTerminalIdAddr {
     pub at_addr: [u32; 4],
 }
 
-/// This struct represents a active audit session
+/// This struct represents a active audit session.
 ///
 /// ¹Same as `auditinfo_t`
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -95,13 +95,13 @@ impl Display for AuditInfo {
     }
 }
 
-/// This struct represents a active audit session address
+/// This struct represents a active audit session address.
 ///
 /// ¹Same as `auditinfo_addr_t`
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 #[repr(C)]
 pub struct AuditInfoAddr {
-    /// Audit user ID
+    /// Audit user ID.
     pub ai_auid:   AuditUserId,
     /// Audit masks.
     pub ai_mask:   AuditMask,
@@ -109,7 +109,7 @@ pub struct AuditInfoAddr {
     pub ai_termid: AuditTerminalIdAddr,
     /// Audit session ID.
     pub ai_asid:   AuditSessionId,
-    /// Audit session flags
+    /// Audit session flags.
     pub ai_flags:  u64,
 }
 

@@ -50,39 +50,39 @@ pub struct Utmp {
 }
 
 impl Utmp {
-    /// Creates a `Utmp` from the c structure `utmp`
+    /// Creates a `Utmp` from the c structure `utmp`.
     pub fn from_c_utmp(utm: utmp) -> Self { Self::from(utm) }
 
-    /// Get user name
+    /// Get user name.
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
-    /// Get host name
+    /// Get host name.
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
 
-    /// Get `/etc/inittab` id
+    /// Get `/etc/inittab` id.
     #[cfg(target_os = "solaris")]
     pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
-    /// Get the device name of the entry (usually a tty or console)
+    /// Get the device name of the entry. (usually a tty or console)
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
-    /// Get the time the entry was created
+    /// Get the time the entry was created.
     pub const fn time(&self) -> Time { self.time }
 
     /// Get the time where the entry was created (often login time) in a more complete
-    /// structure
+    /// structure.
     pub fn login_time(&self) -> DataTime { DataTime::from_unix_timestamp(self.time) }
 
-    /// Get the process ID of the entry
+    /// Get the process ID of the entry.
     #[cfg(target_os = "solaris")]
     pub fn pid(&self) -> c_short { self.pid }
 
-    /// Get the entry type
+    /// Get the entry type.
     #[cfg(target_os = "solaris")]
     pub fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
-    /// Get the exit status of the entry
+    /// Get the exit status of the entry.
     #[cfg(target_os = "solaris")]
     pub fn exit_status(&self) -> ExitStatus { self.exit }
 }
@@ -149,11 +149,12 @@ impl From<utmp> for Utmp {
     }
 }
 
+/// A collection of Utmp.
 #[derive(Debug)]
 pub struct UtmpSet(HashSet<Utmp>);
 
 impl UtmpSet {
-    /// Creates a new collection over a `utmpx` entry binary file
+    /// Creates a new collection over a `utmpx` entry binary file.
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmp>();
         let num_bytes = fs::metadata(&path)?.len() as usize;
@@ -175,13 +176,13 @@ impl UtmpSet {
         Ok(UtmpSet(set))
     }
 
-    /// Creates a new collection geting all entries from the running system
+    /// Creates a new collection geting all entries from the running system.
     pub fn system() -> io::Result<Self> { Self::from_file("/var/run/utmp") }
 
-    /// Returns `true` if collection nas no elements
+    /// Returns `true` if collection nas no elements.
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
-    /// Creates a iterator over it's entries
+    /// Creates a iterator over it's entries.
     pub fn iter(&self) -> hash_set::Iter<'_, Utmp> { self.0.iter() }
 }
 

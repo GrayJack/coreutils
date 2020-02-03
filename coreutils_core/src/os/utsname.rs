@@ -1,4 +1,4 @@
-//! Module for system information
+//! Module for system information.
 use std::{
     convert::TryFrom,
     ffi::CStr,
@@ -23,7 +23,7 @@ pub struct UtsName {
     version:    BString,
     /// Machine hardware platform.
     machine:    BString,
-    /// NIS or YP domain name
+    /// NIS or YP domain name.
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
     domainname: BString,
 }
@@ -48,7 +48,7 @@ impl UtsName {
     #[inline]
     pub fn system_name(&self) -> &BStr { self.sysname.as_bstr() }
 
-    /// Get host name of the machine
+    /// Get host name of the machine.
     #[inline]
     pub fn node_name(&self) -> &BStr { self.nodename.as_bstr() }
 
@@ -64,7 +64,7 @@ impl UtsName {
     #[inline]
     pub fn machine(&self) -> &BStr { self.machine.as_bstr() }
 
-    /// Get the NIS or YP domain name
+    /// Get the NIS or YP domain name.
     #[inline]
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
     pub fn domain_name(&self) -> &BStr { self.domainname.as_bstr() }

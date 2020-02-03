@@ -1,4 +1,4 @@
-//! Module with wrappers for libc mkstemp(3), mkdtemp(3)
+//! Module with wrappers for libc mkstemp(3), mkdtemp(3).
 
 use std::{
     fmt::{self, Display},
