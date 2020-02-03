@@ -8,8 +8,8 @@ use std::{
 use coreutils_core::os::utmp::UtmpSet;
 #[cfg(not(target_os = "openbsd"))]
 use coreutils_core::os::utmpx::{
+    UtmpxKind::{BootTime, UserProcess},
     UtmpxSet as UtmpSet,
-    UtmpxType::{BootTime, UserProcess},
 };
 use coreutils_core::{libc::time_t, os::load::load_average, time::PrimitiveDateTime as DateTime};
 

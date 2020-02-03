@@ -2,7 +2,7 @@
 use std::process;
 
 #[cfg(not(any(target_os = "openbsd")))]
-use coreutils_core::os::utmpx::{UtmpxSet as UtmpSet, UtmpxType};
+use coreutils_core::os::utmpx::{UtmpxKind, UtmpxSet as UtmpSet};
 #[cfg(any(target_os = "openbsd"))]
 use coreutils_core::os::{utmp::UtmpSet, ByteSlice};
 
@@ -56,7 +56,7 @@ fn main() {
 
         #[cfg(not(any(target_os = "openbsd")))]
         uts.iter()
-            .filter(|u| u.entry_type() == UtmpxType::UserProcess)
+            .filter(|u| u.entry_type() == UtmpxKind::UserProcess)
             .for_each(|u| print!("{} ", u.user()));
 
         println!();

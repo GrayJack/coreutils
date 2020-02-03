@@ -4,8 +4,9 @@ use std::{os::unix::fs::MetadataExt, path::PathBuf, process};
 use coreutils_core::os::utmp::{Utmp, UtmpSet};
 #[cfg(not(target_os = "openbsd"))]
 use coreutils_core::os::utmpx::{
-    Utmpx, UtmpxSet as UtmpSet,
-    UtmpxType::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
+    Utmpx,
+    UtmpxKind::{BootTime, DeadProcess, InitProcess, LoginProcess, NewTime, RunLevel, UserProcess},
+    UtmpxSet as UtmpSet,
 };
 use coreutils_core::{
     libc::S_IWGRP,
