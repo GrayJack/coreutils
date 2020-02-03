@@ -45,7 +45,7 @@ fn main() {
     let mut niceness = match get_priority(P_PROCESS, 0) {
         Ok(nice) => nice,
         Err(err) => {
-            eprintln!("nice: {}", err);
+            eprintln!("nice: failed to get priority: {}", err);
             drop(args);
             process::exit(125);
         },
@@ -54,7 +54,7 @@ fn main() {
     niceness += adjustment;
 
     if let Err(err) = set_priority(P_PROCESS, 0, niceness) {
-        eprintln!("nice: {}", err);
+        eprintln!("nice: failed to set priority: {}", err);
         drop(args);
         process::exit(125);
     }
