@@ -16,7 +16,7 @@ use bstr::{BStr, BString, ByteSlice};
 use time::PrimitiveDateTime as DataTime;
 
 #[cfg(target_os = "solaris")]
-use super::utmpx::UtmpxType;
+use super::utmpx::UtmpxKind;
 #[cfg(target_os = "solaris")]
 use libc::{c_short, exit_status as ExitStatus};
 
@@ -41,7 +41,7 @@ pub struct Utmp {
     pid:     c_short,
     /// Entry type
     #[cfg(target_os = "solaris")]
-    ut_type: UtmpxType,
+    ut_type: UtmpxKind,
     /// Exit status
     #[cfg(target_os = "solaris")]
     exit:    ExitStatus,
@@ -78,7 +78,7 @@ impl Utmp {
 
     /// Get the entry type
     #[cfg(target_os = "solaris")]
-    pub fn entry_type(&self) -> UtmpxType { self.ut_type }
+    pub fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
     /// Get the exit status of the entry
     #[cfg(target_os = "solaris")]
@@ -134,7 +134,7 @@ impl From<utmp> for Utmp {
             #[cfg(target_os = "solaris")]
             pid: utm.ut_pid,
             #[cfg(target_os = "solaris")]
-            ut_type: UtmpxType::from(utm.ut_type),
+            ut_type: UtmpxKind::from(utm.ut_type),
             #[cfg(target_os = "solaris")]
             exit: utm.ut_exit,
         }
