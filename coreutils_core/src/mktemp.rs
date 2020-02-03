@@ -1,17 +1,11 @@
 //! Module with wrappers for libc mkstemp(3), mkdtemp(3)
 
 use std::{
-    error::Error as StdError,
     fmt::{self, Display},
     fs::File,
-    io::Error as IOError,
+    io::{self, Error as IOError},
     os::unix::io::FromRawFd,
 };
-
-#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
-pub struct Error {
-    err: String,
-}
 
 /// A struct that represents a mktemp(3) result.
 /// This includes the file created, and the path to that file.
@@ -25,21 +19,13 @@ impl Display for Mktemp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.path) }
 }
 
-impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.err) }
-}
-
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
-}
-
 /// Creates a temporary file based on the given `template`.
 ///
 /// The `template` should end with a number of `X` characters.
 ///
 /// Some libc implementations requires the `template` to end with a minimum number of X
 /// characters (for example, 6 in glibc as of version 2.29).
-pub fn mkstemp(template: &str) -> Result<Mktemp, Error> {
+pub fn mkstemp(template: &str) -> io::Result<Mktemp> {
     let mut template_cstr = {
         let mut t = String::new();
         t.push_str(template);
@@ -49,19 +35,13 @@ pub fn mkstemp(template: &str) -> Result<Mktemp, Error> {
 
     let fd = unsafe { libc::mkstemp(template_cstr.as_mut_ptr() as *mut libc::c_char) };
 
-    if fd == -1 {
-        let error_str = match IOError::last_os_error().raw_os_error().unwrap() {
-            22 => "Too few X's in template".to_string(), // EINVAL
-            _ => IOError::last_os_error().to_string(),   /* error from stat(2) (BSD) or open(2)
-                                                           * (glibc) */
-        };
-        return Err(Error { err: error_str });
+    match fd {
+        -1 => Err(IOError::last_os_error()),
+        _ => {
+            template_cstr.pop();
+            Ok(Mktemp { file: unsafe { File::from_raw_fd(fd) }, path: template_cstr })
+        }
     }
-
-    // remove the trailing \0
-    template_cstr.pop();
-
-    Ok(Mktemp { file: unsafe { File::from_raw_fd(fd) }, path: template_cstr })
 }
 
 /// Creates a temporary directory based on the given `template`.
@@ -70,7 +50,7 @@ pub fn mkstemp(template: &str) -> Result<Mktemp, Error> {
 ///
 /// Some libc implementations requires the `template` to end with a minimum number of X
 /// characters (for example, 6 in glibc as of version 2.29).
-pub fn mkdtemp(template: &str) -> Result<String, Error> {
+pub fn mkdtemp(template: &str) -> io::Result<String> {
     let mut template_cstr = {
         let mut t = String::new();
         t.push_str(template);
@@ -83,12 +63,7 @@ pub fn mkdtemp(template: &str) -> Result<String, Error> {
     };
 
     if ptr.is_null() {
-        let error_str = match IOError::last_os_error().raw_os_error().unwrap() {
-            22 => "Too few X's in template".to_string(), // EINVAL
-            _ => IOError::last_os_error().to_string(),   /* error from stat(2) (BSD) or open(2)
-                                                           * (glibc) */
-        };
-        Err(Error { err: error_str })
+        Err(IOError::last_os_error())
     } else {
         template_cstr.pop();
         Ok(template_cstr)
