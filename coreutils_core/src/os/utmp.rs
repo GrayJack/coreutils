@@ -1,4 +1,6 @@
 //! Account database module
+#[cfg(target_os = "solaris")]
+use std::convert::{TryFrom, TryInto};
 use std::{
     collections::{hash_set, HashSet},
     fs::{self, File},
@@ -7,8 +9,6 @@ use std::{
     path::Path,
     slice,
 };
-#[cfg(target_os = "solaris")]
-use std::convert::{TryFrom, TryInto};
 
 use super::Time;
 

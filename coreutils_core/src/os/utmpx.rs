@@ -192,8 +192,9 @@ impl From<utmpx> for Utmpx {
     /// Converts `utmpx` to `Utmpx`.
     ///
     /// # Panic
-    /// This function may panic when converting a number to UtmpxKind. Since we get the number
-    /// from the OS it should never panic, but if the OS drastically change, it may panic.
+    /// This function may panic when converting a number to UtmpxKind. Since we get the
+    /// number from the OS it should never panic, but if the OS drastically change, it
+    /// may panic.
     fn from(c_utmpx: utmpx) -> Self {
         #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
         let user = {
