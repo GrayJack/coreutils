@@ -7,6 +7,8 @@ use std::{
     path::Path,
     slice,
 };
+#[cfg(target_os = "solaris")]
+use std::convert::{TryFrom, TryInto};
 
 use super::Time;
 
@@ -123,6 +125,12 @@ impl From<utmp> for Utmp {
 
         let time = utm.ut_time;
 
+        #[cfg(target_os = "solaris")]
+        let ut_type = match UtmpxKind::try_from(utm.ut_type) {
+            Ok(ut) => ut,
+            Err(err) => panic!(format!("{}", err)),
+        };
+
         Utmp {
             user,
             line,
@@ -134,7 +142,7 @@ impl From<utmp> for Utmp {
             #[cfg(target_os = "solaris")]
             pid: utm.ut_pid,
             #[cfg(target_os = "solaris")]
-            ut_type: UtmpxKind::from(utm.ut_type),
+            ut_type,
             #[cfg(target_os = "solaris")]
             exit: utm.ut_exit,
         }
@@ -226,6 +234,12 @@ impl From<Utmp> for utmp {
         #[cfg(target_os = "solaris")]
         utm.id.iter().enumerate().for_each(|(i, c)| ut_id[i] = *c as c_char);
 
+        #[cfg(target_os = "solaris")]
+        let ut_type = match utm.ut_type.try_into() {
+            Ok(a) => a,
+            Err(e) => panic!(format!("{}", e)),
+        };
+
         utmp {
             #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
             ut_name,
@@ -240,7 +254,7 @@ impl From<Utmp> for utmp {
             #[cfg(target_os = "solaris")]
             ut_pid: utm.pid,
             #[cfg(target_os = "solaris")]
-            ut_type: utm.ut_type.into(),
+            ut_type,
             #[cfg(target_os = "solaris")]
             ut_exit: utm.exit,
         }

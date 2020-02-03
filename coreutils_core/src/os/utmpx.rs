@@ -3,6 +3,9 @@
 use std::ffi::CString;
 use std::{
     collections::{hash_set, HashSet},
+    convert::TryFrom,
+    error::Error as StdError,
+    fmt::{self, Display},
     io,
     path::Path,
 };
@@ -30,6 +33,30 @@ use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 use bstr::{BStr, BString, ByteSlice};
 
 use time::{Duration, PrimitiveDateTime as DateTime};
+
+/// Error type for UtmpxKind conversion.
+#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub enum Error {
+    /// When the OS has not this UtmpxKind and a number related to that kind.
+    OsNoKind,
+    /// When the OS has no UtmpxKind related to this number.
+    OsNoNumber,
+}
+
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::OsNoKind => {
+                write!(f, "This OS has not this UtmpxKind and a number related to that kind")
+            },
+            Self::OsNoNumber => write!(f, "This OS has no UtmpxKind related to this number"),
+        }
+    }
+}
 
 /// Possible types of a `Utmpx` instance
 #[repr(u16)]
@@ -62,8 +89,6 @@ pub enum UtmpxKind {
     UserProcess,
     // Not sure yet
     DownTime,
-    /// Invalid entry
-    Invalid,
 }
 
 /// A struct that represents a __user__ account, where user can be humam users or other
@@ -164,6 +189,11 @@ impl Utmpx {
 }
 
 impl From<utmpx> for Utmpx {
+    /// Converts `utmpx` to `Utmpx`.
+    ///
+    /// # Panic
+    /// This function may panic when converting a number to UtmpxKind. Since we get the number
+    /// from the OS it should never panic, but if the OS drastically change, it may panic.
     fn from(c_utmpx: utmpx) -> Self {
         #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
         let user = {
@@ -215,7 +245,10 @@ impl From<utmpx> for Utmpx {
             BString::from(cstr.as_bytes())
         };
 
-        let ut_type = UtmpxKind::from(c_utmpx.ut_type);
+        let ut_type = match UtmpxKind::try_from(c_utmpx.ut_type) {
+            Ok(ut) => ut,
+            Err(err) => panic!(format!("{}", err)),
+        };
 
         let timeval = TimeVal {
             tv_sec:  c_utmpx.ut_tv.tv_sec as time_t,
@@ -379,208 +412,215 @@ impl IntoIterator for UtmpxSet {
 macro_rules! utmpxkind_impl_from {
     ($($t:ty)+) => (
         $(
+            // Number to UtmpxKind
             #[cfg(target_os = "freebsd")]
-            impl From<$t> for UtmpxKind {
-                fn from(num: $t) -> Self {
+            impl TryFrom<$t> for UtmpxKind {
+                type Error = Error;
+
+                fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
-                        0 => Self::Empty,
-                        1 => Self::BootTime,
-                        2 => Self::OldTime,
-                        3 => Self::NewTime,
-                        4 => Self::UserProcess,
-                        5 => Self::InitProcess,
-                        6 => Self::LoginProcess,
-                        7 => Self::DeadProcess,
-                        8 => Self::ShutdownProcess,
-                        _ => Self::Invalid,
+                        0 => Ok(Self::Empty),
+                        1 => Ok(Self::BootTime),
+                        2 => Ok(Self::OldTime),
+                        3 => Ok(Self::NewTime),
+                        4 => Ok(Self::UserProcess),
+                        5 => Ok(Self::InitProcess),
+                        6 => Ok(Self::LoginProcess),
+                        7 => Ok(Self::DeadProcess),
+                        8 => Ok(Self::ShutdownProcess),
+                        _ => Err(Error::OsNoNumber),
                     }
                 }
             }
 
             #[cfg(target_os = "netbsd")]
-            impl From<$t> for UtmpxKind {
-                fn from(num: $t) -> Self {
+            impl TryFrom<$t> for UtmpxKind {
+                type Error = Error;
+                fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
-                        0 => Self::Empty,
-                        1 => Self::RunLevel,
-                        2 => Self::BootTime,
-                        3 => Self::OldTime,
-                        4 => Self::NewTime,
-                        5 => Self::InitProcess,
-                        6 => Self::LoginProcess,
-                        7 => Self::UserProcess,
-                        8 => Self::DeadProcess,
-                        9 => Self::Accounting,
-                        10 => Self::Signature,
-                        11 => Self::DownTime,
-                        _ => Self::Invalid,
+                        0 => Ok(Self::Empty),
+                        1 => Ok(Self::RunLevel),
+                        2 => Ok(Self::BootTime),
+                        3 => Ok(Self::OldTime),
+                        4 => Ok(Self::NewTime),
+                        5 => Ok(Self::InitProcess),
+                        6 => Ok(Self::LoginProcess),
+                        7 => Ok(Self::UserProcess),
+                        8 => Ok(Self::DeadProcess),
+                        9 => Ok(Self::Accounting),
+                        10 => Ok(Self::Signature),
+                        11 => Ok(Self::DownTime),
+                        _ => Err(Error::OsNoNumber),
                     }
                 }
             }
 
             #[cfg(any(target_os = "dragonfly"))]
-            impl From<$t> for UtmpxKind {
-                fn from(num: $t) -> Self {
+            impl TryFrom<$t> for UtmpxKind {
+                type Error = Error;
+                fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
-                        0 => Self::Empty,
-                        1 => Self::RunLevel,
-                        2 => Self::BootTime,
-                        3 => Self::NewTime,
-                        4 => Self::OldTime,
-                        5 => Self::InitProcess,
-                        6 => Self::LoginProcess,
-                        7 => Self::UserProcess,
-                        8 => Self::DeadProcess,
-                        _ => Self::Invalid,
+                        0 => Ok(Self::Empty),
+                        1 => Ok(Self::RunLevel),
+                        2 => Ok(Self::BootTime),
+                        3 => Ok(Self::NewTime),
+                        4 => Ok(Self::OldTime),
+                        5 => Ok(Self::InitProcess),
+                        6 => Ok(Self::LoginProcess),
+                        7 => Ok(Self::UserProcess),
+                        8 => Ok(Self::DeadProcess),
+                        _ => Err(Error::OsNoNumber),
                     }
                 }
             }
 
             #[cfg(target_os = "solaris")]
-            impl From<$t> for UtmpxKind {
-                fn from(num: $t) -> Self {
+            impl TryFrom<$t> for UtmpxKind {
+                type Error = Error;
+                fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
-                        0 => Self::Empty,
-                        1 => Self::RunLevel,
-                        2 => Self::BootTime,
-                        3 => Self::OldTime,
-                        4 => Self::NewTime,
-                        5 => Self::InitProcess,
-                        6 => Self::LoginProcess,
-                        7 => Self::UserProcess,
-                        8 => Self::DeadProcess,
-                        9 => Self::Accounting,
-                        10 => Self::DownTime,
-                        _ => Self::Invalid,
+                        0 => Ok(Self::Empty),
+                        1 => Ok(Self::RunLevel),
+                        2 => Ok(Self::BootTime),
+                        3 => Ok(Self::OldTime),
+                        4 => Ok(Self::NewTime),
+                        5 => Ok(Self::InitProcess),
+                        6 => Ok(Self::LoginProcess),
+                        7 => Ok(Self::UserProcess),
+                        8 => Ok(Self::DeadProcess),
+                        9 => Ok(Self::Accounting),
+                        10 => Ok(Self::DownTime),
+                        _ => Err(Error::OsNoNumber),
                     }
                 }
             }
 
             #[cfg(any(target_os = "linux", target_os = "macos"))]
-            impl From<$t> for UtmpxKind {
-                fn from(num: $t) -> Self {
+            impl TryFrom<$t> for UtmpxKind {
+                type Error = Error;
+                fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
-                        0 => Self::Empty,
-                        1 => Self::RunLevel,
-                        2 => Self::BootTime,
-                        3 => Self::NewTime,
-                        4 => Self::OldTime,
-                        5 => Self::InitProcess,
-                        6 => Self::LoginProcess,
-                        7 => Self::UserProcess,
-                        8 => Self::DeadProcess,
-                        9 => Self::Accounting,
+                        0 => Ok(Self::Empty),
+                        1 => Ok(Self::RunLevel),
+                        2 => Ok(Self::BootTime),
+                        3 => Ok(Self::NewTime),
+                        4 => Ok(Self::OldTime),
+                        5 => Ok(Self::InitProcess),
+                        6 => Ok(Self::LoginProcess),
+                        7 => Ok(Self::UserProcess),
+                        8 => Ok(Self::DeadProcess),
+                        9 => Ok(Self::Accounting),
                         #[cfg(target_os = "macos")]
-                        10 => Self::Signature,
+                        10 => Ok(Self::Signature),
                         #[cfg(target_os = "macos")]
-                        11 => Self::ShutdownProcess,
-                        _ => Self::Invalid,
+                        11 => Ok(Self::ShutdownProcess),
+                        _ => Err(Error::OsNoNumber),
                     }
                 }
             }
 
-            // UtmpxKind to literal
+            // UtmpxKind to number
             #[cfg(target_os = "freebsd")]
-            impl From<UtmpxKind> for $t {
-                fn from(utype: UtmpxKind) -> Self {
+            impl TryFrom<UtmpxKind> for $t {
+                type Error = Error;
+                fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
-                        UtmpxKind::Empty => 0,
-                        UtmpxKind::BootTime => 1,
-                        UtmpxKind::OldTime => 2,
-                        UtmpxKind::NewTime => 3,
-                        UtmpxKind::UserProcess => 4,
-                        UtmpxKind::InitProcess => 5,
-                        UtmpxKind::LoginProcess => 6,
-                        UtmpxKind::DeadProcess => 7,
-                        UtmpxKind::ShutdownProcess => 8,
-                        UtmpxKind::Invalid => 12,
-                        _ => 12,
+                        UtmpxKind::Empty => Ok(0),
+                        UtmpxKind::BootTime => Ok(1),
+                        UtmpxKind::OldTime => Ok(2),
+                        UtmpxKind::NewTime => Ok(3),
+                        UtmpxKind::UserProcess => Ok(4),
+                        UtmpxKind::InitProcess => Ok(5),
+                        UtmpxKind::LoginProcess => Ok(6),
+                        UtmpxKind::DeadProcess => Ok(7),
+                        UtmpxKind::ShutdownProcess => Ok(8),
+                        _ => Err(Error::OsNoKind),
                     }
                 }
             }
 
             #[cfg(target_os = "netbsd")]
-            impl From<UtmpxKind> for $t {
-                fn from(utype: UtmpxKind) -> Self {
+            impl TryFrom<UtmpxKind> for $t {
+                type Error = Error;
+                fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
-                        UtmpxKind::Empty => 0,
-                        UtmpxKind::RunLevel => 1,
-                        UtmpxKind::BootTime => 2,
-                        UtmpxKind::OldTime => 3,
-                        UtmpxKind::NewTime => 4,
-                        UtmpxKind::InitProcess => 5,
-                        UtmpxKind::LoginProcess => 6,
-                        UtmpxKind::UserProcess => 7,
-                        UtmpxKind::DeadProcess => 8,
-                        UtmpxKind::Accounting => 9,
-                        UtmpxKind::Signature => 10,
-                        UtmpxKind::DownTime => 11,
-                        UtmpxKind::Invalid => 12,
-                        _ => 12,
+                        UtmpxKind::Empty => Ok(0),
+                        UtmpxKind::RunLevel => Ok(1),
+                        UtmpxKind::BootTime => Ok(2),
+                        UtmpxKind::OldTime => Ok(3),
+                        UtmpxKind::NewTime => Ok(4),
+                        UtmpxKind::InitProcess => Ok(5),
+                        UtmpxKind::LoginProcess => Ok(6),
+                        UtmpxKind::UserProcess => Ok(7),
+                        UtmpxKind::DeadProcess => Ok(8),
+                        UtmpxKind::Accounting => Ok(9),
+                        UtmpxKind::Signature => Ok(10),
+                        UtmpxKind::DownTime => Ok(11),
+                        _ => Err(Error::OsNoKind),
                     }
                 }
             }
 
             #[cfg(any(target_os = "dragonfly"))]
-            impl From<UtmpxKind> for $t {
-                fn from(utype: UtmpxKind) -> Self {
+            impl TryFrom<UtmpxKind> for $t {
+                type Error = Error;
+                fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
-                        UtmpxKind::Empty => 0,
-                        UtmpxKind::RunLevel => 1,
-                        UtmpxKind::BootTime => 2,
-                        UtmpxKind::NewTime => 3,
-                        UtmpxKind::OldTime => 4,
-                        UtmpxKind::InitProcess => 5,
-                        UtmpxKind::LoginProcess => 6,
-                        UtmpxKind::UserProcess => 7,
-                        UtmpxKind::DeadProcess => 8,
-                        UtmpxKind::Invalid => 12,
-                        _ => 12,
+                        UtmpxKind::Empty => Ok(0),
+                        UtmpxKind::RunLevel => Ok(1),
+                        UtmpxKind::BootTime => Ok(2),
+                        UtmpxKind::NewTime => Ok(3),
+                        UtmpxKind::OldTime => Ok(4),
+                        UtmpxKind::InitProcess => Ok(5),
+                        UtmpxKind::LoginProcess => Ok(6),
+                        UtmpxKind::UserProcess => Ok(7),
+                        UtmpxKind::DeadProcess => Ok(8),
+                        _ => Err(Error::OsNoKind),
                     }
                 }
             }
 
             #[cfg(target_os = "solaris")]
-            impl From<UtmpxKind> for $t {
-                fn from(utype: UtmpxKind) -> Self {
+            impl TryFrom<UtmpxKind> for $t {
+                type Error = Error;
+                fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
-                        UtmpxKind::Empty => 0,
-                        UtmpxKind::RunLevel => 1,
-                        UtmpxKind::BootTime => 2,
-                        UtmpxKind::OldTime => 3,
-                        UtmpxKind::NewTime => 4,
-                        UtmpxKind::InitProcess => 5,
-                        UtmpxKind::LoginProcess => 6,
-                        UtmpxKind::UserProcess => 7,
-                        UtmpxKind::DeadProcess => 8,
-                        UtmpxKind::Accounting => 9,
-                        UtmpxKind::DownTime => 10,
-                        UtmpxKind::Invalid => 12,
-                        _ => 12,
+                        UtmpxKind::Empty => Ok(0),
+                        UtmpxKind::RunLevel => Ok(1),
+                        UtmpxKind::BootTime => Ok(2),
+                        UtmpxKind::OldTime => Ok(3),
+                        UtmpxKind::NewTime => Ok(4),
+                        UtmpxKind::InitProcess => Ok(5),
+                        UtmpxKind::LoginProcess => Ok(6),
+                        UtmpxKind::UserProcess => Ok(7),
+                        UtmpxKind::DeadProcess => Ok(8),
+                        UtmpxKind::Accounting => Ok(9),
+                        UtmpxKind::DownTime => Ok(10),
+                        _ => Err(Error::OsNoKind),
                     }
                 }
             }
 
             #[cfg(any(target_os = "linux", target_os = "macos"))]
-            impl From<UtmpxKind> for $t {
-                fn from(utype: UtmpxKind) -> Self {
+            impl TryFrom<UtmpxKind> for $t {
+                type Error = Error;
+                fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
-                        UtmpxKind::Empty => 0,
-                        UtmpxKind::RunLevel => 1,
-                        UtmpxKind::BootTime => 2,
-                        UtmpxKind::NewTime => 3,
-                        UtmpxKind::OldTime => 4,
-                        UtmpxKind::InitProcess => 5,
-                        UtmpxKind::LoginProcess => 6,
-                        UtmpxKind::UserProcess => 7,
-                        UtmpxKind::DeadProcess => 8,
-                        UtmpxKind::Accounting => 9,
+                        UtmpxKind::Empty => Ok(0),
+                        UtmpxKind::RunLevel => Ok(1),
+                        UtmpxKind::BootTime => Ok(2),
+                        UtmpxKind::NewTime => Ok(3),
+                        UtmpxKind::OldTime => Ok(4),
+                        UtmpxKind::InitProcess => Ok(5),
+                        UtmpxKind::LoginProcess => Ok(6),
+                        UtmpxKind::UserProcess => Ok(7),
+                        UtmpxKind::DeadProcess => Ok(8),
+                        UtmpxKind::Accounting => Ok(9),
                         #[cfg(target_os = "macos")]
-                        UtmpxKind::Signature => 10,
+                        UtmpxKind::Signature => Ok(10),
                         #[cfg(target_os = "macos")]
-                        UtmpxKind::ShutdownProcess => 11,
-                        UtmpxKind::Invalid => 12,
-                        _ => 12,
+                        UtmpxKind::ShutdownProcess => Ok(11),
+                        _ => Err(Error::OsNoKind),
                     }
                 }
             }
