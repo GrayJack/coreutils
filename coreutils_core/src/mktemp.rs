@@ -40,7 +40,7 @@ pub fn mkstemp(template: &str) -> io::Result<Mktemp> {
         _ => {
             template_cstr.pop();
             Ok(Mktemp { file: unsafe { File::from_raw_fd(fd) }, path: template_cstr })
-        }
+        },
     }
 }
 

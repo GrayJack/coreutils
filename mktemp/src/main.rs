@@ -2,7 +2,10 @@ use std::{env, fs, path::PathBuf, process};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
-use coreutils_core::{libc::EINVAL, mktemp::{mkdtemp, mkstemp}};
+use coreutils_core::{
+    libc::EINVAL,
+    mktemp::{mkdtemp, mkstemp},
+};
 
 fn main() {
     let yaml = load_yaml!("mktemp.yml");
