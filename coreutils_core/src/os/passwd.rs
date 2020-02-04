@@ -86,9 +86,7 @@ impl Display for Error {
             CommentCheckFailed => write!(f, "Passwd class check failed, `.pw_comment` is null"),
             PasswdNotFound => write!(f, "Passwd was not found in the system"),
             Io(err) => write!(f, "{}", err),
-            Group(err) => {
-                write!(f, "Group error: {}", err)
-            },
+            Group(err) => write!(f, "Group error: {}", err),
         }
     }
 }
