@@ -77,7 +77,7 @@ fn set_groups_from_list(groups_list: &str) -> Result<(), GrError> {
 fn set_user_from_userspec(userspec: &str) -> Result<(), GrError> {
     let parts: Vec<&str> = userspec.split(':').collect();
     if parts.len() != 2 {
-        eprintln!("userspec is in an incorrect format");
+        eprintln!("chroot: Userspec is in an incorrect format");
         std::process::exit(1);
     }
 
