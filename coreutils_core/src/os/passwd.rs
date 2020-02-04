@@ -5,6 +5,7 @@ use std::{
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
+    io::Error as IOError,
     mem::MaybeUninit,
     os::raw::c_char,
     ptr,
@@ -60,6 +61,8 @@ pub enum Error {
     CommentCheckFailed,
     /// Happens when the passwd is not found.
     PasswdNotFound,
+    /// Happens when there is a IO error
+    Io(IOError),
     /// Happens when something happens when finding what `Group` a `Passwd` belongs
     Group(Box<GrError>),
 }
@@ -82,8 +85,9 @@ impl Display for Error {
             AgeCheckFailed => write!(f, "Passwd class check failed, `.pw_age` is null"),
             CommentCheckFailed => write!(f, "Passwd class check failed, `.pw_comment` is null"),
             PasswdNotFound => write!(f, "Passwd was not found in the system"),
+            Io(err) => write!(f, "{}", err),
             Group(err) => {
-                write!(f, "The following error hapenned trying to get all `Groups`: {}", err)
+                write!(f, "Group error: {}", err)
             },
         }
     }
@@ -93,6 +97,7 @@ impl StdError for Error {
     #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
+            Io(err) => Some(err),
             Group(err) => Some(err),
             _ => None,
         }
@@ -102,6 +107,11 @@ impl StdError for Error {
 impl From<GrError> for Error {
     #[inline]
     fn from(err: GrError) -> Error { Group(Box::new(err)) }
+}
+
+impl From<IOError> for Error {
+    #[inline]
+    fn from(err: IOError) -> Error { Io(err) }
 }
 
 /// This struct holds the information of a user in UNIX/UNIX-like systems.

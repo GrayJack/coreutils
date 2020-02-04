@@ -74,12 +74,8 @@ impl Display for Error {
             NameCheckFailed => write!(f, "Group name check failed, `.gr_name` field is null"),
             PasswdCheckFailed => write!(f, "Group passwd check failed, `.gr_passwd` is null"),
             GroupNotFound => write!(f, "Group was not found in the system"),
-            Io(err) => {
-                write!(f, "The following error hapenned trying to get all `Groups`: {}", err)
-            },
-            Passwd(err) => {
-                write!(f, "The following error hapenned trying to get all `Groups`: {}", err)
-            },
+            Io(err) => write!(f, "{}", err),
+            Passwd(err) => write!(f, "Passwd error: {}", err),
         }
     }
 }

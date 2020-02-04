@@ -26,7 +26,7 @@ impl Display for Error {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Var(err) => write!(f, "Failed to get var with error: {}", err),
+            Self::Var(err) => write!(f, "Failed to get var: {}", err),
             Self::Io(err) => write!(f, "IO error: {}", err),
         }
     }
