@@ -26,7 +26,7 @@ impl Display for Error {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Var(err) => write!(f, "Failed to get var: {}", err),
+            Self::Var(err) => write!(f, "Failed to get variable: {}", err),
             Self::Io(err) => write!(f, "IO error: {}", err),
         }
     }
@@ -52,8 +52,11 @@ impl StdError for Error {
     }
 }
 
-/// Get the logical path of the current directory wrapped on a `Ok` if successful, returns
-/// a Err holding the error that occurred.
+/// Get the logical path of the current directory.
+///
+/// # Errors
+/// If the functions encounters any form of `VarError` when getting environment variable
+/// or if a call inside set a errno (I/O Error), an error variant will be returned.
 pub fn current_dir_logical() -> Result<PathBuf> {
     let pwd = env::var("PWD")?;
 

@@ -25,6 +25,9 @@ impl Display for Mktemp {
 ///
 /// Some libc implementations requires the `template` to end with a minimum number of X
 /// characters (for example, 6 in glibc as of version 2.29).
+///
+/// # Errors
+/// If a internal call set a errno (I/O OS error), an error variant will be returned.
 pub fn mkstemp(template: &str) -> io::Result<Mktemp> {
     let mut template_cstr = {
         let mut t = String::new();
@@ -50,6 +53,9 @@ pub fn mkstemp(template: &str) -> io::Result<Mktemp> {
 ///
 /// Some libc implementations requires the `template` to end with a minimum number of X
 /// characters (for example, 6 in glibc as of version 2.29).
+///
+/// # Errors
+/// If a internal call set a errno (I/O OS error), an error variant will be returned.
 pub fn mkdtemp(template: &str) -> io::Result<String> {
     let mut template_cstr = {
         let mut t = String::new();

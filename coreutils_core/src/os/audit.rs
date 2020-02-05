@@ -141,6 +141,9 @@ extern "C" {
 }
 
 /// Display the `AuditInfo` if `getaudit()` call was successful, return a Err otherwise.
+///
+/// # Errors
+/// If a internal call set a errno (I/O OS error), an error variant will be returned.
 pub fn auditid() -> io::Result<()> {
     let mut auditinfo: MaybeUninit<AuditInfo> = MaybeUninit::zeroed();
     let address = auditinfo.as_mut_ptr() as *mut AuditInfo;

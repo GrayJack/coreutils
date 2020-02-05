@@ -100,7 +100,9 @@ impl From<PwError> for Error {
 
 /// This struct holds information about a group of UNIX/UNIX-like systems.
 ///
-/// Contains `sys/types.h` `group` struct attributes as Rust powefull types.
+/// Contains `sys/types.h` [`group`] struct attributes as Rust powefull types.
+///
+/// [`group`]: ../../../libc/struct.group.html
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Group {
     /// Group name.
@@ -116,8 +118,11 @@ pub struct Group {
 impl Group {
     /// Creates a new `Group` getting the user group as default.
     ///
-    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
+    /// # Errors
+    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it into
+    /// `Group`, an error variant is returned.
+    ///
+    /// [`group`]: ../../../libc/struct.group.html
     pub fn new() -> Result<Self> {
         let mut gr = MaybeUninit::zeroed();
         let mut gr_ptr = ptr::null_mut();
@@ -143,8 +148,11 @@ impl Group {
 
     /// Creates a `Group` using a `id` to get all attributes.
     ///
-    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
+    /// # Errors
+    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it into
+    /// `Group`, an error variant is returned.
+    ///
+    /// [`group`]: ../../../libc/struct.group.html
     pub fn from_gid(id: Gid) -> Result<Self> {
         let mut gr = MaybeUninit::zeroed();
         let mut gr_ptr = ptr::null_mut();
@@ -168,8 +176,11 @@ impl Group {
 
     /// Creates a `Group` using a `name` to get all attributes.
     ///
-    /// It may fail, so return a `Result`, either the `Group` struct wrapped in a `Ok`, or
-    /// a `Error` wrapped in a `Err`.
+    /// # Errors
+    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it into
+    /// `Group`, an error variant is returned.
+    ///
+    /// [`group`]: ../../../libc/struct.group.html
     pub fn from_name(name: &str) -> Result<Self> {
         let mut gr = MaybeUninit::zeroed();
         let mut gr_ptr = ptr::null_mut();
@@ -201,19 +212,19 @@ impl Group {
         Ok(Group::try_from(gr)?)
     }
 
-    /// Get the `Group` name.
+    /// Returns the `Group` name.
     #[inline]
     pub fn name(&self) -> &BStr { self.name.as_bstr() }
 
-    /// Get the `Group` id.
+    /// Returns the `Group` id.
     #[inline]
     pub fn id(&self) -> Gid { self.id }
 
-    /// Get the `Group` encrypted password.
+    /// Returns the `Group` encrypted password.
     #[inline]
     pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
 
-    /// Get the `Group` list of members.
+    /// Returns the `Group` list of members.
     #[inline]
     pub fn mem(&self) -> &Members { &self.mem }
 }
@@ -276,6 +287,11 @@ impl Groups {
     pub const fn new() -> Self { Groups { inner: Vec::new() } }
 
     /// Get all the process caller groups.
+    ///
+    /// # Errors
+    /// If it fails to get a [`Group`], an error variant will be returned.
+    ///
+    /// [`Group`]: ./struct.Group.html
     pub fn caller() -> Result<Self> {
         // First we check if we indeed have groups.
         // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary
@@ -310,6 +326,11 @@ impl Groups {
     }
 
     /// Get all groups that `username` belongs.
+    ///
+    /// # Errors
+    /// If it fails to get a [`Group`], an error variant will be returned.
+    ///
+    /// [`Group`]: ./struct.Group.html
     pub fn from_username(username: &str) -> Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
@@ -420,6 +441,11 @@ impl Groups {
     }
 
     /// Get groups from a list of group names.
+    ///
+    /// # Errors
+    /// If it fails to get a [`Group`], an error variant will be returned.
+    ///
+    /// [`Group`]: ./struct.Group.html
     pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
         let groups: Result<Vec<Group>> =
             group_list.iter().map(|&group_name| Group::from_name(group_name)).collect();
