@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
-regex = "^1.3.1"
+regex = "^1.3.4"
 
 [build-dependencies]
 clap = { version = "^2.33.0", features = ["yaml"] }
