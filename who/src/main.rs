@@ -246,7 +246,6 @@ fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
     ut_vec
 }
 
-// TODO(grayjack): Fix that code reuse after attributtes on expression hits stabe Rust
 #[cfg(not(target_os = "openbsd"))]
 fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
     if flags.is_all_false() {
@@ -302,7 +301,6 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
     }
 }
 
-// TODO(grayjack): Fix that code reuse after attributtes on expression hits stabe Rust
 #[cfg(target_os = "openbsd")]
 fn print_info(uts: &[&Utmp], flags: WhoFlags) {
     if flags.is_all_false() {

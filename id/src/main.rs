@@ -5,6 +5,11 @@ use coreutils_core::os::{group::Group, passwd::Passwd};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
 fn main() {
+    #[cfg(any(target_os = "freebsd", target_os = "macos"))]
+    let yaml = load_yaml!("id_audit.yml");
+    #[cfg(any(target_os = "openbsd"))]
+    let yaml = load_yaml!("id_rtable.yml");
+    #[cfg(not(any(target_os = "freebsd", target_os = "macos", target_os = "openbsd")))]
     let yaml = load_yaml!("id.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 

@@ -10,6 +10,10 @@ help_short: "?"
 args:
     - USER:
         help: Name of a user.
+    - rtable:
+        help: Display the routing table of the current process.
+        long: rtable
+        short: R
     - group:
         help: Display only the effective group ID as number.
         long: group

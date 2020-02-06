@@ -10,6 +10,10 @@ help_short: "?"
 args:
     - USER:
         help: Name of a user.
+    - audit:
+        help: Display the process audit user ID and other process audit properties, which requires privilege.
+        long: audit
+        short: A
     - group:
         help: Display only the effective group ID as number.
         long: group
