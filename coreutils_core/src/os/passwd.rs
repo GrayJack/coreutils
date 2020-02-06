@@ -116,7 +116,6 @@ impl From<IOError> for Error {
 ///
 /// Contains `sys/types.h` [`passwd`] struct attributes as Rust more common types.
 // It also contains a pointer to the libc::passwd type for more complex manipulations.
-///
 /// [`passwd`]: ../../../libc/struct.passwd.html
 #[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
 pub struct Passwd {
@@ -168,12 +167,12 @@ pub struct Passwd {
 }
 
 impl Passwd {
-    /// Creates a new `Passwd` getting the current process user passwd as default using the
-    /// effective user id.
+    /// Creates a new `Passwd` getting the current process user passwd as default using
+    /// the effective user id.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it into
-    /// `Passwd`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
+    /// into `Passwd`, an error variant is returned.
     ///
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn effective() -> Result<Self> {
@@ -199,12 +198,12 @@ impl Passwd {
         Ok(Passwd::try_from(pw)?)
     }
 
-    /// Creates a new `Passwd` getting the current process user passwd as default using the
-    /// real user id.
+    /// Creates a new `Passwd` getting the current process user passwd as default using
+    /// the real user id.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it into
-    /// `Passwd`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
+    /// into `Passwd`, an error variant is returned.
     ///
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn real() -> Result<Self> {
@@ -232,8 +231,8 @@ impl Passwd {
     /// Creates a new `Passwd` using a `id` to get all attributes.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it into
-    /// `Passwd`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
+    /// into `Passwd`, an error variant is returned.
     ///
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn from_uid(id: Uid) -> Result<Self> {
@@ -260,8 +259,8 @@ impl Passwd {
     /// Creates a new `Passwd` using a `name` to get all attributes.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it into
-    /// `Passwd`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
+    /// into `Passwd`, an error variant is returned.
     ///
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn from_name(name: &str) -> Result<Self> {
@@ -365,7 +364,8 @@ impl Passwd {
     /// Returns [groups] that the `Passwd`(user) belongs to.
     ///
     /// # Errors
-    /// If it fails to get the [groups] where `Passwd`(user) belongs, an error variant is returned.
+    /// If it fails to get the [groups] where `Passwd`(user) belongs, an error variant is
+    /// returned.
     ///
     /// [groups]: ../group/struct.Groups.html
     pub fn belongs_to(&self) -> Result<Groups> {

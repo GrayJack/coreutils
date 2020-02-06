@@ -119,8 +119,8 @@ impl Group {
     /// Creates a new `Group` getting the user group as default.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it into
-    /// `Group`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
+    /// into `Group`, an error variant is returned.
     ///
     /// [`group`]: ../../../libc/struct.group.html
     pub fn new() -> Result<Self> {
@@ -149,8 +149,8 @@ impl Group {
     /// Creates a `Group` using a `id` to get all attributes.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it into
-    /// `Group`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
+    /// into `Group`, an error variant is returned.
     ///
     /// [`group`]: ../../../libc/struct.group.html
     pub fn from_gid(id: Gid) -> Result<Self> {
@@ -177,8 +177,8 @@ impl Group {
     /// Creates a `Group` using a `name` to get all attributes.
     ///
     /// # Errors
-    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it into
-    /// `Group`, an error variant is returned.
+    /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
+    /// into `Group`, an error variant is returned.
     ///
     /// [`group`]: ../../../libc/struct.group.html
     pub fn from_name(name: &str) -> Result<Self> {

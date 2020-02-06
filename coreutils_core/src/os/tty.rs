@@ -4,7 +4,7 @@ use std::{
     error::Error as StdError,
     ffi::CStr,
     fmt::{self, Display},
-    os::raw::c_int,
+    os::unix::io::AsRawFd,
 };
 
 use libc::ttyname;
@@ -38,36 +38,6 @@ impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
 }
 
-/// A `FileDescriptor` that can be `StdIn`, `StdOut` or `StdErr`
-/// Usefull when dealing with C call to [`ttyname`] and [`ttyname_r`]
-///
-/// [`ttyname`]: ../../../libc/fn.ttyname.html
-/// [`ttyname_r`]: ../../../libc/fn.ttyname_r.html
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
-pub enum FileDescriptor {
-    StdIn  = 0,
-    StdOut = 1,
-    StdErr = 2,
-}
-
-impl FileDescriptor {
-    /// Check if the `FileDescriptor` is a TTY.
-    ///
-    /// ## Example
-    /// ```rust,ignore
-    /// let istty = FileDescriptor::StdIn.is_tty();
-    /// ```
-    pub fn is_tty(self) -> bool { is_tty(self) }
-
-    /// Get the [`TTYName`] from the `FileDescriptor`
-    ///
-    /// # Errors
-    /// If it is not a TTY or a libc call fails and error variant is returned.
-    ///
-    /// [`TTYName`]: ./struct.TTYName.html
-    pub fn ttyname(self) -> Result<TTYName, Error> { TTYName::new(self) }
-}
-
 /// A struct that holds the name of a TTY with a `Display` trait implementation
 /// to be easy to print.
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
@@ -80,8 +50,8 @@ impl TTYName {
     /// It returns a error variant when [`FileDescriptor`] is not a TTY.
     ///
     /// [`FileDescriptor`]: ./enum.FileDescriptor.html
-    pub fn new(file_descriptor: FileDescriptor) -> Result<Self, Error> {
-        let name = unsafe { ttyname(file_descriptor as c_int) };
+    pub fn new(file_descriptor: &impl AsRawFd) -> Result<Self, Error> {
+        let name = unsafe { ttyname(file_descriptor.as_raw_fd()) };
 
         let name = if name.is_null() {
             return Err(Error::NotTTY);
@@ -105,6 +75,17 @@ impl Display for TTYName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
+/// Convenience trait to use [`is_tty`] function as method
+///
+/// [`is_tty`]: ./fn.is_tty.html
+pub trait IsTTY: AsRawFd {
+    fn is_tty(&self) -> bool;
+}
+
+impl<T: AsRawFd> IsTTY for T {
+    fn is_tty(&self) -> bool { is_tty(self) }
+}
+
 /// Check if the given `FileDescriptor` is a TTY.
 ///
 /// ## Example
@@ -112,6 +93,6 @@ impl Display for TTYName {
 /// let istty = isatty(FileDescriptor::StdIn);
 /// ```
 #[inline]
-pub fn is_tty(file_descriptor: FileDescriptor) -> bool {
-    unsafe { libc::isatty(file_descriptor as c_int) == 1 }
+pub fn is_tty(file_descriptor: &impl AsRawFd) -> bool {
+    unsafe { libc::isatty(file_descriptor.as_raw_fd()) == 1 }
 }
