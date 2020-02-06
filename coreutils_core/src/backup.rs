@@ -89,11 +89,13 @@ impl From<&str> for BackupMode {
 /// be found, a backup file is created where `X` is `1`. Else, it creates a backup file
 /// where `X` is `X + 1`.
 ///
-/// # Arguments
-/// * `file` - the file to be backed up
-/// # Remarks
-/// Returns a `Result` of either a `PathBuf` to the newly created backup file or an
-/// `io::Error`
+/// # Errors
+/// If this function encounters any kind of I/O error, an error variant will be returned.
+// # Arguments
+// * `file` - the file to be backed up
+// # Remarks
+// Returns a `Result` of either a `PathBuf` to the newly created backup file or an
+// `io::Error`
 pub fn create_numbered_backup(file: &Path) -> Result<PathBuf, Error> {
     let mut index = 1_u64;
     loop {
@@ -121,12 +123,14 @@ pub fn create_numbered_backup(file: &Path) -> Result<PathBuf, Error> {
 /// found, a numbered backup will be created. Else, a simple backup is created using the
 /// input `suffix`
 ///
-/// # Arguments
-/// * `file` - the file to be backed up
-/// * `suffix` - the suffix of the backup file
-/// # Remarks
-/// Returns a `Result` of either a `PathBuf` to the newly created backup file or an
-/// `io::Error`
+/// # Errors
+/// If this function encounters any kind of I/O error, an error variant will be returned.
+// # Arguments
+// * `file` - the file to be backed up
+// * `suffix` - the suffix of the backup file
+// # Remarks
+// Returns a `Result` of either a `PathBuf` to the newly created backup file or an
+// `io::Error`
 pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Error> {
     let mut has_numbered_backup = false;
     let regex = Regex::new(r"~\d+~").unwrap();
@@ -152,12 +156,14 @@ pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Erro
 /// Creates a simple backup. Creates a backup of the form `<file><suffix>`. Overwrites any
 /// previous backup files with that same suffix.
 ///
-/// # Arguments
-/// * `file` - the file to be backed up
-/// * `suffix` - the suffix of the backup file
-/// # Remarks
-/// Returns a `Result` of either a `PathBuf` to the newly created backup file or an
-/// `io::Error`
+/// # Errors
+/// If this function encounters any kind of I/O error, an error variant will be returned.
+// # Arguments
+// * `file` - the file to be backed up
+// * `suffix` - the suffix of the backup file
+// # Remarks
+// Returns a `Result` of either a `PathBuf` to the newly created backup file or an
+// `io::Error`
 pub fn create_simple_backup(file: &Path, suffix: &str) -> Result<PathBuf, Error> {
     let new = PathBuf::from(format!("{}{}", file.display(), suffix));
 

@@ -23,7 +23,7 @@ use super::utmpx::UtmpxKind;
 use libc::{c_short, exit_status as ExitStatus};
 
 /// A struct that represents a __user__ account, where user can be humam users or other
-/// parts of the system that requires the usage of account structure, like some daemons
+/// parts of the system that requires the usage of account structure, like some daemons.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmp {
     /// User login name
@@ -155,6 +155,9 @@ pub struct UtmpSet(HashSet<Utmp>);
 
 impl UtmpSet {
     /// Creates a new collection over a `utmpx` entry binary file.
+    ///
+    /// # Errors
+    /// If a internal call set a errno (I/O OS error), an error variant will be returned.
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmp>();
         let num_bytes = fs::metadata(&path)?.len() as usize;
@@ -177,6 +180,9 @@ impl UtmpSet {
     }
 
     /// Creates a new collection geting all entries from the running system.
+    ///
+    /// # Errors
+    /// If a internal call set a errno (I/O OS error), an error variant will be returned.
     pub fn system() -> io::Result<Self> { Self::from_file("/var/run/utmp") }
 
     /// Returns `true` if collection nas no elements.

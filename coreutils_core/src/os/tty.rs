@@ -39,7 +39,10 @@ impl StdError for Error {
 }
 
 /// A `FileDescriptor` that can be `StdIn`, `StdOut` or `StdErr`
-/// Usefull when dealing with C call to `ttyname` and `ttyname_r`
+/// Usefull when dealing with C call to [`ttyname`] and [`ttyname_r`]
+///
+/// [`ttyname`]: ../../../libc/fn.ttyname.html
+/// [`ttyname_r`]: ../../../libc/fn.ttyname_r.html
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
 pub enum FileDescriptor {
     StdIn  = 0,
@@ -56,7 +59,12 @@ impl FileDescriptor {
     /// ```
     pub fn is_tty(self) -> bool { is_tty(self) }
 
-    /// Get the tty name from the `FileDescriptor`
+    /// Get the [`TTYName`] from the `FileDescriptor`
+    ///
+    /// # Errors
+    /// If it is not a TTY or a libc call fails and error variant is returned.
+    ///
+    /// [`TTYName`]: ./struct.TTYName.html
     pub fn ttyname(self) -> Result<TTYName, Error> { TTYName::new(self) }
 }
 
@@ -67,6 +75,11 @@ pub struct TTYName(BString);
 
 impl TTYName {
     /// Create a `TTYName` from a `FileDescriptor`
+    ///
+    /// # Errors
+    /// It returns a error variant when [`FileDescriptor`] is not a TTY.
+    ///
+    /// [`FileDescriptor`]: ./enum.FileDescriptor.html
     pub fn new(file_descriptor: FileDescriptor) -> Result<Self, Error> {
         let name = unsafe { ttyname(file_descriptor as c_int) };
 

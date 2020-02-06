@@ -309,6 +309,9 @@ pub struct UtmpxSet(HashSet<Utmpx>);
 
 impl UtmpxSet {
     /// Creates a new collection over a utmpx entry binary file.
+    ///
+    /// # Errors
+    /// If a internal call set a errno (I/O OS error), an error variant will be returned.
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
@@ -345,6 +348,9 @@ impl UtmpxSet {
     }
 
     /// Creates a new collection over a utmpx entry binary file.
+    ///
+    /// # Errors
+    /// If a internal call set a errno (I/O OS error), an error variant will be returned.
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmpx>();
