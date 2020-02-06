@@ -1,4 +1,4 @@
-use std::{os::unix::fs::MetadataExt, path::PathBuf, process};
+use std::{io, os::unix::fs::MetadataExt, path::PathBuf, process};
 
 #[cfg(target_os = "openbsd")]
 use coreutils_core::os::utmp::{Utmp, UtmpSet};
@@ -9,10 +9,7 @@ use coreutils_core::os::utmpx::{
     UtmpxSet as UtmpSet,
 };
 use coreutils_core::{
-    libc::S_IWGRP,
-    os::tty::{FileDescriptor, TTYName},
-    time::PrimitiveDateTime as DataTime,
-    ByteSlice,
+    libc::S_IWGRP, os::tty::TTYName, time::PrimitiveDateTime as DataTime, ByteSlice,
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
@@ -161,7 +158,7 @@ fn print_header(flags: WhoFlags) {
 fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmp> {
     if flags.associated_stdin {
         let curr_tty_name = {
-            let tty = match TTYName::new(FileDescriptor::StdIn) {
+            let tty = match TTYName::new(&io::stdin()) {
                 Ok(t) => t,
                 Err(err) => {
                     eprintln!("who: failed to get current tty: {}", err);
@@ -191,7 +188,7 @@ fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
 
     if flags.associated_stdin {
         let curr_tty_name = {
-            let tty = match TTYName::new(FileDescriptor::StdIn) {
+            let tty = match TTYName::new(&io::stdin()) {
                 Ok(t) => t,
                 Err(err) => {
                     eprintln!("who: failed to get current tty: {}", err);

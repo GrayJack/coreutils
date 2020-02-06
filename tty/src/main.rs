@@ -1,6 +1,6 @@
-use std::process;
+use std::{io, process};
 
-use coreutils_core::os::tty::{Error::*, FileDescriptor, TTYName};
+use coreutils_core::os::tty::{Error::*, IsTTY, TTYName};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -8,11 +8,11 @@ fn main() {
     let yaml = load_yaml!("tty.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    let desc_stdin = FileDescriptor::StdIn;
+    let desc_stdin = io::stdin();
 
     let silent_flag = matches.is_present("silent");
 
-    let res = TTYName::new(desc_stdin);
+    let res = TTYName::new(&desc_stdin);
 
     if !silent_flag {
         match res {
