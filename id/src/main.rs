@@ -237,13 +237,13 @@ fn pretty_logic(passwd: &Passwd, sep: char) {
     print!("{}", sep);
 }
 
-#[cfg(not(target_os = "freebsd"))]
+#[cfg(not(any(target_os = "freebsd", target_os = "macos")))]
 fn audit_logic() {}
 
-#[cfg(target_os = "freebsd")]
+#[cfg(any(target_os = "freebsd", target_os = "macos"))]
 fn audit_logic() {
-    match coreutils_core::os::audit::auditid() {
-        Ok(_) => (),
+    match coreutils_core::os::audit::audit_info() {
+        Ok(auditinfo) => println!("{}", auditinfo),
         Err(err) => {
             println!("id: {}", err);
             process::exit(1);
