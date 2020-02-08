@@ -1,6 +1,6 @@
 name: Clippy check
 
-on: push
+on: pull_request
 
 jobs:
   clippy_check:
