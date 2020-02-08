@@ -24,7 +24,7 @@ pub mod audit;
 pub mod routing_table;
 
 use libc::{
-    c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t, tm
+    c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, tm, uid_t,
 };
 
 pub type Tm = tm;

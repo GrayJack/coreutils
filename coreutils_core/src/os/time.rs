@@ -42,8 +42,8 @@ pub fn local_time(timestamp: Time) -> io::Result<Tm> {
 }
 
 pub fn utc_offset(time: Tm) -> i64 {
-    // Not sure if the logic is 100% correct here: All my VMs with solarish systems have a version
-    // of Rust below 1.40 withing the lastest updates.
+    // Not sure if the logic is 100% correct here: All my VMs with solarish systems have a
+    // version of Rust below 1.40 with the lastest updates.
     #[cfg(target_os = "solaris")]
     {
         use time::{Date, Time};

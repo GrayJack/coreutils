@@ -1,10 +1,7 @@
 //! Module with abstractions to safely deal with processes.
 #[cfg(not(any(target_os = "fuchsia")))]
 use std::ffi::CString;
-use std::{
-    convert::TryInto,
-    io,
-};
+use std::{convert::TryInto, io};
 
 use crate::{
     libc,
