@@ -3,7 +3,7 @@
 use std::ffi::CString;
 use std::{
     convert::TryInto,
-    io::{self, Error as IOError},
+    io,
 };
 
 use crate::{
@@ -32,7 +32,7 @@ pub fn change_root(newroot: &str) -> io::Result<()> {
 
     match error {
         0 => Ok(()),
-        _ => Err(std::io::Error::last_os_error()),
+        _ => Err(io::Error::last_os_error()),
     }
 }
 
@@ -48,7 +48,7 @@ pub fn set_user(user: &str) -> Result<(), PwError> {
 
     match unsafe { libc::setuid(user.uid()) } {
         0 => Ok(()),
-        _ => Err(PwError::Io(IOError::last_os_error())),
+        _ => Err(PwError::Io(io::Error::last_os_error())),
     }
 }
 
@@ -65,7 +65,7 @@ pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
 
     match unsafe { libc::setgroups(groups.len().try_into().unwrap(), groups.as_ptr()) } {
         0 => Ok(()),
-        _ => Err(GrError::Io(IOError::last_os_error())),
+        _ => Err(GrError::Io(io::Error::last_os_error())),
     }
 }
 
@@ -81,6 +81,6 @@ pub fn set_group(group: &str) -> Result<(), GrError> {
 
     match unsafe { libc::setgid(group.id()) } {
         0 => Ok(()),
-        _ => Err(GrError::Io(IOError::last_os_error())),
+        _ => Err(GrError::Io(io::Error::last_os_error())),
     }
 }
