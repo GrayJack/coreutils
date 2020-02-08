@@ -124,7 +124,7 @@ impl Group {
     ///
     /// [`group`]: ../../../libc/struct.group.html
     pub fn new() -> Result<Self> {
-        let mut gr = MaybeUninit::zeroed();
+        let mut gr = MaybeUninit::uninit();
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
@@ -154,7 +154,7 @@ impl Group {
     ///
     /// [`group`]: ../../../libc/struct.group.html
     pub fn from_gid(id: Gid) -> Result<Self> {
-        let mut gr = MaybeUninit::zeroed();
+        let mut gr = MaybeUninit::uninit();
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
@@ -182,7 +182,7 @@ impl Group {
     ///
     /// [`group`]: ../../../libc/struct.group.html
     pub fn from_name(name: &str) -> Result<Self> {
-        let mut gr = MaybeUninit::zeroed();
+        let mut gr = MaybeUninit::uninit();
         let mut gr_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
 
@@ -340,7 +340,7 @@ impl Groups {
         let mut res = 0;
         #[cfg(not(any(target_os = "macos", target_os = "solaris")))]
         unsafe {
-            let mut passwd = MaybeUninit::zeroed();
+            let mut passwd = MaybeUninit::uninit();
             let mut pw_ptr = ptr::null_mut();
             let mut buff = [0; 16384];
 
@@ -370,7 +370,7 @@ impl Groups {
         }
         #[cfg(target_os = "macos")]
         unsafe {
-            let mut passwd = MaybeUninit::zeroed();
+            let mut passwd = MaybeUninit::uninit();
             let mut pw_ptr = ptr::null_mut();
             let mut buff = [0; 16384];
 

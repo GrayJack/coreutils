@@ -177,7 +177,7 @@ impl Passwd {
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
+        let mut pw = MaybeUninit::uninit();
         let mut pw_ptr = ptr::null_mut();
 
         let res = unsafe {
@@ -208,7 +208,7 @@ impl Passwd {
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn real() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
+        let mut pw = MaybeUninit::uninit();
         let mut pw_ptr = ptr::null_mut();
 
         let res =
@@ -237,7 +237,7 @@ impl Passwd {
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
-        let mut pw = MaybeUninit::zeroed();
+        let mut pw = MaybeUninit::uninit();
         let mut pw_ptr = ptr::null_mut();
 
         let res = unsafe { getpwuid_r(id, pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
@@ -264,7 +264,7 @@ impl Passwd {
     ///
     /// [`passwd`]: ../../../libc/struct.passwd.html
     pub fn from_name(name: &str) -> Result<Self> {
-        let mut pw = MaybeUninit::zeroed();
+        let mut pw = MaybeUninit::uninit();
         let mut pw_ptr = ptr::null_mut();
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
 

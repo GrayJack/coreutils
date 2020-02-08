@@ -24,8 +24,10 @@ pub mod audit;
 pub mod routing_table;
 
 use libc::{
-    c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t,
+    c_int, getegid, geteuid, getgid, getuid, gid_t, pid_t, suseconds_t, time_t, timeval, uid_t, tm
 };
+
+pub type Tm = tm;
 
 /// Time stamp type used on system structures.
 pub type TimeVal = timeval;
