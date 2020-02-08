@@ -36,7 +36,7 @@ pub fn local_time(timestamp: i64) -> io::Result<Tm> {
 
     unsafe { tzset() };
 
-    let tm_ptr = unsafe { localtime_r(&timestamp, tm.as_mut_ptr()) };
+    let tm_ptr = unsafe { localtime_r(&timestamp as Time, tm.as_mut_ptr()) };
 
     if tm_ptr.is_null() { Err(io::Error::last_os_error()) } else { Ok(unsafe { tm.assume_init() }) }
 }
