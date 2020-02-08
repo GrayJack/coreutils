@@ -70,7 +70,9 @@ pub fn utc_offset(time: Tm) -> i64 {
     }
 
     #[cfg(not(target_os = "solaris"))]
-    time.tm_gmtoff
+    {
+        time.tm_gmtoff as i64
+    }
 }
 
 pub fn system_utc_offset() -> io::Result<i64> {
