@@ -1,4 +1,5 @@
 use std::{
+    convert::TryInto,
     fs::File,
     io::{self, Read},
     process,
@@ -11,7 +12,11 @@ use coreutils_core::os::utmpx::{
     UtmpxKind::{BootTime, UserProcess},
     UtmpxSet as UtmpSet,
 };
-use coreutils_core::{libc::time_t, os::load::load_average, time::PrimitiveDateTime as DateTime};
+use coreutils_core::{
+    libc::time_t,
+    os::{time as ostime, load::load_average},
+    time::{OffsetDateTime, PrimitiveDateTime as DateTime, UtcOffset},
+};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -99,7 +104,18 @@ fn uptime(boot_time: DateTime) -> io::Result<time_t> {
 }
 
 fn fmt_time() -> String {
-    let now = DateTime::now();
+    // TODO(GrayJack): Change to time new methods after released
+    // This is a kinda ok hack
+    let offset = match ostime::system_utc_offset() {
+        Ok(off) => off,
+        Err(err) => {
+            eprintln!("uptime: failed to get system UTC offset: {}", err);
+            process::exit(1);
+        },
+    };
+
+    let now = OffsetDateTime::now()
+        .to_offset(offset.try_into().map(UtcOffset::seconds).unwrap_or(UtcOffset::UTC));
 
     format!(" {:02}:{:02}:{:02}", now.hour(), now.minute(), now.second())
 }

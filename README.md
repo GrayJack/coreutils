@@ -122,10 +122,10 @@ cargo install --path .
 | unexpand |             |         |   X  |
 |   uniq   |      X      |         |      |
 |  unlink  |             |         |   X  |
-|  uptime  |             |    X    |      |
-|   users  |             |    X    |      |
+|  uptime  |             |         |   X  |
+|   users  |             |         |   X  |
 |    wc    |             |         |   X  |
-|    who   |             |    X    |      |
+|    who   |             |         |   X  |
 |  whoami  |             |         |   X  |
 |    yes   |             |         |   X  |
 
