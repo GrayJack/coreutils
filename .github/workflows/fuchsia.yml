@@ -18,7 +18,8 @@ jobs:
         profile: minimal
         components: clippy
         target: x86_64-fuchsia
-    - run: rustup target add aarch64-fuchsia
+    - name: Add more targets
+      run: rustup target add aarch64-fuchsia
     - name: Setup TOML
       run: cp Fuchsia.toml Cargo.toml
     - name: Check Fuchsia (x86_64)
