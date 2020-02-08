@@ -10,11 +10,12 @@ jobs:
         os: [ubuntu-latest]
         rust: [nightly]
     steps:
-    - uses: actions/checkout@v1
-    - uses: hecrj/setup-rust-action@v1
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
       with:
-        rust-version: ${{ matrix.rust }}
-    - name: Install rustfmt
-      run: rustup component add rustfmt
+        toolchain: ${{ matrix.rust }}
+        override: true
+        profile: minimal
+        components: rustfmt
     - name: Check Format
       run: cargo fmt -- --check
