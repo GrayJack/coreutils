@@ -14,7 +14,7 @@ use coreutils_core::os::utmpx::{
 };
 use coreutils_core::{
     libc::time_t,
-    os::{time as ostime, load::load_average},
+    os::{load::load_average, time as ostime},
     time::{OffsetDateTime, PrimitiveDateTime as DateTime, UtcOffset},
 };
 
