@@ -24,7 +24,7 @@ pub fn set_time_of_day(timeval: TimeVal) -> io::Result<()> {
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
-pub fn local_time(timestamp: Time) -> io::Result<Tm> {
+pub fn local_time(timestamp: i64) -> io::Result<Tm> {
     // We do this cause libc doesn't expose this function in solarish
     // This way we aboid conditional compilation
     // TODO(GrayJack): Do a PR to libc to include tzset into solarish platforms
