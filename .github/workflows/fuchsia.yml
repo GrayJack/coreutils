@@ -17,7 +17,8 @@ jobs:
         override: true
         profile: minimal
         components: clippy
-        target: x86_64-fuchsia aarch64-fuchsia
+        target: x86_64-fuchsia
+        target: aarch64-fuchsia
     - name: Setup TOML
       run: cp Fuchsia.toml Cargo.toml
     - name: Check Fuchsia (x86_64)
