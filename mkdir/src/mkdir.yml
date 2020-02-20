@@ -7,20 +7,20 @@ version_message: Display version information.
 help_short: "?"
 args:
   - mode:
-      help: Set file mode (as in chmod), not a=rwx - umask
+      help: Set file mode (as in chmod), not a=rwx - umask.
       long: mode
       short: m
       value_name: MODE
   - parents:
-      help: No error if existing, make parent directories as needed
+      help: No error if existing, make parent directories as needed.
       long: parents
       short: p
   - verbose:
-      help: Print a message for each created directory
+      help: Print a message for each created directory.
       long: verbose
       short: v
   - DIRECTORY:
-      help: directory that will be created
+      help: Directory that will be created.
       required: true
       multiple: true
 
