@@ -9,7 +9,7 @@ use coreutils_core::os::utmpx::{
     UtmpxSet as UtmpSet,
 };
 use coreutils_core::{
-    libc::S_IWGRP, os::tty::TTYName, time::PrimitiveDateTime as DataTime, ByteSlice,
+    libc::S_IWGRP, os::tty::TTYName, time::OffsetDateTime as DateTime, ByteSlice,
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
@@ -381,7 +381,7 @@ fn def_status(
     let idle = if last_change == 0 {
         "?".to_string()
     } else {
-        let now = DataTime::now().timestamp();
+        let now = DateTime::now().timestamp();
         if 0 < last_change && now - 24 * 3600 < last_change && last_change <= now {
             let seconds_idle = now - last_change;
             if seconds_idle < 60 {
