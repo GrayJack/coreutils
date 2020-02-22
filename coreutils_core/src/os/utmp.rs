@@ -15,7 +15,7 @@ use super::Time;
 use libc::{c_char, utmp};
 
 use bstr::{BStr, BString, ByteSlice};
-use time::PrimitiveDateTime as DataTime;
+use time::OffsetDateTime as DataTime;
 
 #[cfg(target_os = "solaris")]
 use super::utmpx::UtmpxKind;

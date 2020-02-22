@@ -32,7 +32,7 @@ use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 
 use bstr::{BStr, BString, ByteSlice};
 
-use time::{Duration, PrimitiveDateTime as DateTime};
+use time::{Duration, OffsetDateTime as DateTime};
 
 /// Error type for UtmpxKind conversion.
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
