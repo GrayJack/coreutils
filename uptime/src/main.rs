@@ -11,11 +11,7 @@ use coreutils_core::os::utmpx::{
     UtmpxKind::{BootTime, UserProcess},
     UtmpxSet as UtmpSet,
 };
-use coreutils_core::{
-    libc::time_t,
-    os::{load::load_average},
-    time::{OffsetDateTime as DateTime},
-};
+use coreutils_core::{libc::time_t, os::load::load_average, time::OffsetDateTime as DateTime};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
