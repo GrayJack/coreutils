@@ -2,7 +2,7 @@
 use std::{io, mem::MaybeUninit, ptr};
 
 use libc::localtime_r;
-use time::PrimitiveDateTime as DateTime;
+use time::OffsetDateTime as DateTime;
 
 use super::{Time, TimeVal, Tm};
 
