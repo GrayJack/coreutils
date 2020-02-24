@@ -20,9 +20,26 @@ fn main() {
 
     // get files list in argument
     // Required argument, ok to unwrap and not check if is supplied.
-    let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
+    let files = matches.values_of("FILE").unwrap();
 
-    touch(&files, flags);
+    let (new_atime, new_mtime) = new_filetimes(flags);
+
+    for filename in files {
+        // if file already exist in the current directory
+        let file_metadata =
+            if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
+
+        if file_metadata.is_err() && !flags.no_create {
+            match File::create(&filename) {
+                Ok(_) => (),
+                Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
+            }
+        } else {
+            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
+            // expression.
+            update_time(&filename, new_atime, new_mtime, &file_metadata.unwrap(), flags);
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -31,6 +48,8 @@ struct TouchFlags<'a> {
     mod_time: bool,
     no_create: bool,
     no_deref: bool,
+    reference: bool,
+    ref_path: &'a str,
     date: bool,
     date_val: &'a str,
 }
@@ -56,53 +75,51 @@ impl<'a> TouchFlags<'a> {
             mod_time,
             no_create: matches.is_present("nocreate") || matches.is_present("no_deref"),
             no_deref: matches.is_present("no_deref"),
+            reference: matches.is_present("reference"),
+            ref_path: matches.value_of("reference").unwrap_or(""),
             date: matches.is_present("date"),
             date_val: matches.value_of("date").unwrap_or(""),
         }
     }
 }
 
-fn touch(files: &[&str], flags: TouchFlags) {
-    for filename in files {
-        // if file already exist in the current directory
-        let file_metadata =
-            if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
+/// Returns the correct `(atime, mtime)` acording to the `flags`.
+fn new_filetimes(flags: TouchFlags) -> (FileTime, FileTime) {
+    if flags.date {
+        let date = NaiveDateTime::parse_from_str(&flags.date_val, "%Y-%m-%d %H:%M:%S")
+            .unwrap_or_else(|err| {
+                eprintln!("touch: Problem parsing date arguments: {}", err);
+                // If there is problems parsing the, all will fail, so exit early.
+                process::exit(1);
+            });
+        let time = FileTime::from_unix_time(date.timestamp(), date.timestamp_subsec_millis());
 
-        if file_metadata.is_err() && !flags.no_create {
-            match File::create(&filename) {
-                Ok(_) => (),
-                Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
-            }
-        } else if flags.date {
-            let native_date = NaiveDateTime::parse_from_str(&flags.date_val, "%Y-%m-%d %H:%M:%S")
-                .unwrap_or_else(|err| {
-                    // If there is problems parsing the
-                    eprintln!("touch: Problem parsing date arguments: {}", err);
-                    process::exit(1);
-                });
-            let newfile_time = FileTime::from_unix_time(
-                native_date.timestamp(),
-                native_date.timestamp_subsec_millis(),
-            );
+        (time, time)
+    } else if flags.reference {
+        let file_meta = fs::metadata(flags.ref_path).unwrap_or_else(|err| {
+            eprintln!("touch: Failed to get {} (OTHER_FILE) metadata: {}", flags.ref_path, err);
+            process::exit(1);
+        });
 
-            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
-            // expression.
-            update_time(&filename, newfile_time, &file_metadata.unwrap(), flags);
-        } else {
-            let newfile_time = FileTime::from_system_time(SystemTime::now());
+        (
+            FileTime::from_last_access_time(&file_meta),
+            FileTime::from_last_modification_time(&file_meta),
+        )
+    } else {
+        let now = FileTime::from_system_time(SystemTime::now());
 
-            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
-            // expression.
-            update_time(&filename, newfile_time, &file_metadata.unwrap(), flags);
-        }
+        (now, now)
     }
 }
 
-fn update_time(path: &str, new_filetime: FileTime, meta: &Metadata, flags: TouchFlags) {
+/// Update the times of the `path` acording with the `flags`.
+fn update_time(
+    path: &str, new_atime: FileTime, new_mtime: FileTime, meta: &Metadata, flags: TouchFlags,
+) {
     match (flags.access_time, flags.mod_time) {
-        (true, false) => update_access_time(&path, new_filetime, meta, flags.no_deref),
-        (false, true) => update_modification_time(&path, new_filetime, meta, flags.no_deref),
-        (true, true) => update_both_time(&path, new_filetime, flags.no_deref),
+        (true, false) => update_access_time(&path, new_atime, meta, flags.no_deref),
+        (false, true) => update_modification_time(&path, new_mtime, meta, flags.no_deref),
+        (true, true) => update_both_time(&path, new_atime, new_mtime, flags.no_deref),
 
         // Unreachable because when creating `TouchFlags` if both are false, we change both to true
         // since de default behaviour is to change both. So (false, false) will never happen, and if
@@ -111,36 +128,36 @@ fn update_time(path: &str, new_filetime: FileTime, meta: &Metadata, flags: Touch
     }
 }
 
-fn update_access_time(path: &str, filetime: FileTime, meta: &Metadata, no_deref: bool) {
+fn update_access_time(path: &str, new_atime: FileTime, meta: &Metadata, no_deref: bool) {
     if no_deref {
         let mtime = FileTime::from_last_modification_time(meta);
 
-        if let Err(err) = set_symlink_file_times(&path, filetime, mtime) {
+        if let Err(err) = set_symlink_file_times(&path, new_atime, mtime) {
             eprintln!("touch: Failed to update {} access time: {}", &path, err);
         }
-    } else if let Err(err) = set_file_atime(&path, filetime) {
+    } else if let Err(err) = set_file_atime(&path, new_atime) {
         eprintln!("touch: Failed to update {} access time: {}", &path, err);
     }
 }
 
-fn update_modification_time(path: &str, filetime: FileTime, meta: &Metadata, no_deref: bool) {
+fn update_modification_time(path: &str, new_mtime: FileTime, meta: &Metadata, no_deref: bool) {
     if no_deref {
         let atime = FileTime::from_last_access_time(meta);
 
-        if let Err(err) = set_symlink_file_times(&path, atime, filetime) {
+        if let Err(err) = set_symlink_file_times(&path, atime, new_mtime) {
             eprintln!("touch: Failed to update {} modification time: {}", &path, err);
         }
-    } else if let Err(err) = set_file_mtime(&path, filetime) {
+    } else if let Err(err) = set_file_mtime(&path, new_mtime) {
         eprintln!("touch: Failed to update {} modification time: {}", &path, err);
     }
 }
 
-fn update_both_time(path: &str, filetime: FileTime, no_deref: bool) {
+fn update_both_time(path: &str, new_atime: FileTime, new_mtime: FileTime, no_deref: bool) {
     if no_deref {
-        if let Err(err) = set_symlink_file_times(&path, filetime, filetime) {
+        if let Err(err) = set_symlink_file_times(&path, new_atime, new_mtime) {
             eprintln!("touch: Failed to update {} time: {}", &path, err);
         }
-    } else if let Err(err) = set_file_times(&path, filetime, filetime) {
+    } else if let Err(err) = set_file_times(&path, new_atime, new_mtime) {
         eprintln!("touch: Failed to update {} time: {}", &path, err);
     }
 }

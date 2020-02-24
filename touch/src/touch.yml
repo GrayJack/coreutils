@@ -29,6 +29,11 @@ args:
         help: Change only the modification time.
         long: mtime
         short: m
+    - reference:
+        help: Use the access and modifications times from OTHER_FILE instead of the current time of day.
+        long: reference
+        short: r
+        value_name: OTHER_FILE
     - no_deref:
         help: If the file is a symbolic link, change the times of the link itself rather than the file that the link points to.
         long_help: |
