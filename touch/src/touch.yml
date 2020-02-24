@@ -29,6 +29,10 @@ args:
         help: Change only the modification time.
         long: mtime
         short: m
+    - f:
+        help: Ignored. Here for compatibility reasons.
+        short: f
+        hidden: true
     - reference:
         help: Use the access and modifications times from OTHER_FILE instead of the current time of day.
         long: reference
