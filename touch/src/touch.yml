@@ -30,11 +30,21 @@ args:
           long: mtime
           short: m
     - time:
-          help: Change the specified WORD to atime to update access time or use equivalent to -a,
-              to update modification time use mtime or equivalent to -m.
+          help: Change the specified time acording to WORD value.
+          long_help: |
+            Change the specified time acording to WORD value.
+
+            When WORD is access, atime, or use, the behaviour is equivalent to -a
+            When WORD is modify or mtime, the behaviour is equivalent to -m
           long: time
-          short: t
+          short: T
           value_name: "WORD"
+          possible_values:
+            - access
+            - atime
+            - modify
+            - mtime
+            - use
     - date:
           help: Parse STRING (date format [Y-m-d H:M:S]) and use it instead of current time.
           long: date
