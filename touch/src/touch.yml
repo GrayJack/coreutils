@@ -14,39 +14,49 @@ version_message: Display version information.
 help_short: "?"
 args:
     - FILE:
-          help: A name of a file to create empty if it does not exist, unless -c or -h is supplied.
-          multiple: true
-          required: true
+        help: A name of a file to create empty if it does not exist, unless -c or -h is supplied.
+        multiple: true
+        required: true
     - accesstime:
-          help: Change only the access time.
-          long: atime
-          short: a
+        help: Change only the access time.
+        long: atime
+        short: a
     - nocreate:
-          help: Do not create any files.
-          long: no-create
-          short: c
+        help: Do not create any files.
+        long: no-create
+        short: c
     - modification:
-          help: Change only the modification time.
-          long: mtime
-          short: m
-    - time:
-          help: Change the specified time acording to WORD value.
-          long_help: |
-            Change the specified time acording to WORD value.
+        help: Change only the modification time.
+        long: mtime
+        short: m
+    - no_deref:
+        help: If the file is a symbolic link, change the times of the link itself rather than the file that the link points to.
+        long_help: |
+            If the file is a symbolic link, change the times of the link itself
+            rather than the file that the link points to.
 
-            When WORD is access, atime, or use, the behaviour is equivalent to -a
-            When WORD is modify or mtime, the behaviour is equivalent to -m
-          long: time
-          short: T
-          value_name: "WORD"
-          possible_values:
+            Note that -h implies -c and thus will not create any new files.
+        long: no-deref
+        short: h
+        aliases: no-dereference
+    - time:
+        help: Change the specified time acording to WORD value.
+        long_help: |
+          Change the specified time acording to WORD value.
+
+          When WORD is access, atime, or use, the behaviour is equivalent to -a
+          When WORD is modify or mtime, the behaviour is equivalent to -m
+        long: time
+        short: T
+        value_name: "WORD"
+        possible_values:
             - access
             - atime
             - modify
             - mtime
             - use
     - date:
-          help: Parse STRING (date format [Y-m-d H:M:S]) and use it instead of current time.
-          long: date
-          short: d
-          value_name: STRING
+        help: Parse STRING (date format [Y-m-d H:M:S]) and use it instead of current time.
+        long: date
+        short: d
+        value_name: STRING

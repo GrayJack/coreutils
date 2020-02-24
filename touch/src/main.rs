@@ -1,12 +1,12 @@
 use std::{
-    fs::{metadata, File},
+    fs::{self, File, Metadata},
     process,
     time::SystemTime,
 };
 
 use chrono::NaiveDateTime;
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use filetime::{set_file_atime, set_file_mtime, FileTime};
+use filetime::{set_file_atime, set_file_mtime, set_file_times, set_symlink_file_times, FileTime};
 
 // TODO: add Unit tests for touch
 #[cfg(test)]
@@ -28,22 +28,34 @@ fn main() {
 #[derive(Debug, Clone, Copy)]
 struct TouchFlags<'a> {
     access_time: bool,
-    no_create: bool,
     mod_time: bool,
-    time: bool,
-    time_val: &'a str,
+    no_create: bool,
+    no_deref: bool,
     date: bool,
     date_val: &'a str,
 }
 
 impl<'a> TouchFlags<'a> {
     fn from_matches(matches: &'a ArgMatches<'a>) -> Self {
+        let time_val = matches.value_of("time").unwrap_or("");
+        let mut access_time = matches.is_present("accesstime")
+            || time_val == "access"
+            || time_val == "atime"
+            || time_val == "use";
+
+        let mut mod_time =
+            matches.is_present("modification") || time_val == "modify" || time_val == "mtime";
+
+        if !access_time && !mod_time {
+            access_time = true;
+            mod_time = true;
+        }
+
         TouchFlags {
-            access_time: matches.is_present("accesstime"),
-            no_create: matches.is_present("nocreate"),
-            mod_time: matches.is_present("modification"),
-            time: matches.is_present("time"),
-            time_val: matches.value_of("time").unwrap_or(""),
+            access_time,
+            mod_time,
+            no_create: matches.is_present("nocreate") || matches.is_present("no_deref"),
+            no_deref: matches.is_present("no_deref"),
             date: matches.is_present("date"),
             date_val: matches.value_of("date").unwrap_or(""),
         }
@@ -53,8 +65,10 @@ impl<'a> TouchFlags<'a> {
 fn touch(files: &[&str], flags: TouchFlags) {
     for filename in files {
         // if file already exist in the current directory
-        let file_metadata = metadata(&filename);
-        if file_metadata.is_err() && flags.no_create {
+        let file_metadata =
+            if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
+
+        if file_metadata.is_err() && !flags.no_create {
             match File::create(&filename) {
                 Ok(_) => (),
                 Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
@@ -71,40 +85,62 @@ fn touch(files: &[&str], flags: TouchFlags) {
                 native_date.timestamp_subsec_millis(),
             );
 
-            update_time(&filename, newfile_time, flags);
+            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
+            // expression.
+            update_time(&filename, newfile_time, &file_metadata.unwrap(), flags);
         } else {
             let newfile_time = FileTime::from_system_time(SystemTime::now());
 
-            update_time(&filename, newfile_time, flags);
+            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
+            // expression.
+            update_time(&filename, newfile_time, &file_metadata.unwrap(), flags);
         }
     }
 }
 
-fn update_time(path: &str, filetime: FileTime, flags: TouchFlags) {
-    if flags.access_time
-        || flags.time_val == "access"
-        || flags.time_val == "atime"
-        || flags.time_val == "use"
-    {
-        update_access_time(&path, filetime);
-    } else if flags.mod_time || flags.time_val == "modify" || flags.time_val == "mtime" {
-        update_modification_time(&path, filetime);
-    } else {
-        update_access_time(&path, filetime);
-        update_modification_time(&path, filetime);
+fn update_time(path: &str, new_filetime: FileTime, meta: &Metadata, flags: TouchFlags) {
+    match (flags.access_time, flags.mod_time) {
+        (true, false) => update_access_time(&path, new_filetime, meta, flags.no_deref),
+        (false, true) => update_modification_time(&path, new_filetime, meta, flags.no_deref),
+        (true, true) => update_both_time(&path, new_filetime, flags.no_deref),
+
+        // Unreachable because when creating `TouchFlags` if both are false, we change both to true
+        // since de default behaviour is to change both. So (false, false) will never happen, and if
+        // happen, it's a bug.
+        _ => unreachable!(),
     }
 }
 
-fn update_access_time(path: &str, filetime: FileTime) {
-    match set_file_atime(&path, filetime) {
-        Ok(_) => (),
-        Err(e) => eprintln!("touch: Failed to update {} access time: {}", &path, e),
-    };
+fn update_access_time(path: &str, filetime: FileTime, meta: &Metadata, no_deref: bool) {
+    if no_deref {
+        let mtime = FileTime::from_last_modification_time(meta);
+
+        if let Err(err) = set_symlink_file_times(&path, filetime, mtime) {
+            eprintln!("touch: Failed to update {} access time: {}", &path, err);
+        }
+    } else if let Err(err) = set_file_atime(&path, filetime) {
+        eprintln!("touch: Failed to update {} access time: {}", &path, err);
+    }
 }
 
-fn update_modification_time(path: &str, filetime: FileTime) {
-    match set_file_mtime(&path, filetime) {
-        Ok(_) => (),
-        Err(e) => eprintln!("touch: Failed to update {} modification time: {}", &path, e),
-    };
+fn update_modification_time(path: &str, filetime: FileTime, meta: &Metadata, no_deref: bool) {
+    if no_deref {
+        let atime = FileTime::from_last_access_time(meta);
+
+        if let Err(err) = set_symlink_file_times(&path, atime, filetime) {
+            eprintln!("touch: Failed to update {} modification time: {}", &path, err);
+        }
+    } else if let Err(err) = set_file_mtime(&path, filetime) {
+        eprintln!("touch: Failed to update {} modification time: {}", &path, err);
+    }
+}
+
+fn update_both_time(path: &str, filetime: FileTime, no_deref: bool) {
+    if no_deref {
+        if let Err(err) = set_symlink_file_times(&path, filetime, filetime) {
+            eprintln!("touch: Failed to update {} time: {}", &path, err);
+        }
+    } else if let Err(err) = set_file_times(&path, filetime, filetime) {
+        eprintln!("touch: Failed to update {} time: {}", &path, err);
+    }
 }
