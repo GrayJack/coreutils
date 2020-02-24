@@ -1,6 +1,3 @@
-use chrono::NaiveDateTime;
-use clap::{load_yaml, App, ArgMatches};
-use filetime::{set_file_atime, set_file_mtime, FileTime};
 use std::{
     fs::{metadata, File},
     io::Result,
@@ -8,9 +5,13 @@ use std::{
     time::SystemTime,
 };
 
+use chrono::NaiveDateTime;
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use filetime::{set_file_atime, set_file_mtime, FileTime};
+
 fn main() {
     let yaml = load_yaml!("touch.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
     // get files list in argument
     let files = if matches.is_present("FILE") {
@@ -85,14 +86,11 @@ fn update_access_time(path: &str, filetime: FileTime) {
 fn update_modification_time(path: &str, filetime: FileTime) {
     match set_file_mtime(&path, filetime) {
         Ok(_) => (),
-        Err(e) => eprintln!(
-            "touch: Failed to update {} modification time \n {}",
-            &path, e
-        ),
+        Err(e) => eprintln!("touch: Failed to update {} modification time \n {}", &path, e),
     };
 }
 
-//TODO: add Unit tests for touch
+// TODO: add Unit tests for touch
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -123,7 +121,7 @@ mod tests {
         let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
         let file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
-        //update and create files
+        // update and create files
         match touch(&matches, &files) {
             Ok(_) => (),
             Err(e) => eprintln!("touch: Failed to create file {}", e),
@@ -135,7 +133,7 @@ mod tests {
         // check that file1 modification time has changed
         assert_ne!(file1_mtime, new_file1_mtime);
 
-        //check that file1 access time has changed
+        // check that file1 access time has changed
         assert_ne!(file1_atime, new_file1_atime);
 
         remove_test_files(&files).unwrap();
@@ -158,7 +156,7 @@ mod tests {
         let mut file1_metadata = metadata(&files[0]).unwrap();
         let file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
-        //update and create files
+        // update and create files
         match touch(&matches, &files) {
             Ok(_) => (),
             Err(e) => eprintln!("touch: Failed to create file {}", e),
@@ -167,7 +165,7 @@ mod tests {
         file1_metadata = metadata(&files[0]).unwrap();
         let new_file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
-        //check that first file access time has changed
+        // check that first file access time has changed
         assert_ne!(file1_atime, new_file1_atime);
         remove_test_files(&files).unwrap();
     }
@@ -189,7 +187,7 @@ mod tests {
         let mut file1_metadata = metadata(&files[0]).unwrap();
         let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
-        //update and create files
+        // update and create files
         touch(&matches, &files).unwrap();
 
         file1_metadata = metadata(&files[0]).unwrap();
@@ -219,7 +217,7 @@ mod tests {
 
         File::create(&files[0]).unwrap();
 
-        //update and create files
+        // update and create files
         touch(&matches, &files).unwrap();
 
         let file1_metadata = metadata(&files[0]).unwrap();
