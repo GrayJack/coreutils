@@ -17,7 +17,7 @@ jobs:
         override: true
         profile: minimal
         components: clippy
-        target: x86_64-unknown-dragonfly
+        # target: x86_64-unknown-dragonfly
     - name: Check DragonflyBSD
       uses: actions-rs/cargo@v1
       with:
