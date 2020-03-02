@@ -30,6 +30,7 @@ members = [
     "rm",
     "rmdir",
     "sleep",
+    "touch",
     "true",
     "tty",
     "uname",

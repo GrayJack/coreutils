@@ -113,7 +113,7 @@ cargo install --path .
 |    tee   |      X      |         |      |
 |   test   |      X      |         |      |
 |   time   |      X      |         |      |
-|   touch  |      X      |         |      |
+|   touch  |             |    X    |      |
 |    tr    |      X      |         |      |
 |   true   |             |         |   X  |
 |   tsort  |      X      |         |      |
@@ -145,6 +145,7 @@ Without they this project would not be in the shape it is today
  * [Jonas Geschke](https://github.com/kegesch)
  * [Ladysamantha](https://github.com/ladysamantha)
  * [Mats Kindah](https://github.com/mkindahl)
+ * [Michel Kansou](https://github.com/MichelKansou)
  * [Odin Dutton](https://github.com/twe4ked)
  * [Rodrigo Oliveira Campos](https://github.com/rodrigocam)
  * [Sergey Noskov](https://github.com/Albibek)

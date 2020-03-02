@@ -1,0 +1,13 @@
+[package]
+name = "touch"
+version = "0.1.0"
+authors = ["Michel Kansou <michel.kansou.vo2group@axa.fr>"]
+edition = "2018"
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+filetime = "0.2"
+chrono = "0.4"
+
+[build-dependencies]
+clap = { version = "^2.33.0", features = ["yaml"] }
