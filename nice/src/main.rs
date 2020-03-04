@@ -12,7 +12,7 @@ use coreutils_core::{
 
 use clap::{
     load_yaml, App,
-    AppSettings::{AllowNegativeNumbers, ColoredHelp},
+    AppSettings::{AllowNegativeNumbers, ColoredHelp, TrailingVarArg},
 };
 
 #[cfg(target_os = "linux")]
@@ -22,7 +22,9 @@ const P_PROCESS: c_int = PRIO_PROCESS;
 
 fn main() {
     let yaml = load_yaml!("nice.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, AllowNegativeNumbers]).get_matches();
+    let matches = App::from_yaml(yaml)
+        .settings(&[ColoredHelp, AllowNegativeNumbers, TrailingVarArg])
+        .get_matches();
 
     let adjustment: c_int = {
         let str_n = matches.value_of("N").unwrap();
@@ -35,12 +37,11 @@ fn main() {
         }
     };
 
-    let command = matches.value_of("COMMAND").unwrap();
-    let args = if matches.is_present("ARGS") {
-        matches.values_of("ARGS").unwrap().collect::<Vec<_>>()
-    } else {
-        Vec::new()
-    };
+    // Ok to unwrap: COMMAND is required
+    let mut cmd = matches.values_of("COMMAND").unwrap();
+    // Ok to unwrap: Since COMMAND is required, there must be the first value
+    let command = cmd.nth(0).unwrap();
+    let args: Vec<_> = cmd.collect();
 
     let mut niceness = match get_priority(P_PROCESS, 0) {
         Ok(nice) => nice,

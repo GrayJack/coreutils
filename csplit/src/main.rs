@@ -1,11 +1,12 @@
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use regex::Regex;
 use std::{
     fmt,
     fs::{remove_file, File},
     io::{self, stdin, BufRead, BufReader, Read, Write},
     process, result,
 };
+
+use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use regex::Regex;
 
 fn main() {
     let yaml = load_yaml!("csplit.yml");

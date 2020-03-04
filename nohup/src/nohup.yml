@@ -17,9 +17,6 @@ version_message: Display version information.
 help_short: "?"
 args:
     - COMMAND:
-        help: Command to be run which will ignore hangup signals.
-        multiple: false
-        required: true
-    - ARGS:
-        help: Command arguments.
+        help: Command to be run which will ignore hangup signals and it's arguments.
         multiple: true
+        required: true

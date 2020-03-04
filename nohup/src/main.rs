@@ -11,18 +11,20 @@ use coreutils_core::{
     os::tty::IsTTY,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+use clap::{
+    load_yaml, App,
+    AppSettings::{ColoredHelp, TrailingVarArg},
+};
 
 fn main() {
     let yaml = load_yaml!("nohup.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, TrailingVarArg]).get_matches();
 
-    let command_name = matches.value_of("COMMAND").unwrap();
-    let args = if matches.is_present("ARGS") {
-        matches.values_of("ARGS").unwrap().collect::<Vec<_>>()
-    } else {
-        Vec::new()
-    };
+    // Ok to unwrap: COMMAND is required
+    let mut cmd = matches.values_of("COMMAND").unwrap();
+    // Ok to unwrap: Since COMMAND is required, there must be the first value
+    let command_name = cmd.nth(0).unwrap();
+    let args: Vec<_> = cmd.collect();
 
     let mut command = Command::new(command_name);
     let mut command_c = command.args(&args);

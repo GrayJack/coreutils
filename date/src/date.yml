@@ -8,15 +8,16 @@ help_short: "?"
 args:
   - utc:
       help: Display Coordinated Universal Time (UTC).
-      long: universal
+      long: utc
       short: u
+      aliases: universal
   - date:
       help: Display time described by STRING, not 'now'.
       long_help: |
         Display time described by STRING, not 'now'.
 
-        Should be of value [[[[[cc]yy]mm]dd]HH]MM[.ss].
-      value_name: date
+        Should be of value [[[[[CC]YY]MM]DD]hh]mm[.SS].
+      value_name: DATE
       takes_value: true
       conflicts_with:
         - read

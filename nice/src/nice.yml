@@ -11,11 +11,9 @@ version_message: Display version information.
 help_short: "?"
 args:
     - COMMAND:
-        help: Command to be run with modified niceness.
-        required: true
-    - ARGS:
-        help: Command arguments.
+        help: Command to be run with modified niceness and it's arguments.
         multiple: true
+        required: true
     - N:
         help: A positive or negative decimal integer used to modify the system scheduling priority of utility.
         long: adjustment

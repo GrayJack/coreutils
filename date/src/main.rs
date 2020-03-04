@@ -146,7 +146,7 @@ fn parse_file(filename: &str) -> Result<DateTime<Local>, io::Error> {
 
 /// Builds the correct datetime format string to parse `date`.
 fn build_parse_format(date: &str) -> String {
-    // format is [[[[[cc]yy]mm]dd]HH]MM[.ss]
+    // format is [[[[[CC]YY]MM]DD]hh]mm[.SS]
     let mut format = vec![' ', ' ', ' ', ' ', ' ', ' ', ' '];
     let mut len = date.chars().count();
 
