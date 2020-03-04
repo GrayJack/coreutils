@@ -5,7 +5,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_shield)
 
 
-An attempt to make a safe re-implementation coreutils aiming for a minimal and yet complete set of utilities. This project aims to have **at least** the common features between several implementations of the utility.
+An attempt to make a safe re-implementation coreutils aiming for a minimal and yet complete set of utilities. This project aims to have **at least** POSIX especification and the common features between several implementations of the utility.
 
 This project has no intent to be 100% compatible with GNU's coreutils, like [Uutils' coreutils](https://github.com/uutils/coreutils), but if happens to be, that's ok too.
 
@@ -47,11 +47,12 @@ cp <Platform>.toml Cargo.toml
 cargo build --release
 ```
 
-### Install example
+<!-- ### Install example
 ```sh
 cp <Platform>.toml Cargo.toml
-cargo install --path .
-```
+cargo build --release
+
+``` -->
 
 ## Tools
 |   Name   | Not Started | Started | Done |
