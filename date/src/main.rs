@@ -1,277 +1,252 @@
-use std::{fmt, io, io::ErrorKind, path::Path, process};
+use std::str::FromStr;
 
-use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
+use coreutils_core::time::{Date, Duration, OffsetDateTime as DateTime, PrimitiveDateTime, Time};
 
-use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
-use time::{self, Tm};
+
+const DEFAULT_FMT_OUT: &str = "%a %b %d %H:%M:%S %z %Y";
+const RFC_2822_FMT: &str = "%a, %d %b %Y %T %z";
 
 fn main() {
     let yaml = load_yaml!("date.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    match date(&matches) {
-        Ok(_) => (),
-        Err(e) => {
-            eprintln!("date: {}", e);
-            process::exit(1);
-        },
-    };
+    if let Err(err) = date(&matches) {
+        eprintln!("date: {}", err);
+        std::process::exit(1);
+    }
 }
 
-/// prints the local datetime.
-/// If `is_utc` is true, the datetime is printed in universal time.
-/// If `date` is Some it will get parsed and printed out instead of the current datetime.
-fn date(args: &ArgMatches) -> Result<(), String> {
-    let is_rfc2822 = args.is_present("RFC2822");
-    let is_utc = args.is_present("utc");
-    let is_date = args.is_present("date");
-    let is_read = args.is_present("read");
+fn date(matches: &ArgMatches) -> Result<(), String> {
+    let is_utc = matches.is_present("utc");
+    let is_iso8601 = matches.is_present("iso8601");
+    let is_rfc2822 = matches.is_present("rfc2822");
+    let is_rfc3339 = matches.is_present("rfc3339");
+    let is_set = matches.is_present("set") && !matches.is_present("no_set");
 
-    let is_outputformat = args.is_present("outputformat");
-    let is_convert = args.is_present("convert");
-    let is_format = args.is_present("format");
+    let (out_fmt, date_str) = {
+        match (matches.is_present("OPERAND"), matches.is_present("DATE")) {
+            (true, false) => {
+                let value = matches.value_of("OPERAND").unwrap();
 
-    let mut datetime: DateTime<Local> = Local::now();
+                if value.starts_with('+') {
+                    (&value[1..], "now")
+                } else if is_rfc2822 {
+                    (RFC_2822_FMT, value)
+                } else if is_iso8601 {
+                    // Ok to unwrap cause we just checked that it's present and it has default
+                    // value.
+                    let fmt_str = matches.value_of("iso8601").unwrap();
+                    (iso8601_format_str(fmt_str), value)
+                } else if is_rfc3339 {
+                    // Ok to unwrap cause we just checked that it's present and it has default
+                    // value.
+                    let fmt_str = matches.value_of("rfc3339").unwrap();
+                    (rfc3339_format_str(fmt_str), value)
+                } else {
+                    (DEFAULT_FMT_OUT, value)
+                }
+            },
+            (true, true) => {
+                let op = matches.value_of("OPERAND").unwrap();
+                let date = matches.value_of("DATE").unwrap();
 
-    if is_date {
-        let date_str = args.value_of("date").unwrap();
-        match read_date(date_str) {
-            Ok(date) => datetime = date,
-            Err(e) => return Err(e),
+                if !op.starts_with('+') {
+                    return Err("Operand format is invalid: Must have '+' at start".to_string());
+                }
+
+                (&op[1..], date)
+            },
+            (false, false) => {
+                if is_rfc2822 {
+                    (RFC_2822_FMT, "now")
+                } else if is_iso8601 {
+                    // Ok to unwrap cause we just checked that it's present and it has default
+                    // value.
+                    let iso_str = matches.value_of("iso8601").unwrap();
+                    (iso8601_format_str(iso_str), "now")
+                } else if is_rfc3339 {
+                    // Ok to unwrap cause we just checked that it's present and it has default
+                    // value.
+                    let fmt_str = matches.value_of("rfc3339").unwrap();
+                    (rfc3339_format_str(fmt_str), "now")
+                } else {
+                    (DEFAULT_FMT_OUT, "now")
+                }
+            },
+            // SAFETY: Cannot happen, because it will always get the first argument as "OPERAND"
+            // We fix that on the (true, false) case.
+            (false, true) => unreachable!(),
         }
-        if !is_convert {
-            return set_os_time(datetime);
-        }
+    };
+
+    let date = build_datetime(date_str, is_utc)?;
+
+    if is_set {
+        set_os_time(date)?;
     }
 
-    if is_format {
-        let mut values = args.values_of("format").unwrap();
-        let input_fmt = values.next().unwrap();
-        let new_date = values.next().unwrap();
-
-        match parse_date(new_date, input_fmt) {
-            Ok(date) => datetime = date,
-            Err(e) => return Err(e),
-        }
-
-        if !is_convert {
-            return set_os_time(datetime);
-        }
-    }
-
-    if is_read {
-        let date_str = args.value_of("read").unwrap();
-        match read(date_str) {
-            Ok(date) => datetime = date,
-            Err(e) => return Err(e),
-        }
-    }
-
-    if is_outputformat {
-        format(&datetime, args.value_of("outputformat").unwrap(), is_utc);
-    } else if is_rfc2822 {
-        format_rfc2822(&datetime, is_utc);
-    } else {
-        format_standard(&datetime, is_utc);
-    }
-
+    println!("{}", date.format(out_fmt));
     Ok(())
 }
 
-/// Sets the os datetime to `datetime`
-fn set_os_time(datetime: DateTime<Local>) -> Result<(), String> {
-    let time = TimeVal {
-        tv_sec:  datetime.timestamp() as Time,
-        tv_usec: datetime.timestamp_subsec_micros() as Susec,
+/// Build a [`DateTime`] from a `date_str`.
+///
+/// The `date_str` format is `[[[[[CC]YY]MM]DD]hh]mm[.SS]`
+fn build_datetime(date_str: &str, is_utc: bool) -> Result<DateTime, String> {
+    let now = if is_utc { DateTime::now() } else { DateTime::now_local() };
+
+    if date_str == "now" {
+        return Ok(now);
+    }
+
+    let mut len = date_str.chars().count();
+    let chars: Vec<_> = date_str.chars().collect();
+
+    let sec = if date_str.contains('.') {
+        let sec = match &chars[len - 2..] {
+            [] => return Err("No values after '.'".to_string()),
+            [_] => return Err("Only one digit: must have two digits after '.'".to_string()),
+            [s1, s2] => parse_datetime_values(&[*s1, *s2])?,
+            _ => return Err("Too many digits: must have two digits after '.'".to_string()),
+        };
+        len -= 3;
+        sec
+    } else {
+        now.second()
     };
+
+    match &chars[..len] {
+        [m1, m2] => {
+            let min = parse_datetime_values(&[*m1, *m2])?;
+            let time = build_time(now.hour(), min, sec, now.nanosecond())?
+                - Duration::seconds(now.offset().as_seconds().into());
+            Ok(PrimitiveDateTime::new(now.date(), time).assume_utc().to_offset(now.offset()))
+        },
+        [h1, h2, m1, m2] => {
+            let hour = parse_datetime_values(&[*h1, *h2])?;
+            let min = parse_datetime_values(&[*m1, *m2])?;
+            let time = build_time(hour, min, sec, now.nanosecond())?
+                - Duration::seconds(now.offset().as_seconds().into());
+            Ok(PrimitiveDateTime::new(now.date(), time).assume_utc().to_offset(now.offset()))
+        },
+        [d1, d2, h1, h2, m1, m2] => {
+            let day = parse_datetime_values(&[*d1, *d2])?;
+            let hour = parse_datetime_values(&[*h1, *h2])?;
+            let min = parse_datetime_values(&[*m1, *m2])?;
+            let date = build_date(now.year(), now.month(), day)?;
+            let time = build_time(hour, min, sec, now.nanosecond())?
+                - Duration::seconds(now.offset().as_seconds().into());
+            Ok(PrimitiveDateTime::new(date, time).assume_utc().to_offset(now.offset()))
+        },
+        [mo1, mo2, d1, d2, h1, h2, m1, m2] => {
+            let month = parse_datetime_values(&[*mo1, *mo2])?;
+            let day = parse_datetime_values(&[*d1, *d2])?;
+            let hour = parse_datetime_values(&[*h1, *h2])?;
+            let min = parse_datetime_values(&[*m1, *m2])?;
+            let date = build_date(now.year(), month, day)?;
+            let time = build_time(hour, min, sec, now.nanosecond())?
+                - Duration::seconds(now.offset().as_seconds().into());
+            Ok(PrimitiveDateTime::new(date, time).assume_utc().to_offset(now.offset()))
+        },
+        [y1, y2, mo1, mo2, d1, d2, h1, h2, m1, m2] => {
+            let cc = now.format("%C").chars().collect::<Vec<_>>();
+            let year = parse_datetime_values(&[cc[0], cc[1], *y1, *y2])?;
+            let month = parse_datetime_values(&[*mo1, *mo2])?;
+            let day = parse_datetime_values(&[*d1, *d2])?;
+            let hour = parse_datetime_values(&[*h1, *h2])?;
+            let min = parse_datetime_values(&[*m1, *m2])?;
+            let date = build_date(year, month, day)?;
+            let time = build_time(hour, min, sec, now.nanosecond())?
+                - Duration::seconds(now.offset().as_seconds().into());
+            Ok(PrimitiveDateTime::new(date, time).assume_utc().to_offset(now.offset()))
+        },
+        [c1, c2, y1, y2, mo1, mo2, d1, d2, h1, h2, m1, m2] => {
+            let year = parse_datetime_values(&[*c1, *c2, *y1, *y2])?;
+            let month = parse_datetime_values(&[*mo1, *mo2])?;
+            let day = parse_datetime_values(&[*d1, *d2])?;
+            let hour = parse_datetime_values(&[*h1, *h2])?;
+            let min = parse_datetime_values(&[*m1, *m2])?;
+            let date = build_date(year, month, day)?;
+            let time = build_time(hour, min, sec, now.nanosecond())?
+                - Duration::seconds(now.offset().as_seconds().into());
+            Ok(PrimitiveDateTime::new(date, time).assume_utc().to_offset(now.offset()))
+        },
+        _ => Err("Invalid digits".to_string()),
+    }
+}
+
+/// Parses a slice of [`char`]s and return a value of a type that implements [`FromStr`].
+fn parse_datetime_values<T: FromStr>(chars: &[char]) -> Result<T, String>
+where
+    T: FromStr,
+    T::Err: std::fmt::Display,
+{
+    match chars.iter().collect::<String>().parse::<T>() {
+        Ok(x) => Ok(x),
+        Err(err) => Err(format!("Failed to parse DATE string: {}", err)),
+    }
+}
+
+/// Build a [`Date`]. Convenience method that resturn the same type of error as
+/// [`build_datetime`].
+fn build_date(year: i32, month: u8, day: u8) -> Result<Date, String> {
+    match Date::try_from_ymd(year, month, day) {
+        Ok(d) => Ok(d),
+        Err(err) => Err(format!("Invalid date digits: {}", err)),
+    }
+}
+
+/// Build a [`Time`]. Convenience method that resturn the same type of error as
+/// [`build_datetime`].
+fn build_time(hour: u8, min: u8, sec: u8, nano: u32) -> Result<Time, String> {
+    match Time::try_from_hms_nano(hour, min, sec, nano) {
+        Ok(t) => Ok(t),
+        Err(err) => Err(format!("Invalid minutes digits: {}", err)),
+    }
+}
+
+/// Returns the fortmat string acording to possible ISO8601 values.
+fn iso8601_format_str(value: &str) -> &str {
+    match value {
+        "date" | "" => "%F",
+        "hour" => "%FT%H",
+        "hours" => "%FT%H%z",
+        "minute" => "%FT%H:%M",
+        "minutes" => "%FT%H:%M%z",
+        "second" => "%FT%H:%M:%S",
+        "seconds" => "%FT%H:%M:%S%z",
+        // SAFETY: Clap ensures that only the above values are used
+        _ => unreachable!(),
+    }
+}
+
+/// Returns the fortmat string acording to possible RFC3339 values.
+fn rfc3339_format_str(value: &str) -> &str {
+    match value {
+        "date" | "" => "%F",
+        "hour" => "%F %H",
+        "hours" => "%F %H%z",
+        "minute" => "%F %H:%M",
+        "minutes" => "%F %H:%M%z",
+        "second" => "%F %H:%M:%S",
+        "seconds" => "%F %H:%M:%S%z",
+        "nanosecond" => "%F %H:%M:%S.%N",
+        "nanoseconds" | "ns" => "%F %H:%M:%S.%N%z",
+        // SAFETY: Clap ensures that only the above values are used
+        _ => unreachable!(),
+    }
+}
+
+/// Sets the os datetime to `datetime`
+fn set_os_time(datetime: DateTime) -> Result<(), String> {
+    use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
+
+    let time =
+        TimeVal { tv_sec: datetime.timestamp() as Time, tv_usec: datetime.microsecond() as Susec };
 
     match set_time_of_day(time) {
         Ok(_) => Ok(()),
-        Err(err) => Err(err.to_string()),
-    }
-}
-
-/// Reads datetime from `input`. Could be seconds or a filepath.
-fn read(input: &str) -> Result<DateTime<Local>, String> {
-    let parsed: Result<i32, _> = input.trim().parse();
-    let result = match parsed {
-        Ok(_) => parse_seconds(input.trim()),
-        Err(_) => parse_file(input),
-    };
-
-    if let Ok(date) = result { Ok(date) } else { Err(String::from("illegal date time format")) }
-}
-
-/// Parses datetime from `date_str` with format `[[[[[cc]yy]mm]dd]HH]MM[.ss]`.
-fn read_date(date_str: &str) -> Result<DateTime<Local>, String> {
-    let format = build_parse_format(date_str);
-    parse_date(date_str, &format)
-}
-
-/// Parsed datetime from `date_str` with `format`.
-fn parse_date(date_str: &str, format: &str) -> Result<DateTime<Local>, String> {
-    match parse_datetime_from_str(date_str, format) {
-        Ok(d) => Ok(d),
-        Err(_) => Err(String::from("illegal date time format")),
-    }
-}
-
-/// Return the local `DateTime`
-fn parse_seconds(seconds: &str) -> Result<DateTime<Local>, io::Error> {
-    match NaiveDateTime::parse_from_str(seconds, "%s") {
-        Ok(date) => {
-            let local = TimeZone::from_utc_datetime(&Local, &date);
-            Ok(local)
-        },
-        Err(e) => Err(io::Error::new(ErrorKind::InvalidInput, e)),
-    }
-}
-
-/// Returns the modified date of `filename`.
-/// Returns `NotFound` if `filename` could not be found.
-fn parse_file(filename: &str) -> Result<DateTime<Local>, io::Error> {
-    let path = Path::new(filename);
-
-    if path.exists() {
-        let metadata = path.metadata().unwrap();
-        let modified = metadata.modified().unwrap();
-        let datetime: DateTime<Local> = DateTime::from(modified);
-
-        Ok(datetime)
-    } else {
-        Err(io::Error::from(ErrorKind::NotFound))
-    }
-}
-
-/// Builds the correct datetime format string to parse `date`.
-fn build_parse_format(date: &str) -> String {
-    // format is [[[[[CC]YY]MM]DD]hh]mm[.SS]
-    let mut format = vec![' ', ' ', ' ', ' ', ' ', ' ', ' '];
-    let mut len = date.chars().count();
-
-    if date.contains('.') {
-        format[6] = 'S';
-        len -= 3;
-    }
-
-    if len >= 2 {
-        format[5] = 'M';
-    }
-    if len >= 4 {
-        format[4] = 'H';
-    }
-    if len >= 6 {
-        format[3] = 'd';
-    }
-    if len >= 8 {
-        format[2] = 'm';
-    }
-    if len >= 10 {
-        format[1] = 'y';
-    }
-    if len >= 12 {
-        format[0] = 'C';
-    }
-
-    let mut format_str = String::new();
-    let spliced_format = format[..6].iter();
-
-    for chr in spliced_format {
-        if !chr.eq(&' ') {
-            format_str.push_str("%");
-            format_str.push_str(&chr.to_string());
-        }
-    }
-
-    if format[6] != ' ' {
-        format_str.push_str(".%S")
-    }
-
-    format_str
-}
-
-/// This function parses `datetime` of given `format`. If `datetime` is not enough for a
-/// unique `DateTime` it uses die values of today.
-fn parse_datetime_from_str(datetime: &str, format: &str) -> Result<DateTime<Local>, String> {
-    match time::strptime(datetime, format) {
-        Ok(time) => {
-            let datetime = convert_tm_to_datetime(time, format);
-            let local = TimeZone::from_local_datetime(&Local, &datetime).unwrap();
-            Ok(local)
-        },
-        Err(_) => Err(String::from("could not parse datetime")),
-    }
-}
-
-/// Converts `time::Tm` to `chrono::DateTime` depending on which `strformat` was used to
-/// parse. If a time unit was not given it will substitute with the current time.
-fn convert_tm_to_datetime(time: Tm, format_used: &str) -> NaiveDateTime {
-    let now: DateTime<Local> = Local::now();
-    let date = now.date();
-    let naivetime = now.time();
-
-    let day = if time.tm_mday == 0 && !format_used.contains("%d") {
-        date.format("%d").to_string().parse().unwrap()
-    } else {
-        time.tm_mday
-    };
-    let month = if time.tm_mon == 0 && !format_used.contains("%m") {
-        date.format("%m").to_string().parse().unwrap()
-    } else {
-        time.tm_mon + 1
-    };
-    let year = if time.tm_year == 0 && !format_used.contains("%Y") {
-        date.format("%Y").to_string().parse().unwrap()
-    } else {
-        time.tm_year + 2000
-    };
-    let seconds = if time.tm_sec == 0 && !format_used.contains("%S") {
-        naivetime.format("%S").to_string().parse().unwrap()
-    } else {
-        time.tm_sec
-    };
-    let minutes = if time.tm_min == 0 && !format_used.contains("%M") {
-        naivetime.format("%M").to_string().parse().unwrap()
-    } else {
-        time.tm_min
-    };
-    let hours = if time.tm_hour == 0 && !format_used.contains("%H") {
-        naivetime.format("%H").to_string().parse().unwrap()
-    } else {
-        time.tm_hour
-    };
-
-    NaiveDate::from_ymd(year, month as u32, day as u32).and_hms(
-        hours as u32,
-        minutes as u32,
-        seconds as u32,
-    )
-}
-
-/// displays `datetime` in rfc2822 format
-fn format_rfc2822<Tz: TimeZone>(datetime: &DateTime<Tz>, is_utc: bool)
-where Tz::Offset: fmt::Display {
-    let format_str = "%a, %d %b %Y %T %z";
-    format(datetime, format_str, is_utc);
-}
-
-/// displays `datetime` standard format `"%a %b %e %k:%M:%S %Z %Y"`
-fn format_standard<Tz: TimeZone>(datetime: &DateTime<Tz>, is_utc: bool)
-where Tz::Offset: fmt::Display {
-    // %Z should print the name of the timezone (only works for UTC)
-    // problem is in chrono lib: https://github.com/chronotope/chrono/issues/288
-    let format_str = "%a %b %e %k:%M:%S %Z %Y";
-
-    format(datetime, format_str, is_utc);
-}
-
-/// displays `datetime` with given `output_format`
-fn format<Tz: TimeZone>(datetime: &DateTime<Tz>, output_format: &str, is_utc: bool)
-where Tz::Offset: fmt::Display {
-    if is_utc {
-        println!("{}", datetime.with_timezone(&Utc).format(output_format));
-    } else {
-        println!("{}", datetime.with_timezone(&Local).format(output_format));
+        Err(err) => Err(format!("Failed to set date: {}", err)),
     }
 }
