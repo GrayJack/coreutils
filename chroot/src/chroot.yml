@@ -44,7 +44,4 @@ args:
 
         If COMMAND is not specified, it defaults to '$(SHELL) -i'.\nIf $(SHELL)
         is not set, /bin/sh is used."
-      multiple: false
-  - ARGS:
-      help: Argument(s) passed to COMMAND.
       multiple: true

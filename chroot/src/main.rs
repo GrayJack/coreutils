@@ -11,18 +11,25 @@ use coreutils_core::{
     },
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+use clap::{
+    load_yaml, App,
+    AppSettings::{ColoredHelp, TrailingVarArg},
+};
 
 fn main() {
     let yaml = load_yaml!("chroot.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, TrailingVarArg]).get_matches();
 
     // Ok to unwrap cause it's required argument
     let root = matches.value_of("NEWROOT").unwrap();
-    let cmd = matches.value_of("COMMAND").unwrap_or("/bin/sh");
-    let args: Vec<&str> = match matches.values_of("ARGS") {
-        Some(args) => args.collect(),
-        None => vec!["-i"],
+    let (cmd, args) = match matches.values_of("COMMAND") {
+        Some(mut c) => {
+            // Ok to unwrap, because if COMMAND has content, it will always have the first
+            let cmd = c.nth(0).unwrap();
+            let args: Vec<_> = c.collect();
+            (cmd, args)
+        },
+        None => ("/bin/sh", vec!["-i"]),
     };
 
     if let Err(err) = change_root(root) {
