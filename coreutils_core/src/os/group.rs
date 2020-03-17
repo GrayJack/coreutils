@@ -267,14 +267,14 @@ impl TryFrom<group> for Group {
     }
 }
 
-/// A collection of `Group`.
+/// A collection of [`Group`].
 #[derive(Debug, Clone, Default)]
 pub struct Groups {
     inner: Vec<Group>,
 }
 
 impl Groups {
-    /// Creates a empty new `Groups`.
+    /// Creates a empty new [`Groups`].
     #[inline]
     pub const fn new() -> Self { Groups { inner: Vec::new() } }
 

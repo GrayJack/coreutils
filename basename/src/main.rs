@@ -22,7 +22,8 @@ fn main() {
 }
 
 /// Get `full_path` basename, removing the given `suffix`.
-/// **Examples:**
+///
+/// ## Examples:
 /// ```rust
 /// # fn main() {}
 /// let name = basename("~/Pictures/mypicture.jpg", "");

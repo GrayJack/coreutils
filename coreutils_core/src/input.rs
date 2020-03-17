@@ -6,7 +6,7 @@ use std::{io, io::prelude::*};
 ///
 /// ## Example
 /// To ask the user whether they want to make a change or not, and validate their response
-/// into a `bool`, the [`Input`] struct can be used like so:
+/// into a [`bool`], the [`Input`] struct can be used like so:
 /// ```rust,ignore
 /// let answer: bool = Input::new()
 ///     .with_msg("Do you want to make this change?")

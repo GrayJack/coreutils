@@ -38,7 +38,7 @@ impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
 }
 
-/// A struct that holds the name of a TTY with a `Display` trait implementation
+/// A struct that holds the name of a TTY with a [`Display`] trait implementation
 /// to be easy to print.
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct TTYName(BString);
