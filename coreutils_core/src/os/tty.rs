@@ -82,7 +82,7 @@ pub trait IsTTY: AsRawFd {
     /// # use coreutils_core::os::tty::IsTTY;
     /// # use std::io;
     /// # fn main() {
-    /// assert_eq!(true, io::stdin().is_tty());
+    /// let istty = io::stdin().is_tty();
     /// # }
     /// ```
     fn is_tty(&self) -> bool;
@@ -98,8 +98,7 @@ impl<T: AsRawFd> IsTTY for T {
 /// ```rust
 /// # use coreutils_core::os::tty::is_tty;
 /// # fn main() {
-/// let istty = isatty(std::io::stdin());
-/// assert_eq!(true, istty);
+/// let istty = is_tty(&std::io::stdin());
 /// # }
 /// ```
 #[inline]

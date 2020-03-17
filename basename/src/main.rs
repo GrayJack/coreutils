@@ -24,13 +24,17 @@ fn main() {
 /// Get `full_path` basename, removing the given `suffix`.
 /// **Examples:**
 /// ```rust
+/// # fn main() {}
 /// let name = basename("~/Pictures/mypicture.jpg", "");
 /// assert_eq!("mypicture.jpg".to_string(), name);
+/// # }
 /// ```
 ///
 /// ```rust
+/// # fn main() {}
 /// let name = basename("~/Pictures/mypicture.jpg", ".jpg");
 /// assert_eq!("mypicture".to_string(), name);
+/// # }
 /// ```
 fn basename(full_path: &str, suffix: &str) -> String {
     let split_full_path: Vec<&str> = full_path.split('/').collect();
