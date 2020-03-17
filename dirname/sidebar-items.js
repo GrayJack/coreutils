@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["dirname","Get the directory full name of a given `path`."],["main",""]]});

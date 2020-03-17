@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["mkdtemp","Creates a temporary directory based on the given `template`."],["mkstemp","Creates a temporary file based on the given `template`."]],"struct":[["Mktemp","A struct that represents a mktemp(3) result. This includes the file created, and the path to that file."]]});

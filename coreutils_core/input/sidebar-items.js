@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Input","The Input struct handles issuing messages and getting responses from the user."]]});

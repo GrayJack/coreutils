@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["main",""],["new_filetimes","Returns the correct `(atime, mtime)` acording to the `flags`."],["update_access_time",""],["update_both_time",""],["update_modification_time",""],["update_time","Update the times of the `path` acording with the `flags`."]],"struct":[["TouchFlags",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["mkfifo","Creates FIFO special file with name `filepath` with `mode` permissions. Inspired by crate `unix_named_pipe`"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["load_average","Returns 3 load average from the system."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","Possible errors while trying to get a TTY name"]],"fn":[["is_tty","Check if the given `file_descriptor` is a TTY."]],"struct":[["TTYName","A struct that holds the name of a TTY with a [`Display`] trait implementation to be easy to print."]],"trait":[["IsTTY","Convenience trait to use [`is_tty`] function as method"]]});

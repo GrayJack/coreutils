@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","Error type for [`UtmpxKind`] conversion."],["UtmpxKind","Possible types of a [`Utmpx`] instance."]],"struct":[["Utmpx","A struct that represents a user account, where user can be humam users or other parts of the system that requires the usage of account structure, like some daemons."],["UtmpxSet","A collection of Utmpx entries."]]});

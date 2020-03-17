@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["basename","Get `full_path` basename, removing the given `suffix`."],["main",""],["strip_suffix","Removes the given `suffix` from the `name`."]]});

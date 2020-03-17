@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["main",""],["make_cutter",""]],"struct":[["Bytes",""],["Chars",""],["Error",""],["Fields",""],["Options",""],["Range","Range of the form [start, one-after-end)."],["RangeSet","A set of ranges."]],"trait":[["Cutter",""]],"type":[["Result",""]]});

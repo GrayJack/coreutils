@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","Enum that holds possible errors while creating [`Group`] type."]],"struct":[["Group","This struct holds information about a group of UNIX/UNIX-like systems."],["Groups","A collection of [`Group`]."]],"type":[["Members","A iterator of group members."],["Result",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["change_root","Change the root of the running process to `newroot`."],["set_group","Set the `group` for the current process."],["set_groups","Set the `groups` for the current process."],["set_user","Set the `user` for the current process."]],"mod":[["priority","Module for safe API for getting and setting process priority."]]});

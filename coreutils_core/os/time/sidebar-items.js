@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["local_time","Get the time structure with local time offset."],["set_time_of_day","Set the system time as `timeval`"],["system_utc_offset",""],["utc_offset",""]]});

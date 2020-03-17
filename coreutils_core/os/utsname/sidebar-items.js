@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["UtsName","A struct that holds several system informations, like the system name, host name, etc."]]});
