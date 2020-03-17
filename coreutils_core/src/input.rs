@@ -3,9 +3,10 @@
 use std::{io, io::prelude::*};
 
 /// The Input struct handles issuing messages and getting responses from the user.
-/// # Example
+///
+/// ## Example
 /// To ask the user whether they want to make a change or not, and validate their response
-/// into a `bool`, the `Input` struct can be used like so:
+/// into a `bool`, the [`Input`] struct can be used like so:
 /// ```rust,ignore
 /// let answer: bool = Input::new()
 ///     .with_msg("Do you want to make this change?")
@@ -42,7 +43,7 @@ impl<'a> Input<'a> {
     }
 
     /// Specifies the error message to display to the user.
-    /// **NOTE:** This error message prepends the actual error message produced
+    /// **NOTE:** This error message prepends the actual error message produced.
     pub fn with_err_msg(&mut self, err_msg: &'a str) -> &mut Self {
         self.err_msg = Some(err_msg);
 
@@ -72,7 +73,7 @@ impl<'a> Input<'a> {
         Some(line)
     }
 
-    /// Gets the input value the user entered as a `String`.
+    /// Gets the input value the user entered as a [`String`].
     pub fn get(&self) -> Option<String> {
         match self.get_input() {
             Some(input) => Some(input.trim().to_string()),

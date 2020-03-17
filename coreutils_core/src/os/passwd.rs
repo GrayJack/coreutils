@@ -36,10 +36,10 @@ pub type Result<T> = StdResult<T, Error>;
 
 /// This struct holds information about a passwd of UNIX/UNIX-like systems.
 ///
-/// Contains `sys/types.h` `passwd` struct attributes as Rust more powefull types.
+/// Contains `sys/types.h` [`passwd`] struct attributes as Rust more powefull types.
 #[derive(Debug)]
 pub enum Error {
-    /// Happens when `getpwgid_r` or `getpwnam_r` fails.
+    /// Happens when [`getpwuid_r`] or [`getpwnam_r`] fails.
     ///
     /// It holds the the function that was used and a error code of the function return.
     GetPasswdFailed(String, i32),
@@ -59,11 +59,11 @@ pub enum Error {
     AgeCheckFailed,
     /// Happens when the pointer to the `.pw_comment` is NULL.
     CommentCheckFailed,
-    /// Happens when the passwd is not found.
+    /// Happens when the [`passwd`] is not found.
     PasswdNotFound,
     /// Happens when there is a IO error
     Io(IOError),
-    /// Happens when something happens when finding what `Group` a `Passwd` belongs
+    /// Happens when something happens when finding what [`Group`] a [`Passwd`] belongs
     Group(Box<GrError>),
 }
 
@@ -115,8 +115,6 @@ impl From<IOError> for Error {
 /// This struct holds the information of a user in UNIX/UNIX-like systems.
 ///
 /// Contains `sys/types.h` [`passwd`] struct attributes as Rust more common types.
-// It also contains a pointer to the libc::passwd type for more complex manipulations.
-/// [`passwd`]: ../../../libc/struct.passwd.html
 #[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
 pub struct Passwd {
     /// User login name.
@@ -167,14 +165,12 @@ pub struct Passwd {
 }
 
 impl Passwd {
-    /// Creates a new `Passwd` getting the current process user passwd as default using
+    /// Creates a new [`Passwd`] getting the current process user passwd as default using
     /// the effective user id.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
-    /// into `Passwd`, an error variant is returned.
-    ///
-    /// [`passwd`]: ../../../libc/struct.passwd.html
+    /// into [`Passwd`], an error variant is returned.
     pub fn effective() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::uninit();
@@ -188,7 +184,7 @@ impl Passwd {
             if res == 0 {
                 return Err(PasswdNotFound);
             } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+                return Err(GetPasswdFailed("getpwuid_r".to_string(), res));
             }
         }
 
@@ -198,14 +194,12 @@ impl Passwd {
         Ok(Passwd::try_from(pw)?)
     }
 
-    /// Creates a new `Passwd` getting the current process user passwd as default using
+    /// Creates a new [`Passwd`] getting the current process user passwd as default using
     /// the real user id.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
-    /// into `Passwd`, an error variant is returned.
-    ///
-    /// [`passwd`]: ../../../libc/struct.passwd.html
+    /// into [`Passwd`], an error variant is returned.
     pub fn real() -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::uninit();
@@ -218,7 +212,7 @@ impl Passwd {
             if res == 0 {
                 return Err(PasswdNotFound);
             } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+                return Err(GetPasswdFailed("getpwuid_r".to_string(), res));
             }
         }
 
@@ -228,13 +222,11 @@ impl Passwd {
         Ok(Passwd::try_from(pw)?)
     }
 
-    /// Creates a new `Passwd` using a `id` to get all attributes.
+    /// Creates a new [`Passwd`] using a `id` to get all attributes.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
-    /// into `Passwd`, an error variant is returned.
-    ///
-    /// [`passwd`]: ../../../libc/struct.passwd.html
+    /// into [`Passwd`], an error variant is returned.
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::uninit();
@@ -246,7 +238,7 @@ impl Passwd {
             if res == 0 {
                 return Err(PasswdNotFound);
             } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+                return Err(GetPasswdFailed("getpwuid_r".to_string(), res));
             }
         }
 
@@ -256,13 +248,11 @@ impl Passwd {
         Ok(Passwd::try_from(pw)?)
     }
 
-    /// Creates a new `Passwd` using a `name` to get all attributes.
+    /// Creates a new [`Passwd`] using a `name` to get all attributes.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
-    /// into `Passwd`, an error variant is returned.
-    ///
-    /// [`passwd`]: ../../../libc/struct.passwd.html
+    /// into [`Passwd`], an error variant is returned.
     pub fn from_name(name: &str) -> Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut pw_ptr = ptr::null_mut();
@@ -288,7 +278,7 @@ impl Passwd {
             if res == 0 {
                 return Err(PasswdNotFound);
             } else {
-                return Err(GetPasswdFailed(String::from("getpwnam_r"), res));
+                return Err(GetPasswdFailed("getpwnam_r".to_string(), res));
             }
         }
 
@@ -298,35 +288,35 @@ impl Passwd {
         Ok(Passwd::try_from(pw)?)
     }
 
-    /// Returns the `Passwd`(user) login name.
+    /// Returns the [`Passwd`] (user) login name.
     #[inline]
     pub fn name(&self) -> &BStr { self.name.as_bstr() }
 
-    /// Returns the `Passwd`(user) encrypted password.
+    /// Returns the [`Passwd`] (user) encrypted password.
     #[inline]
     pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
 
-    /// Returns the `Passwd`(user) user ID.
+    /// Returns the [`Passwd`] (user) user ID.
     #[inline]
     pub fn uid(&self) -> Uid { self.user_id }
 
-    /// Returns the `Passwd`(user) primary group ID.
+    /// Returns the [`Passwd`] (user) primary group ID.
     #[inline]
     pub fn gid(&self) -> Gid { self.group_id }
 
-    /// Returns the `Passwd`(user) full name.
+    /// Returns the [`Passwd`] (user) full name.
     #[inline]
     pub fn gecos(&self) -> &BStr { self.gecos.as_bstr() }
 
-    /// Returns the `Passwd`(user) directory.
+    /// Returns the [`Passwd`] (user) directory.
     #[inline]
     pub fn dir(&self) -> &BStr { self.dir.as_bstr() }
 
-    /// Returns the `Passwd`(user) shell.
+    /// Returns the [`Passwd`] (user) shell.
     #[inline]
     pub fn shell(&self) -> &BStr { self.shell.as_bstr() }
 
-    /// Returns the `Passwd`(user) access class.
+    /// Returns the [`Passwd`] (user) access class.
     #[inline]
     #[cfg(not(any(
         target_os = "linux",
@@ -336,7 +326,7 @@ impl Passwd {
     )))]
     pub fn class(&self) -> &BStr { &self.class.as_bstr() }
 
-    /// Returns the `Passwd`(user) last password change time.
+    /// Returns the [`Passwd`] (user) last password change time.
     #[inline]
     #[cfg(not(any(
         target_os = "linux",
@@ -346,7 +336,7 @@ impl Passwd {
     )))]
     pub fn password_change(&self) -> Time { self.change }
 
-    /// Returns the `Passwd`(user) expiration time.
+    /// Returns the [`Passwd`] (user) expiration time.
     #[inline]
     #[cfg(not(any(
         target_os = "linux",
@@ -356,18 +346,16 @@ impl Passwd {
     )))]
     pub fn expire(&self) -> Time { self.expire }
 
-    /// Returns the `Passwd`(user) fields filled in.
+    /// Returns the [`Passwd`](user) fields filled in.
     #[inline]
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn fields(&self) -> Fields { self.fields }
 
-    /// Returns [groups] that the `Passwd`(user) belongs to.
+    /// Returns [`Groups`] that the [`Passwd`] (user) belongs to.
     ///
     /// # Errors
-    /// If it fails to get the [groups] where `Passwd`(user) belongs, an error variant is
+    /// If it fails to get the [`Groups`] where [`Passwd`] (user) belongs, an error variant is
     /// returned.
-    ///
-    /// [groups]: ../group/struct.Groups.html
     pub fn belongs_to(&self) -> Result<Groups> {
         let name = {
             let mut n = self.name.to_string();

@@ -29,7 +29,7 @@ pub struct UtsName {
 }
 
 impl UtsName {
-    /// Generates a new `UtsName` of the system.
+    /// Generates a new [`UtsName`] of the system.
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.

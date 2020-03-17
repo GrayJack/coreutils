@@ -41,10 +41,10 @@ pub type Result<T> = StdResult<T, Error>;
 /// A iterator of group members.
 pub type Members = Vec<BString>;
 
-/// Enum that holds possible errors while creating `Group` type.
+/// Enum that holds possible errors while creating [`Group`] type.
 #[derive(Debug)]
 pub enum Error {
-    /// Happens when `getgrgid_r`, `getgrnam_r` or `getgrouplist` fails.
+    /// Happens when [`getgrgid_r`], [`getgrnam_r`] or [`getgrouplist`] fails.
     ///
     /// It holds the the function that was used and a error code of the function return.
     GetGroupFailed(String, i32),
@@ -52,13 +52,13 @@ pub enum Error {
     NameCheckFailed,
     /// Happens when the pointer to the `.gr_passwd` is NULL.
     PasswdCheckFailed,
-    /// Happens when the pointer of `group` primitive is NULL.
+    /// Happens when the pointer of [`group`] primitive is NULL.
     ///
-    /// This can happen even if `getgrgid_r` or `getgrnam_r` return 0.
+    /// This can happen even if [`getgrgid_r`] or [`getgrnam_r`] return 0.
     GroupNotFound,
-    /// Happens when calling `getgroups()` or `getgrouplist()` C function.
+    /// Happens when calling [`getgroups`] or [`getgrouplist`] C function.
     Io(IoError),
-    /// Happens when creating a `Passwd` fails.
+    /// Happens when creating a [`Passwd`] fails.
     Passwd(Box<PwError>),
 }
 
@@ -101,8 +101,6 @@ impl From<PwError> for Error {
 /// This struct holds information about a group of UNIX/UNIX-like systems.
 ///
 /// Contains `sys/types.h` [`group`] struct attributes as Rust powefull types.
-///
-/// [`group`]: ../../../libc/struct.group.html
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Group {
     /// Group name.
@@ -116,13 +114,11 @@ pub struct Group {
 }
 
 impl Group {
-    /// Creates a new `Group` getting the user group as default.
+    /// Creates a new [`Group`] getting the user group as default.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
-    /// into `Group`, an error variant is returned.
-    ///
-    /// [`group`]: ../../../libc/struct.group.html
+    /// into [`Group`], an error variant is returned.
     pub fn new() -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut gr_ptr = ptr::null_mut();
@@ -146,13 +142,11 @@ impl Group {
         Ok(Group::try_from(gr)?)
     }
 
-    /// Creates a `Group` using a `id` to get all attributes.
+    /// Creates a [`Group`] using a `id` to get all attributes.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
-    /// into `Group`, an error variant is returned.
-    ///
-    /// [`group`]: ../../../libc/struct.group.html
+    /// into [`Group`], an error variant is returned.
     pub fn from_gid(id: Gid) -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut gr_ptr = ptr::null_mut();
@@ -174,13 +168,11 @@ impl Group {
         Ok(Group::try_from(gr)?)
     }
 
-    /// Creates a `Group` using a `name` to get all attributes.
+    /// Creates a [`Group`] using a `name` to get all attributes.
     ///
     /// # Errors
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
-    /// into `Group`, an error variant is returned.
-    ///
-    /// [`group`]: ../../../libc/struct.group.html
+    /// into [`Group`], an error variant is returned.
     pub fn from_name(name: &str) -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut gr_ptr = ptr::null_mut();
@@ -290,8 +282,6 @@ impl Groups {
     ///
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
-    ///
-    /// [`Group`]: ./struct.Group.html
     pub fn caller() -> Result<Self> {
         // First we check if we indeed have groups.
         // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary
@@ -329,8 +319,6 @@ impl Groups {
     ///
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
-    ///
-    /// [`Group`]: ./struct.Group.html
     pub fn from_username(username: &str) -> Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
@@ -444,8 +432,6 @@ impl Groups {
     ///
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
-    ///
-    /// [`Group`]: ./struct.Group.html
     pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
         let groups: Result<Vec<Group>> =
             group_list.iter().map(|&group_name| Group::from_name(group_name)).collect();
@@ -462,15 +448,15 @@ impl Groups {
         }
     }
 
-    /// Insert as `Group` on `Groups`.
+    /// Insert a [`Group`] on [`Groups`].
     #[inline]
     pub fn push(&mut self, value: Group) { self.inner.push(value); }
 
-    /// Return `true` if `Groups` contains 0 elements.
+    /// Return `true` if [`Groups`] contains 0 elements.
     #[inline]
     pub fn is_empty(&self) -> bool { self.inner.is_empty() }
 
-    /// Transform `Groups` to a Vector of `Group`.
+    /// Transform [`Groups`] to a Vector of [`Group`].
     #[inline]
     pub fn into_vec(self) -> Vec<Group> { self.inner }
 

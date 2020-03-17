@@ -34,12 +34,12 @@ use bstr::{BStr, BString, ByteSlice};
 
 use time::{Duration, OffsetDateTime as DateTime};
 
-/// Error type for UtmpxKind conversion.
+/// Error type for [`UtmpxKind`] conversion.
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub enum Error {
-    /// When the OS has not this UtmpxKind and a number related to that kind.
+    /// When the OS has not this [`UtmpxKind`] and a number related to that kind.
     OsNoKind,
-    /// When the OS has no UtmpxKind related to this number.
+    /// When the OS has no [`UtmpxKind`] related to this number.
     OsNoNumber,
 }
 
@@ -58,7 +58,7 @@ impl Display for Error {
     }
 }
 
-/// Possible types of a `Utmpx` instance.
+/// Possible types of a [`Utmpx`] instance.
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -132,7 +132,7 @@ pub struct Utmpx {
 }
 
 impl Utmpx {
-    /// Creates a new `Utmpx` entry from the `C` version of the structure.
+    /// Creates a new [`Utmpx`] entry from the `C` version of the structure.
     pub fn from_c_utmpx(utm: utmpx) -> Self { Self::from(utm) }
 
     /// Get user name.
@@ -189,7 +189,7 @@ impl Utmpx {
 }
 
 impl From<utmpx> for Utmpx {
-    /// Converts `utmpx` to `Utmpx`.
+    /// Converts [`utmpx`] to [`Utmpx`].
     ///
     /// # Panic
     /// This function may panic when converting a number to UtmpxKind. Since we get the

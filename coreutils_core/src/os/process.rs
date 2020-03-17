@@ -54,8 +54,6 @@ pub fn set_user(user: &str) -> Result<(), PwError> {
 /// # Errors
 /// If a internal call set a errno (I/O OS error) or it fails to get [`Groups`], an error
 /// variant will be returned.
-///
-/// [`Groups`]: ../group/struct.Groups.html
 pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
     let groups = Groups::from_group_list(&groups)?;
     let groups: Vec<Gid> = groups.iter().map(|g| g.id()).collect();
@@ -71,8 +69,6 @@ pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
 /// # Errors
 /// If a internal call set a errno (I/O OS error) or it fails to get [`Group`], an error
 /// variant will be returned.
-///
-/// [`Group`]: ../group/struct.Group.html
 pub fn set_group(group: &str) -> Result<(), GrError> {
     let group = Group::from_name(group)?;
 

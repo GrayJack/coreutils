@@ -44,12 +44,10 @@ impl StdError for Error {
 pub struct TTYName(BString);
 
 impl TTYName {
-    /// Create a `TTYName` from a `FileDescriptor`
+    /// Create a [`TTYName`] from a `file_descriptor`
     ///
     /// # Errors
-    /// It returns a error variant when [`FileDescriptor`] is not a TTY.
-    ///
-    /// [`FileDescriptor`]: ./enum.FileDescriptor.html
+    /// It returns a error variant when `file_descriptor` is not a TTY.
     pub fn new(file_descriptor: &impl AsRawFd) -> Result<Self, Error> {
         let name = unsafe { ttyname(file_descriptor.as_raw_fd()) };
 
@@ -63,7 +61,7 @@ impl TTYName {
         Ok(TTYName(name))
     }
 
-    /// Extracts a bstring slice containing the entire `BString`.
+    /// Extracts a bstring slice containing the entire [`BString`].
     pub fn as_bstr(&self) -> &BStr { self.0.as_bstr() }
 
     /// Return a clone of the tty name.
@@ -76,9 +74,17 @@ impl Display for TTYName {
 }
 
 /// Convenience trait to use [`is_tty`] function as method
-///
-/// [`is_tty`]: ./fn.is_tty.html
 pub trait IsTTY: AsRawFd {
+    /// Check if caller is a TTY.
+    ///
+    /// ## Example
+    /// ```rust
+    /// # use coreutils_core::os::tty::IsTTY;
+    /// # use std::io;
+    /// # fn main() {
+    /// assert_eq!(true, io::stdin().is_tty());
+    /// # }
+    /// ```
     fn is_tty(&self) -> bool;
 }
 
@@ -86,11 +92,15 @@ impl<T: AsRawFd> IsTTY for T {
     fn is_tty(&self) -> bool { is_tty(self) }
 }
 
-/// Check if the given `FileDescriptor` is a TTY.
+/// Check if the given `file_descriptor` is a TTY.
 ///
 /// ## Example
-/// ```rust,ignore
-/// let istty = isatty(FileDescriptor::StdIn);
+/// ```rust
+/// # use coreutils_core::os::tty::is_tty;
+/// # fn main() {
+/// let istty = isatty(std::io::stdin());
+/// assert_eq!(true, istty);
+/// # }
 /// ```
 #[inline]
 pub fn is_tty(file_descriptor: &impl AsRawFd) -> bool {

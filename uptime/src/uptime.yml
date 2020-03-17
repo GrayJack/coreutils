@@ -15,6 +15,6 @@ args:
       long_help: |
         System up since.
 
-        Uses <yyyy-mm-dd HH:MM:SS> format.
+        Uses <YYYY-MM-DD hh:mm:ss> format.
       long: since
       short: s

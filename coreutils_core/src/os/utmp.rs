@@ -50,7 +50,7 @@ pub struct Utmp {
 }
 
 impl Utmp {
-    /// Creates a `Utmp` from the c structure `utmp`.
+    /// Creates a [`Utmp`] from the c structure [`utmp`].
     pub fn from_c_utmp(utm: utmp) -> Self { Self::from(utm) }
 
     /// Get user name.
@@ -149,12 +149,12 @@ impl From<utmp> for Utmp {
     }
 }
 
-/// A collection of Utmp.
+/// A collection of [`Utmp`].
 #[derive(Debug)]
 pub struct UtmpSet(HashSet<Utmp>);
 
 impl UtmpSet {
-    /// Creates a new collection over a `utmpx` entry binary file.
+    /// Creates a new collection over a [`utmp`] entry binary file.
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.

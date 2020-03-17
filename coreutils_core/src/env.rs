@@ -55,7 +55,7 @@ impl StdError for Error {
 /// Get the logical path of the current directory.
 ///
 /// # Errors
-/// If the functions encounters any form of `VarError` when getting environment variable
+/// If the functions encounters any form of [`VarError`] when getting environment variable
 /// or if a call inside set a errno (I/O Error), an error variant will be returned.
 pub fn current_dir_logical() -> Result<PathBuf> {
     let pwd = env::var("PWD")?;
