@@ -23,8 +23,13 @@ jobs:
         override: true
         components: rustfmt, rust-src
 
+    # - name: Install targets
+    #   run: rustup target install x86_64-unknown-freebsd x86_64-unknown-netbsd x86_64-apple-darwin x86_64-fuchsia
+
     - name: Build Documentation
-      run: cargo doc --workspace --no-deps
+      run: cargo doc --workspace --no-deps --target x86_64-unknown-linux-gnu
+      # run: mkdir -p ./target/doc/x86_64-unknown-linux-gnu
+      # run: cp ./target/x86_64-unknown-linux-gnu/doc/* ./target/doc/x86_64-unknown-linux-gnu
 
     - name: Deploy Docs
       uses: peaceiris/actions-gh-pages@v3

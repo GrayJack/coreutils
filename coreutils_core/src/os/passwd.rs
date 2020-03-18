@@ -346,7 +346,7 @@ impl Passwd {
     )))]
     pub fn expire(&self) -> Time { self.expire }
 
-    /// Returns the [`Passwd`](user) fields filled in.
+    /// Returns the [`Passwd`] (user) fields filled in.
     #[inline]
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     pub fn fields(&self) -> Fields { self.fields }
