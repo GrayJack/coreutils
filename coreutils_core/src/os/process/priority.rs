@@ -44,8 +44,7 @@ pub fn get_priority(which: c_int, who: id_t) -> io::Result<c_int> {
 pub fn get_priority(
     #[cfg(target_env = "musl")] which: c_int, #[cfg(not(target_env = "musl"))] which: c_uint,
     who: id_t,
-) -> io::Result<c_int>
-{
+) -> io::Result<c_int> {
     let res = unsafe { getpriority(which, who) };
 
     match IOError::last_os_error().raw_os_error().unwrap() {
@@ -77,8 +76,7 @@ pub fn set_priority(which: c_int, who: id_t, prio: c_int) -> io::Result<()> {
 pub fn set_priority(
     #[cfg(target_env = "musl")] which: c_int, #[cfg(not(target_env = "musl"))] which: c_uint,
     who: id_t, prio: c_int,
-) -> io::Result<()>
-{
+) -> io::Result<()> {
     match unsafe { setpriority(which, who, prio) } {
         0 => Ok(()),
         _ => Err(IOError::last_os_error()),

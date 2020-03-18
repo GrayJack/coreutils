@@ -354,8 +354,8 @@ impl Passwd {
     /// Returns [`Groups`] that the [`Passwd`] (user) belongs to.
     ///
     /// # Errors
-    /// If it fails to get the [`Groups`] where [`Passwd`] (user) belongs, an error variant is
-    /// returned.
+    /// If it fails to get the [`Groups`] where [`Passwd`] (user) belongs, an error
+    /// variant is returned.
     pub fn belongs_to(&self) -> Result<Groups> {
         let name = {
             let mut n = self.name.to_string();

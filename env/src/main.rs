@@ -50,8 +50,7 @@ fn main() {
 fn env(
     kv: HashMap<String, String>, ignore_environemnt: bool, null_eol: bool, mut cmd: Vec<String>,
     unset_keys: &[String],
-) -> io::Result<()>
-{
+) -> io::Result<()> {
     let mut env_vars = HashMap::new();
 
     for (key, value) in env::vars() {

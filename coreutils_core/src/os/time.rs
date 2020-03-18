@@ -7,7 +7,6 @@ use time::OffsetDateTime as DateTime;
 use super::{Time, TimeVal, Tm};
 
 
-
 /// Set the system time as `timeval`
 ///
 /// # Errors

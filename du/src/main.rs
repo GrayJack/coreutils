@@ -363,8 +363,7 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions, total_ref: &mut u64)
 fn process_value(
     meta: &Metadata, flags_opts: &DuFlagsAndOptions, subdir_sizes_r: &mut Vec<u64>, depth: usize,
     is_dir: bool,
-) -> DisplayValue
-{
+) -> DisplayValue {
     let subdir_count = subdir_sizes_r.len() - 1;
 
     if depth > subdir_count {
@@ -495,8 +494,7 @@ fn get_sec(sys_time_res: Result<SystemTime, Error>) -> Option<i64> {
 fn filter_and_print(
     root: &str, path: &Display, value: DisplayValue, time: Option<DuTime>,
     flags_opts: &DuFlagsAndOptions, depth: usize, is_dir: bool,
-)
-{
+) {
     let print_entry: bool;
 
     if is_dir {
