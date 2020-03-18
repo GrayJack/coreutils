@@ -9,7 +9,7 @@ repository = "https://github.com/GrayJack/coreutils/coreutils_core"
 documentation = "https://docs.rs/coreutils_core"
 homepage = "https://crates.io/crates/coreutils_core"
 keywords = ["unix", "coreutils"]
-categories = ["Operating systems"]
+categories = ["os", "os::unix-apis", "os::macos-apis"]
 edition = "2018"
 
 [package.metadata.docs.rs]
