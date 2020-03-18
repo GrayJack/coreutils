@@ -1,10 +1,11 @@
 [package]
 name = "coreutils_core"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["GrayJack <gr41.j4ck@gmail.com>", "Gab David <g.bianchetdavid@gmail.com>"]
 description = "A crate with abstractions to implement UNIX core utilities"
 readme = "README.md"
-license-file = "LICENSE"
+license = "MPL-2.0"
+# license-file = "LICENSE"
 repository = "https://github.com/GrayJack/coreutils/coreutils_core"
 documentation = "https://docs.rs/coreutils_core"
 homepage = "https://crates.io/crates/coreutils_core"

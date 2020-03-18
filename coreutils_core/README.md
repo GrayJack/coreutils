@@ -1,5 +1,7 @@
 # Coreutils Core
 
+[![GitHub license](https://img.shields.io/github/license/GrayJack/coreutils)](https://github.com/GrayJack/coreutils/blob/master/coreutils_core/LICENSE)
+
 It's a library used by [this](https://github.com/GrayJack/coreutils) implementation of coreutils in Rust programming language.
 
 Think of it as a crate to create coreutils tools.
@@ -23,3 +25,11 @@ Here lies several abstraction for Unix/Unix-like structures in the OS supported 
     * utsname: Types to aquire system information
 
 It also re-export major needed things from [bstr](https://github.com/BurntSushi/bstr), a crate with a string type for Rust that is not required to be valid UTF-8, as well as [time](https://github.com/time-rs/time) and [libc](https://github.com/rust-lang/libc)
+
+## License
+This Source Code Form is subject to the terms of the Mozilla Public License,
+v.2.0. If a copy of the MPL was not distributed with this file, You can obtain
+one at http://mozilla.org/MPL/2.0/.
+
+This Source Code Form is "Incompatible With Secondary Licenses", as defined by
+the Mozilla Public License, v. 2.0.
