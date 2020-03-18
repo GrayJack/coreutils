@@ -12,7 +12,6 @@ const RFC_2822_FMT: &str = "%a, %d %b %Y %T %z";
 fn main() {
     let yaml = load_yaml!("date.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
-    dbg!(&matches);
 
     if let Err(err) = date(&matches) {
         eprintln!("date: {}", err);
