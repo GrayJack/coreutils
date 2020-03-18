@@ -1,6 +1,8 @@
-use std::str::FromStr;
+use std::{path::Path, str::FromStr};
 
-use coreutils_core::time::{Date, Duration, OffsetDateTime as DateTime, PrimitiveDateTime, Time};
+use coreutils_core::time::{
+    Date, Duration, OffsetDateTime as DateTime, PrimitiveDateTime, Time, UtcOffset,
+};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 
@@ -10,6 +12,7 @@ const RFC_2822_FMT: &str = "%a, %d %b %Y %T %z";
 fn main() {
     let yaml = load_yaml!("date.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    dbg!(&matches);
 
     if let Err(err) = date(&matches) {
         eprintln!("date: {}", err);
@@ -18,11 +21,13 @@ fn main() {
 }
 
 fn date(matches: &ArgMatches) -> Result<(), String> {
-    let is_utc = matches.is_present("utc");
     let is_iso8601 = matches.is_present("iso8601");
     let is_rfc2822 = matches.is_present("rfc2822");
     let is_rfc3339 = matches.is_present("rfc3339");
     let is_set = matches.is_present("set") && !matches.is_present("no_set");
+
+    let utc_off =
+        if matches.is_present("utc") { UtcOffset::UTC } else { UtcOffset::current_local_offset() };
 
     let (out_fmt, date_str) = {
         match (matches.is_present("OPERAND"), matches.is_present("DATE")) {
@@ -80,7 +85,7 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
         }
     };
 
-    let date = build_datetime(date_str, is_utc)?;
+    let date = build_datetime(date_str, utc_off, matches.value_of("reference"))?;
 
     if is_set {
         set_os_time(date)?;
@@ -93,8 +98,14 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
 /// Build a [`DateTime`] from a `date_str`.
 ///
 /// The `date_str` format is `[[[[[CC]YY]MM]DD]hh]mm[.SS]`
-fn build_datetime(date_str: &str, is_utc: bool) -> Result<DateTime, String> {
-    let now = if is_utc { DateTime::now() } else { DateTime::now_local() };
+fn build_datetime(
+    date_str: &str, utc_off: UtcOffset, ref_val: Option<&str>,
+) -> Result<DateTime, String> {
+    // If read_input is Some, that means that read flag was set. Else use now
+    let now = match ref_val {
+        Some(s) => reference_datetime(s, utc_off)?,
+        None => DateTime::now().to_offset(utc_off),
+    };
 
     if date_str == "now" {
         return Ok(now);
@@ -104,11 +115,12 @@ fn build_datetime(date_str: &str, is_utc: bool) -> Result<DateTime, String> {
     let chars: Vec<_> = date_str.chars().collect();
 
     let sec = if date_str.contains('.') {
-        let sec = match &chars[len - 2..] {
+        let index = date_str.split('.').nth(0).unwrap().len() + 1;
+        let sec = match &chars[index..] {
             [] => return Err("No values after '.'".to_string()),
-            [_] => return Err("Only one digit: must have two digits after '.'".to_string()),
+            [_] => return Err("Only one digit: Must have two digits after '.'".to_string()),
             [s1, s2] => parse_datetime_values(&[*s1, *s2])?,
-            _ => return Err("Too many digits: must have two digits after '.'".to_string()),
+            _ => return Err("Too many digits: Must have two digits after '.'".to_string()),
         };
         len -= 3;
         sec
@@ -176,6 +188,31 @@ fn build_datetime(date_str: &str, is_utc: bool) -> Result<DateTime, String> {
     }
 }
 
+/// Reads datetime from `input`. Could be seconds or a filepath.
+fn reference_datetime(input: &str, utc_off: UtcOffset) -> Result<DateTime, String> {
+    // First try to parse as a number, if it fails, treat as a file
+    match input.trim().parse::<i64>() {
+        Ok(sec) => Ok(DateTime::from_unix_timestamp(sec).to_offset(utc_off)),
+        Err(p_err) => match datetime_from_file(input, utc_off) {
+            Ok(d) => Ok(d),
+            Err(f_err) => Err(format!(
+                "Invalid read input: Neither a file or seconds: {} AND {}",
+                f_err, p_err
+            )),
+        },
+    }
+}
+
+/// Returns the last modified date of `filename`.
+fn datetime_from_file(filename: impl AsRef<Path>, utc_off: UtcOffset) -> std::io::Result<DateTime> {
+    let path = filename.as_ref();
+
+    let metadata = path.metadata()?;
+    let modified = metadata.modified()?;
+
+    Ok(DateTime::from(modified).to_offset(utc_off))
+}
+
 /// Parses a slice of [`char`]s and return a value of a type that implements [`FromStr`].
 fn parse_datetime_values<T: FromStr>(chars: &[char]) -> Result<T, String>
 where
@@ -184,7 +221,7 @@ where
 {
     match chars.iter().collect::<String>().parse::<T>() {
         Ok(x) => Ok(x),
-        Err(err) => Err(format!("Failed to parse DATE string: {}", err)),
+        Err(err) => Err(format!("Failed to parse date string: {}", err)),
     }
 }
 
@@ -202,7 +239,7 @@ fn build_date(year: i32, month: u8, day: u8) -> Result<Date, String> {
 fn build_time(hour: u8, min: u8, sec: u8, nano: u32) -> Result<Time, String> {
     match Time::try_from_hms_nano(hour, min, sec, nano) {
         Ok(t) => Ok(t),
-        Err(err) => Err(format!("Invalid minutes digits: {}", err)),
+        Err(err) => Err(format!("Invalid time digits: {}", err)),
     }
 }
 

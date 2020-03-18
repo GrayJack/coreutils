@@ -53,40 +53,6 @@ args:
         short: s
         overrides_with:
             - no_set
-    - iso8601:
-        help: Use ISO 8601 as OUTPUT_FMT.
-        long_help: >
-            Use ISO 8601 as OUTPUT_FMT.
-
-
-            FMT may not be omitted, different of other versions of this util.
-
-
-            The date and time is formatted to the specified precision.
-            When FMT is 'hours' (or the more precise 'minutes' or 'seconds'),
-            the ISO 8601 format includes the timezone.
-
-
-            If '+' operand is specified, this option will be ignored.
-
-            If more than one argument that changes OUTPUT_FMT is set, the last
-            ones is used.
-        long: iso8601
-        short: I
-        aliases: iso-8601
-        takes_value: true
-        value_name: FMT
-        possible_values:
-            - date
-            - hour
-            - hours
-            - minute
-            - minutes
-            - second
-            - seconds
-        overrides_with:
-            - rfc2822
-            - rfc3339
     - rfc2822:
         help: Use RFC 2822 date and time as OUTPUT_FMT.
         long_help: >
@@ -105,6 +71,60 @@ args:
         short: R
         overrides_with:
             - iso8601
+            - rfc3339
+    - reference:
+        help: >
+            Display the date and time of the last modification of filename OR
+            the date and time represented by seconds since UNIX Epoch.
+        long_help: >
+            Display the date and time of the last modification of filename.
+
+
+            OR
+
+
+            Display the date and time represented by seconds, where seconds is
+            the number of seconds since the Epoch (00:00:00 UTC, January 1,
+            1970; see time(3)).
+        long: reference
+        short: r
+        aliases: read
+        takes_value: true
+        value_name: FILENAME | SECONDS
+    - iso8601:
+        help: Use ISO 8601 as OUTPUT_FMT.
+        long_help: >
+            Use ISO 8601 as OUTPUT_FMT.
+
+
+            FMT may not be omitted, different of other versions of this util.
+
+
+            The date and time is formatted to the specified precision.
+            When FMT is 'hours' (or the more precise 'minutes' or 'seconds'),
+            the ISO 8601 format includes the timezone.
+
+
+            If '+' operand is specified, this option will be ignored.
+
+
+            If more than one argument that changes OUTPUT_FMT is set, the last
+            ones is used.
+        long: iso8601
+        short: I
+        aliases: iso-8601
+        takes_value: true
+        value_name: FMT
+        possible_values:
+            - date
+            - hour
+            - hours
+            - minute
+            - minutes
+            - second
+            - seconds
+        overrides_with:
+            - rfc2822
             - rfc3339
     - rfc3339:
         help: Use RFC 3339 date and time as OUTPUT_FMT.
