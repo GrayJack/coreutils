@@ -1,15 +1,21 @@
+[profile.release]
+lto = "fat"
+codegen-units = 1
+# target_cpu = "native"
+# panic = "abort"
+
 [workspace]
 members = [
     "basename",
     "cat",
     "chroot",
     "clear",
-    "coreutils_core",
-    "cut",
+    # "coreutils_core",
     "csplit",
+    "cut",
     "date",
-    "du",
     "dirname",
+    "du",
     "echo",
     "env",
     "expand",
@@ -20,8 +26,8 @@ members = [
     "link",
     "logname",
     "mkdir",
-    "mktemp",
     "mkfifo",
+    "mktemp",
     "mv",
     "nice",
     "nl",
