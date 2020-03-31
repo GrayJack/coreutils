@@ -1,8 +1,4 @@
-use std::{
-    fs::{self, File},
-    io::{self, Read},
-    process,
-};
+use std::process;
 
 #[cfg(target_os = "openbsd")]
 use coreutils_core::os::utmp::UtmpSet;
@@ -11,7 +7,11 @@ use coreutils_core::os::utmpx::{
     UtmpxKind::{BootTime, UserProcess},
     UtmpxSet as UtmpSet,
 };
-use coreutils_core::{libc::time_t, os::load::load_average, time::OffsetDateTime as DateTime};
+use coreutils_core::{
+    libc::time_t,
+    os::{load::load_average, time as ostime},
+    time::OffsetDateTime as DateTime,
+};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -52,8 +52,8 @@ fn main() {
         }
     }
 
-    let up_time = match uptime(boot_time) {
-        Ok(t) => t,
+    let up_time = match ostime::uptime() {
+        Ok(t) => t.tv_sec,
         Err(err) => {
             eprintln!("uptime: could not retrieve system uptime: {}", err);
             process::exit(1);
@@ -78,23 +78,6 @@ fn main() {
         fmt_number_users(num_users),
         fmt_load()
     )
-}
-
-fn uptime(boot_time: DateTime) -> io::Result<time_t> {
-    // if let Ok(file_uptime) = fs::read_to_string("/proc/uptime") {
-    //     file_uptime
-    //         .split_whitespace()
-    //         .take(1)
-    //         .collect::<String>()
-    //         .replace(".", "")
-    //         .parse::<time_t>()
-    //         .or_else(|_| Err(io::Error::last_os_error()))
-    // } else {
-    //     let now = DateTime::now();
-    //     Ok((now.timestamp() - boot_time.timestamp()) as time_t)
-    // }
-
-    Ok(coreutils_core::os::time::uptime()?.tv_sec)
 }
 
 fn fmt_time() -> String {
@@ -163,6 +146,6 @@ fn fmt_uptime(upsecs: time_t, pretty_flag: bool) -> String {
     match updays {
         1 => format!("up {:1} day, {:2}:{:02}, ", updays, uphours, upmins),
         n if n > 1 => format!("up {:1} days, {:2}:{:02}, ", updays, uphours, upmins),
-        _ => format!("up  {:2}:{:02}, ", uphours, upmins),
+        _ => format!("up {:2}:{:02}, ", uphours, upmins),
     }
 }
