@@ -1,5 +1,5 @@
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{self, Read},
     process,
 };
@@ -81,21 +81,20 @@ fn main() {
 }
 
 fn uptime(boot_time: DateTime) -> io::Result<time_t> {
-    let mut file_uptime = String::new();
+    // if let Ok(file_uptime) = fs::read_to_string("/proc/uptime") {
+    //     file_uptime
+    //         .split_whitespace()
+    //         .take(1)
+    //         .collect::<String>()
+    //         .replace(".", "")
+    //         .parse::<time_t>()
+    //         .or_else(|_| Err(io::Error::last_os_error()))
+    // } else {
+    //     let now = DateTime::now();
+    //     Ok((now.timestamp() - boot_time.timestamp()) as time_t)
+    // }
 
-    if let Ok(mut f) = File::open("/proc/uptime") {
-        f.read_to_string(&mut file_uptime)?;
-        file_uptime
-            .split_whitespace()
-            .take(1)
-            .collect::<String>()
-            .replace(".", "")
-            .parse()
-            .or_else(|_| Err(io::Error::last_os_error()))
-    } else {
-        let now = DateTime::now();
-        Ok((now.timestamp() - boot_time.timestamp()) as time_t)
-    }
+    Ok(coreutils_core::os::time::uptime()?.tv_sec)
 }
 
 fn fmt_time() -> String {
