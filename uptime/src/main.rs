@@ -67,14 +67,14 @@ fn main() {
     }
 
     if pretty_flag {
-        println!("{}", fmt_uptime(up_time / 100, pretty_flag));
+        println!("{}", fmt_uptime(up_time, pretty_flag));
         return;
     }
 
     println!(
         "{} {} {} {}",
         fmt_time(),
-        fmt_uptime(up_time / 100, pretty_flag),
+        fmt_uptime(up_time, pretty_flag),
         fmt_number_users(num_users),
         fmt_load()
     )
