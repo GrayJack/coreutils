@@ -72,6 +72,7 @@ impl From<std::time::SystemTimeError> for Error {
 }
 
 /// Get the time the system is up since boot
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub fn uptime() -> Result<TimeVal, Error> {
     let mut boot_time = TimeVal { tv_sec: 0, tv_usec: 0 };
 
