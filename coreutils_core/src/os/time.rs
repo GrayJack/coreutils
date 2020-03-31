@@ -39,8 +39,40 @@ pub fn local_time(timestamp: i64) -> io::Result<Tm> {
     if tm_ptr.is_null() { Err(io::Error::last_os_error()) } else { Ok(unsafe { tm.assume_init() }) }
 }
 
+#[derive(Debug)]
+pub enum Error {
+    Io(io::Error),
+    Time(std::time::SystemTimeError),
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io(err) => Some(err),
+            Self::Time(err) => Some(err),
+        }
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io(err) => write!(f, "{}", err),
+            Self::Time(err) => write!(f, "{}", err),
+        }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self { Self::Io(err) }
+}
+
+impl From<std::time::SystemTimeError> for Error {
+    fn from(err: std::time::SystemTimeError) -> Self { Self::Time(err) }
+}
+
 /// Get the time the system is up since boot
-pub fn uptime() -> io::Result<TimeVal> {
+pub fn uptime() -> Result<TimeVal, Error> {
     let mut boot_time = TimeVal { tv_sec: 0, tv_usec: 0 };
 
     #[cfg(target_os = "linux")]
@@ -56,11 +88,15 @@ pub fn uptime() -> io::Result<TimeVal> {
 
     #[cfg(any(
         target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "solaris",
         target_os = "dragonfly",
         target_os = "openbsd",
         target_os = "macos"
     ))]
     {
+        use std::time::SystemTime;
+
         static CTL_KERN: libc::c_int = 1;
         static KERN_BOOTTIME: libc::c_int = 21;
 
@@ -68,7 +104,7 @@ pub fn uptime() -> io::Result<TimeVal> {
         let mut size: libc::size_t = std::mem::size_of_val(&boot_time) as libc::size_t;
         let res = unsafe {
             libc::sysctl(
-                syscall.as_mut_ptr(),
+                &mut syscall,
                 2,
                 &mut boot_time as *mut libc::timeval as *mut libc::c_void,
                 &mut size,
@@ -78,20 +114,14 @@ pub fn uptime() -> io::Result<TimeVal> {
         };
 
         match res {
-            0 => Ok(boot_time),
+            0 => {
+                let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+                let now = now.as_seconds();
+
+                boot_time.tv_sec = now as i64 - boot_time.tv_sec;
+                Ok(boot_time)
+            },
             _ => Err(io::Error::last_os_error()),
         }
     }
-    // #[cfg(target_os = "solaris")]
-    // {
-    //     let start = kstat::boot_time()?;
-    //     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
-    //     let now = now.as_secs();
-    //     if now < start {
-    //         return Err(Error::General("time went backwards".into()));
-    //     }
-    //     boot_time.tv_sec = (now - start) as i64;
-    // }
-
-    // Ok(boot_time)
 }
