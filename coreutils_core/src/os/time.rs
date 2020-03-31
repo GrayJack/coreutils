@@ -77,7 +77,7 @@ pub fn uptime() -> Result<TimeVal, Error> {
 
     #[cfg(target_os = "linux")]
     {
-        let string = std::fs::read_to_string("/proc/uptime")?.replace(".", "");
+        let string = std::fs::read_to_string("/proc/uptime")?;
         let mut secs =
             string.trim().split_whitespace().take(2).filter_map(|val| val.parse::<f64>().ok());
         boot_time.tv_sec = secs.next().unwrap() as libc::time_t;
