@@ -104,7 +104,7 @@ pub fn uptime() -> Result<TimeVal, Error> {
         let mut size: libc::size_t = std::mem::size_of_val(&boot_time) as libc::size_t;
         let res = unsafe {
             libc::sysctl(
-                &mut syscall,
+                syscall.as_mut_ptr(),
                 2,
                 &mut boot_time as *mut libc::timeval as *mut libc::c_void,
                 &mut size,
@@ -116,12 +116,12 @@ pub fn uptime() -> Result<TimeVal, Error> {
         match res {
             0 => {
                 let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
-                let now = now.as_seconds();
+                let now = now.as_secs();
 
                 boot_time.tv_sec = now as i64 - boot_time.tv_sec;
                 Ok(boot_time)
             },
-            _ => Err(io::Error::last_os_error()),
+            _ => Err(Error::Io(io::Error::last_os_error())),
         }
     }
 }
