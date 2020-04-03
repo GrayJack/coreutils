@@ -40,9 +40,11 @@ pub fn local_time(timestamp: i64) -> io::Result<Tm> {
 }
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error {
     Io(io::Error),
     Time(std::time::SystemTimeError),
+    TargetNotSupported,
 }
 
 impl std::error::Error for Error {
@@ -50,6 +52,7 @@ impl std::error::Error for Error {
         match self {
             Self::Io(err) => Some(err),
             Self::Time(err) => Some(err),
+            Self::TargetNotSupported => None
         }
     }
 }
@@ -59,6 +62,7 @@ impl std::fmt::Display for Error {
         match self {
             Self::Io(err) => write!(f, "{}", err),
             Self::Time(err) => write!(f, "{}", err),
+            Self::TargetNotSupported => write!(f, "This platform are not supported"),
         }
     }
 }
@@ -74,23 +78,22 @@ impl From<std::time::SystemTimeError> for Error {
 /// Get the time the system is up since boot
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub fn uptime() -> Result<TimeVal, Error> {
-    let mut boot_time = TimeVal { tv_sec: 0, tv_usec: 0 };
+    let mut uptime = TimeVal { tv_sec: 0, tv_usec: 0 };
 
     #[cfg(target_os = "linux")]
     {
         let string = std::fs::read_to_string("/proc/uptime")?;
         let mut secs =
             string.trim().split_whitespace().take(2).filter_map(|val| val.parse::<f64>().ok());
-        boot_time.tv_sec = secs.next().unwrap() as libc::time_t;
-        boot_time.tv_usec = secs.next().unwrap() as libc::suseconds_t;
+        uptime.tv_sec = secs.next().unwrap() as libc::time_t;
+        uptime.tv_usec = secs.next().unwrap() as libc::suseconds_t;
 
-        Ok(boot_time)
+        Ok(uptime)
     }
 
     #[cfg(any(
         target_os = "freebsd",
         target_os = "netbsd",
-        target_os = "solaris",
         target_os = "dragonfly",
         target_os = "openbsd",
         target_os = "macos"
@@ -102,12 +105,12 @@ pub fn uptime() -> Result<TimeVal, Error> {
         static KERN_BOOTTIME: libc::c_int = 21;
 
         let mut syscall = [CTL_KERN, KERN_BOOTTIME];
-        let mut size: libc::size_t = std::mem::size_of_val(&boot_time) as libc::size_t;
+        let mut size: libc::size_t = std::mem::size_of_val(&uptime) as libc::size_t;
         let res = unsafe {
             libc::sysctl(
                 syscall.as_mut_ptr(),
                 2,
-                &mut boot_time as *mut libc::timeval as *mut libc::c_void,
+                &mut uptime as *mut libc::timeval as *mut libc::c_void,
                 &mut size,
                 ptr::null_mut(),
                 0,
@@ -119,10 +122,15 @@ pub fn uptime() -> Result<TimeVal, Error> {
                 let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
                 let now = now.as_secs();
 
-                boot_time.tv_sec = now as i64 - boot_time.tv_sec;
-                Ok(boot_time)
+                uptime.tv_sec = now as i64 - uptime.tv_sec;
+                Ok(uptime)
             },
             _ => Err(Error::Io(io::Error::last_os_error())),
         }
+    }
+
+    #[cfg(target_os = "solaris")]
+    {
+        Err(Error::TargetNotSupported);
     }
 }
