@@ -83,10 +83,8 @@ fn main() {
 fn uptime(boot_time: DateTime) -> Result<time_t, ostime::Error> {
     match ostime::uptime() {
         Ok(t) => Ok(t.tv_sec),
-        Err(ostime::Error::TargetNotSupported) => {
-            Ok((DateTime::now() - boot_time).whole_seconds())
-        },
-        Err(err) => Err(err)
+        Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now() - boot_time).whole_seconds()),
+        Err(err) => Err(err),
     }
 }
 

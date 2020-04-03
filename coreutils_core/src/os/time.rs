@@ -52,7 +52,7 @@ impl std::error::Error for Error {
         match self {
             Self::Io(err) => Some(err),
             Self::Time(err) => Some(err),
-            Self::TargetNotSupported => None
+            Self::TargetNotSupported => None,
         }
     }
 }
