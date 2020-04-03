@@ -14,7 +14,14 @@ fn main() {
     let yaml = load_yaml!("expand.yml");
     let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
 
-    let mut expand = Expand::from_matches(&matches);
+    let mut expand = match Expand::from_matches(&matches) {
+        Ok(ex) => ex,
+        Err(err) => {
+            eprintln!("expand: {}", err);
+            std::process::exit(1);
+        },
+    };
+
     let cwd = match current_dir() {
         Ok(path) => path,
         Err(err) => {
@@ -46,7 +53,7 @@ fn main() {
     };
 
     let read_error = |err| {
-        eprintln!("unexpand: read error: {}", err);
+        eprintln!("expand: read error: {}", err);
         String::new()
     };
 
@@ -78,19 +85,13 @@ struct Expand {
 }
 
 impl Expand {
-    fn from_matches(matches: &ArgMatches) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Result<Self, String> {
         let initial = matches.is_present("initial");
 
         let tabs_str = matches.value_of("tabs");
-        let tabstops = match TabStops::new(tabs_str) {
-            Ok(tab_stops) => tab_stops,
-            Err(err_message) => {
-                eprintln!("{}", err_message);
-                std::process::exit(1);
-            },
-        };
+        let tabstops = TabStops::new(tabs_str)?;
 
-        Expand { initial, tabstops }
+        Ok(Expand { initial, tabstops })
     }
 
     fn expand_line(self: &mut Self, line: &str) -> String {
