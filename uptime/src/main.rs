@@ -52,19 +52,19 @@ fn main() {
         }
     }
 
-    let up_time = match ostime::uptime() {
-        Ok(t) => t.tv_sec,
-        Err(err) => {
-            eprintln!("uptime: could not retrieve system uptime: {}", err);
-            process::exit(1);
-        },
-    };
-
     if since_flag {
         let fmt = boot_time.format("%F %T");
         println!("{}", fmt);
         return;
     }
+
+    let up_time = match uptime(boot_time) {
+        Ok(t) => t,
+        Err(err) => {
+            eprintln!("uptime: Could not retrieve system uptime: {}", err);
+            process::exit(1);
+        },
+    };
 
     if pretty_flag {
         println!("{}", fmt_uptime(up_time, pretty_flag));
@@ -78,6 +78,16 @@ fn main() {
         fmt_number_users(num_users),
         fmt_load()
     )
+}
+
+fn uptime(boot_time: DateTime) -> Result<time_t, ostime::Error> {
+    match ostime::uptime() {
+        Ok(t) => Ok(t.tv_sec),
+        Err(ostime::Error::TargetNotSupported) => {
+            Ok((DateTime::now() - boot_time).whole_seconds())
+        },
+        Err(err) => Err(err)
+    }
 }
 
 fn fmt_time() -> String {
