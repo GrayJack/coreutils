@@ -1,95 +1,85 @@
 use std::{
     collections::HashMap,
-    env, io,
+    env,
+    os::unix::process::CommandExt,
     process::{self, Command},
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+use clap::{
+    load_yaml, App,
+    AppSettings::{ColoredHelp, TrailingVarArg},
+};
+
+const ENOENT: i32 = 2;
 
 fn main() {
     let yaml = load_yaml!("env.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, TrailingVarArg]).get_matches();
 
     let mut kv = HashMap::new();
     let mut cmd = Vec::new();
 
     if let Some(m) = matches.values_of("OPTIONS") {
         for word in m {
-            let word_str: String = word.to_owned();
-            if let Some(index) = word_str.find('=') {
-                let (k, v) = word_str.split_at(index);
+            if let Some(index) = word.find('=') {
+                let (k, v) = word.split_at(index);
                 kv.insert(k.to_owned(), v.get(1..).unwrap_or("").to_owned());
             } else {
-                cmd.push(word_str);
+                cmd.push(word);
             }
         }
     };
 
-    let mut unset_keys = Vec::new();
+    let unset_keys = {
+        let mut unset_keys = Vec::new();
 
-    if let Some(keys) = matches.values_of("unset") {
-        keys.for_each(|k| unset_keys.push(k.to_owned()));
+        if let Some(keys) = matches.values_of("unset") {
+            keys.for_each(|k| unset_keys.push(k));
+        }
+
+        unset_keys
     };
 
-    match env(
-        kv,
-        matches.is_present("ignore_environment"),
-        matches.is_present("null"),
-        cmd,
-        &unset_keys,
-    ) {
-        Ok(_) => (),
-        Err(e) => {
-            eprintln!("echo: Failed to write to stdout.\n{}", e);
-            process::exit(1);
-        },
-    }
-}
+    let ignore_environemnt = matches.is_present("ignore_environment");
+    let eol = if matches.is_present("null") { '\0' } else { '\n' };
 
-// run `man env`
-fn env(
-    kv: HashMap<String, String>, ignore_environemnt: bool, null_eol: bool, mut cmd: Vec<String>,
-    unset_keys: &[String],
-) -> io::Result<()> {
-    let mut env_vars = HashMap::new();
+    let env_vars = {
+        let mut env_vars = HashMap::new();
 
-    for (key, value) in env::vars() {
-        if !unset_keys.contains(&key) {
+        if !ignore_environemnt {
+            for (key, value) in env::vars() {
+                if !unset_keys.contains(&key.as_str()) {
+                    env_vars.insert(key, value);
+                }
+            }
+        }
+
+        for (key, value) in kv {
             env_vars.insert(key, value);
         }
-    }
 
-    if ignore_environemnt {
-        env_vars = HashMap::new();
-    }
-
-    for (key, value) in kv {
-        env_vars.insert(key, value);
-    }
+        env_vars
+    };
 
     if cmd.is_empty() {
         for (key, value) in env_vars {
-            print!("{}={}", key, value);
-            if !null_eol {
-                println!();
-            }
+            print!("{}={}{}", key, value, eol);
         }
 
-        if !null_eol {
-            // Let's be polite, and let the shell prompt start on a new line
-            println!()
-        }
+        print!("{}", eol);
     } else {
-        let cmd_name = cmd.remove(0);
-        println!("{} ", cmd_name);
+        let command = cmd.remove(0);
+        let args = cmd;
+        println!("{} ", command);
 
-        Command::new(cmd_name.clone())
-            .env_clear()
-            .args(cmd)
-            .envs(&env_vars)
-            .status()
-            .unwrap_or_else(|_| panic!("{} failed to start.", cmd_name));
+        let err = Command::new(command).args(args).env_clear().envs(&env_vars).exec();
+
+        if err.raw_os_error().unwrap() == ENOENT {
+            eprintln!("env: '{}': {}", command, err);
+            process::exit(127);
+        } else {
+            eprintln!("env: {}", err);
+            process::exit(126);
+        }
     }
-
-    Ok(())
 }
