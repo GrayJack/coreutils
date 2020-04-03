@@ -131,6 +131,6 @@ pub fn uptime() -> Result<TimeVal, Error> {
 
     #[cfg(target_os = "solaris")]
     {
-        Err(Error::TargetNotSupported);
+        Err(Error::TargetNotSupported)
     }
 }
