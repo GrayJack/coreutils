@@ -119,18 +119,21 @@ fn touch_update_time_with_date() {
     let file1_metadata = metadata(&files[0]).unwrap();
     let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
-    let time = NaiveDateTime::from_timestamp(file1_mtime.unix_seconds(), file1_mtime.nanoseconds());
+    let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
 
     // check modification and access time is equal 2009-01-03 03:13:00
     assert_eq!(
         time,
-        NaiveDateTime::parse_from_str("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S").unwrap()
+        PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S").unwrap().assume_utc()
     );
     remove_test_files(&files).unwrap();
 }
 
 fn touch(files: &[&str], flags: TouchFlags) {
-    let (new_atime, new_mtime) = new_filetimes(flags);
+    let (new_atime, new_mtime) = new_filetimes(flags).unwrap_or_else(|err| {
+        eprintln!("touch: {}", err);
+        process::exit(1);
+    });
 
     for filename in files {
         // if file already exist in the current directory

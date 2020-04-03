@@ -4,9 +4,9 @@ use std::{
     time::SystemTime,
 };
 
-use chrono::NaiveDateTime;
 use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
 use filetime::{set_file_atime, set_file_mtime, set_file_times, set_symlink_file_times, FileTime};
+use time::PrimitiveDateTime;
 
 // TODO: add Unit tests for touch
 #[cfg(test)]
@@ -22,7 +22,10 @@ fn main() {
     // Required argument, ok to unwrap and not check if is supplied.
     let files = matches.values_of("FILE").unwrap();
 
-    let (new_atime, new_mtime) = new_filetimes(flags);
+    let (new_atime, new_mtime) = new_filetimes(flags).unwrap_or_else(|err| {
+        eprintln!("touch: {}", err);
+        process::exit(1);
+    });
 
     for filename in files {
         // if file already exist in the current directory
@@ -84,31 +87,34 @@ impl<'a> TouchFlags<'a> {
 }
 
 /// Returns the correct `(atime, mtime)` acording to the `flags`.
-fn new_filetimes(flags: TouchFlags) -> (FileTime, FileTime) {
+fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
     if flags.date {
-        let date = NaiveDateTime::parse_from_str(&flags.date_val, "%Y-%m-%d %H:%M:%S")
-            .unwrap_or_else(|err| {
-                eprintln!("touch: Problem parsing date arguments: {}", err);
-                // If there is problems parsing the, all will fail, so exit early.
-                process::exit(1);
-            });
-        let time = FileTime::from_unix_time(date.timestamp(), date.timestamp_subsec_millis());
+        let date = match PrimitiveDateTime::parse(&flags.date_val, "%Y-%m-%d %H:%M:%S") {
+            Ok(dt) => dt.assume_utc(),
+            Err(err) => return Err(format!("Problem parsing date arguments: {}", err)),
+        };
+        let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
 
-        (time, time)
+        Ok((time, time))
     } else if flags.reference {
-        let file_meta = fs::metadata(flags.ref_path).unwrap_or_else(|err| {
-            eprintln!("touch: Failed to get {} (OTHER_FILE) metadata: {}", flags.ref_path, err);
-            process::exit(1);
-        });
+        let file_meta = match fs::metadata(flags.ref_path) {
+            Ok(m) => m,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to get {} (OTHER_FILE) metadata: {}",
+                    flags.ref_path, err
+                ));
+            },
+        };
 
-        (
+        Ok((
             FileTime::from_last_access_time(&file_meta),
             FileTime::from_last_modification_time(&file_meta),
-        )
+        ))
     } else {
         let now = FileTime::from_system_time(SystemTime::now());
 
-        (now, now)
+        Ok((now, now))
     }
 }
 
