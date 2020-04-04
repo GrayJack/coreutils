@@ -1,10 +1,10 @@
 use std::env;
 
-use clap::{load_yaml, App, Shell};
+#[path="src/cli.rs"]
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("src/template.yml");
-    let mut app = App::from_yaml(yaml);
+    let mut app = cli::create_app();
 
     let out_dir = match env::var("OUT_DIR") {
         Ok(dir) => dir,
