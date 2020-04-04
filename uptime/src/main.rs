@@ -10,7 +10,7 @@ use coreutils_core::os::utmpx::{
 use coreutils_core::{
     libc::time_t,
     os::{load::load_average, time as ostime},
-    time::OffsetDateTime as DateTime,
+    time::{OffsetDateTime as DateTime, UtcOffset},
 };
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
@@ -60,7 +60,8 @@ fn main() {
             process::exit(1);
         });
 
-        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec);
+        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec)
+            .to_offset(UtcOffset::current_local_offset());
     }
 
     if since_flag {
