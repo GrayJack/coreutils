@@ -1,8 +1,7 @@
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("basename.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let multiple_paths = matches.is_present("multiple") || matches.is_present("suffix");
 
@@ -41,19 +40,19 @@ fn basename(full_path: &str, suffix: &str) -> String {
     let split_full_path: Vec<&str> = full_path.split('/').collect();
     match split_full_path.last() {
         Some(name) => strip_suffix(name, suffix),
-        None => "".to_owned(),
+        None => "".to_string(),
     }
 }
 
 /// Removes the given `suffix` from the `name`.
 fn strip_suffix(name: &str, suffix: &str) -> String {
     if name == suffix {
-        return name.to_owned();
+        return name.to_string();
     }
     if name.ends_with(suffix) {
         return name[..(name.len() - suffix.len())].to_owned();
     }
-    name.to_owned()
+    name.to_string()
 }
 
 #[cfg(test)]

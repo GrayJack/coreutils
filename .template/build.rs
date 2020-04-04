@@ -1,5 +1,7 @@
 use std::env;
 
+use clap::Shell;
+
 #[path="src/cli.rs"]
 mod cli;
 
@@ -8,7 +10,10 @@ fn main() {
 
     let out_dir = match env::var("OUT_DIR") {
         Ok(dir) => dir,
-        _ => return,
+        Err(err) => {
+            eprintln!("No OUT_DIR: {}", err);
+            return
+        },
     };
 
     app.gen_completions("template", Shell::Zsh, out_dir.clone());
