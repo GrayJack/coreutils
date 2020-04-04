@@ -11,14 +11,10 @@ use coreutils_core::{
     },
 };
 
-use clap::{
-    load_yaml, App,
-    AppSettings::{ColoredHelp, TrailingVarArg},
-};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("chroot.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, TrailingVarArg]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     // Ok to unwrap cause it's required argument
     let root = matches.value_of("NEWROOT").unwrap();

@@ -15,9 +15,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("FILE")
                 .help("The file operands are processed in command-line order.")
                 .long_help(
-                    r"The file operands are processed in command-line order.
-
-                    If file is a single dash (‘-’) or absent, cat reads from the standard input.",
+                    "The file operands are processed in command-line order.\n\nIf file is a \
+                     single dash (‘-’) or absent, cat reads from the standard input.",
                 )
                 .multiple(true),
         )
