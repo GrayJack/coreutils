@@ -1,8 +1,4 @@
-use std::{
-    fs::File,
-    io::{self, Read},
-    process,
-};
+use std::process;
 
 #[cfg(target_os = "openbsd")]
 use coreutils_core::os::utmp::UtmpSet;
@@ -11,7 +7,11 @@ use coreutils_core::os::utmpx::{
     UtmpxKind::{BootTime, UserProcess},
     UtmpxSet as UtmpSet,
 };
-use coreutils_core::{libc::time_t, os::load::load_average, time::OffsetDateTime as DateTime};
+use coreutils_core::{
+    libc::time_t,
+    os::{load::load_average, time as ostime},
+    time::{OffsetDateTime as DateTime, UtcOffset},
+};
 
 use clap::{load_yaml, App, AppSettings::ColoredHelp};
 
@@ -21,7 +21,6 @@ fn main() {
 
     let pretty_flag = matches.is_present("pretty");
     let since_flag = matches.is_present("since");
-
 
     let utmps = {
         #[cfg(target_os = "openbsd")]
@@ -52,13 +51,18 @@ fn main() {
         }
     }
 
-    let up_time = match uptime(boot_time) {
-        Ok(t) => t,
-        Err(err) => {
-            eprintln!("uptime: could not retrieve system uptime: {}", err);
+    // If the system doesn't have a BootTime entry on utmps, use this heuristics instead.
+    if boot_time == DateTime::unix_epoch() {
+        // Get the boot time from the OS. If errors out here, there is nothing left to try
+        // so we exit with a error.
+        let boot_timeval = ostime::boottime().unwrap_or_else(|err| {
+            eprintln!("uptime: Could not retrieve system boot time: {}", err);
             process::exit(1);
-        },
-    };
+        });
+
+        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec)
+            .to_offset(UtcOffset::current_local_offset());
+    }
 
     if since_flag {
         let fmt = boot_time.format("%F %T");
@@ -66,35 +70,33 @@ fn main() {
         return;
     }
 
+    let up_time = match uptime(boot_time) {
+        Ok(t) => t,
+        Err(err) => {
+            eprintln!("uptime: Could not retrieve system uptime: {}", err);
+            process::exit(1);
+        },
+    };
+
     if pretty_flag {
-        println!("{}", fmt_uptime(up_time / 100, pretty_flag));
+        println!("{}", fmt_uptime(up_time, pretty_flag));
         return;
     }
 
     println!(
         "{} {} {} {}",
         fmt_time(),
-        fmt_uptime(up_time / 100, pretty_flag),
+        fmt_uptime(up_time, pretty_flag),
         fmt_number_users(num_users),
         fmt_load()
     )
 }
 
-fn uptime(boot_time: DateTime) -> io::Result<time_t> {
-    let mut file_uptime = String::new();
-
-    if let Ok(mut f) = File::open("/proc/uptime") {
-        f.read_to_string(&mut file_uptime)?;
-        file_uptime
-            .split_whitespace()
-            .take(1)
-            .collect::<String>()
-            .replace(".", "")
-            .parse()
-            .or_else(|_| Err(io::Error::last_os_error()))
-    } else {
-        let now = DateTime::now();
-        Ok((now.timestamp() - boot_time.timestamp()) as time_t)
+fn uptime(boot_time: DateTime) -> Result<time_t, ostime::Error> {
+    match ostime::uptime() {
+        Ok(t) => Ok(t.tv_sec),
+        Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now() - boot_time).whole_seconds()),
+        Err(err) => Err(err),
     }
 }
 
@@ -164,6 +166,6 @@ fn fmt_uptime(upsecs: time_t, pretty_flag: bool) -> String {
     match updays {
         1 => format!("up {:1} day, {:2}:{:02}, ", updays, uphours, upmins),
         n if n > 1 => format!("up {:1} days, {:2}:{:02}, ", updays, uphours, upmins),
-        _ => format!("up  {:2}:{:02}, ", uphours, upmins),
+        _ => format!("up {:2}:{:02}, ", uphours, upmins),
     }
 }

@@ -2,10 +2,8 @@
 use std::{io, mem::MaybeUninit, ptr};
 
 use libc::localtime_r;
-use time::OffsetDateTime as DateTime;
 
 use super::{Time, TimeVal, Tm};
-
 
 /// Set the system time as `timeval`
 ///
@@ -40,42 +38,157 @@ pub fn local_time(timestamp: i64) -> io::Result<Tm> {
     if tm_ptr.is_null() { Err(io::Error::last_os_error()) } else { Ok(unsafe { tm.assume_init() }) }
 }
 
-pub fn utc_offset(time: Tm) -> i64 {
-    // Not sure if the logic is 100% correct here: All my VMs with solarish systems have a
-    // version of Rust below 1.40 with the lastest updates.
-    #[cfg(target_os = "solaris")]
-    {
-        use time::{Date, Time};
+#[derive(Debug)]
+#[non_exhaustive]
+pub enum Error {
+    Io(io::Error),
+    Time(std::time::SystemTimeError),
+    TargetNotSupported,
+}
 
-        let mut tm = time;
-        if tm.tm_sec == 60 {
-            // Leap seconds are not currently supported.
-            tm.tm_sec = 59;
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io(err) => Some(err),
+            Self::Time(err) => Some(err),
+            Self::TargetNotSupported => None,
         }
-
-        let timee = match Time::try_from_hms(tm.tm_hour as u8, tm.tm_min as u8, tm.tm_sec as u8) {
-            Ok(t) => t,
-            Err(_) => return 0,
-        };
-
-        let date = match Date::try_from_yo(1900 + tm.tm_year, tm.tm_yday as u16 + 1) {
-            Ok(d) => d,
-            Err(_) => return 0,
-        };
-
-        let local_timestamp = date.with_time(timee).timestamp();
-
-        local_timestamp - unsafe { libc::mktime(&mut tm) }
-    }
-
-    #[cfg(not(target_os = "solaris"))]
-    {
-        time.tm_gmtoff as i64
     }
 }
 
-pub fn system_utc_offset() -> io::Result<i64> {
-    let now = DateTime::now();
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io(err) => write!(f, "{}", err),
+            Self::Time(err) => write!(f, "{}", err),
+            Self::TargetNotSupported => write!(f, "This platform are not supported"),
+        }
+    }
+}
 
-    Ok(utc_offset(local_time(now.timestamp())?))
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self { Self::Io(err) }
+}
+
+impl From<std::time::SystemTimeError> for Error {
+    fn from(err: std::time::SystemTimeError) -> Self { Self::Time(err) }
+}
+
+/// Get the time the system started.
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+pub fn boottime() -> Result<TimeVal, Error> {
+    let mut bootime = TimeVal { tv_sec: 0, tv_usec: 0 };
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::time::SystemTime;
+
+        let string = std::fs::read_to_string("/proc/uptime")?;
+        let mut secs =
+            string.trim().split_whitespace().take(2).filter_map(|val| val.parse::<f64>().ok());
+        let sec = secs.next().unwrap() as libc::time_t;
+        let micro = secs.next().unwrap() as libc::suseconds_t;
+
+        let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+
+        bootime.tv_sec = now.as_secs() as libc::time_t - sec;
+        bootime.tv_usec = micro;
+
+        Ok(bootime)
+    }
+
+    #[cfg(any(
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "dragonfly",
+        target_os = "openbsd",
+        target_os = "macos"
+    ))]
+    {
+        static CTL_KERN: libc::c_int = 1;
+        static KERN_BOOTTIME: libc::c_int = 21;
+
+        let mut syscall = [CTL_KERN, KERN_BOOTTIME];
+        let mut size: libc::size_t = std::mem::size_of_val(&bootime) as libc::size_t;
+        let res = unsafe {
+            libc::sysctl(
+                syscall.as_mut_ptr(),
+                2,
+                &mut bootime as *mut libc::timeval as *mut libc::c_void,
+                &mut size,
+                ptr::null_mut(),
+                0,
+            )
+        };
+
+        match res {
+            0 => Ok(bootime),
+            _ => Err(Error::Io(io::Error::last_os_error())),
+        }
+    }
+
+    #[cfg(target_os = "solaris")]
+    {
+        Err(Error::TargetNotSupported)
+    }
+}
+
+/// Get the time the system is up since boot.
+#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+pub fn uptime() -> Result<TimeVal, Error> {
+    let mut uptime = TimeVal { tv_sec: 0, tv_usec: 0 };
+
+    #[cfg(target_os = "linux")]
+    {
+        let string = std::fs::read_to_string("/proc/uptime")?;
+        let mut secs =
+            string.trim().split_whitespace().take(2).filter_map(|val| val.parse::<f64>().ok());
+        uptime.tv_sec = secs.next().unwrap() as libc::time_t;
+        uptime.tv_usec = secs.next().unwrap() as libc::suseconds_t;
+
+        Ok(uptime)
+    }
+
+    #[cfg(any(
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "dragonfly",
+        target_os = "openbsd",
+        target_os = "macos"
+    ))]
+    {
+        use std::time::SystemTime;
+
+        static CTL_KERN: libc::c_int = 1;
+        static KERN_BOOTTIME: libc::c_int = 21;
+
+        let mut syscall = [CTL_KERN, KERN_BOOTTIME];
+        let mut size: libc::size_t = std::mem::size_of_val(&uptime) as libc::size_t;
+        let res = unsafe {
+            libc::sysctl(
+                syscall.as_mut_ptr(),
+                2,
+                &mut uptime as *mut libc::timeval as *mut libc::c_void,
+                &mut size,
+                ptr::null_mut(),
+                0,
+            )
+        };
+
+        match res {
+            0 => {
+                let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+                let now = now.as_secs();
+
+                uptime.tv_sec = now as i64 - uptime.tv_sec;
+                Ok(uptime)
+            },
+            _ => Err(Error::Io(io::Error::last_os_error())),
+        }
+    }
+
+    #[cfg(target_os = "solaris")]
+    {
+        Err(Error::TargetNotSupported)
+    }
 }
