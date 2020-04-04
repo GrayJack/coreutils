@@ -22,7 +22,6 @@ fn main() {
     let pretty_flag = matches.is_present("pretty");
     let since_flag = matches.is_present("since");
 
-
     let utmps = {
         #[cfg(target_os = "openbsd")]
         match UtmpSet::system() {
@@ -50,6 +49,18 @@ fn main() {
             UserProcess => num_users += 1,
             _ => continue,
         }
+    }
+
+    // If the system doesn't have a BootTime entry on utmps, use this heuristics instead.
+    if boot_time == DateTime::unix_epoch() {
+        // Get the boot time from the OS. If errors out here, there is nothing left to try
+        // so we exit with a error.
+        let boot_timeval = ostime::boottime().unwrap_or_else(|err| {
+            eprintln!("uptime: Could not retrieve system boot time: {}", err);
+            process::exit(1);
+        });
+
+        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec);
     }
 
     if since_flag {
