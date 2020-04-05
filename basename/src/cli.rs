@@ -11,7 +11,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
-        .arg(Arg::with_name("NAME").help("Name of the file(s) to use.").required(true).multiple(true))
+        .arg(
+            Arg::with_name("NAME")
+                .help("Name of the file(s) to use.")
+                .required(true)
+                .multiple(true),
+        )
         .arg(
             Arg::with_name("multiple")
                 .help("Support more than one argument. Treat every argument as a name.")

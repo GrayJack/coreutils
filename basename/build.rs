@@ -2,7 +2,7 @@ use std::env;
 
 use clap::Shell;
 
-#[path="src/cli.rs"]
+#[path = "src/cli.rs"]
 mod cli;
 
 fn main() {
@@ -12,7 +12,7 @@ fn main() {
         Ok(dir) => dir,
         Err(err) => {
             eprintln!("No OUT_DIR: {}", err);
-            return
+            return;
         },
     };
 

@@ -5,12 +5,13 @@ use std::{
     process, result,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 use regex::Regex;
 
+mod cli;
+
 fn main() {
-    let yaml = load_yaml!("csplit.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let mut created = Vec::new();
 
