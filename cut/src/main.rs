@@ -7,14 +7,15 @@ use std::{
     process, result, string,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 
 #[cfg(test)]
 mod tests;
 
+mod cli;
+
 fn main() {
-    let yaml = load_yaml!("cut.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let filenames: Vec<_> = match matches.values_of("FILE") {
         Some(files) => files.collect(),

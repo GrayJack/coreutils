@@ -35,7 +35,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Prefix to use for written files.")
                 .long("prefix")
                 .short("f")
-                .takes_value(true)
                 .value_name("PREFIX")
                 .default_value("xx"),
         )
@@ -50,7 +49,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Use the given number of digits for output file name.")
                 .long("digits")
                 .short("n")
-                .takes_value(true)
                 .value_name("DIGITS")
                 .default_value("2"),
         )
@@ -78,7 +76,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
     //         .help("Format to use for the file suffix")
     //         .long("suffix-format")
     //         .short("b")
-    //         .takes_value(true)
     //         .value_name("FORMAT")
     //         .default_value("%02d")
     // )

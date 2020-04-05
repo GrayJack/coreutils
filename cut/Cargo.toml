@@ -4,6 +4,11 @@ version = "0.1.0"
 authors = ["Mats Kindahl <mats.kindahl@gmail.com>"]
 build = "build.rs"
 edition = "2018"
+description = """
+Display selected parts of lines from each FILE to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

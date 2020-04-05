@@ -28,7 +28,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Specify the user ID or name.")
                 .long("user")
                 .short("u")
-                .takes_value(true)
                 .value_name("USER")
                 .conflicts_with("userspec"),
         )
@@ -37,7 +36,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Specify the group ID or name.")
                 .long("group")
                 .short("g")
-                .takes_value(true)
                 .value_name("GROUP")
                 .conflicts_with("userspec"),
         )
@@ -50,7 +48,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("userspec")
                 .short("U")
-                .takes_value(true)
                 .value_name("USER:GROUP")
                 .conflicts_with_all(&["user", "group"]),
         )
@@ -60,7 +57,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long_help("Specify supplementary groups.\n\nThe GROUPS is a comma separeted list")
                 .long("groups")
                 .short("G")
-                .takes_value(true)
                 .value_name("GROUPS"),
         )
 }
