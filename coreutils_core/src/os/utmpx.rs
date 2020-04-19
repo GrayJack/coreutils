@@ -26,7 +26,7 @@ use libc::c_int;
 use libc::c_long;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use libc::utmpxname;
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_int, c_short, exit_status as ExitStatus};
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
 
@@ -109,13 +109,18 @@ pub struct Utmpx {
     ut_type: UtmpxKind,
     /// The time entry was created.
     timeval: TimeVal, // tv
-    #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "netbsd",
+        target_os = "solaris",
+        target_os = "illumos"
+    ))]
     exit:    ExitStatus,
     /// Session ID. (used for windowing)
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     session: c_int,
     /// Session ID. (used for windowing)
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     session: c_int,
     /// Session ID. (used for windowing)
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
@@ -127,7 +132,7 @@ pub struct Utmpx {
     addr_v6: [i32; 4],
     #[cfg(target_os = "netbsd")]
     ss:      libc::sockaddr_storage,
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     syslen:  c_short,
 }
 
@@ -168,7 +173,7 @@ impl Utmpx {
     pub const fn session(&self) -> c_int { self.session }
 
     /// Get the session ID of the entry.
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     pub const fn session(&self) -> c_int { self.session }
 
     /// Get the session ID of the entry.
@@ -184,7 +189,12 @@ impl Utmpx {
     pub const fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
 
     /// Get exit status of the entry.
-    #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "netbsd",
+        target_os = "solaris",
+        target_os = "illumos"
+    ))]
     pub const fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
@@ -260,20 +270,26 @@ impl From<utmpx> for Utmpx {
             target_os = "linux",
             target_os = "netbsd",
             target_os = "dragonfly",
-            target_os = "solaris"
+            target_os = "solaris",
+            target_os = "illumos"
         ))]
         let session = c_utmpx.ut_session;
 
         #[cfg(target_os = "linux")]
         let addr_v6 = c_utmpx.ut_addr_v6;
 
-        #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
+        #[cfg(any(
+            target_os = "linux",
+            target_os = "netbsd",
+            target_os = "solaris",
+            target_os = "illumos"
+        ))]
         let exit = c_utmpx.ut_exit;
 
         #[cfg(any(target_os = "netbsd"))]
         let ss = c_utmpx.ut_ss;
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let syslen = c_utmpx.ut_syslen;
 
         Utmpx {
@@ -284,20 +300,26 @@ impl From<utmpx> for Utmpx {
             line,
             ut_type,
             timeval,
-            #[cfg(any(target_os = "linux", target_os = "netbsd", target_os = "solaris"))]
+            #[cfg(any(
+                target_os = "linux",
+                target_os = "netbsd",
+                target_os = "solaris",
+                target_os = "illumos"
+            ))]
             exit,
             #[cfg(any(
                 target_os = "linux",
                 target_os = "netbsd",
                 target_os = "dragonfly",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             ))]
             session,
             #[cfg(target_os = "linux")]
             addr_v6,
             #[cfg(target_os = "netbsd")]
             ss,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             syslen,
         }
     }

@@ -139,7 +139,7 @@ impl Display for UtsName {
     target_os = "macos"
 ))]
 const UTSNAME_SIZE: usize = 256;
-#[cfg(any(target_os = "solaris"))]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 const UTSNAME_SIZE: usize = 257;
 #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
 const UTSNAME_SIZE: usize = 65;

@@ -18,7 +18,8 @@ use super::Fields;
     target_os = "linux",
     target_os = "haiku",
     target_os = "fuchsia",
-    target_os = "solaris"
+    target_os = "solaris",
+    target_os = "illumos"
 )))]
 use super::Time;
 use super::{
@@ -136,7 +137,8 @@ pub struct Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     change:   Time,
     /// User access class
@@ -144,7 +146,8 @@ pub struct Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     class:    BString,
     /// Account expiration
@@ -152,15 +155,16 @@ pub struct Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     expire:   Time,
     /// Fields filled in
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     fields:   Fields,
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     age:      BString,
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     comment:  BString,
 }
 
@@ -322,7 +326,8 @@ impl Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     pub fn class(&self) -> &BStr { &self.class.as_bstr() }
 
@@ -332,7 +337,8 @@ impl Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     pub fn password_change(&self) -> Time { self.change }
 
@@ -342,7 +348,8 @@ impl Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     pub fn expire(&self) -> Time { self.expire }
 
@@ -414,7 +421,8 @@ impl TryFrom<passwd> for Passwd {
             target_os = "linux",
             target_os = "haiku",
             target_os = "fuchsia",
-            target_os = "solaris"
+            target_os = "solaris",
+            target_os = "illumos"
         )))]
         let change = pw.pw_change;
 
@@ -422,7 +430,8 @@ impl TryFrom<passwd> for Passwd {
             target_os = "linux",
             target_os = "haiku",
             target_os = "fuchsia",
-            target_os = "solaris"
+            target_os = "solaris",
+            target_os = "illumos"
         )))]
         let expire = pw.pw_expire;
 
@@ -430,7 +439,8 @@ impl TryFrom<passwd> for Passwd {
             target_os = "linux",
             target_os = "haiku",
             target_os = "fuchsia",
-            target_os = "solaris"
+            target_os = "solaris",
+            target_os = "illumos"
         )))]
         let class = if pw.pw_class.is_null() {
             return Err(ClassCheckFailed);
@@ -442,7 +452,7 @@ impl TryFrom<passwd> for Passwd {
         #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
         let fields = pw.pw_fields;
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let age = if pw.pw_age.is_null() {
             return Err(AgeCheckFailed);
         } else {
@@ -450,7 +460,7 @@ impl TryFrom<passwd> for Passwd {
             BString::from(class_cstr.to_bytes())
         };
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let comment = if pw.pw_comment.is_null() {
             return Err(CommentCheckFailed);
         } else {
@@ -470,28 +480,31 @@ impl TryFrom<passwd> for Passwd {
                 target_os = "linux",
                 target_os = "haiku",
                 target_os = "fuchsia",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             )))]
             change,
             #[cfg(not(any(
                 target_os = "linux",
                 target_os = "haiku",
                 target_os = "fuchsia",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             )))]
             class,
             #[cfg(not(any(
                 target_os = "linux",
                 target_os = "haiku",
                 target_os = "fuchsia",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             )))]
             expire,
             #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             fields,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             age,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             comment,
         })
     }
@@ -502,7 +515,8 @@ impl Display for Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     ))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -516,7 +530,8 @@ impl Display for Passwd {
         target_os = "linux",
         target_os = "haiku",
         target_os = "fuchsia",
-        target_os = "solaris"
+        target_os = "solaris",
+        target_os = "illumos"
     )))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -551,28 +566,31 @@ impl From<Passwd> for passwd {
                 target_os = "linux",
                 target_os = "haiku",
                 target_os = "fuchsia",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             )))]
             pw_change: pw.change,
             #[cfg(not(any(
                 target_os = "linux",
                 target_os = "haiku",
                 target_os = "fuchsia",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             )))]
             pw_class: pw.class.as_mut_ptr() as *mut c_char,
             #[cfg(not(any(
                 target_os = "linux",
                 target_os = "haiku",
                 target_os = "fuchsia",
-                target_os = "solaris"
+                target_os = "solaris",
+                target_os = "illumos"
             )))]
             pw_expire: pw.expire,
             #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
             pw_fields: pw.fields,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             pw_age: pw.age.as_mut_ptr() as *mut c_char,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             pw_comment: pw.comment.as_mut_ptr() as *mut c_char,
         }
     }

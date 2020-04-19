@@ -19,9 +19,9 @@ use std::{
 use std::convert::TryInto;
 
 use libc::{getegid, getgrgid_r, getgrnam_r, getgroups, group};
-#[cfg(not(target_os = "solaris"))]
+#[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
 use libc::{getgrouplist, getpwnam_r};
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{sysconf, _SC_NGROUPS_MAX};
 
 use bstr::{BStr, BString, ByteSlice};
@@ -29,7 +29,7 @@ use bstr::{BStr, BString, ByteSlice};
 use self::Error::*;
 use super::{passwd::Error as PwError, Gid};
 
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 extern "C" {
     fn _getgroupsbymember(
         username: *const c_char, glist: *mut Gid, maxids: c_int, numgids: c_int,
@@ -326,7 +326,7 @@ impl Groups {
         let name = username.as_ptr() as *const c_char;
 
         let mut res = 0;
-        #[cfg(not(any(target_os = "macos", target_os = "solaris")))]
+        #[cfg(not(any(target_os = "macos", target_os = "solaris", target_os = "illumos")))]
         unsafe {
             let mut passwd = MaybeUninit::uninit();
             let mut pw_ptr = ptr::null_mut();
@@ -393,7 +393,7 @@ impl Groups {
             }
             groups_ids.set_len(num_gr as usize);
         }
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         unsafe {
             if _getgroupsbymember(name, groups_ids.as_mut_ptr(), num_gr, 0) == -1 {
                 // Fist we tried with the pre-defined one, now we get the true max
@@ -404,7 +404,7 @@ impl Groups {
             groups_ids.set_len(num_gr as usize);
         }
 
-        if res == -1 && cfg!(target_os = "solaris") {
+        if res == -1 && (cfg!(target_os = "solaris") || cfg!(target_os = "illumos")) {
             return Err(GetGroupFailed(String::from("_getgroupsbymember"), res));
         } else if res == -1 {
             return Err(GetGroupFailed(String::from("getgrouplist"), res));

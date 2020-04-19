@@ -1,5 +1,5 @@
 //! Account database module
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use std::convert::{TryFrom, TryInto};
 use std::{
     collections::{hash_set, HashSet},
@@ -17,9 +17,9 @@ use libc::{c_char, utmp};
 use bstr::{BStr, BString, ByteSlice};
 use time::OffsetDateTime as DataTime;
 
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use super::utmpx::UtmpxKind;
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_short, exit_status as ExitStatus};
 
 /// A struct that represents a __user__ account, where user can be humam users or other
@@ -36,16 +36,16 @@ pub struct Utmp {
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
     host:    BString,
     /// Entry ID
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     id:      BString,
     /// Process ID
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     pid:     c_short,
     /// Entry type
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     ut_type: UtmpxKind,
     /// Exit status
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     exit:    ExitStatus,
 }
 
@@ -61,7 +61,7 @@ impl Utmp {
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
 
     /// Get `/etc/inittab` id.
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
     /// Get the device name of the entry. (usually a tty or console)
@@ -75,15 +75,15 @@ impl Utmp {
     pub fn login_time(&self) -> DataTime { DataTime::from_unix_timestamp(self.time) }
 
     /// Get the process ID of the entry.
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     pub fn pid(&self) -> c_short { self.pid }
 
     /// Get the entry type.
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     pub fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
     /// Get the exit status of the entry.
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     pub fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
@@ -96,7 +96,7 @@ impl From<utmp> for Utmp {
             BString::from(cstr.as_bytes())
         };
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let user = {
             let cstr: String =
                 utm.ut_user.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
@@ -110,7 +110,7 @@ impl From<utmp> for Utmp {
             BString::from(cstr.as_bytes())
         };
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let id = {
             let cstr: String =
                 utm.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
@@ -125,7 +125,7 @@ impl From<utmp> for Utmp {
 
         let time = utm.ut_time;
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let ut_type = match UtmpxKind::try_from(utm.ut_type) {
             Ok(ut) => ut,
             Err(err) => panic!(format!("{}", err)),
@@ -137,13 +137,13 @@ impl From<utmp> for Utmp {
             time,
             #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
             host,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             id,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             pid: utm.ut_pid,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             ut_type,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             exit: utm.ut_exit,
         }
     }
