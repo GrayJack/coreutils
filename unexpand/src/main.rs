@@ -5,17 +5,17 @@ use std::{
     process,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 
 #[cfg(test)]
 mod tests;
 
+mod cli;
 mod tab_stops;
 use tab_stops::*;
 
 fn main() {
-    let yaml = load_yaml!("unexpand.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let mut unexpand = Unexpand::from_matches(&matches);
     let cwd = match current_dir() {
@@ -75,6 +75,7 @@ fn main() {
     }
 }
 
+#[derive(Debug)]
 struct Unexpand {
     all:  bool,
     tabs: TabStops,

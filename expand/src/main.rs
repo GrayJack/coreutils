@@ -5,14 +5,14 @@ use std::{
     process,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 
+mod cli;
 mod tab_stops;
 use tab_stops::*;
 
 fn main() {
-    let yaml = load_yaml!("expand.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let mut expand = match Expand::from_matches(&matches) {
         Ok(ex) => ex,
