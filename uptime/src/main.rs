@@ -60,7 +60,7 @@ fn main() {
             process::exit(1);
         });
 
-        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec)
+        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec as i64)
             .to_offset(UtcOffset::current_local_offset());
     }
 
@@ -92,7 +92,7 @@ fn main() {
     )
 }
 
-fn uptime(boot_time: DateTime) -> Result<time_t, ostime::Error> {
+fn uptime(boot_time: DateTime) -> Result<i64, ostime::Error> {
     match ostime::uptime() {
         Ok(t) => Ok(t.tv_sec),
         Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now() - boot_time).whole_seconds()),
