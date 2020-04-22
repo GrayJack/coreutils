@@ -16,7 +16,7 @@ fn main() {
         },
     };
 
-    // app.gen_completions("du", Shell::Zsh, out_dir.clone());
+    app.gen_completions("du", Shell::Zsh, out_dir.clone());
     app.gen_completions("du", Shell::Fish, out_dir.clone());
     app.gen_completions("du", Shell::Bash, out_dir.clone());
     app.gen_completions("du", Shell::PowerShell, out_dir.clone());
