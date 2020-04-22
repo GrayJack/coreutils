@@ -15,9 +15,14 @@ fn main() {
     let flags = Flags::from_matches(&matches);
     let input = Input::from_matches(&matches);
 
-    head(&flags, input).unwrap_or_else(|e| {
-        eprintln!("head: {}", e);
+    let mut err_exit = false;
+    head(&flags, input).unwrap_or_else(|_e| {
+        err_exit = true;
     });
+
+    if err_exit {
+        std::process::exit(1);
+    }
 }
 
 /// We truncate the input at either some number of lines or bytes
@@ -69,17 +74,29 @@ fn head(flags: &Flags, input: Input) -> Result<(), io::Error> {
     match input {
         Input::Files(files) => {
             let files_count = files.len();
+            let mut out = Ok(());
             for (i, file) in files.iter().enumerate() {
+                let f = match File::open(file) {
+                    Ok(f) => f,
+                    Err(err) => {
+                        eprintln!("head: Cannot open '{}' for reading: {}", file, err);
+                        out = Err(err);
+                        continue;
+                    },
+                };
+
                 if files_count > 1 {
                     if i != 0 {
                         println!();
                     }
                     println!("==> {} <==", file);
                 }
-                let f = File::open(file)?;
+
                 let reader = BufReader::new(f);
                 read_stream(flags, reader, &mut io::stdout())?;
             }
+
+            return out;
         },
         Input::Stdin => {
             let stdin = io::stdin();
