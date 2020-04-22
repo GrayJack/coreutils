@@ -1,5 +1,5 @@
 use super::*;
-use clap::Arg;
+use clap::{Arg, App};
 
 #[test]
 fn du_parse_files_no_input() {
