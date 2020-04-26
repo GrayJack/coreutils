@@ -2,11 +2,10 @@ use std::{env, process};
 
 use coreutils_core::os::login_name::user_login_name;
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("logname.yml");
-    let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let _matches = cli::create_app().get_matches();
 
     let login_name = if let Some(name) = user_login_name() {
         format!("{}", name)
