@@ -4,10 +4,11 @@ version = "0.0.1"
 authors = ["Federico Ponzi <federico.ponzi92@gmail.com>"]
 build = "build.rs"
 edition = "2018"
+description = "Make FIFOs. (named pipes)"
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+clap = { version = "^2.33.0", features = ["wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
 
 [build-dependencies]
-clap = { version = "^2.33.0", features = ["yaml"] }
+clap = "^2.33.0"
