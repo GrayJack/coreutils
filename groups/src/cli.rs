@@ -14,7 +14,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("USER")
                 .help("Name of a user.")
-                .long_help("Name of a user.\n\nIf not specified assumes the caller user"),
+                .long_help("Name of a user.\n\nIf not specified assumes the current user"),
         )
         .arg(
             Arg::with_name("id")
