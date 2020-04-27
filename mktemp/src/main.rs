@@ -1,15 +1,14 @@
 use std::{env, fs, path::PathBuf, process};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
-
 use coreutils_core::{
     libc::EINVAL,
     mktemp::{mkdtemp, mkstemp},
 };
 
+mod cli;
+
 fn main() {
-    let yaml = load_yaml!("mktemp.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let directory = matches.is_present("directory");
     let quiet = matches.is_present("quiet");
