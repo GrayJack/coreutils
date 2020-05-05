@@ -5,11 +5,12 @@ use std::{
 
 use coreutils_core::{backup::*, input::*};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
+
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("mv.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = MvFlags::from_matches(&matches);
 
