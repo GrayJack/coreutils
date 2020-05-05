@@ -10,10 +10,7 @@ use coreutils_core::{
     os::process::priority::{get_priority, set_priority, PRIO_PROCESS},
 };
 
-use clap::{
-    load_yaml, App,
-    AppSettings::{AllowNegativeNumbers, ColoredHelp, TrailingVarArg},
-};
+mod cli;
 
 #[cfg(target_os = "linux")]
 const P_PROCESS: c_uint = PRIO_PROCESS as c_uint;
@@ -21,13 +18,11 @@ const P_PROCESS: c_uint = PRIO_PROCESS as c_uint;
 const P_PROCESS: c_int = PRIO_PROCESS;
 
 fn main() {
-    let yaml = load_yaml!("nice.yml");
-    let matches = App::from_yaml(yaml)
-        .settings(&[ColoredHelp, AllowNegativeNumbers, TrailingVarArg])
-        .get_matches();
+    let matches = cli::create_app().get_matches();
 
     let adjustment: c_int = {
-        let str_n = matches.value_of("N").unwrap();
+        // Ok to unwrap because it's set with default value, so it will always have a value.
+        let str_n = matches.value_of("adjustment").unwrap();
         match str_n.parse() {
             Ok(n) => n,
             Err(err) => {
