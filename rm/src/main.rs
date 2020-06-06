@@ -1,4 +1,4 @@
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 use coreutils_core::input::*;
 use std::{
     env::current_dir,
@@ -8,9 +8,10 @@ use std::{
     process,
 };
 
+mod cli;
+
 fn main() {
-    let yaml = load_yaml!("rm.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = RmFlags::from_matches(&matches);
 
