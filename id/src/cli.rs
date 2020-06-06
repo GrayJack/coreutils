@@ -2,6 +2,7 @@ use clap::{
     crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
 };
 
+#[allow(clippy::let_and_return)]
 pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
     let app = App::new(crate_name!())
         .version(crate_version!())

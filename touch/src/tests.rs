@@ -46,9 +46,8 @@ fn touch_update_existing_files() {
 
 #[test]
 fn touch_update_only_access_time() {
-    let yaml = load_yaml!("touch.yml");
     let matches =
-        App::from_yaml(yaml).get_matches_from(vec!["touch", "-a", "file5.rs", "file6.rs"]);
+        cli::create_app().get_matches_from(vec!["touch", "-a", "file5.rs", "file6.rs"]);
 
     let flags = TouchFlags::from_matches(&matches);
 
@@ -72,9 +71,8 @@ fn touch_update_only_access_time() {
 
 #[test]
 fn touch_update_only_modification_time() {
-    let yaml = load_yaml!("touch.yml");
     let matches =
-        App::from_yaml(yaml).get_matches_from(vec!["touch", "-m", "file7.rs", "file8.rs"]);
+        cli::create_app().get_matches_from(vec!["touch", "-m", "file7.rs", "file8.rs"]);
 
     let flags = TouchFlags::from_matches(&matches);
 
@@ -99,8 +97,7 @@ fn touch_update_only_modification_time() {
 
 #[test]
 fn touch_update_time_with_date() {
-    let yaml = load_yaml!("touch.yml");
-    let matches = App::from_yaml(yaml).get_matches_from(vec![
+    let matches = cli::create_app().get_matches_from(vec![
         "touch",
         "-d=2009-01-03 03:13:00",
         "file9.rs",

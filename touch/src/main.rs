@@ -4,17 +4,17 @@ use std::{
     time::SystemTime,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 use filetime::{set_file_atime, set_file_mtime, set_file_times, set_symlink_file_times, FileTime};
 use time::PrimitiveDateTime;
 
+mod cli;
 // TODO: add Unit tests for touch
 #[cfg(test)]
 mod tests;
 
 fn main() {
-    let yaml = load_yaml!("touch.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = TouchFlags::from_matches(&matches);
 

@@ -13,9 +13,9 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .settings(&[ColoredHelp])
         .arg(
             Arg::with_name("FILE")
-                .help("Files to be deleted.")
+                .help("File(s) to be deleted.")
                 .long_help(
-                    "Files to be deleted.\n\nTo remove a file whose name starts with a '-', for \
+                    "File(s) to be deleted.\n\nTo remove a file whose name starts with a '-', for \
                      example '-foo', use 'rm -- -foo'",
                 )
                 .required(true)

@@ -12,7 +12,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .help_short("?")
         .settings(&[ColoredHelp])
         .arg(
-            Arg::with_name("FILE").help("File(s) to use, or '-' to use from stdin.").multiple(true),
+            Arg::with_name("FILE").help("File(s) to use, or '-' to use from standard input.").multiple(true),
         )
         .arg(
             Arg::with_name("body_numbering")

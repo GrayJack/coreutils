@@ -13,7 +13,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .settings(&[ColoredHelp])
         .arg(
             Arg::with_name("FILE")
-                .help("File(s) to read, or '-' to read from stdin.")
+                .help("File(s) to read, or '-' to read from standard input.")
                 .multiple(true)
                 .required(false),
         )

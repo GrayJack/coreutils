@@ -13,7 +13,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .settings(&[ColoredHelp])
         .arg(
             Arg::with_name("FILE")
-                .help("The file operands are processed in command-line order.")
+                .help("The file(s) operands are processed in command-line order.")
                 .long_help(
                     "The file operands are processed in command-line order.\n\nIf file is a \
                      single dash (‘-’) or absent, cat reads from the standard input.",
