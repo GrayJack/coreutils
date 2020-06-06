@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Gab David <gbianchetdavid@ebsco.com>", "GrayJack <gr41.j4ck@gmail.com>"]
 build = "build.rs"
 edition = "2018"
+description = "Remove files or directories."
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
