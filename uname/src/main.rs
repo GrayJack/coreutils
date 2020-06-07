@@ -5,11 +5,10 @@ use coreutils_core::{
     os::utsname::UtsName,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("uname.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let all_flag = matches.is_present("all");
     let sysname_flag = matches.is_present("sysname");
