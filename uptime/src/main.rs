@@ -59,7 +59,7 @@ fn main() {
             process::exit(1);
         });
 
-        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec)
+        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec as i64)
             .to_offset(UtcOffset::current_local_offset());
     }
 
@@ -91,10 +91,10 @@ fn main() {
     )
 }
 
-fn uptime(boot_time: DateTime) -> Result<time_t, ostime::Error> {
+fn uptime(boot_time: DateTime) -> Result<i64, ostime::Error> {
     match ostime::uptime() {
-        Ok(t) => Ok(t.tv_sec),
-        Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now() - boot_time).whole_seconds()),
+        Ok(t) => Ok(t.tv_sec as i64),
+        Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now_utc() - boot_time).whole_seconds()),
         Err(err) => Err(err),
     }
 }
@@ -133,7 +133,7 @@ fn fmt_number_users(num_users: usize) -> String {
     }
 }
 
-fn fmt_uptime(upsecs: time_t, pretty_flag: bool) -> String {
+fn fmt_uptime(upsecs: i64, pretty_flag: bool) -> String {
     let updays = upsecs / 86400;
     let uphours = (upsecs - (updays * 86400)) / 3600;
     let upmins = (upsecs - (updays * 86400) - (uphours * 3600)) / 60;
