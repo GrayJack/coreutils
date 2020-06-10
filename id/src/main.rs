@@ -241,7 +241,7 @@ fn audit_logic() {
     match coreutils_core::os::audit::audit_info() {
         Ok(auditinfo) => println!("{}", auditinfo),
         Err(err) => {
-            println!("id: {}", err);
+            println!("id: getaudit: {}", err);
             process::exit(1);
         },
     };
