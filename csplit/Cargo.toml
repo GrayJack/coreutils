@@ -4,10 +4,22 @@ version = "0.1.0"
 authors = ["Mats Kindahl <mats.kindahl@gmail.com>"]
 build = "build.rs"
 edition = "2018"
+description = """
+Split FILE by each PATTERN into a series of files 'xx00', 'xx01',...
+
+A file name has to be provided, but if it is '-', input will read
+from standard input.
+
+The input will be split up to, but not including, the line that
+matches PATTERN.
+
+The number of bytes in each file will be displayed on standard
+output with one line for each file.
+"""
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+clap = { version = "^2.33.0", features = ["wrap_help"] }
 regex = "^1.3.4"
 
 [build-dependencies]
-clap = { version = "^2.33.0", features = ["yaml"] }
+clap = "^2.33.0"

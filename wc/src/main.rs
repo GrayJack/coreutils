@@ -3,14 +3,15 @@ use std::{
     io::{self, prelude::*, BufReader},
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
+
+mod cli;
 
 #[cfg(test)]
 mod tests;
 
 fn main() {
-    let yaml = load_yaml!("wc.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = WcFlags::from_matches(&matches);
 
@@ -148,7 +149,7 @@ fn wc<R: Read>(stream: R) -> Result<WcResult, io::Error> {
         // The max line length considers characters, not bytes.
         result.max_line_len = result.max_line_len.max(n_chars_excluding_newline);
 
-        result.chars += u64::from(n_chars_excluding_newline) + 1;
+        result.chars += n_chars_excluding_newline as u64 + 1;
 
         if !last_was_whitespace {
             result.words += 1;

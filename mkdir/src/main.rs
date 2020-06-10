@@ -1,10 +1,9 @@
 use std::{fs, os::unix::fs::PermissionsExt, process};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("mkdir.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let directories = matches.values_of("DIRECTORY").unwrap();
     let verbose = matches.is_present("verbose");

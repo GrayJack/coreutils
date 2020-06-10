@@ -11,14 +11,10 @@ use coreutils_core::{
     os::tty::IsTTY,
 };
 
-use clap::{
-    load_yaml, App,
-    AppSettings::{ColoredHelp, TrailingVarArg},
-};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("nohup.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, TrailingVarArg]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     // Ok to unwrap: COMMAND is required
     let mut cmd = matches.values_of("COMMAND").unwrap();

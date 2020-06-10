@@ -1,10 +1,9 @@
 use std::{fs, process};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("unlink.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let path = matches.value_of("FILE").unwrap();
 

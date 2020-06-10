@@ -2,11 +2,10 @@ use std::process;
 
 use coreutils_core::mkfifo::mkfifo;
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("mkfifo.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     // Ok to unwrap because it is required.
     let filepath = matches.value_of("NAME").unwrap();

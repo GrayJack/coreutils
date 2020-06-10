@@ -1,15 +1,21 @@
 [package]
 name = "nice"
 version = "0.1.0"
-authors = ["GrayJack <gr41.j4ck@gmail.com>"]
+authors = ["Eric Shimizu Karbstein <gr41.j4ck@gmail.com>"]
 build = "build.rs"
 edition = "2018"
+description = """
+Run COMMAND with an adjusted niceness, which affects process scheduling.
+
+Niceness values range from at least -20 (most favorable to the process) to \
+20 (least favorable to the process).
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+clap = { version = "^2.33.0", features = ["wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
 
 [build-dependencies]
-clap = { version = "^2.33.0", features = ["yaml"] }
+clap = "^2.33.0"

@@ -2,11 +2,12 @@
 use std::os::unix::fs::MetadataExt;
 use std::{fs::Metadata, path::Display, process};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
 use glob::Pattern;
 use walkdir::WalkDir;
 
 mod blocksize;
+mod cli;
 mod time;
 
 use blocksize::{Blocksize, BlocksizeError};
@@ -16,8 +17,7 @@ use time::{DuTime, TimeOption, TimeStyleOption};
 mod tests;
 
 fn main() {
-    let yaml = load_yaml!("du.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = DuFlagsAndOptions::from_matches(&matches);
     let paths = parse_files(&matches);
@@ -65,7 +65,7 @@ struct DuFlagsAndOptions<'a> {
     pub use_inodes: bool,
     pub use_ascii_null: bool,
     pub one_file_system: bool,
-    pub seperate_dirs: bool,
+    pub separate_dirs: bool,
     pub grand_total: bool,
     pub blocksize: Blocksize,
     pub exclude_pattern: Option<Pattern>,
@@ -98,7 +98,7 @@ impl<'a> DuFlagsAndOptions<'a> {
             use_inodes: matches.is_present("inodes"),
             use_ascii_null: matches.is_present("line-end-null"),
             one_file_system: matches.is_present("one-file-system"),
-            seperate_dirs: matches.is_present("seperate-dirs"),
+            separate_dirs: matches.is_present("separate-dirs"),
             grand_total: matches.is_present("total"),
             blocksize: parse_blocksize(matches),
             exclude_pattern: parse_exclude_pattern(matches.value_of("exclude-pattern")),
@@ -375,7 +375,7 @@ fn process_value(
 
     let display_value = get_display_value(meta, flags_opts);
 
-    if !is_dir || !flags_opts.seperate_dirs {
+    if !is_dir || !flags_opts.separate_dirs {
         // add size to subdir total size
         subdir_sizes_r[depth] += display_value.size();
     }
@@ -384,7 +384,7 @@ fn process_value(
         // when recursing back to the parent directory
         let subdir_sum = subdir_sizes_r.pop().unwrap_or(0);
 
-        if !flags_opts.seperate_dirs {
+        if !flags_opts.separate_dirs {
             subdir_sizes_r[depth] += subdir_sum;
         }
 

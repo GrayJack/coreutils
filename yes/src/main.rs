@@ -1,8 +1,7 @@
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("yes.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let string = if matches.is_present("STRING") {
         let inputs = matches.values_of("STRING").unwrap();

@@ -13,11 +13,10 @@ use coreutils_core::{
     time::{OffsetDateTime as DateTime, UtcOffset},
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("uptime.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let pretty_flag = matches.is_present("pretty");
     let since_flag = matches.is_present("since");
@@ -95,7 +94,9 @@ fn main() {
 fn uptime(boot_time: DateTime) -> Result<i64, ostime::Error> {
     match ostime::uptime() {
         Ok(t) => Ok(t.tv_sec as i64),
-        Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now() - boot_time).whole_seconds()),
+        Err(ostime::Error::TargetNotSupported) => {
+            Ok((DateTime::now_utc() - boot_time).whole_seconds())
+        },
         Err(err) => Err(err),
     }
 }

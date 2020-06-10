@@ -4,9 +4,17 @@ version = "0.1.0"
 authors = ["Odin Dutton <odindutton@gmail.com>"]
 build = "build.rs"
 edition = "2018"
+description = """
+This filter displays the first count lines or bytes of each specified FILE, or \
+of the standard input if no files are specified. If count is omitted it \
+defaults to 10.
+
+If more than a single file is specified, each file is preceded by a header \
+consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
+"""
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["yaml", "wrap_help"] }
+clap = { version = "^2.33.0", features = ["wrap_help"] }
 
 [build-dependencies]
-clap = { version = "^2.33.0", features = ["yaml"] }
+clap = "^2.33.0"

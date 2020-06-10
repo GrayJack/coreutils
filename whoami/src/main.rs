@@ -2,11 +2,10 @@ use std::{env, process};
 
 use coreutils_core::os::passwd::Passwd;
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("whoami.yml");
-    let _matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let _matches = cli::create_app().get_matches();
 
     let user = if let Ok(pw) = Passwd::effective() {
         pw

@@ -1,18 +1,19 @@
 use std::env;
 
-use clap::{load_yaml, App, Shell};
+use clap::Shell;
+
+#[path = "src/cli.rs"]
+mod cli;
 
 fn main() {
-    #[cfg(not(target_os = "openbsd"))]
-    let yaml = load_yaml!("src/who.yml");
-    #[cfg(target_os = "openbsd")]
-    let yaml = load_yaml!("src/who_openbsd.yml");
-
-    let mut app = App::from_yaml(yaml);
+    let mut app = cli::create_app();
 
     let out_dir = match env::var("OUT_DIR") {
         Ok(dir) => dir,
-        _ => return,
+        Err(err) => {
+            eprintln!("No OUT_DIR: {}", err);
+            return;
+        },
     };
 
     app.gen_completions("who", Shell::Zsh, out_dir.clone());

@@ -4,14 +4,15 @@ use coreutils_core::time::{
     Date, Duration, OffsetDateTime as DateTime, PrimitiveDateTime, Time, UtcOffset,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
+
+mod cli;
 
 const DEFAULT_FMT_OUT: &str = "%a %b %d %H:%M:%S %z %Y";
 const RFC_2822_FMT: &str = "%a, %d %b %Y %T %z";
 
 fn main() {
-    let yaml = load_yaml!("date.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     if let Err(err) = date(&matches) {
         eprintln!("date: {}", err);
@@ -103,7 +104,7 @@ fn build_datetime(
     // If read_input is Some, that means that read flag was set. Else use now
     let now = match ref_val {
         Some(s) => reference_datetime(s, utc_off)?,
-        None => DateTime::now().to_offset(utc_off),
+        None => DateTime::now_utc().to_offset(utc_off),
     };
 
     if date_str == "now" {

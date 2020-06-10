@@ -5,16 +5,12 @@ use std::{
     process::{self, Command},
 };
 
-use clap::{
-    load_yaml, App,
-    AppSettings::{ColoredHelp, TrailingVarArg},
-};
+mod cli;
 
 const ENOENT: i32 = 2;
 
 fn main() {
-    let yaml = load_yaml!("env.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp, TrailingVarArg]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let mut kv = HashMap::new();
     let mut cmd = Vec::new();

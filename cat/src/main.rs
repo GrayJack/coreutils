@@ -3,11 +3,12 @@ use std::{
     io::{prelude::*, stdin, BufReader, ErrorKind},
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
+
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("cat.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = CatFlags::from_matches(&matches);
 
@@ -80,9 +81,9 @@ impl CatFlags {
     pub fn from_matches(matches: &ArgMatches) -> Self {
         CatFlags {
             number: matches.is_present("number"),
-            number_nonblank: matches.is_present("numberNonblank"),
-            show_ends: matches.is_present("showEnds"),
-            squeeze_blank: matches.is_present("squeezeBlank"),
+            number_nonblank: matches.is_present("number_nonblank"),
+            show_ends: matches.is_present("show_ends"),
+            squeeze_blank: matches.is_present("squeeze_blank"),
         }
     }
 }

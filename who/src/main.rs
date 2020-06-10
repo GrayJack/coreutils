@@ -12,15 +12,12 @@ use coreutils_core::{
     libc::S_IWGRP, os::tty::TTYName, time::OffsetDateTime as DateTime, ByteSlice,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
+
+mod cli;
 
 fn main() {
-    #[cfg(not(target_os = "openbsd"))]
-    let yaml = load_yaml!("who.yml");
-    #[cfg(target_os = "openbsd")]
-    let yaml = load_yaml!("who_openbsd.yml");
-
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = WhoFlags::from_matches(&matches);
 
@@ -381,7 +378,7 @@ fn def_status(
     let idle = if last_change == 0 {
         "?".to_string()
     } else {
-        let now = DateTime::now().timestamp();
+        let now = DateTime::now_utc().timestamp();
         if 0 < last_change && now - 24 * 3600 < last_change && last_change <= now {
             let seconds_idle = now - last_change;
             if seconds_idle < 60 {

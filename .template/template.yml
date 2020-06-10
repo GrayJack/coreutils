@@ -1,8 +1,0 @@
-name: my_app_name
-version: '0.0.0'
-author: 'MyName <my_name@provider.com>'
-about: ABOUT MY APP.
-help_message: Display help information.
-version_message: Display version information.
-help_short: "?"
-args:

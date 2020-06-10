@@ -2,11 +2,10 @@ use std::{io, process};
 
 use coreutils_core::os::tty::{Error::*, IsTTY, TTYName};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("tty.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let desc_stdin = io::stdin();
 
