@@ -21,7 +21,7 @@ fn main() {
     let (cmd, args) = match matches.values_of("COMMAND") {
         Some(mut c) => {
             // Ok to unwrap, because if COMMAND has content, it will always have the first
-            let cmd = c.nth(0).unwrap();
+            let cmd = c.next().unwrap();
             let args: Vec<_> = c.collect();
             (cmd, args)
         },

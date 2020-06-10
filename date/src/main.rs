@@ -115,7 +115,7 @@ fn build_datetime(
     let chars: Vec<_> = date_str.chars().collect();
 
     let sec = if date_str.contains('.') {
-        let index = date_str.split('.').nth(0).unwrap().len() + 1;
+        let index = date_str.split('.').next().unwrap().len() + 1;
         let sec = match &chars[index..] {
             [] => return Err("No values after '.'".to_string()),
             [_] => return Err("Only one digit: Must have two digits after '.'".to_string()),

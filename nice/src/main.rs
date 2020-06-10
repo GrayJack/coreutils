@@ -35,7 +35,7 @@ fn main() {
     // Ok to unwrap: COMMAND is required
     let mut cmd = matches.values_of("COMMAND").unwrap();
     // Ok to unwrap: Since COMMAND is required, there must be the first value
-    let command = cmd.nth(0).unwrap();
+    let command = cmd.next().unwrap();
     let args: Vec<_> = cmd.collect();
 
     let mut niceness = match get_priority(P_PROCESS, 0) {
