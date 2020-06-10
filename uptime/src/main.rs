@@ -94,7 +94,9 @@ fn main() {
 fn uptime(boot_time: DateTime) -> Result<i64, ostime::Error> {
     match ostime::uptime() {
         Ok(t) => Ok(t.tv_sec as i64),
-        Err(ostime::Error::TargetNotSupported) => Ok((DateTime::now_utc() - boot_time).whole_seconds()),
+        Err(ostime::Error::TargetNotSupported) => {
+            Ok((DateTime::now_utc() - boot_time).whole_seconds())
+        },
         Err(err) => Err(err),
     }
 }

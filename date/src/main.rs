@@ -104,7 +104,7 @@ fn build_datetime(
     // If read_input is Some, that means that read flag was set. Else use now
     let now = match ref_val {
         Some(s) => reference_datetime(s, utc_off)?,
-        None => DateTime::now().to_offset(utc_off),
+        None => DateTime::now_utc().to_offset(utc_off),
     };
 
     if date_str == "now" {

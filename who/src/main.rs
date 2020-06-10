@@ -378,7 +378,7 @@ fn def_status(
     let idle = if last_change == 0 {
         "?".to_string()
     } else {
-        let now = DateTime::now().timestamp();
+        let now = DateTime::now_utc().timestamp();
         if 0 < last_change && now - 24 * 3600 < last_change && last_change <= now {
             let seconds_idle = now - last_change;
             if seconds_idle < 60 {

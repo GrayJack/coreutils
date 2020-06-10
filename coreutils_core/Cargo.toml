@@ -22,4 +22,4 @@ targets = ["x86_64-unknown-linux-gnu", "x86_64-unknown-freebsd",
 libc = { version = "~0.2.68", features = ["extra_traits"] }
 bstr = "~0.2.12"
 regex = "^1.3.6"
-time = "~0.2.9"
+time = "~0.2.16"
