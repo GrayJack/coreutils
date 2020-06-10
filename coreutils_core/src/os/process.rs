@@ -58,7 +58,10 @@ pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
     let groups = Groups::from_group_list(&groups)?;
     let groups: Vec<Gid> = groups.iter().map(|g| g.id()).collect();
 
-    match unsafe { libc::setgroups(groups.len().try_into().unwrap(), groups.as_ptr()) } {
+    #[allow(clippy::useless_conversion)]
+    let size = groups.len().try_into().unwrap_or_default();
+
+    match unsafe { libc::setgroups(size, groups.as_ptr()) } {
         0 => Ok(()),
         _ => Err(GrError::Io(io::Error::last_os_error())),
     }
