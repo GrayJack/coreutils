@@ -12,15 +12,12 @@ use coreutils_core::{
     libc::S_IWGRP, os::tty::TTYName, time::OffsetDateTime as DateTime, ByteSlice,
 };
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp, ArgMatches};
+use clap::ArgMatches;
+
+mod cli;
 
 fn main() {
-    #[cfg(not(target_os = "openbsd"))]
-    let yaml = load_yaml!("who.yml");
-    #[cfg(target_os = "openbsd")]
-    let yaml = load_yaml!("who_openbsd.yml");
-
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let flags = WhoFlags::from_matches(&matches);
 
