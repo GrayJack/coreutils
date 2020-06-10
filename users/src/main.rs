@@ -6,11 +6,10 @@ use coreutils_core::os::utmpx::{UtmpxKind, UtmpxSet as UtmpSet};
 #[cfg(any(target_os = "openbsd"))]
 use coreutils_core::os::{utmp::UtmpSet, ByteSlice};
 
-use clap::{load_yaml, App, AppSettings::ColoredHelp};
+mod cli;
 
 fn main() {
-    let yaml = load_yaml!("users.yml");
-    let matches = App::from_yaml(yaml).settings(&[ColoredHelp]).get_matches();
+    let matches = cli::create_app().get_matches();
 
     let uts = if matches.is_present("FILE") {
         let file = matches.value_of("FILE").unwrap();
