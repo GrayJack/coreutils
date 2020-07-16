@@ -5,7 +5,7 @@ use std::os::raw::c_int;
 use std::{
     convert::TryFrom,
     error::Error as StdError,
-    ffi::CStr,
+    ffi::{CStr, CString, NulError},
     fmt::{self, Display},
     io::Error as IoError,
     mem::MaybeUninit,
@@ -47,7 +47,7 @@ pub enum Error {
     /// Happens when [`getgrgid_r`], [`getgrnam_r`] or [`getgrouplist`] fails.
     ///
     /// It holds the the function that was used and a error code of the function return.
-    GetGroupFailed(String, i32),
+    GetGroupFailed(&'static str, i32),
     /// Happens when the pointer to the `.gr_name` is NULL.
     NameCheckFailed,
     /// Happens when the pointer to the `.gr_passwd` is NULL.
@@ -60,6 +60,8 @@ pub enum Error {
     Io(IoError),
     /// Happens when creating a [`Passwd`] fails.
     Passwd(Box<PwError>),
+    /// Happens when creating a [`CString`] fails.
+    Cstring(NulError),
 }
 
 impl Display for Error {
@@ -76,6 +78,7 @@ impl Display for Error {
             GroupNotFound => write!(f, "Group was not found in the system"),
             Io(err) => write!(f, "{}", err),
             Passwd(err) => write!(f, "Passwd error: {}", err),
+            Cstring(err) => write!(f, "Failed to create CString: {}", err),
         }
     }
 }
@@ -85,6 +88,7 @@ impl StdError for Error {
         match self {
             Io(err) => Some(err),
             Passwd(err) => Some(err),
+            Cstring(err) => Some(err),
             _ => None,
         }
     }
@@ -92,6 +96,10 @@ impl StdError for Error {
 
 impl From<IoError> for Error {
     fn from(err: IoError) -> Self { Io(err) }
+}
+
+impl From<NulError> for Error {
+    fn from(err: NulError) -> Self { Cstring(err) }
 }
 
 impl From<PwError> for Error {
@@ -121,25 +129,38 @@ impl Group {
     /// into [`Group`], an error variant is returned.
     pub fn new() -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
-        let mut gr_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this from manual page about `getgrgid_r`.
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let res = unsafe {
-            getgrgid_r(getegid(), gr.as_mut_ptr(), &mut buff[0], buff.len(), &mut gr_ptr)
-        };
+        loop {
+            let error_flag = unsafe {
+                getgrgid_r(
+                    getegid(),
+                    gr.as_mut_ptr(),
+                    buff.as_mut_ptr(),
+                    buff.capacity(),
+                    &mut result,
+                )
+            };
 
-        if gr_ptr.is_null() {
-            if res == 0 {
-                return Err(GroupNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(GroupNotFound);
+                } else {
+                    // Now that gr is initialized we get it
+                    let gr = unsafe { gr.assume_init() };
+
+                    break Ok(Group::try_from(gr)?);
+                }
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+                break Err(Io(IoError::last_os_error()));
             }
         }
-
-        // Now that gr is initialized we get it
-        let gr = unsafe { gr.assume_init() };
-
-        Ok(Group::try_from(gr)?)
     }
 
     /// Creates a [`Group`] using a `id` to get all attributes.
@@ -149,23 +170,32 @@ impl Group {
     /// into [`Group`], an error variant is returned.
     pub fn from_gid(id: Gid) -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
-        let mut gr_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this from manual page about `getgrgid_r`.
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let res = unsafe { getgrgid_r(id, gr.as_mut_ptr(), &mut buff[0], buff.len(), &mut gr_ptr) };
+        loop {
+            let error_flag = unsafe {
+                getgrgid_r(id, gr.as_mut_ptr(), buff.as_mut_ptr(), buff.capacity(), &mut result)
+            };
 
-        if gr_ptr.is_null() {
-            if res == 0 {
-                return Err(GroupNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(GroupNotFound);
+                } else {
+                    // Now that gr is initialized we get it
+                    let gr = unsafe { gr.assume_init() };
+
+                    break Ok(Group::try_from(gr)?);
+                }
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+                break Err(Io(IoError::last_os_error()));
             }
         }
-
-        // Now that gr is initialized we get it
-        let gr = unsafe { gr.assume_init() };
-
-        Ok(Group::try_from(gr)?)
     }
 
     /// Creates a [`Group`] using a `name` to get all attributes.
@@ -175,33 +205,40 @@ impl Group {
     /// into [`Group`], an error variant is returned.
     pub fn from_name(name: &str) -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
-        let mut gr_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this from manual page about `getgrgid_r`.
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this from manual page about `getgrgid_r`.
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let name = BString::from(name);
+        let name = CString::new(name)?;
 
-        let res = unsafe {
-            getgrnam_r(
-                name.as_ptr() as *const c_char,
-                gr.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut gr_ptr,
-            )
-        };
+        loop {
+            let error_flag = unsafe {
+                getgrnam_r(
+                    name.as_ptr() as *const c_char,
+                    gr.as_mut_ptr(),
+                    &mut buff[0],
+                    buff.len(),
+                    &mut result,
+                )
+            };
 
-        if gr_ptr.is_null() {
-            if res == 0 {
-                return Err(GroupNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(GroupNotFound);
+                } else {
+                    // Now that gr is initialized we get it
+                    let gr = unsafe { gr.assume_init() };
+
+                    break Ok(Group::try_from(gr)?);
+                }
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetGroupFailed(String::from("getgrgid_r"), res));
+                break Err(Io(IoError::last_os_error()));
             }
         }
-
-        // Now that gr is initialized we get it
-        let gr = unsafe { gr.assume_init() };
-
-        Ok(Group::try_from(gr)?)
     }
 
     /// Returns the `Group` name.
@@ -326,60 +363,44 @@ impl Groups {
         let name = username.as_ptr() as *const c_char;
 
         let mut res = 0;
-        #[cfg(not(any(target_os = "macos", target_os = "solaris", target_os = "illumos")))]
+        #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
         unsafe {
             let mut passwd = MaybeUninit::uninit();
-            let mut pw_ptr = ptr::null_mut();
-            let mut buff = [0; 16384];
+            let mut pw_result = ptr::null_mut();
+            let buff_size = 16384;
+            let mut buff = Vec::with_capacity(buff_size);
 
-            let res_pwnam =
-                getpwnam_r(name, passwd.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr);
+            let passwd = loop {
+                let res_pwnam = getpwnam_r(
+                    name,
+                    passwd.as_mut_ptr(),
+                    buff.as_mut_ptr(),
+                    buff.capacity(),
+                    &mut pw_result,
+                );
 
-            if pw_ptr.is_null() {
-                if res == 0 {
-                    return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                if res_pwnam == 0 {
+                    if pw_result.is_null() {
+                        return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                    } else {
+                        break passwd.assume_init();
+                    }
+                } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
+                    buff.reserve(buff_size);
                 } else {
-                    return Err(Passwd(Box::new(PwError::GetPasswdFailed(
-                        String::from("getpwnam_r"),
-                        res_pwnam,
-                    ))));
+                    return Err(Passwd(Box::new(PwError::Io(IoError::last_os_error()))));
                 }
-            }
-
-            let passwd = passwd.assume_init();
+            };
 
             let gid = passwd.pw_gid;
 
+            #[cfg(not(target_os = "macos"))]
             if getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr) == -1 {
                 groups_ids.resize(num_gr as usize, 0);
                 res = getgrouplist(name, gid, groups_ids.as_mut_ptr(), &mut num_gr);
             }
-            groups_ids.set_len(num_gr as usize);
-        }
-        #[cfg(target_os = "macos")]
-        unsafe {
-            let mut passwd = MaybeUninit::uninit();
-            let mut pw_ptr = ptr::null_mut();
-            let mut buff = [0; 16384];
 
-            let res_pwnam =
-                getpwnam_r(name, passwd.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr);
-
-            if pw_ptr.is_null() {
-                if res == 0 {
-                    return Err(Passwd(Box::new(PwError::PasswdNotFound)));
-                } else {
-                    return Err(Passwd(Box::new(PwError::GetPasswdFailed(
-                        String::from("getpwnam_r"),
-                        res_pwnam,
-                    ))));
-                }
-            }
-
-            let passwd = passwd.assume_init();
-
-            let gid = passwd.pw_gid;
-
+            #[cfg(target_os = "macos")]
             if getgrouplist(name, gid.try_into().unwrap(), groups_ids.as_mut_ptr(), &mut num_gr)
                 == -1
             {
@@ -391,6 +412,7 @@ impl Groups {
                     &mut num_gr,
                 );
             }
+
             groups_ids.set_len(num_gr as usize);
         }
         #[cfg(any(target_os = "solaris", target_os = "illumos"))]
@@ -405,9 +427,9 @@ impl Groups {
         }
 
         if res == -1 && (cfg!(target_os = "solaris") || cfg!(target_os = "illumos")) {
-            return Err(GetGroupFailed(String::from("_getgroupsbymember"), res));
+            return Err(GetGroupFailed("_getgroupsbymember", res));
         } else if res == -1 {
-            return Err(GetGroupFailed(String::from("getgrouplist"), res));
+            return Err(GetGroupFailed("getgrouplist", res));
         }
 
         groups_ids.truncate(num_gr as usize);
