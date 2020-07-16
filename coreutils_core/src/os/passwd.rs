@@ -3,7 +3,7 @@
 use std::{
     convert::TryFrom,
     error::Error as StdError,
-    ffi::CStr,
+    ffi::{CStr, CString, NulError},
     fmt::{self, Display},
     io::Error as IOError,
     mem::MaybeUninit,
@@ -43,7 +43,7 @@ pub enum Error {
     /// Happens when [`getpwuid_r`] or [`getpwnam_r`] fails.
     ///
     /// It holds the the function that was used and a error code of the function return.
-    GetPasswdFailed(String, i32),
+    GetPasswdFailed(&'static str, i32),
     /// Happens when the pointer to the `.pw_name` is NULL.
     NameCheckFailed,
     /// Happens when the pointer to the `.pw_passwd` is NULL.
@@ -66,6 +66,8 @@ pub enum Error {
     Io(IOError),
     /// Happens when something happens when finding what [`Group`] a [`Passwd`] belongs
     Group(Box<GrError>),
+    /// Happens when fails to create a CString
+    Cstring(NulError),
 }
 
 impl Display for Error {
@@ -88,6 +90,7 @@ impl Display for Error {
             PasswdNotFound => write!(f, "Passwd was not found in the system"),
             Io(err) => write!(f, "{}", err),
             Group(err) => write!(f, "Group error: {}", err),
+            Cstring(err) => write!(f, "Failed to create CString: {}", err),
         }
     }
 }
@@ -98,6 +101,7 @@ impl StdError for Error {
         match self {
             Io(err) => Some(err),
             Group(err) => Some(err),
+            Cstring(err) => Some(err),
             _ => None,
         }
     }
@@ -106,6 +110,10 @@ impl StdError for Error {
 impl From<GrError> for Error {
     #[inline]
     fn from(err: GrError) -> Error { Group(Box::new(err)) }
+}
+
+impl From<NulError> for Error {
+    fn from(err: NulError) -> Self { Cstring(err) }
 }
 
 impl From<IOError> for Error {
@@ -176,26 +184,39 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     pub fn effective() -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::uninit();
-        let mut pw_ptr = ptr::null_mut();
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this size from manual page about getpwuid_r
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let res = unsafe {
-            getpwuid_r(geteuid(), pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr)
-        };
+        loop {
+            let error_flag = unsafe {
+                getpwuid_r(
+                    geteuid(),
+                    pw.as_mut_ptr(),
+                    buff.as_mut_ptr(),
+                    buff.capacity(),
+                    &mut result,
+                )
+            };
 
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(PasswdNotFound);
+                } else {
+                    // Now that pw is initialized we get it
+                    let pw = unsafe { pw.assume_init() };
+
+                    break Ok(Passwd::try_from(pw)?);
+                }
+            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetPasswdFailed("getpwuid_r".to_string(), res));
+                break Err(Io(IOError::last_os_error()));
             }
         }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        Ok(Passwd::try_from(pw)?)
     }
 
     /// Creates a new [`Passwd`] getting the current process user passwd as default using
@@ -205,25 +226,39 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     pub fn real() -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::uninit();
-        let mut pw_ptr = ptr::null_mut();
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this size from manual page about getpwuid_r
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let res =
-            unsafe { getpwuid_r(getuid(), pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
+        loop {
+            let error_flag = unsafe {
+                getpwuid_r(
+                    getuid(),
+                    pw.as_mut_ptr(),
+                    buff.as_mut_ptr(),
+                    buff.capacity(),
+                    &mut result,
+                )
+            };
 
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(PasswdNotFound);
+                } else {
+                    // Now that pw is initialized we get it
+                    let pw = unsafe { pw.assume_init() };
+
+                    break Ok(Passwd::try_from(pw)?);
+                }
+            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetPasswdFailed("getpwuid_r".to_string(), res));
+                break Err(Io(IOError::last_os_error()));
             }
         }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        Ok(Passwd::try_from(pw)?)
     }
 
     /// Creates a new [`Passwd`] using a `id` to get all attributes.
@@ -232,24 +267,33 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     pub fn from_uid(id: Uid) -> Result<Self> {
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
         let mut pw = MaybeUninit::uninit();
-        let mut pw_ptr = ptr::null_mut();
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this size from manual page about getpwuid_r
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let res = unsafe { getpwuid_r(id, pw.as_mut_ptr(), &mut buff[0], buff.len(), &mut pw_ptr) };
+        loop {
+            let error_flag = unsafe {
+                getpwuid_r(id, pw.as_mut_ptr(), buff.as_mut_ptr(), buff.capacity(), &mut result)
+            };
 
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(PasswdNotFound);
+                } else {
+                    // Now that pw is initialized we get it
+                    let pw = unsafe { pw.assume_init() };
+
+                    break Ok(Passwd::try_from(pw)?);
+                }
+            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetPasswdFailed("getpwuid_r".to_string(), res));
+                break Err(Io(IOError::last_os_error()));
             }
         }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        Ok(Passwd::try_from(pw)?)
     }
 
     /// Creates a new [`Passwd`] using a `name` to get all attributes.
@@ -259,37 +303,40 @@ impl Passwd {
     /// into [`Passwd`], an error variant is returned.
     pub fn from_name(name: &str) -> Result<Self> {
         let mut pw = MaybeUninit::uninit();
-        let mut pw_ptr = ptr::null_mut();
-        let mut buff = [0; 16384]; // Got this size from manual page about getpwuid_r
+        let mut result = ptr::null_mut();
+        let buff_size = 16384; // Got this size from manual page about getpwuid_r
+        let mut buff = Vec::with_capacity(buff_size);
 
-        let name_null = {
-            let mut n = BString::from(name);
-            n.push(b'\0');
-            n
-        };
+        let name = CString::new(name)?;
 
-        let res = unsafe {
-            getpwnam_r(
-                name_null.as_ptr() as *const c_char,
-                pw.as_mut_ptr(),
-                &mut buff[0],
-                buff.len(),
-                &mut pw_ptr,
-            )
-        };
+        loop {
+            let error_flag = unsafe {
+                getpwnam_r(
+                    name.as_ptr() as *const c_char,
+                    pw.as_mut_ptr(),
+                    buff.as_mut_ptr(),
+                    buff.capacity(),
+                    &mut result,
+                )
+            };
 
-        if pw_ptr.is_null() {
-            if res == 0 {
-                return Err(PasswdNotFound);
+            if error_flag == 0 {
+                if result.is_null() {
+                    break Err(PasswdNotFound);
+                } else {
+                    // Now that pw is initialized we get it
+                    let pw = unsafe { pw.assume_init() };
+
+                    break Ok(Passwd::try_from(pw)?);
+                }
+            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+                // If there was a ERANGE error, that means the buffer was too small, so we add more
+                // `buff_size` each time we get that error
+                buff.reserve(buff_size);
             } else {
-                return Err(GetPasswdFailed("getpwnam_r".to_string(), res));
+                break Err(Io(IOError::last_os_error()));
             }
         }
-
-        // Now that pw is initialized we get it
-        let pw = unsafe { pw.assume_init() };
-
-        Ok(Passwd::try_from(pw)?)
     }
 
     /// Returns the [`Passwd`] (user) login name.
@@ -340,7 +387,7 @@ impl Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    pub fn password_change(&self) -> Time { self.change }
+    pub fn last_password_change(&self) -> Time { self.change }
 
     /// Returns the [`Passwd`] (user) expiration time.
     #[inline]
