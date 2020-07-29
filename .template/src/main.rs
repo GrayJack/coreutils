@@ -1,5 +1,5 @@
 mod cli;
 
 fn main() {
-    let matches = cli::app().get_matches();
+    let matches = cli::create_app().get_matches();
 }
