@@ -26,7 +26,7 @@ fn main() {
     let files_relative: Vec<String> =
         matches.values_of("FILE").unwrap().map(String::from).collect();
 
-    // Safe to unwrap since we said it is required on clap yaml
+    // Safe to unwrap since we said it is required on clap configuration
     let files: Vec<PathBuf> =
         matches.values_of("FILE").unwrap().map(|s| cwd.join(s.to_owned())).collect();
 

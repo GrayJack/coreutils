@@ -11,7 +11,7 @@ fn main() {
     let matches = cli::create_app().get_matches();
 
     let strings: Vec<String> = {
-        // Safe to unwrap since we said it is required on clap yaml
+        // Safe to unwrap since we said it is required on clap configuration
         let values = matches.values_of("STRING").unwrap();
         let mut v = Vec::new();
         for value in values {
