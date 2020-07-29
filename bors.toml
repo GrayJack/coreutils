@@ -1,9 +1,4 @@
 status = [
-    "Check Format",
-    "Check FreeBSD",
-    "Check Linux (x86_64 GNU)",
-    "Check MacOS (x86_64)",
-    "Check NetBSD",
-    "Check Solaris",
+    "linux (ubuntu-latest)"
 ]
 delete_merged_branches = true
