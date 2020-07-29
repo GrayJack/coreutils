@@ -1,0 +1,10 @@
+status = [
+    "Format test",
+    "FreeBSD",
+    "Fuchsia",
+    "Linux",
+    "MacOS",
+    "NetBSD",
+    "Solaris",
+]
+delete_merged_branches = true
