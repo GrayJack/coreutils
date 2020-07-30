@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: solaris
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

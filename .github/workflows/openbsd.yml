@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   build:
+    name: openbsd
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

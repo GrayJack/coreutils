@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   check:
+    name: haiku
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

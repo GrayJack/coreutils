@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   check:
+    name: dragonflybsd
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

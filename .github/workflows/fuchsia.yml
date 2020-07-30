@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   check:
+    name: fuchsia
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
