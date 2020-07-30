@@ -1,4 +1,4 @@
 status = [
-    "linux (ubuntu-latest)"
+    "linux (ubuntu-latest, 1.43.0)"
 ]
 delete_merged_branches = true
