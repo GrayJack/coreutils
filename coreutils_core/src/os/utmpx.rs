@@ -1,6 +1,8 @@
 //! Extended account database module.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::ffi::CString;
+#[cfg(target_os = "linux")]
+use std::net::{self, IpAddr};
 use std::{
     collections::{hash_set, HashSet},
     convert::TryFrom,
@@ -128,6 +130,8 @@ pub struct Utmpx {
     /// Session ID. (used for windowing)
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     session: u16,
+    /// Internet address of remote host. Looks like that if it's IPV4 `addr_v6[0]` is
+    /// non-zero and the rest is zero and if is IPV6 all indexes are non-zero.
     #[cfg(target_os = "linux")]
     addr_v6: [i32; 4],
     #[cfg(target_os = "netbsd")]
@@ -137,9 +141,6 @@ pub struct Utmpx {
 }
 
 impl Utmpx {
-    /// Creates a new [`Utmpx`] entry from the `C` version of the structure.
-    pub fn from_c_utmpx(utm: utmpx) -> Self { Self::from(utm) }
-
     /// Get user name.
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
@@ -184,9 +185,25 @@ impl Utmpx {
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     pub const fn session(&self) -> u16 { self.session }
 
-    /// Get v6 address of the entry.
+    /// Get the IP address of the entry.
     #[cfg(target_os = "linux")]
-    pub const fn v6_addr(&self) -> [i32; 4] { self.addr_v6 }
+    pub fn address(&self) -> IpAddr {
+        match self.addr_v6 {
+            // In the man pages said that when it's IPV4, only the first number is set, otherwise it
+            // is IPV6
+            [x, 0, 0, 0] => IpAddr::V4(net::Ipv4Addr::from(x as u32)),
+            [x, y, w, z] => {
+                let x = x.to_be_bytes();
+                let y = y.to_be_bytes();
+                let w = w.to_be_bytes();
+                let z = z.to_be_bytes();
+                IpAddr::from([
+                    x[0], x[1], x[2], x[3], y[0], y[1], y[2], y[3], w[0], w[1], w[2], w[3], z[0],
+                    z[1], z[2], z[3],
+                ])
+            },
+        }
+    }
 
     /// Get exit status of the entry.
     #[cfg(any(
@@ -358,7 +375,7 @@ impl UtmpxSet {
                 if ut.is_null() {
                     break;
                 } else {
-                    let utm = Utmpx::from_c_utmpx(*ut);
+                    let utm = Utmpx::from(*ut);
                     set.insert(utm);
                 }
             }
@@ -407,7 +424,7 @@ impl UtmpxSet {
                 if ut.is_null() {
                     break;
                 } else {
-                    let utm = Utmpx::from_c_utmpx(*ut);
+                    let utm = Utmpx::from(*ut);
                     set.insert(utm);
                 }
             }
