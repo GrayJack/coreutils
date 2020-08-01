@@ -396,7 +396,7 @@ impl UtmpxSet {
         let num_bytes = fs::metadata(&path)?.len() as usize;
         let num_structs = num_bytes / struct_size;
         let mut reader = BufReader::new(File::open(&path)?);
-        let mut vec = Vec::with_capacity(num_structs);
+        let mut vec: Vec<utmpx> = Vec::with_capacity(num_structs);
         let mut set = HashSet::with_capacity(num_structs);
 
         unsafe {
