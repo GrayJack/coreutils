@@ -406,7 +406,7 @@ impl UtmpxSet {
         }
 
         for raw_utm in vec {
-            set.insert(Utmpx::from_c_utmpx(raw_utm));
+            set.insert(Utmpx::from(raw_utm));
         }
 
         Ok(UtmpxSet(set))
