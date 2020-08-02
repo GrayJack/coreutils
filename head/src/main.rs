@@ -14,16 +14,11 @@ fn main() {
     let matches = cli::create_app().get_matches();
 
     let flags = Flags::from_matches(&matches);
-    let input = Input::from_matches(&matches);
+    let input_list = Input::from_matches(&matches);
 
-    let mut err_exit = false;
-    head(&flags, input).unwrap_or_else(|_e| {
-        err_exit = true;
-    });
-
-    if err_exit {
+    head(&flags, input_list).unwrap_or_else(|_e| {
         std::process::exit(1);
-    }
+    });
 }
 
 /// We truncate the input at either some number of lines or bytes
@@ -53,59 +48,64 @@ impl Flags {
     }
 }
 
-/// Input is either a list of one or more files, or STDIN
+/// Input is either a file, or STDIN
 enum Input {
-    Files(Vec<String>),
+    File(String),
     Stdin,
 }
 
 impl Input {
-    /// Parse arguments into an Input enum.
-    fn from_matches(matches: &ArgMatches) -> Self {
+    /// Parse arguments into an Vec of Input enums.
+    fn from_matches(matches: &ArgMatches) -> Vec<Self> {
         if let Some(files) = matches.values_of("FILE") {
-            Self::Files(files.map(|f| f.into()).collect())
+            files
+                .map(|f| if f == "-" { Self::Stdin } else { Self::File(String::from(f)) })
+                .collect()
         } else {
-            Self::Stdin
+            vec![Self::Stdin]
         }
     }
 }
 
 /// Return the head of our input, truncated at a number of lines or bytes
-fn head(flags: &Flags, input: Input) -> Result<(), io::Error> {
-    match input {
-        Input::Files(files) => {
-            let files_count = files.len();
-            let mut out = Ok(());
-            for (i, file) in files.iter().enumerate() {
+fn head(flags: &Flags, input_list: Vec<Input>) -> Result<(), io::Error> {
+    let mut err_return = Ok(());
+    let files_count = input_list.len();
+
+    for (i, input) in input_list.iter().enumerate() {
+        if i > 0 {
+            println!();
+        }
+        match input {
+            Input::File(file) => {
                 let f = match File::open(file) {
                     Ok(f) => f,
                     Err(err) => {
                         eprintln!("head: Cannot open '{}' for reading: {}", file, err);
-                        out = Err(err);
+                        err_return = Err(err);
                         continue;
                     },
                 };
 
                 if files_count > 1 {
-                    if i != 0 {
-                        println!();
-                    }
                     println!("==> {} <==", file);
                 }
-
                 let reader = BufReader::new(f);
                 read_stream(flags, reader, &mut io::stdout())?;
-            }
+            },
 
-            return out;
-        },
-        Input::Stdin => {
-            let stdin = io::stdin();
-            let reader = BufReader::new(stdin.lock());
-            read_stream(flags, reader, &mut io::stdout())?;
-        },
+            Input::Stdin => {
+                if files_count > 1 {
+                    println!("==> standard input <==");
+                }
+                let stdin = io::stdin();
+                let reader = BufReader::new(stdin.lock());
+                read_stream(flags, reader, &mut io::stdout())?;
+            },
+        }
     }
-    Ok(())
+
+    err_return
 }
 
 /// Read from a stream, truncated at a number of lines or bytes and write back to a stream
