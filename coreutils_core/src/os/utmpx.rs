@@ -351,7 +351,13 @@ impl UtmpxSet {
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "macos",
+        target_os = "netbsd",
+        target_os = "solaris",
+        target_os = "illumos"
+    ))]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
             let str = match path.as_ref().to_str() {
@@ -390,7 +396,13 @@ impl UtmpxSet {
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.
-    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    #[cfg(not(any(
+        target_os = "linux",
+        target_os = "macos",
+        target_os = "netbsd",
+        target_os = "solaris",
+        target_os = "illumos"
+    )))]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmpx>();
         let num_bytes = fs::metadata(&path)?.len() as usize;
@@ -453,6 +465,64 @@ impl IntoIterator for UtmpxSet {
     fn into_iter(self) -> Self::IntoIter { self.0.into_iter() }
 }
 
+/// A iterator over the [`Utmpx`].
+pub struct UtmpxIter;
+
+impl UtmpxIter {
+    /// Creates an iterator of the entries from the running system.
+    pub fn system() -> Self {
+        unsafe { setutxent() };
+        Self
+    }
+
+    /// Creates an iterator over a utmpx entry binary file.
+    ///
+    /// # Errors
+    /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "macos",
+        target_os = "netbsd",
+        target_os = "solaris",
+        target_os = "illumos"
+    ))]
+    pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
+        let file = {
+            let str = match path.as_ref().to_str() {
+                Some(s) => s,
+                None => "",
+            };
+            CString::new(str).unwrap_or_default()
+        };
+
+        let res = unsafe { utmpxname(file.as_ptr()) };
+        if res != 0 {
+            return Err(io::Error::last_os_error());
+        }
+
+        Ok(Self)
+    }
+}
+
+
+impl Iterator for UtmpxIter {
+    type Item = Utmpx;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        unsafe {
+            let ut = getutxent();
+            if ut.is_null() {
+                endutxent();
+                None
+            } else {
+                let utm = Utmpx::from(*ut);
+                Some(utm)
+            }
+        }
+    }
+}
+
+impl std::iter::FusedIterator for UtmpxIter {}
 
 // Extra trait
 macro_rules! utmpxkind_impl_from {
