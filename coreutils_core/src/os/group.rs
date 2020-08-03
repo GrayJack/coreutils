@@ -65,6 +65,7 @@ pub enum Error {
 }
 
 impl Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             GetGroupFailed(fn_name, err_code) => write!(
@@ -84,6 +85,7 @@ impl Display for Error {
 }
 
 impl StdError for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
             Io(err) => Some(err),
@@ -95,14 +97,17 @@ impl StdError for Error {
 }
 
 impl From<IoError> for Error {
+    #[inline]
     fn from(err: IoError) -> Self { Io(err) }
 }
 
 impl From<NulError> for Error {
+    #[inline]
     fn from(err: NulError) -> Self { Cstring(err) }
 }
 
 impl From<PwError> for Error {
+    #[inline]
     fn from(err: PwError) -> Self { Passwd(Box::new(err)) }
 }
 
@@ -127,6 +132,7 @@ impl Group {
     /// # Errors
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
     /// into [`Group`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn new() -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -168,6 +174,7 @@ impl Group {
     /// # Errors
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
     /// into [`Group`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_gid(id: Gid) -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -203,6 +210,7 @@ impl Group {
     /// # Errors
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
     /// into [`Group`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_name(name: &str) -> Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -261,6 +269,7 @@ impl Group {
 impl TryFrom<group> for Group {
     type Error = Error;
 
+    #[inline]
     fn try_from(gr: group) -> StdResult<Self, Self::Error> {
         let name_ptr = gr.gr_name;
         let pw_ptr = gr.gr_passwd;
@@ -319,6 +328,7 @@ impl Groups {
     ///
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn caller() -> Result<Self> {
         // First we check if we indeed have groups.
         // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary
@@ -356,6 +366,7 @@ impl Groups {
     ///
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_username(username: &str) -> Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
@@ -454,6 +465,7 @@ impl Groups {
     ///
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
+    #[inline]
     pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
         let groups: Result<Vec<Group>> =
             group_list.iter().map(|&group_name| Group::from_name(group_name)).collect();
@@ -483,6 +495,7 @@ impl Groups {
     pub fn into_vec(self) -> Vec<Group> { self.inner }
 
     /// Creates a iterator over it's entries.
+    #[inline]
     pub fn iter(&self) -> Iter<'_, Group> { self.inner.iter() }
 }
 
@@ -497,6 +510,7 @@ impl IntoIterator for Groups {
 
 // Extra traits
 impl From<Group> for group {
+    #[inline]
     fn from(mut gr: Group) -> Self {
         let mut vec: Vec<*mut c_char> =
             gr.mem.iter().map(|s| s.clone().as_mut_ptr() as *mut c_char).collect();

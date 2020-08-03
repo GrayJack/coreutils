@@ -33,6 +33,7 @@ impl UtsName {
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+    #[inline]
     pub fn new() -> Result<Self, io::Error> {
         let mut uts_name: MaybeUninit<utsname> = MaybeUninit::zeroed();
 
@@ -76,6 +77,7 @@ impl UtsName {
 impl TryFrom<utsname> for UtsName {
     type Error = io::Error;
 
+    #[inline]
     fn try_from(uts_name: utsname) -> Result<Self, Self::Error> {
         let sysname = {
             let name = unsafe { CStr::from_ptr(&uts_name.sysname[0]) };
@@ -147,6 +149,7 @@ const UTSNAME_SIZE: usize = 65;
 const UTSNAME_SIZE: usize = 32;
 
 impl From<UtsName> for utsname {
+    #[inline]
     fn from(uts_name: UtsName) -> Self {
         let mut sysname = [0; UTSNAME_SIZE];
         let mut nodename = [0; UTSNAME_SIZE];

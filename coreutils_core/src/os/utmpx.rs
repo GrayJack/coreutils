@@ -63,11 +63,10 @@ pub enum Error {
     OsNoNumber,
 }
 
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
-}
+impl StdError for Error {}
 
 impl Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::OsNoKind => {
@@ -160,28 +159,36 @@ pub struct Utmpx {
 
 impl Utmpx {
     /// Get user name.
+    #[inline]
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
     /// Get host name.
+    #[inline]
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
 
     /// Get the process ID.
+    #[inline]
     pub fn process_id(&self) -> Pid { self.pid }
 
     /// Get the record ID.
+    #[inline]
     pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
     /// Get the device name of the entry (usually a tty or console).
+    #[inline]
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
     /// Get the type kind if the entry.
+    #[inline]
     pub const fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
     /// Get the time where the entry was created. (often login time)
+    #[inline]
     pub const fn timeval(&self) -> TimeVal { self.timeval }
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure.
+    #[inline]
     pub fn login_time(&self) -> DateTime {
         DateTime::from_unix_timestamp(self.timeval.tv_sec as i64)
             + Duration::microseconds(self.timeval.tv_usec as i64)
@@ -189,22 +196,27 @@ impl Utmpx {
 
     /// Get the session ID of the entry.
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
+    #[inline]
     pub const fn session(&self) -> c_int { self.session }
 
     /// Get the session ID of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
+    #[inline]
     pub const fn session(&self) -> c_int { self.session }
 
     /// Get the session ID of the entry.
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
+    #[inline]
     pub const fn session(&self) -> c_long { self.session }
 
     /// Get the session ID of the entry.
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
+    #[inline]
     pub const fn session(&self) -> u16 { self.session }
 
     /// Get the IP address of the entry.
     #[cfg(target_os = "linux")]
+    #[inline]
     pub fn address(&self) -> IpAddr {
         match self.addr_v6 {
             // In the man pages said that when it's IPV4, only the first number is set, otherwise it
@@ -230,6 +242,7 @@ impl Utmpx {
         target_os = "solaris",
         target_os = "illumos"
     ))]
+    #[inline]
     pub const fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
@@ -240,6 +253,7 @@ impl From<utmpx> for Utmpx {
     /// This function may panic when converting a number to UtmpxKind. Since we get the
     /// number from the OS it should never panic, but if the OS drastically change, it
     /// may panic.
+    #[inline]
     fn from(c_utmpx: utmpx) -> Self {
         #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
         let user = {
@@ -376,6 +390,7 @@ impl UtmpxSet {
         target_os = "solaris",
         target_os = "illumos"
     ))]
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
             let str = match path.as_ref().to_str() {
@@ -443,6 +458,7 @@ impl UtmpxSet {
     }
 
     /// Creates a new collection geting all entries from the running system.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn system() -> Self {
         let mut set = HashSet::new();
 
@@ -466,12 +482,15 @@ impl UtmpxSet {
     }
 
     /// Returns `true` if collection nas no elements.
+    #[inline]
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
     /// Creates a iterator over it's entries.
+    #[inline]
     pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
 
     /// Size of the collection.
+    #[inline]
     pub fn len(&self) -> usize { self.0.len() }
 }
 
@@ -489,6 +508,7 @@ pub struct UtmpxIter;
 
 impl UtmpxIter {
     /// Creates an iterator of the entries from the running system.
+    #[inline]
     pub fn system() -> Self {
         unsafe { setutxent() };
         Self
@@ -505,6 +525,7 @@ impl UtmpxIter {
         target_os = "solaris",
         target_os = "illumos"
     ))]
+    #[inline]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
             let str = match path.as_ref().to_str() {
@@ -527,6 +548,7 @@ impl UtmpxIter {
 impl Iterator for UtmpxIter {
     type Item = Utmpx;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
             let ut = getutxent();
@@ -551,7 +573,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(target_os = "freebsd")]
             impl TryFrom<$t> for UtmpxKind {
                 type Error = Error;
-
+                #[inline]
                 fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
                         0 => Ok(Self::Empty),
@@ -571,6 +593,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(target_os = "netbsd")]
             impl TryFrom<$t> for UtmpxKind {
                 type Error = Error;
+                #[inline]
                 fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
                         0 => Ok(Self::Empty),
@@ -593,6 +616,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(any(target_os = "dragonfly"))]
             impl TryFrom<$t> for UtmpxKind {
                 type Error = Error;
+                #[inline]
                 fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
                         0 => Ok(Self::Empty),
@@ -612,6 +636,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(target_os = "solaris")]
             impl TryFrom<$t> for UtmpxKind {
                 type Error = Error;
+                #[inline]
                 fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
                         0 => Ok(Self::Empty),
@@ -633,6 +658,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(any(target_os = "linux", target_os = "macos"))]
             impl TryFrom<$t> for UtmpxKind {
                 type Error = Error;
+                #[inline]
                 fn try_from(num: $t) -> Result<Self, Error> {
                     match num {
                         0 => Ok(Self::Empty),
@@ -658,6 +684,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(target_os = "freebsd")]
             impl TryFrom<UtmpxKind> for $t {
                 type Error = Error;
+                #[inline]
                 fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
                         UtmpxKind::Empty => Ok(0),
@@ -677,6 +704,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(target_os = "netbsd")]
             impl TryFrom<UtmpxKind> for $t {
                 type Error = Error;
+                #[inline]
                 fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
                         UtmpxKind::Empty => Ok(0),
@@ -699,6 +727,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(any(target_os = "dragonfly"))]
             impl TryFrom<UtmpxKind> for $t {
                 type Error = Error;
+                #[inline]
                 fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
                         UtmpxKind::Empty => Ok(0),
@@ -718,6 +747,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(target_os = "solaris")]
             impl TryFrom<UtmpxKind> for $t {
                 type Error = Error;
+                #[inline]
                 fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
                         UtmpxKind::Empty => Ok(0),
@@ -739,6 +769,7 @@ macro_rules! utmpxkind_impl_from {
             #[cfg(any(target_os = "linux", target_os = "macos"))]
             impl TryFrom<UtmpxKind> for $t {
                 type Error = Error;
+                #[inline]
                 fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
                     match utype {
                         UtmpxKind::Empty => Ok(0),

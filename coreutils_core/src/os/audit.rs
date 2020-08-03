@@ -85,6 +85,7 @@ pub struct AuditInfo {
 }
 
 impl Display for AuditInfo {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "auid={}", self.ai_auid)?;
         writeln!(f, "mask.success={:#X}", self.ai_mask.am_success)?;
@@ -115,6 +116,7 @@ pub struct AuditInfoAddr {
 
 impl Display for AuditInfoAddr {
     // TODO: Incomplete, We need more info on how it is normally displayed.
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "auid={}", self.ai_auid)?;
         writeln!(f, "mask.success={:#X}", self.ai_mask.am_success)?;
@@ -144,6 +146,7 @@ extern "C" {
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn audit_info() -> io::Result<AuditInfo> {
     let mut auditinfo: MaybeUninit<AuditInfo> = MaybeUninit::zeroed();
     let address = auditinfo.as_mut_ptr() as *mut AuditInfo;

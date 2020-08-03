@@ -9,6 +9,7 @@ use libc::getloadavg;
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn load_average() -> io::Result<[c_double; 3]> {
     let mut avg: [c_double; 3] = [0.0; 3];
 

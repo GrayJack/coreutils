@@ -20,6 +20,7 @@ pub mod priority;
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
 #[cfg(not(any(target_os = "fuchsia")))]
+#[inline]
 pub fn change_root(newroot: &str) -> io::Result<()> {
     std::env::set_current_dir(newroot)?;
 
@@ -40,6 +41,7 @@ pub fn change_root(newroot: &str) -> io::Result<()> {
 /// variant will be returned.
 ///
 /// [`Passwd`]: ../passwd/struct.Passwd.html
+#[inline]
 pub fn set_user(user: &str) -> Result<(), PwError> {
     let user = Passwd::from_name(user)?;
 
@@ -54,6 +56,7 @@ pub fn set_user(user: &str) -> Result<(), PwError> {
 /// # Errors
 /// If a internal call set a errno (I/O OS error) or it fails to get [`Groups`], an error
 /// variant will be returned.
+#[inline]
 pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
     let groups = Groups::from_group_list(&groups)?;
     let groups: Vec<Gid> = groups.iter().map(|g| g.id()).collect();
@@ -72,6 +75,7 @@ pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
 /// # Errors
 /// If a internal call set a errno (I/O OS error) or it fails to get [`Group`], an error
 /// variant will be returned.
+#[inline]
 pub fn set_group(group: &str) -> Result<(), GrError> {
     let group = Group::from_name(group)?;
 

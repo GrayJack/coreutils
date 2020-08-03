@@ -9,6 +9,7 @@ use super::{Time, TimeVal, Tm};
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn set_time_of_day(timeval: TimeVal) -> io::Result<()> {
     let result = unsafe { libc::settimeofday(&timeval as *const TimeVal, ptr::null()) };
     match result {
@@ -21,6 +22,7 @@ pub fn set_time_of_day(timeval: TimeVal) -> io::Result<()> {
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn local_time(timestamp: i64) -> io::Result<Tm> {
     // We do this cause libc doesn't expose this function in solarish
     // This way we aboid conditional compilation
@@ -47,6 +49,7 @@ pub enum Error {
 }
 
 impl std::error::Error for Error {
+    #[inline]
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io(err) => Some(err),
@@ -57,6 +60,7 @@ impl std::error::Error for Error {
 }
 
 impl std::fmt::Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Io(err) => write!(f, "{}", err),
@@ -67,15 +71,18 @@ impl std::fmt::Display for Error {
 }
 
 impl From<io::Error> for Error {
+    #[inline]
     fn from(err: io::Error) -> Self { Self::Io(err) }
 }
 
 impl From<std::time::SystemTimeError> for Error {
+    #[inline]
     fn from(err: std::time::SystemTimeError) -> Self { Self::Time(err) }
 }
 
 /// Get the time the system started.
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+#[cfg_attr(feature = "inline-more", inline)]
 pub fn boottime() -> Result<TimeVal, Error> {
     #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
     let mut bootime = TimeVal { tv_sec: 0, tv_usec: 0 };
@@ -136,6 +143,7 @@ pub fn boottime() -> Result<TimeVal, Error> {
 
 /// Get the time the system is up since boot.
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+#[cfg_attr(feature = "inline-more", inline)]
 pub fn uptime() -> Result<TimeVal, Error> {
     #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
     let mut uptime = TimeVal { tv_sec: 0, tv_usec: 0 };

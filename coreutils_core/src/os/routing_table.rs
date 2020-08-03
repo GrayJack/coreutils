@@ -29,6 +29,7 @@ pub fn get_routing_table() -> c_int { unsafe { syscall::getrtable() } }
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn set_routing_table(rtableid: c_int) -> io::Result<()> {
     match unsafe { syscall::setrtable(rtableid) } {
         0 => Ok(()),

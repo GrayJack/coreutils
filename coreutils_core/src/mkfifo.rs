@@ -8,6 +8,7 @@ use std::{ffi::CString, io, io::Error, path::Path};
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn mkfifo(filepath: &str, mode: u32) -> io::Result<()> {
     let path: &Path = Path::new(filepath);
     let path = CString::new(path.to_str().unwrap())?;

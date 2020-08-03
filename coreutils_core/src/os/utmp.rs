@@ -53,43 +53,54 @@ pub struct Utmp {
 
 impl Utmp {
     /// Creates a [`Utmp`] from the c structure [`utmp`].
+    #[inline]
     pub fn from_c_utmp(utm: utmp) -> Self { Self::from(utm) }
 
     /// Get user name.
+    #[inline]
     pub fn user(&self) -> &BStr { self.user.as_bstr() }
 
     /// Get host name.
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
+    #[inline]
     pub fn host(&self) -> &BStr { self.host.as_bstr() }
 
     /// Get `/etc/inittab` id.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
+    #[inline]
     pub fn id(&self) -> &BStr { self.id.as_bstr() }
 
     /// Get the device name of the entry. (usually a tty or console)
+    #[inline]
     pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
 
     /// Get the time the entry was created.
+    #[inline]
     pub const fn time(&self) -> Time { self.time }
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure.
+    #[inline]
     pub fn login_time(&self) -> DataTime { DataTime::from_unix_timestamp(self.time) }
 
     /// Get the process ID of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
+    #[inline]
     pub fn pid(&self) -> c_short { self.pid }
 
     /// Get the entry type.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
+    #[inline]
     pub fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
     /// Get the exit status of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
+    #[inline]
     pub fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
 impl From<utmp> for Utmp {
+    #[inline]
     fn from(utm: utmp) -> Self {
         #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         let user = {
@@ -160,6 +171,7 @@ impl UtmpSet {
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let struct_size = mem::size_of::<utmp>();
         let num_bytes = fs::metadata(&path)?.len() as usize;
@@ -185,12 +197,15 @@ impl UtmpSet {
     ///
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+    #[inline]
     pub fn system() -> io::Result<Self> { Self::from_file("/var/run/utmp") }
 
     /// Returns `true` if collection nas no elements.
+    #[inline]
     pub fn is_empty(&self) -> bool { self.0.is_empty() }
 
     /// Creates a iterator over it's entries.
+    #[inline]
     pub fn iter(&self) -> hash_set::Iter<'_, Utmp> { self.0.iter() }
 }
 
@@ -210,6 +225,7 @@ pub struct UtmpIter;
 #[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
 impl UtmpIter {
     /// Creates an iterator of the entries from the running system.
+    #[inline]
     pub fn system() -> Self {
         unsafe { setutent() };
         Self
@@ -220,6 +236,7 @@ impl UtmpIter {
 impl Iterator for UtmpIter {
     type Item = Utmp;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
             let ut = getutent();
@@ -261,6 +278,7 @@ pub(crate) mod consts {
 
 
 impl From<Utmp> for utmp {
+    #[inline]
     fn from(utm: Utmp) -> Self {
         use self::consts::*;
 

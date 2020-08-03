@@ -32,7 +32,7 @@ fn main() {
             Err(_) => match UtmpSet::system() {
                 Ok(uu) => uu,
                 Err(err) => {
-                    eprintln!("users: failed to get utsp: {}", err);
+                    eprintln!("who: failed to get utsp: {}", err);
                     process::exit(1);
                 },
             },
@@ -42,7 +42,7 @@ fn main() {
         match UtmpSet::system() {
             Ok(u) => u,
             Err(err) => {
-                eprintln!("users: failed to get utmp: {}", err);
+                eprintln!("who: failed to get utmp: {}", err);
                 process::exit(1);
             },
         }
@@ -261,10 +261,12 @@ fn print_info(uts: &[&Utmpx], flags: WhoFlags) {
         uts.iter().for_each(|u| {
             let (msg, _) = def_status(u);
             println!(
-                "{:<12} {:<3} {:<10} {:<18}",
+                "{:<}{:^3}{:-^}{:-^18}",
                 u.user(),
                 if flags.message { msg } else { ' ' },
+                // format!("{}", u.device_name()),
                 u.device_name(),
+                // b"\xf0\x28\x8c\xbc".as_bstr(),
                 u.login_time().format("%Y-%m-%d %H:%M"),
             )
         });

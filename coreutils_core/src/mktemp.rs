@@ -16,7 +16,8 @@ pub struct Mktemp {
 }
 
 impl Display for Mktemp {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.path) }
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.pad(&self.path) }
 }
 
 /// Creates a temporary file based on the given `template`.
@@ -28,6 +29,7 @@ impl Display for Mktemp {
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn mkstemp(template: &str) -> io::Result<Mktemp> {
     let mut template_cstr = {
         let mut t = String::new();
@@ -56,6 +58,7 @@ pub fn mkstemp(template: &str) -> io::Result<Mktemp> {
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[inline]
 pub fn mkdtemp(template: &str) -> io::Result<String> {
     let mut template_cstr = {
         let mut t = String::new();

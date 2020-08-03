@@ -10,6 +10,7 @@ use bstr::BString;
 
 /// Returns the the name of the user logged in on the controlling terminal of the process
 /// if found.
+#[inline]
 pub fn user_login_name() -> Option<BString> {
     let res = unsafe { getlogin() };
 

@@ -67,12 +67,14 @@ pub enum BackupMode {
 impl BackupMode {
     /// Creates an instance of [`BackupMode`] from a string slice. Any invalid input will
     /// result in [`BackupMode::Existing`] to be returned.
+    #[inline]
     pub fn from_string(string: impl AsRef<str>) -> Self { Self::from(string.as_ref()) }
 }
 
 impl From<&str> for BackupMode {
     /// Creates an instance of [`BackupMode`] from a string slice. Any invalid input will
     /// result in [`BackupMode::Existing`] to be returned.
+    #[inline]
     fn from(string: &str) -> Self {
         match string {
             "none" | "off" => BackupMode::None,
@@ -96,6 +98,7 @@ impl From<&str> for BackupMode {
 // # Remarks
 // Returns a `Result` of either a `PathBuf` to the newly created backup file or an
 // `io::Error`
+#[inline]
 pub fn create_numbered_backup(file: &Path) -> Result<PathBuf, Error> {
     let mut index = 1_u64;
     loop {
@@ -131,6 +134,7 @@ pub fn create_numbered_backup(file: &Path) -> Result<PathBuf, Error> {
 // # Remarks
 // Returns a `Result` of either a `PathBuf` to the newly created backup file or an
 // `io::Error`
+#[inline]
 pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Error> {
     let mut has_numbered_backup = false;
     let regex = Regex::new(r"~\d+~").unwrap();
@@ -164,6 +168,7 @@ pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Erro
 // # Remarks
 // Returns a `Result` of either a `PathBuf` to the newly created backup file or an
 // `io::Error`
+#[inline]
 pub fn create_simple_backup(file: &Path, suffix: &str) -> Result<PathBuf, Error> {
     let new = PathBuf::from(format!("{}{}", file.display(), suffix));
 

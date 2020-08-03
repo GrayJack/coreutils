@@ -71,6 +71,7 @@ pub enum Error {
 }
 
 impl Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             GetPasswdFailed(fn_name, err_code) => write!(
@@ -113,6 +114,7 @@ impl From<GrError> for Error {
 }
 
 impl From<NulError> for Error {
+    #[inline]
     fn from(err: NulError) -> Self { Cstring(err) }
 }
 
@@ -183,6 +185,7 @@ impl Passwd {
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn effective() -> Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -225,6 +228,7 @@ impl Passwd {
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn real() -> Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -266,6 +270,7 @@ impl Passwd {
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_uid(id: Uid) -> Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -301,6 +306,7 @@ impl Passwd {
     /// # Errors
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
+    #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_name(name: &str) -> Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
@@ -410,6 +416,7 @@ impl Passwd {
     /// # Errors
     /// If it fails to get the [`Groups`] where [`Passwd`] (user) belongs, an error
     /// variant is returned.
+    #[inline]
     pub fn belongs_to(&self) -> Result<Groups> {
         let name = {
             let mut n = self.name.to_string();
@@ -424,6 +431,7 @@ impl Passwd {
 impl TryFrom<passwd> for Passwd {
     type Error = Error;
 
+    #[inline]
     fn try_from(pw: passwd) -> StdResult<Self, Self::Error> {
         let name = if pw.pw_name.is_null() {
             return Err(NameCheckFailed);
@@ -565,6 +573,7 @@ impl Display for Passwd {
         target_os = "solaris",
         target_os = "illumos"
     ))]
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -580,6 +589,7 @@ impl Display for Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -600,6 +610,7 @@ impl Display for Passwd {
 
 // Extra trait impl
 impl From<Passwd> for passwd {
+    #[inline]
     fn from(mut pw: Passwd) -> Self {
         passwd {
             pw_name: pw.name.as_mut_ptr() as *mut c_char,

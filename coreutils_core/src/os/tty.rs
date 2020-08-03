@@ -23,6 +23,7 @@ pub enum Error {
 }
 
 impl Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::NotTTY => write!(f, "Not a TTY"),
@@ -48,6 +49,7 @@ impl TTYName {
     ///
     /// # Errors
     /// It returns a error variant when `file_descriptor` is not a TTY.
+    #[inline]
     pub fn new(file_descriptor: &impl AsRawFd) -> Result<Self, Error> {
         let name = unsafe { ttyname(file_descriptor.as_raw_fd()) };
 
@@ -62,10 +64,8 @@ impl TTYName {
     }
 
     /// Extracts a bstring slice containing the entire [`BString`].
+    #[inline]
     pub fn as_bstr(&self) -> &BStr { self.0.as_bstr() }
-
-    /// Return a clone of the tty name.
-    pub fn to_bstring(&self) -> BString { self.0.clone() }
 }
 
 impl Display for TTYName {
@@ -87,6 +87,7 @@ pub trait IsTTY: AsRawFd {
 }
 
 impl<T: AsRawFd> IsTTY for T {
+    #[inline]
     fn is_tty(&self) -> bool { is_tty(self) }
 }
 
