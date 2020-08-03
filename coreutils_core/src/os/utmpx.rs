@@ -1,5 +1,11 @@
 //! Extended account database module.
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(
+    target_os = "linux",
+    target_os = "macos",
+    target_os = "netbsd",
+    target_os = "solaris",
+    target_os = "illumos"
+))]
 use std::ffi::CString;
 #[cfg(target_os = "linux")]
 use std::net::{self, IpAddr};
@@ -11,7 +17,13 @@ use std::{
     io,
     path::Path,
 };
-#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+#[cfg(not(any(
+    target_os = "linux",
+    target_os = "macos",
+    target_os = "netbsd",
+    target_os = "solaris",
+    target_os = "illumos"
+)))]
 use std::{
     fs::{self, File},
     io::{BufReader, Read},
@@ -26,7 +38,13 @@ use libc::__exit_status as ExitStatus;
 use libc::c_int;
 #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
 use libc::c_long;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(
+    target_os = "linux",
+    target_os = "macos",
+    target_os = "netbsd",
+    target_os = "solaris",
+    target_os = "illumos"
+))]
 use libc::utmpxname;
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_int, c_short, exit_status as ExitStatus};

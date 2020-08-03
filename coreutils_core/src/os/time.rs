@@ -77,6 +77,7 @@ impl From<std::time::SystemTimeError> for Error {
 /// Get the time the system started.
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub fn boottime() -> Result<TimeVal, Error> {
+    #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
     let mut bootime = TimeVal { tv_sec: 0, tv_usec: 0 };
 
     #[cfg(target_os = "linux")]
@@ -127,7 +128,7 @@ pub fn boottime() -> Result<TimeVal, Error> {
         }
     }
 
-    #[cfg(target_os = "solaris")]
+    #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     {
         Err(Error::TargetNotSupported)
     }
@@ -136,6 +137,7 @@ pub fn boottime() -> Result<TimeVal, Error> {
 /// Get the time the system is up since boot.
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
 pub fn uptime() -> Result<TimeVal, Error> {
+    #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
     let mut uptime = TimeVal { tv_sec: 0, tv_usec: 0 };
 
     #[cfg(target_os = "linux")]
