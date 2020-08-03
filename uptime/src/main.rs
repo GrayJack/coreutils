@@ -8,7 +8,6 @@ use coreutils_core::os::utmpx::{
     UtmpxSet as UtmpSet,
 };
 use coreutils_core::{
-    libc::time_t,
     os::{load::load_average, time as ostime},
     time::{OffsetDateTime as DateTime, UtcOffset},
 };

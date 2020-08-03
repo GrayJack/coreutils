@@ -189,7 +189,7 @@ impl SectionDelimiters {
         SectionDelimiters {
             header: delimiter.repeat(3),
             body:   delimiter.repeat(2),
-            footer: delimiter.repeat(1),
+            footer: delimiter,
         }
     }
 }
