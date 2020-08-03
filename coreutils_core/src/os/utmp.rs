@@ -13,14 +13,16 @@ use std::{
 use super::Time;
 
 use libc::{c_char, utmp};
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
+use libc::{c_short, exit_status as ExitStatus};
+#[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
+use libc::{endutent, getutent, setutent};
 
 use bstr::{BStr, BString, ByteSlice};
 use time::OffsetDateTime as DataTime;
 
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use super::utmpx::UtmpxKind;
-#[cfg(any(target_os = "solaris", target_os = "illumos"))]
-use libc::{c_short, exit_status as ExitStatus};
 
 /// A struct that represents a __user__ account, where user can be humam users or other
 /// parts of the system that requires the usage of account structure, like some daemons.
@@ -199,6 +201,41 @@ impl IntoIterator for UtmpSet {
     #[inline]
     fn into_iter(self) -> Self::IntoIter { self.0.into_iter() }
 }
+
+/// Iterator over [`Utmp`]
+#[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
+#[derive(Debug)]
+pub struct UtmpIter;
+
+#[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
+impl UtmpIter {
+    /// Creates an iterator of the entries from the running system.
+    pub fn system() -> Self {
+        unsafe { setutent() };
+        Self
+    }
+}
+
+#[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
+impl Iterator for UtmpIter {
+    type Item = Utmp;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        unsafe {
+            let ut = getutent();
+            if ut.is_null() {
+                endutent();
+                None
+            } else {
+                let utm = Utmp::from(*ut);
+                Some(utm)
+            }
+        }
+    }
+}
+
+#[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
+impl std::iter::FusedIterator for UtmpIter {}
 
 // Extra traits
 #[cfg(target_os = "netbsd")]

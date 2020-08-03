@@ -484,6 +484,7 @@ impl IntoIterator for UtmpxSet {
 }
 
 /// A iterator over the [`Utmpx`].
+#[derive(Debug)]
 pub struct UtmpxIter;
 
 impl UtmpxIter {
