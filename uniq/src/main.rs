@@ -8,17 +8,15 @@ mod cli;
 
 fn main() {
     let matches = cli::create_app().get_matches();
-
     let input_filename = matches.value_of("INPUT").unwrap_or("-");
     let output_filename = matches.value_of("OUTPUT").unwrap_or("-");
-
     let flags = Flags::from_matches(&matches);
 
     let reader: Box<dyn io::Read> = if input_filename == "-" {
         Box::new(io::stdin())
     } else {
         Box::new(File::open(input_filename).unwrap_or_else(|err| {
-            eprintln!("uniq: Cannot open '{}' for reading: {}", input_filename, err);
+            eprintln!("uniq: Cannot open '{}' for reading: {}.", input_filename, err);
             process::exit(1);
         }))
     };
@@ -28,7 +26,7 @@ fn main() {
         Box::new(io::stdout())
     } else {
         Box::new(File::create(output_filename).unwrap_or_else(|err| {
-            eprintln!("uniq: Cannot create '{}' for writing: {}", output_filename, err);
+            eprintln!("uniq: Cannot create '{}' for writing: {}.", output_filename, err);
             process::exit(1);
         }))
     };
@@ -50,14 +48,14 @@ struct Flags {
 impl Flags {
     fn from_matches(matches: &clap::ArgMatches) -> Self {
         let parse_arg_to_u64 = |arg: Option<&str>, error_msg: &str| -> Option<u64> {
-            if let None = arg {
-                None
-            } else {
-                let number = arg.unwrap().parse::<u64>().unwrap_or_else(|_| {
-                    eprintln!("{}", error_msg);
+            if let Some(arg) = arg {
+                let number = arg.parse::<u64>().unwrap_or_else(|_| {
+                    eprintln!("uniq: {}.", error_msg);
                     process::exit(1);
                 });
                 Some(number)
+            } else {
+                None
             }
         };
 
@@ -67,12 +65,23 @@ impl Flags {
             supress_repeated: matches.is_present("unique"),
             skip_chars:       parse_arg_to_u64(
                 matches.value_of("skip-chars"),
-                "uniq: a: invalid number of bytes to skip",
+                "invalid number of bytes to skip",
             ),
             skip_fields:      parse_arg_to_u64(
                 matches.value_of("skip-fields"),
-                "uniq: a: invalid number of fields to skip",
+                "invalid number of fields to skip",
             ),
+        }
+    }
+
+    // Used by tests
+    fn new(c: bool, d: bool, u: bool, s: Option<u64>, f: Option<u64>) -> Self {
+        Flags {
+            show_count:       c,
+            supress_unique:   d,
+            supress_repeated: u,
+            skip_chars:       s,
+            skip_fields:      f,
         }
     }
 }
@@ -83,26 +92,83 @@ fn uniq<R: Read, W: Write>(
 ) -> Result<(), io::Error> {
     // Always compared against current_line
     let mut last_line = String::new();
+    let mut last_line_count: u64 = 0;
 
     // Loop for each line read
     loop {
         let mut current_line = String::new();
         let size = reader.read_line(&mut current_line);
 
+        let mut should_exit = false; //
         // Check error or EOF
         match size {
             Err(err) => {
-                eprintln!("uniq: could not read FAILE: {}", err);
+                eprintln!("uniq: input error: {}.", err);
                 return Err(err);
             },
-            Ok(0) => break, // EOF, stop reading
+            Ok(0) => should_exit = true, // EOF, exit after this loop
             Ok(_) => {},
         }
 
-        if current_line != last_line {
-            writer.write_all(current_line.as_bytes())?;
+        let line_changed = current_line != last_line;
+        let current_line_count = if line_changed { 1 } else { last_line_count + 1 };
+
+        // The combination of these two flags supress all output
+        if flags.supress_repeated && flags.supress_unique {
+            continue;
         }
+
+        // The following block decides if current_line or last_line should be shown
+        // The lines are always shown as early as possible
+        // Output formatting is different depending on flags.show_count
+        if flags.show_count {
+            if line_changed {
+                let mut should_show_last_line = false;
+
+                if flags.supress_unique {
+                    if last_line_count > 1 {
+                        should_show_last_line = true;
+                    }
+                } else if flags.supress_repeated {
+                    if last_line_count == 1 {
+                        should_show_last_line = true;
+                    }
+                } else {
+                    should_show_last_line = true;
+                }
+
+                if should_show_last_line {
+                    writer.write_all(last_line.as_bytes())?;
+                    unimplemented!();
+                }
+            }
+        } else {
+            let mut line_to_show: Option<&str> = None;
+
+            if flags.supress_unique {
+                if current_line_count == 2 {
+                    line_to_show = Some(&current_line);
+                }
+            } else if flags.supress_repeated {
+                if line_changed && last_line_count == 1 {
+                    line_to_show = Some(&last_line);
+                }
+            } else {
+                if line_changed {
+                    line_to_show = Some(&current_line);
+                }
+            }
+
+            if let Some(line) = line_to_show {
+                writer.write_all(line.as_bytes())?;
+            }
+        }
+
         last_line = current_line;
+        last_line_count = current_line_count;
+        if should_exit {
+            break;
+        }
     }
 
     Ok(())
@@ -114,30 +180,45 @@ mod tests {
     use super::*;
 
     // Test utility simplifier, takes input and retrieves uniq's output
-    fn test_uniq(input: &str) -> String {
+    fn test_uniq(input: &str, flags: Flags) -> String {
         let mut reader = BufReader::new(input.as_bytes());
 
         let mut output = Vec::<u8>::new();
-        uniq(&mut reader, &mut output).unwrap();
+        uniq(&mut reader, &mut output, flags).unwrap();
 
         std::string::String::from_utf8(output).unwrap()
     }
 
+    // Used by tests with no flags
+    fn flags_none() -> Flags { Flags::new(false, false, false, None, None) }
 
     #[test]
-    fn test_uniq_basic() {
-        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n";
-        let expected = " 1 \n 2 \n 3 \n";
-        assert_eq!(expected, test_uniq(input));
+    fn test_uniq_basic_usage() {
+        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
+        let expected = " 1 \n 2 \n 3 \n 1 ";
+        assert_eq!(expected, test_uniq(input, flags_none()));
+    }
+
+    #[test]
+    fn test_uniq_blank_lines() {
+        let input = "\n\n\n \n \n";
+        let expected = "\n \n";
+        assert_eq!(expected, test_uniq(input, flags_none()));
     }
 
     #[test]
     fn test_uniq_without_line_break() {
-        assert_eq!("123", test_uniq("123")); // Without \n at the end
+        assert_eq!("123", test_uniq("123", flags_none())); // Without \n at the end
     }
 
     #[test]
     fn test_uniq_empty() {
-        assert_eq!("", test_uniq(""));
+        assert_eq!("", test_uniq("", flags_none()));
     }
+
+    #[test]
+    fn test_uniq_count_flag() { let flags = Flags { show_count: true, ..flags_none() }; }
+
+    #[test]
+    fn test_uniq_unique_flag() { let flags = Flags { supress_repeated: true, ..flags_none() }; }
 }
