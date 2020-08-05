@@ -115,6 +115,9 @@ fn uniq<R: Read, W: Write>(
 
         // The combination of these two flags supress all output
         if flags.supress_repeated && flags.supress_unique {
+            if should_exit {
+                break;
+            }
             continue;
         }
 
@@ -220,5 +223,26 @@ mod tests {
     fn test_uniq_count_flag() { let flags = Flags { show_count: true, ..flags_none() }; }
 
     #[test]
-    fn test_uniq_unique_flag() { let flags = Flags { supress_repeated: true, ..flags_none() }; }
+    fn test_uniq_unique_flag() {
+        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
+        let expected = " 2 \n 1 ";
+        let flags = Flags { supress_repeated: true, ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
+
+    #[test]
+    fn test_uniq_repeated_flag() {
+        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
+        let expected = " 1 \n 3 \n";
+        let flags = Flags { supress_unique: true, ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
+
+    #[test]
+    fn test_uniq_combined_flags_repeated_unique() {
+        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
+        let expected = "";
+        let flags = Flags { supress_unique: true, supress_repeated: true, ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
 }
