@@ -12,6 +12,8 @@ fn main() {
     let input_filename = matches.value_of("INPUT").unwrap_or("-");
     let output_filename = matches.value_of("OUTPUT").unwrap_or("-");
 
+    let flags = Flags::from_matches(&matches);
+
     let reader: Box<dyn io::Read> = if input_filename == "-" {
         Box::new(io::stdin())
     } else {
@@ -31,14 +33,54 @@ fn main() {
         }))
     };
 
-    if let Err(_) = uniq(&mut reader, &mut writer) {
+    if let Err(_) = uniq(&mut reader, &mut writer, flags) {
         process::exit(1);
     };
 }
 
-type Result<T> = std::result::Result<T, io::Error>;
 
-fn uniq<R: Read, W: Write>(reader: &mut BufReader<R>, writer: &mut W) -> Result<()> {
+struct Flags {
+    show_count:       bool,        // -c | --show_count
+    supress_unique:   bool,        // -d | --repeated
+    supress_repeated: bool,        // -u | --unique
+    skip_chars:       Option<u64>, // -s | --skip-chars=N
+    skip_fields:      Option<u64>, // -f | --skip-fields=N
+}
+
+impl Flags {
+    fn from_matches(matches: &clap::ArgMatches) -> Self {
+        let parse_arg_to_u64 = |arg: Option<&str>, error_msg: &str| -> Option<u64> {
+            if let None = arg {
+                None
+            } else {
+                let number = arg.unwrap().parse::<u64>().unwrap_or_else(|_| {
+                    eprintln!("{}", error_msg);
+                    process::exit(1);
+                });
+                Some(number)
+            }
+        };
+
+        Flags {
+            show_count:       matches.is_present("show_count"),
+            supress_unique:   matches.is_present("repeated"),
+            supress_repeated: matches.is_present("unique"),
+            skip_chars:       parse_arg_to_u64(
+                matches.value_of("skip-chars"),
+                "uniq: a: invalid number of bytes to skip",
+            ),
+            skip_fields:      parse_arg_to_u64(
+                matches.value_of("skip-fields"),
+                "uniq: a: invalid number of fields to skip",
+            ),
+        }
+    }
+}
+
+
+fn uniq<R: Read, W: Write>(
+    reader: &mut BufReader<R>, writer: &mut W, flags: Flags,
+) -> Result<(), io::Error> {
     // Always compared against current_line
     let mut last_line = String::new();
 

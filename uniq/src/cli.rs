@@ -23,4 +23,31 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .index(2)
                 .default_value("-"),
         )
+        .arg(
+            Arg::with_name("count")
+                .help("Prefix lines by the number of occurrences")
+                .short("c")
+                .long("count"),
+        )
+        .arg(
+            Arg::with_name("repeated")
+                .help("Only print duplicate lines, one for each group")
+                .short("d")
+                .long("repeated"),
+        )
+        .arg(
+            Arg::with_name("skip-fields")
+                .help("Avoid comparing the first N fields")
+                .short("f")
+                .long("skip-fields")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("skip-chars")
+                .help("Avoid comparing the first N characters")
+                .short("s")
+                .long("skip-chars")
+                .takes_value(true),
+        )
+        .arg(Arg::with_name("unique").help("Only print unique lines").short("u").long("unique"))
 }
