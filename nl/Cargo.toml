@@ -2,6 +2,7 @@
 name = "nl"
 version = "0.1.0"
 authors = ["Bojan Durdevic <bojan88@gmail.com>"]
+license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
 description = """

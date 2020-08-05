@@ -2,6 +2,7 @@
 name = "mkfifo"
 version = "0.0.1"
 authors = ["Federico Ponzi <federico.ponzi92@gmail.com>"]
+license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
 description = "Make FIFOs. (named pipes)"

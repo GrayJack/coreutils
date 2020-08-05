@@ -2,6 +2,7 @@
 name = "head"
 version = "0.1.0"
 authors = ["Odin Dutton <odindutton@gmail.com>"]
+license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
 description = """

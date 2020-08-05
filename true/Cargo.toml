@@ -2,6 +2,12 @@
 name = "true"
 version = "0.1.0"
 authors = ["GrayJack <gr41.j4ck@gmail.com>"]
+license = "Unlicense"
 edition = "2018"
+description = """
+Exit with a status code indicating success.
+
+Some shells may provide a builtin true command which is identical to this utility.
+"""
 
 [dependencies]

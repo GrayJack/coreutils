@@ -2,13 +2,14 @@
 name = "env"
 version = "0.0.1"
 authors = ["Federico Ponzi <federico.ponzi92@gmail.com>", "Eric Shimizu Karbstein <gr41.j4ck@gmail.com>"]
+license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
 description = """
 Set environment and execute command, or display environment
 
-The env utility executes another [COMMAND] after modifying the environment as specified on the \ 
-command line. Each [NAME=VALUE] option specifies the setting of an environment variable, name, \ 
+The env utility executes another [COMMAND] after modifying the environment as specified on the \
+command line. Each [NAME=VALUE] option specifies the setting of an environment variable, name, \
 with a value of value. All such environment variables are set before the [COMMAND] is executed.
 """
 

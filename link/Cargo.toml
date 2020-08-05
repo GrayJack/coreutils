@@ -2,6 +2,7 @@
 name = "link"
 version = "0.1.0"
 authors = ["Torbjörn Lönnemark <tobbez@ryara.net>"]
+license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
 description = "Creates a (hard) link to a file."
