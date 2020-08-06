@@ -99,7 +99,7 @@ fn uniq<R: Read, W: Write>(
         let mut current_line = String::new();
         let size = reader.read_line(&mut current_line);
 
-        let mut should_exit = false; //
+        let mut should_exit = false;
         // Check error or EOF
         match size {
             Err(err) => {
@@ -140,9 +140,9 @@ fn uniq<R: Read, W: Write>(
                     should_show_last_line = true;
                 }
 
-                if should_show_last_line {
+                if should_show_last_line && last_line_count > 0 {
+                    write!(writer, "{:7} ", last_line_count)?;
                     writer.write_all(last_line.as_bytes())?;
-                    unimplemented!();
                 }
             }
         } else {
@@ -197,8 +197,8 @@ mod tests {
 
     #[test]
     fn test_uniq_basic_usage() {
-        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
-        let expected = " 1 \n 2 \n 3 \n 1 ";
+        let input = "A\nA\nB\nC\nC\nD";
+        let expected = "A\nB\nC\nD";
         assert_eq!(expected, test_uniq(input, flags_none()));
     }
 
@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn test_uniq_without_line_break() {
-        assert_eq!("123", test_uniq("123", flags_none())); // Without \n at the end
+        assert_eq!("ABC", test_uniq("ABC", flags_none())); // Without \n at the end
     }
 
     #[test]
@@ -220,27 +220,48 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_count_flag() { let flags = Flags { show_count: true, ..flags_none() }; }
+    fn test_uniq_count_flag() {
+        let input = "A\nA\nB\nC\nC\nD";
+        let expected = "      2 A\n      1 B\n      2 C\n      1 D";
+        let flags = Flags { show_count: true, ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
 
     #[test]
     fn test_uniq_unique_flag() {
-        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
-        let expected = " 2 \n 1 ";
+        let input = "A\nA\nB\nC\nC\nD";
+        let expected = "B\nD";
         let flags = Flags { supress_repeated: true, ..flags_none() };
         assert_eq!(expected, test_uniq(input, flags));
     }
 
     #[test]
     fn test_uniq_repeated_flag() {
-        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
-        let expected = " 1 \n 3 \n";
+        let input = "A\nA\nB\nC\nC\nD";
+        let expected = "A\nC\n";
         let flags = Flags { supress_unique: true, ..flags_none() };
         assert_eq!(expected, test_uniq(input, flags));
     }
 
     #[test]
+    fn test_uniq_combined_flags_count_unique() {
+        let expected = "      1 B\n      1 D";
+        let input = "A\nA\nB\nC\nC\nD";
+        let flags = Flags { show_count: true, supress_repeated: true, ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
+
+    #[test]
+    fn test_uniq_combined_flags_count_repeated() {
+        let input = "A\nA\nB\nC\nC\nD";
+        let expected = "      2 A\n      2 C\n";
+        let flags = Flags { show_count: true, supress_unique: true, ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
+
+    #[test]
     fn test_uniq_combined_flags_repeated_unique() {
-        let input = " 1 \n 1 \n 2 \n 3 \n 3 \n 1 ";
+        let input = " A \n A \n B \n C \n C \n D ";
         let expected = "";
         let flags = Flags { supress_unique: true, supress_repeated: true, ..flags_none() };
         assert_eq!(expected, test_uniq(input, flags));
