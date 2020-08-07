@@ -38,6 +38,7 @@ fn main() {
 }
 
 
+#[derive(Default)]
 struct Flags {
     show_count:       bool,        // -c | --show_count
     supress_unique:   bool,        // -d | --repeated
@@ -67,23 +68,12 @@ impl Flags {
             supress_repeated: matches.is_present("unique"),
             skip_chars:       parse_arg_to_u64(
                 matches.value_of("skip-chars"),
-                "invalid number of bytes to skip",
+                "Invalid number of bytes to skip",
             ),
             skip_fields:      parse_arg_to_u64(
                 matches.value_of("skip-fields"),
-                "invalid number of fields to skip",
+                "Invalid number of fields to skip",
             ),
-        }
-    }
-
-    // Used by tests
-    fn new(c: bool, d: bool, u: bool, s: Option<u64>, f: Option<u64>) -> Self {
-        Flags {
-            show_count:       c,
-            supress_unique:   d,
-            supress_repeated: u,
-            skip_chars:       s,
-            skip_fields:      f,
         }
     }
 }
@@ -125,7 +115,7 @@ fn uniq<R: Read, W: Write>(
         // Check error or EOF
         match size {
             Err(err) => {
-                eprintln!("uniq: input error: {}.", err);
+                eprintln!("uniq: Input error: {}.", err);
                 return Err(err);
             },
             // EOF, exit after this loop
@@ -216,8 +206,8 @@ mod tests {
         String::from_utf8(output).unwrap()
     }
 
-    // Test utility
-    fn flags_none() -> Flags { Flags::new(false, false, false, None, None) }
+    // Test utility, return empty Flags (all set to false or None)
+    fn flags_none() -> Flags { Flags::default() }
 
     #[test]
     fn test_uniq_basic_usage() {
