@@ -1,10 +1,11 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader, Read, Write},
+    io::{self, BufRead, BufReader, ErrorKind, Read, Write},
     process,
 };
 
 mod cli;
+
 
 fn main() {
     let matches = cli::create_app().get_matches();
@@ -47,6 +48,7 @@ struct Flags {
 
 impl Flags {
     fn from_matches(matches: &clap::ArgMatches) -> Self {
+        // Used to capture skip_chars and skip_fields
         let parse_arg_to_u64 = |arg: Option<&str>, error_msg: &str| -> Option<u64> {
             if let Some(arg) = arg {
                 let number = arg.parse::<u64>().unwrap_or_else(|_| {
@@ -94,9 +96,29 @@ fn uniq<R: Read, W: Write>(
     let mut last_line = String::new();
     let mut last_line_count: u64 = 0;
 
+    // If --skip-chars
+    let bytes_to_skip = flags.skip_chars.unwrap_or(0) as usize;
+    let mut bytes_to_skip: Vec<u8> = vec![0u8; bytes_to_skip];
+
     // Loop for each line read
     loop {
         let mut current_line = String::new();
+
+        if flags.skip_chars.is_some() {
+            let skip_result = reader.read_exact(&mut bytes_to_skip[..]);
+            // Check error or EOF
+            match skip_result {
+                Ok(_) => {},
+                Err(err) => {
+                    if let ErrorKind::UnexpectedEof = err.kind() {
+                        // Ignore
+                    } else {
+                        return Err(err);
+                    }
+                },
+            }
+        }
+
         let size = reader.read_line(&mut current_line);
 
         let mut should_exit = false;
@@ -106,7 +128,9 @@ fn uniq<R: Read, W: Write>(
                 eprintln!("uniq: input error: {}.", err);
                 return Err(err);
             },
-            Ok(0) => should_exit = true, // EOF, exit after this loop
+            // EOF, exit after this loop
+            Ok(0) => should_exit = true,
+            // Keep looping
             Ok(_) => {},
         }
 
@@ -182,17 +206,17 @@ fn uniq<R: Read, W: Write>(
 mod tests {
     use super::*;
 
-    // Test utility simplifier, takes input and retrieves uniq's output
+    // Test utility, takes input and retrieves uniq's output
     fn test_uniq(input: &str, flags: Flags) -> String {
         let mut reader = BufReader::new(input.as_bytes());
 
         let mut output = Vec::<u8>::new();
         uniq(&mut reader, &mut output, flags).unwrap();
 
-        std::string::String::from_utf8(output).unwrap()
+        String::from_utf8(output).unwrap()
     }
 
-    // Used by tests with no flags
+    // Test utility
     fn flags_none() -> Flags { Flags::new(false, false, false, None, None) }
 
     #[test]
@@ -211,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_uniq_without_line_break() {
-        assert_eq!("ABC", test_uniq("ABC", flags_none())); // Without \n at the end
+        assert_eq!("ABC", test_uniq("ABC", flags_none()));
     }
 
     #[test]
@@ -220,7 +244,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_count_flag() {
+    fn test_uniq_flag_count() {
         let input = "A\nA\nB\nC\nC\nD";
         let expected = "      2 A\n      1 B\n      2 C\n      1 D";
         let flags = Flags { show_count: true, ..flags_none() };
@@ -228,7 +252,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_unique_flag() {
+    fn test_uniq_flag_unique() {
         let input = "A\nA\nB\nC\nC\nD";
         let expected = "B\nD";
         let flags = Flags { supress_repeated: true, ..flags_none() };
@@ -236,7 +260,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_repeated_flag() {
+    fn test_uniq_flag_repeated() {
         let input = "A\nA\nB\nC\nC\nD";
         let expected = "A\nC\n";
         let flags = Flags { supress_unique: true, ..flags_none() };
@@ -244,7 +268,15 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_combined_flags_count_unique() {
+    fn test_uniq_flag_skip_chars() {
+        let input = "_A\n_A\n_B\n_C\n_C\n_D";
+        let expected = "A\nB\nC\nD";
+        let flags = Flags { skip_chars: Some(1), ..flags_none() };
+        assert_eq!(expected, test_uniq(input, flags));
+    }
+
+    #[test]
+    fn test_uniq_combined_flags_count_and_unique() {
         let expected = "      1 B\n      1 D";
         let input = "A\nA\nB\nC\nC\nD";
         let flags = Flags { show_count: true, supress_repeated: true, ..flags_none() };
@@ -252,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_combined_flags_count_repeated() {
+    fn test_uniq_combined_flags_count_and_repeated() {
         let input = "A\nA\nB\nC\nC\nD";
         let expected = "      2 A\n      2 C\n";
         let flags = Flags { show_count: true, supress_unique: true, ..flags_none() };
@@ -260,7 +292,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uniq_combined_flags_repeated_unique() {
+    fn test_uniq_combined_flags_repeated_and_unique() {
         let input = " A \n A \n B \n C \n C \n D ";
         let expected = "";
         let flags = Flags { supress_unique: true, supress_repeated: true, ..flags_none() };
