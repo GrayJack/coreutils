@@ -53,7 +53,7 @@ impl Flags {
         let try_parse_arg_to_u64 = |arg: Option<&str>, error_msg| {
             if let Some(arg) = arg {
                 let number = arg.parse::<u64>().unwrap_or_else(|_| {
-                    eprintln!("uniq: :{}.", error_msg);
+                    eprintln!("uniq: {} '{}'.", error_msg, arg);
                     process::exit(1);
                 });
                 Some(number)
@@ -68,11 +68,11 @@ impl Flags {
             supress_repeated: matches.is_present("unique"),
             skip_chars:       try_parse_arg_to_u64(
                 matches.value_of("skip-chars"),
-                "Invalid number of bytes to skip",
+                "--skip-chars: Invalid number of bytes to skip",
             ),
             skip_fields:      try_parse_arg_to_u64(
                 matches.value_of("skip-fields"),
-                "Invalid number of fields to skip",
+                "--skip-fields: Invalid number of fields to skip",
             ),
         }
     }

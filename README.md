@@ -121,7 +121,7 @@ cargo build --release
 |    tty   |             |         |   X  |
 |   uname  |             |         |   X  |
 | unexpand |             |         |   X  |
-|   uniq   |      X      |         |      |
+|   uniq   |             |    X    |      |
 |  unlink  |             |         |   X  |
 |  uptime  |             |         |   X  |
 |   users  |             |         |   X  |
@@ -143,6 +143,7 @@ Without they this project would not be in the shape it is today
  * [Federico Ponzi](https://github.com/FedericoPonzi)
  * [Gab David](https://github.com/Larisho)
  * [Giacomo Parolini](https://github.com/silverweed)
+ * [João Marcos](https://github.com/marcospb19)
  * [Jonas Geschke](https://github.com/kegesch)
  * [Ladysamantha](https://github.com/ladysamantha)
  * [Mats Kindah](https://github.com/mkindahl)
