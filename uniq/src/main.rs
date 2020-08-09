@@ -50,10 +50,10 @@ struct Flags {
 impl Flags {
     fn from_matches(matches: &clap::ArgMatches) -> Self {
         // Used to capture skip_chars and skip_fields
-        let parse_arg_to_u64 = |arg: Option<&str>, error_msg: &str| -> Option<u64> {
+        let try_parse_arg_to_u64 = |arg: Option<&str>, error_msg| {
             if let Some(arg) = arg {
                 let number = arg.parse::<u64>().unwrap_or_else(|_| {
-                    eprintln!("uniq: {}.", error_msg);
+                    eprintln!("uniq: :{}.", error_msg);
                     process::exit(1);
                 });
                 Some(number)
@@ -66,11 +66,11 @@ impl Flags {
             show_count:       matches.is_present("show_count"),
             supress_unique:   matches.is_present("repeated"),
             supress_repeated: matches.is_present("unique"),
-            skip_chars:       parse_arg_to_u64(
+            skip_chars:       try_parse_arg_to_u64(
                 matches.value_of("skip-chars"),
                 "Invalid number of bytes to skip",
             ),
-            skip_fields:      parse_arg_to_u64(
+            skip_fields:      try_parse_arg_to_u64(
                 matches.value_of("skip-fields"),
                 "Invalid number of fields to skip",
             ),
