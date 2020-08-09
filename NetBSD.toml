@@ -41,6 +41,7 @@ members = [
     "tty",
     "uname",
     "unexpand",
+    "uniq",
     "unlink",
     "uptime",
     "users",
