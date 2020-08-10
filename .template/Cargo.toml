@@ -1,13 +1,13 @@
 [package]
-name = "my-tool"
+name = "template" # Edit this
 version = "0.1.0"
-authors = ["Author <email@email.com>"]
+authors = ["Author <email@email.com>"] # Edit this
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
 description = """
-Tool description (required)
-"""
+Tool description
+""" # Edit this
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
