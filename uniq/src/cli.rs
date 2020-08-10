@@ -9,7 +9,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .about(crate_description!())
         .help_message("Display help information.")
         .version_message("Display version information.")
-        .help_short("?")
         .settings(&[ColoredHelp])
         .arg(
             Arg::with_name("INPUT")
