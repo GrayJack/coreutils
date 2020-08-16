@@ -6,15 +6,17 @@ The following is a set of guidelines for contributing to `coreutils`. These are 
 If you want to implement a tool from scratch, surely read the [**Creating a Tool**](#creating-a-tool) section for orientation on where to start from.
 
 ## Table of contents
-- [Code of Conduct](#code-of-conduct)
-- [Reporting Bugs Or Suggesting Enhancements](#reporting-bugs-or-suggesting-enhancements)
-- [Pull Requests](#pull-requests)
-- [Creating a Tool](#creating-a-tool)
-- [Rust Style Guide](#rust-style-guide)
-- [Git Commit Messages](#git-commit-messages)
-- [Useful References](#useful-references)
-  - [Man Pages Online](#man-pages-online)
-  - [Rust Current Version Status On Tier 3](#rust-current-version-status-on-tier-3)
+- [Contributing to coreutils](#contributing-to-coreutils)
+  - [Table of contents](#table-of-contents)
+  - [Code of Conduct](#code-of-conduct)
+  - [Reporting Bugs Or Suggesting Enhancements](#reporting-bugs-or-suggesting-enhancements)
+  - [Pull Requests](#pull-requests)
+  - [Creating a Tool](#creating-a-tool)
+  - [Rust Style Guide](#rust-style-guide)
+  - [Git Commit Messages](#git-commit-messages)
+  - [Useful References](#useful-references)
+    - [Man Pages Online](#man-pages-online)
+    - [Rust Current Version Status On Tier 3](#rust-current-version-status-on-tier-3)
 
 ## Code of Conduct
 The Code of Conduct for this repository [here](./CODE_OF_CONFUCT.md)
@@ -41,7 +43,7 @@ Here is a list of steps you should follow (not necessarily in order):
   - About the flags:
     - Every flag needs, `.long()` and `.short()` options
     - If the option is specified by the [POSIX standard](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html), use the short flag option specified.
-    - For long options and short options that are not specified by the [POSIX standard](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html), the flag should match other famous coreutils implementations names (if needed, use _clap_'s `.alias()` or `.aliases()` to fill this requirement) renaming long options can be discussed in the PR.
+    - For long options and short options that are not specified by the [POSIX standard](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html), the flag should match other famous coreutils implementations names (if needed, use _clap_'s `.visible_alias()` or `.visible_aliases()` to fill this requirement) renaming long options can be discussed in the PR.
 - Every help message should start with upper case letter and end with a dot.
 - Exit code is defined by the [POSIX standard](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html) (extra customization might be required for extensions).
 - We recommend that you create a Pull Request with check boxes (see an [example](https://github.com/GrayJack/coreutils/pull/121)).
