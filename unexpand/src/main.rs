@@ -103,7 +103,7 @@ impl Unexpand {
         Unexpand { all, tabs }
     }
 
-    fn unexpand_line(self: &mut Self, line: &str) -> String {
+    fn unexpand_line(&mut self, line: &str) -> String {
         let mut convert = true;
         let mut spaces: i32 = 0;
         let mut column: i32 = 0;

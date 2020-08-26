@@ -32,7 +32,7 @@ fn main() {
         }))
     };
 
-    if let Err(_) = uniq(&mut reader, &mut writer, flags) {
+    if uniq(&mut reader, &mut writer, flags).is_err() {
         process::exit(1);
     };
 }
@@ -44,6 +44,7 @@ struct Flags {
     supress_unique:   bool,        // -d | --repeated
     supress_repeated: bool,        // -u | --unique
     skip_chars:       Option<u64>, // -s | --skip-chars=N
+    #[allow(dead_code)]
     skip_fields:      Option<u64>, // -f | --skip-fields=N
 }
 
@@ -170,10 +171,8 @@ fn uniq<R: Read, W: Write>(
                 if line_changed && last_line_count == 1 {
                     line_to_show = Some(&last_line);
                 }
-            } else {
-                if line_changed {
-                    line_to_show = Some(&current_line);
-                }
+            } else if line_changed {
+                line_to_show = Some(&current_line);
             }
 
             if let Some(line) = line_to_show {

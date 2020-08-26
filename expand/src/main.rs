@@ -94,7 +94,7 @@ impl Expand {
         Ok(Expand { initial, tabstops })
     }
 
-    fn expand_line(self: &mut Self, line: &str) -> String {
+    fn expand_line(&mut self, line: &str) -> String {
         let mut convert = true;
         let mut column = 0;
         let mut new_line: String = String::new();

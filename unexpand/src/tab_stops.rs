@@ -92,7 +92,7 @@ impl TabStops {
         }
     }
 
-    pub fn is_tab_stop(self: &Self, column: usize) -> bool {
+    pub fn is_tab_stop(&self, column: usize) -> bool {
         if self.positions.contains(&column) {
             return true;
         }
