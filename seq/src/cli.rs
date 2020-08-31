@@ -11,12 +11,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
-        .arg(Arg::with_name("FIRST INCREMENT LAST").multiple(true))
+        .arg(Arg::with_name("FIRST INCREMENT LAST").required(true).multiple(true))
         .arg(
             Arg::with_name("SEPERATOR")
                 .short("s")
                 .long("separator")
-                .help("use STRING to separate numbers (default: \\n)")
+                .help("use STRING to separate numbers")
                 .hide_default_value(true)
                 .default_value("\n"),
         )
