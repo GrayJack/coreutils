@@ -31,10 +31,17 @@ fn main() {
 
 fn find_operands(args: &[&str]) -> (f64, f64, f64) {
     match args.len() {
-        1 => (1.0, 1.0, args[0].parse::<f64>().unwrap()),
-        2 => (args[0].parse().unwrap(), 1.0, args[1].parse().unwrap()),
-        _ => (args[0].parse().unwrap(), args[1].parse().unwrap(), args[2].parse().unwrap()),
+        1 => (1.0, 1.0, parse_float(args[0])),
+        2 => (parse_float(args[0]), 1.0, parse_float(args[1])),
+        _ => (parse_float(args[0]), parse_float(args[1]), parse_float(args[2])),
     }
+}
+
+fn parse_float(s: &str) -> f64 {
+    s.parse::<f64>().unwrap_or_else(|_| {
+        eprintln!("seq: invalid floating point argument: {}", s);
+        process::exit(1);
+    })
 }
 
 struct Seq {
@@ -59,10 +66,12 @@ impl Seq {
 }
 
 fn max_decimal_digits(args: &[&str]) -> usize {
+    // args will never be empty and all elements are already validated as f64
     args.iter().map(|v| v.len() - v.find(".").map(|pos| pos + 1).unwrap_or(v.len())).max().unwrap()
 }
 
 fn max_digits(args: &[&str]) -> usize {
+    // args will never be empty and each element is already validated as f64
     args.iter().map(|v| v.find(".").unwrap_or(v.len())).max().unwrap()
 }
 
