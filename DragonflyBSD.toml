@@ -35,6 +35,7 @@ members = [
     "pwd",
     "rm",
     "rmdir",
+    "seq",
     "sleep",
     "touch",
     "true",
