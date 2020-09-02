@@ -33,7 +33,16 @@ fn find_operands(args: &[&str]) -> (f64, f64, f64) {
     match args.len() {
         1 => (1.0, 1.0, parse_float(args[0])),
         2 => (parse_float(args[0]), 1.0, parse_float(args[1])),
-        _ => (parse_float(args[0]), parse_float(args[1]), parse_float(args[2])),
+        _ => {
+            let inc = parse_float(args[1]);
+
+            if inc == 0.0 {
+                eprintln!("seq: invalid zero increment value");
+                process::exit(1);
+            }
+
+            (parse_float(args[0]), inc, parse_float(args[2]))
+        },
     }
 }
 
@@ -160,7 +169,20 @@ mod tests {
     }
 
     #[test]
+    fn should_generate_sequence2() {
+        assert_eq!(
+            Seq::new(1.0, 1.0, 1.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
+            to_string(vec!["1"])
+        );
+    }
+
+    #[test]
     fn should_generate_sequence() {
+        assert_eq!(
+            Seq::new(1.0, 1.0, 1.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
+            to_string(vec!["1"])
+        );
+
         assert_eq!(
             Seq::new(1.0, 1.0, 3.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
             to_string(vec!["1", "2", "3"])
