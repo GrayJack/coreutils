@@ -19,7 +19,7 @@ If you want to implement a tool from scratch, surely read the [**Creating a Tool
     - [Rust Current Version Status On Tier 3](#rust-current-version-status-on-tier-3)
 
 ## Code of Conduct
-The Code of Conduct for this repository [here](./CODE_OF_CONFUCT.md)
+The Code of Conduct for this repository [here](./CODE_OF_CONDUCT.md)
 
 ## Reporting Bugs Or Suggesting Enhancements
 In the [Issues tab](https://github.com/GrayJack/coreutils/issues), click `New issue`, select `Bug report` or `Feature request`, then add the required information and submit it.
