@@ -21,7 +21,7 @@ fn main() {
             for val in seq.into_iter() {
                 print!("{}", val);
             }
-            println!("");
+            println!();
         }
     } else {
         eprintln!("seq: missing operand\n Try 'seq --help' for more information.");
@@ -67,12 +67,15 @@ impl Seq {
 
 fn max_decimal_digits(args: &[&str]) -> usize {
     // args will never be empty and all elements are already validated as f64
-    args.iter().map(|v| v.len() - v.find(".").map(|pos| pos + 1).unwrap_or(v.len())).max().unwrap()
+    args.iter()
+        .map(|v| v.len() - v.find('.').map(|pos| pos + 1).unwrap_or_else(|| v.len()))
+        .max()
+        .unwrap()
 }
 
 fn max_digits(args: &[&str]) -> usize {
     // args will never be empty and each element is already validated as f64
-    args.iter().map(|v| v.find(".").unwrap_or(v.len())).max().unwrap()
+    args.iter().map(|v| v.find('.').unwrap_or_else(|| v.len())).max().unwrap()
 }
 
 impl IntoIterator for Seq {
@@ -98,13 +101,13 @@ impl Iterator for SeqIterator {
             None
         } else {
             let value = format!("{:.*}", self.seq.decimals, self.current);
-            let digits = value.find(".").unwrap_or(value.len());
+            let digits = value.find('.').unwrap_or_else(|| value.len());
 
             let mut value = match self.seq.padding {
                 Some(width) if width > digits => {
                     let mut padded = String::with_capacity(value.len() + (width - digits));
 
-                    if value.starts_with("-") {
+                    if value.starts_with('-') {
                         padded.push_str("-");
                         padded.push_str(&"0".repeat(width - digits));
                         padded.push_str(&value[1..]);
