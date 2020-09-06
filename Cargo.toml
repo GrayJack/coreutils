@@ -1,5 +1,5 @@
 [profile.release]
-lto = "fat"
+lto = "thin"
 codegen-units = 1
 # target_cpu = "native"
 # panic = "abort"
