@@ -134,7 +134,7 @@ impl Unexpand {
             };
         }
 
-        new_line.push_str("\n");
+        new_line.push('\n');
 
         new_line
     }
