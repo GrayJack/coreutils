@@ -128,6 +128,41 @@ fn touch_update_time_with_date() {
     remove_test_files(&files).unwrap();
 }
 
+#[test]
+fn touch_update_time_with_timestamp() {
+    let matches = cli::create_app().get_matches_from(vec![
+        "touch",
+        "-t 200901030313.00",
+        "file11.rs",
+        "file12.rs",
+    ]);
+
+    let flags = TouchFlags::from_matches(&matches);
+
+    let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
+
+    File::create(&files[0]).unwrap();
+
+    // update and create files
+    touch(&files, flags);
+
+    for curr_file in &files {
+        let file1_metadata = metadata(curr_file).unwrap();
+        let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
+
+        let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
+
+        // check modification and access time is equal 2009-01-03 03:13:00
+        assert_eq!(
+            time,
+            PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S")
+                .unwrap()
+                .assume_utc()
+        );
+    }
+    remove_test_files(&files).unwrap();
+}
+
 fn remove_test_files(files: &[&str]) -> io::Result<()> {
     for filename in files {
         remove_file(&filename)?;

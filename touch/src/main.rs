@@ -62,6 +62,7 @@ struct TouchFlags<'a> {
     no_deref: bool,
     reference_path: Option<&'a str>,
     date: Option<&'a str>,
+    timestamp: Option<&'a str>,
 }
 
 impl<'a> TouchFlags<'a> {
@@ -87,6 +88,7 @@ impl<'a> TouchFlags<'a> {
             no_deref: matches.is_present("no_deref"),
             reference_path: matches.value_of("reference"),
             date: matches.value_of("date"),
+            timestamp: matches.value_of("timestamp"),
         }
     }
 }
@@ -116,6 +118,34 @@ fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
             FileTime::from_last_access_time(&file_meta),
             FileTime::from_last_modification_time(&file_meta),
         ))
+    } else if let Some(flags_timestamp) = flags.timestamp {
+        // PrimitiveDateTime::parse doesn't handle missing %C and %C%y in format,
+        // thus, based on the length of the input, the input string will be
+        // completed up to the "%C%y%m%d%H%M.%S" format
+        let current_date: PrimitiveDateTime = SystemTime::now().into();
+        let input = flags_timestamp.trim_start();
+        let input = match input.len() {
+            // CCYYMMDDhhmm.ss format, nothing to add
+            15 => input.to_owned(),
+            // YYMMDDhhmm.ss format, add century
+            13 => format!("{}{}", current_date.format("%C"), input),
+            // CCYYMMDDhhmm format, add .00 for seconds
+            12 => format!("{}.00", input),
+            // MMDDhhmm.ss format, add year
+            11 => format!("{}{}", current_date.format("%Y"), input),
+            // YYMMDDhhmm format, add century and .00 for seconds
+            10 => format!("{}{}.00", current_date.format("%C"), input),
+            // YYMMDDhhmm format, add year and .00 for seconds
+            8 => format!("{}{}.00", current_date.format("%Y"), input),
+            _ => return Err(format!("Unhandled timestamp format '{}'", input)),
+        };
+        let date = match PrimitiveDateTime::parse(&input, "%Y%m%d%H%M.%S") {
+            Ok(dt) => dt.assume_utc(),
+            Err(err) => return Err(format!("Problem parsing timestamp argument: {}", err)),
+        };
+        let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
+
+        Ok((time, time))
     } else {
         let now = FileTime::from_system_time(SystemTime::now());
 
