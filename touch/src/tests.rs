@@ -111,16 +111,20 @@ fn touch_update_time_with_date() {
     // update and create files
     touch(&files, flags);
 
-    let file1_metadata = metadata(&files[0]).unwrap();
-    let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
+    for curr_file in &files {
+        let file1_metadata = metadata(curr_file).unwrap();
+        let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
-    let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
+        let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
 
-    // check modification and access time is equal 2009-01-03 03:13:00
-    assert_eq!(
-        time,
-        PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S").unwrap().assume_utc()
-    );
+        // check modification and access time is equal 2009-01-03 03:13:00
+        assert_eq!(
+            time,
+            PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S")
+                .unwrap()
+                .assume_utc()
+        );
+    }
     remove_test_files(&files).unwrap();
 }
 

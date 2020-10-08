@@ -33,18 +33,23 @@ fn touch(files: &[&str], flags: TouchFlags) {
 
     for filename in files {
         // if file already exist in the current directory
-        let file_metadata =
+        let mut file_metadata =
             if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
 
         if file_metadata.is_err() && !flags.no_create {
             match File::create(&filename) {
-                Ok(_) => (),
+                Ok(_) => {
+                    file_metadata = if flags.no_deref {
+                        fs::symlink_metadata(&filename)
+                    } else {
+                        fs::metadata(&filename)
+                    };
+                },
                 Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
             }
-        } else {
-            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
-            // expression.
-            update_time(&filename, new_atime, new_mtime, &file_metadata.unwrap(), flags);
+        }
+        if let Ok(file_metadata) = file_metadata {
+            update_time(&filename, new_atime, new_mtime, &file_metadata, flags);
         }
     }
 }
