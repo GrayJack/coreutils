@@ -89,6 +89,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("date")
                 .short("d")
+                .conflicts_with("reference")
                 .value_name("STRING"),
         )
 }
