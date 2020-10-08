@@ -22,6 +22,10 @@ fn main() {
     // Required argument, ok to unwrap and not check if is supplied.
     let files = matches.values_of("FILE").unwrap();
 
+    touch(&files.collect::<Vec<_>>(), flags);
+}
+
+fn touch(files: &[&str], flags: TouchFlags) {
     let (new_atime, new_mtime) = new_filetimes(flags).unwrap_or_else(|err| {
         eprintln!("touch: {}", err);
         process::exit(1);

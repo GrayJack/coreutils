@@ -124,30 +124,6 @@ fn touch_update_time_with_date() {
     remove_test_files(&files).unwrap();
 }
 
-fn touch(files: &[&str], flags: TouchFlags) {
-    let (new_atime, new_mtime) = new_filetimes(flags).unwrap_or_else(|err| {
-        eprintln!("touch: {}", err);
-        process::exit(1);
-    });
-
-    for filename in files {
-        // if file already exist in the current directory
-        let file_metadata =
-            if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
-
-        if file_metadata.is_err() && !flags.no_create {
-            match File::create(&filename) {
-                Ok(_) => (),
-                Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
-            }
-        } else {
-            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
-            // expression.
-            update_time(&filename, new_atime, new_mtime, &file_metadata.unwrap(), flags);
-        }
-    }
-}
-
 fn remove_test_files(files: &[&str]) -> io::Result<()> {
     for filename in files {
         remove_file(&filename)?;
