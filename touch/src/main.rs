@@ -60,10 +60,8 @@ struct TouchFlags<'a> {
     mod_time: bool,
     no_create: bool,
     no_deref: bool,
-    reference: bool,
-    ref_path: &'a str,
-    date: bool,
-    date_val: &'a str,
+    reference_path: Option<&'a str>,
+    date: Option<&'a str>,
 }
 
 impl<'a> TouchFlags<'a> {
@@ -87,31 +85,29 @@ impl<'a> TouchFlags<'a> {
             mod_time,
             no_create: matches.is_present("nocreate") || matches.is_present("no_deref"),
             no_deref: matches.is_present("no_deref"),
-            reference: matches.is_present("reference"),
-            ref_path: matches.value_of("reference").unwrap_or(""),
-            date: matches.is_present("date"),
-            date_val: matches.value_of("date").unwrap_or(""),
+            reference_path: matches.value_of("reference"),
+            date: matches.value_of("date"),
         }
     }
 }
 
 /// Returns the correct `(atime, mtime)` acording to the `flags`.
 fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
-    if flags.date {
-        let date = match PrimitiveDateTime::parse(&flags.date_val, "%Y-%m-%d %H:%M:%S") {
+    if let Some(flags_date) = flags.date {
+        let date = match PrimitiveDateTime::parse(&flags_date, "%Y-%m-%d %H:%M:%S") {
             Ok(dt) => dt.assume_utc(),
             Err(err) => return Err(format!("Problem parsing date arguments: {}", err)),
         };
         let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
 
         Ok((time, time))
-    } else if flags.reference {
-        let file_meta = match fs::metadata(flags.ref_path) {
+    } else if let Some(flags_reference) = flags.reference_path {
+        let file_meta = match fs::metadata(flags_reference) {
             Ok(m) => m,
             Err(err) => {
                 return Err(format!(
                     "Failed to get {} (OTHER_FILE) metadata: {}",
-                    flags.ref_path, err
+                    flags_reference, err
                 ));
             },
         };
