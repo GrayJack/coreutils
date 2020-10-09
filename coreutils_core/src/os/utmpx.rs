@@ -168,7 +168,7 @@ impl Utmpx {
 
     /// Get the process ID.
     #[inline]
-    pub fn process_id(&self) -> Pid { self.pid }
+    pub const fn process_id(&self) -> Pid { self.pid }
 
     /// Get the record ID.
     #[inline]

@@ -34,10 +34,7 @@ impl Display for Error {
     }
 }
 
-impl StdError for Error {
-    #[inline]
-    fn source(&self) -> Option<&(dyn StdError + 'static)> { None }
-}
+impl StdError for Error {}
 
 /// A struct that holds the name of a TTY with a [`Display`] trait implementation
 /// to be easy to print.
@@ -70,7 +67,7 @@ impl TTYName {
 
 impl Display for TTYName {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { Display::fmt(&self.0, f) }
 }
 
 /// Convenience trait to use [`is_tty`] function as method

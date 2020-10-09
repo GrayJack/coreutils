@@ -86,17 +86,17 @@ impl Utmp {
     /// Get the process ID of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub fn pid(&self) -> c_short { self.pid }
+    pub const fn pid(&self) -> c_short { self.pid }
 
     /// Get the entry type.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub fn entry_type(&self) -> UtmpxKind { self.ut_type }
+    pub const fn entry_type(&self) -> UtmpxKind { self.ut_type }
 
     /// Get the exit status of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub fn exit_status(&self) -> ExitStatus { self.exit }
+    pub const fn exit_status(&self) -> ExitStatus { self.exit }
 }
 
 impl From<utmp> for Utmp {
