@@ -22,6 +22,10 @@ fn main() {
     // Required argument, ok to unwrap and not check if is supplied.
     let files = matches.values_of("FILE").unwrap();
 
+    touch(&files.collect::<Vec<_>>(), flags);
+}
+
+fn touch(files: &[&str], flags: TouchFlags) {
     let (new_atime, new_mtime) = new_filetimes(flags).unwrap_or_else(|err| {
         eprintln!("touch: {}", err);
         process::exit(1);
@@ -29,18 +33,23 @@ fn main() {
 
     for filename in files {
         // if file already exist in the current directory
-        let file_metadata =
+        let mut file_metadata =
             if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
 
         if file_metadata.is_err() && !flags.no_create {
             match File::create(&filename) {
-                Ok(_) => (),
+                Ok(_) => {
+                    file_metadata = if flags.no_deref {
+                        fs::symlink_metadata(&filename)
+                    } else {
+                        fs::metadata(&filename)
+                    };
+                },
                 Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
             }
-        } else {
-            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
-            // expression.
-            update_time(&filename, new_atime, new_mtime, &file_metadata.unwrap(), flags);
+        }
+        if let Ok(file_metadata) = file_metadata {
+            update_time(&filename, new_atime, new_mtime, &file_metadata, flags);
         }
     }
 }
@@ -51,10 +60,9 @@ struct TouchFlags<'a> {
     mod_time: bool,
     no_create: bool,
     no_deref: bool,
-    reference: bool,
-    ref_path: &'a str,
-    date: bool,
-    date_val: &'a str,
+    reference_path: Option<&'a str>,
+    date: Option<&'a str>,
+    timestamp: Option<&'a str>,
 }
 
 impl<'a> TouchFlags<'a> {
@@ -78,31 +86,30 @@ impl<'a> TouchFlags<'a> {
             mod_time,
             no_create: matches.is_present("nocreate") || matches.is_present("no_deref"),
             no_deref: matches.is_present("no_deref"),
-            reference: matches.is_present("reference"),
-            ref_path: matches.value_of("reference").unwrap_or(""),
-            date: matches.is_present("date"),
-            date_val: matches.value_of("date").unwrap_or(""),
+            reference_path: matches.value_of("reference"),
+            date: matches.value_of("date"),
+            timestamp: matches.value_of("timestamp"),
         }
     }
 }
 
 /// Returns the correct `(atime, mtime)` acording to the `flags`.
 fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
-    if flags.date {
-        let date = match PrimitiveDateTime::parse(&flags.date_val, "%Y-%m-%d %H:%M:%S") {
+    if let Some(flags_date) = flags.date {
+        let date = match PrimitiveDateTime::parse(&flags_date, "%Y-%m-%d %H:%M:%S") {
             Ok(dt) => dt.assume_utc(),
             Err(err) => return Err(format!("Problem parsing date arguments: {}", err)),
         };
         let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
 
         Ok((time, time))
-    } else if flags.reference {
-        let file_meta = match fs::metadata(flags.ref_path) {
+    } else if let Some(flags_reference) = flags.reference_path {
+        let file_meta = match fs::metadata(flags_reference) {
             Ok(m) => m,
             Err(err) => {
                 return Err(format!(
                     "Failed to get {} (OTHER_FILE) metadata: {}",
-                    flags.ref_path, err
+                    flags_reference, err
                 ));
             },
         };
@@ -111,6 +118,34 @@ fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
             FileTime::from_last_access_time(&file_meta),
             FileTime::from_last_modification_time(&file_meta),
         ))
+    } else if let Some(flags_timestamp) = flags.timestamp {
+        // PrimitiveDateTime::parse doesn't handle missing %C and %C%y in format,
+        // thus, based on the length of the input, the input string will be
+        // completed up to the "%C%y%m%d%H%M.%S" format
+        let current_date: PrimitiveDateTime = SystemTime::now().into();
+        let input = flags_timestamp.trim_start();
+        let input = match input.len() {
+            // CCYYMMDDhhmm.ss format, nothing to add
+            15 => input.to_owned(),
+            // YYMMDDhhmm.ss format, add century
+            13 => format!("{}{}", current_date.format("%C"), input),
+            // CCYYMMDDhhmm format, add .00 for seconds
+            12 => format!("{}.00", input),
+            // MMDDhhmm.ss format, add year
+            11 => format!("{}{}", current_date.format("%Y"), input),
+            // YYMMDDhhmm format, add century and .00 for seconds
+            10 => format!("{}{}.00", current_date.format("%C"), input),
+            // YYMMDDhhmm format, add year and .00 for seconds
+            8 => format!("{}{}.00", current_date.format("%Y"), input),
+            _ => return Err(format!("Unhandled timestamp format '{}'", input)),
+        };
+        let date = match PrimitiveDateTime::parse(&input, "%Y%m%d%H%M.%S") {
+            Ok(dt) => dt.assume_utc(),
+            Err(err) => return Err(format!("Problem parsing timestamp argument: {}", err)),
+        };
+        let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
+
+        Ok((time, time))
     } else {
         let now = FileTime::from_system_time(SystemTime::now());
 

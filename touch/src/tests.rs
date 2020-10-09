@@ -111,41 +111,56 @@ fn touch_update_time_with_date() {
     // update and create files
     touch(&files, flags);
 
-    let file1_metadata = metadata(&files[0]).unwrap();
-    let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
+    for curr_file in &files {
+        let file1_metadata = metadata(curr_file).unwrap();
+        let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
-    let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
+        let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
 
-    // check modification and access time is equal 2009-01-03 03:13:00
-    assert_eq!(
-        time,
-        PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S").unwrap().assume_utc()
-    );
+        // check modification and access time is equal 2009-01-03 03:13:00
+        assert_eq!(
+            time,
+            PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S")
+                .unwrap()
+                .assume_utc()
+        );
+    }
     remove_test_files(&files).unwrap();
 }
 
-fn touch(files: &[&str], flags: TouchFlags) {
-    let (new_atime, new_mtime) = new_filetimes(flags).unwrap_or_else(|err| {
-        eprintln!("touch: {}", err);
-        process::exit(1);
-    });
+#[test]
+fn touch_update_time_with_timestamp() {
+    let matches = cli::create_app().get_matches_from(vec![
+        "touch",
+        "-t 200901030313.00",
+        "file11.rs",
+        "file12.rs",
+    ]);
 
-    for filename in files {
-        // if file already exist in the current directory
-        let file_metadata =
-            if flags.no_deref { fs::symlink_metadata(&filename) } else { fs::metadata(&filename) };
+    let flags = TouchFlags::from_matches(&matches);
 
-        if file_metadata.is_err() && !flags.no_create {
-            match File::create(&filename) {
-                Ok(_) => (),
-                Err(e) => eprintln!("touch: Failed to create file {}: {}", &filename, e),
-            }
-        } else {
-            // Ok to unwrap cause it was checked in the first condition of the if-elseif-else
-            // expression.
-            update_time(&filename, new_atime, new_mtime, &file_metadata.unwrap(), flags);
-        }
+    let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
+
+    File::create(&files[0]).unwrap();
+
+    // update and create files
+    touch(&files, flags);
+
+    for curr_file in &files {
+        let file1_metadata = metadata(curr_file).unwrap();
+        let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
+
+        let time = time::OffsetDateTime::from_unix_timestamp(file1_mtime.unix_seconds());
+
+        // check modification and access time is equal 2009-01-03 03:13:00
+        assert_eq!(
+            time,
+            PrimitiveDateTime::parse("2009-01-03 03:13:00", "%Y-%m-%d %H:%M:%S")
+                .unwrap()
+                .assume_utc()
+        );
     }
+    remove_test_files(&files).unwrap();
 }
 
 fn remove_test_files(files: &[&str]) -> io::Result<()> {

@@ -85,10 +85,22 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("date")
                 .help(
-                    "Parse STRING (date format [Y-m-d H:M:S]) and use it instead of current time.",
+                    "Parse STRING (date format [Y-M-D h:m:s]) and use it instead of current time.",
                 )
                 .long("date")
                 .short("d")
+                .conflicts_with("reference")
+                .value_name("STRING"),
+        )
+        .arg(
+            Arg::with_name("timestamp")
+                .help(
+                    "Parse STRING (date format [[CC]YY]MMDDhhmm[.ss]) and use it instead of \
+                     current time.",
+                )
+                .short("t")
+                .conflicts_with("date")
+                .conflicts_with("reference")
                 .value_name("STRING"),
         )
 }
