@@ -1,6 +1,6 @@
-use std::{fs, process};
 use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
+use std::{fs, process};
 
 use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
@@ -37,7 +37,7 @@ fn main() {
             Err(err) => {
                 eprintln!("ls: cannot access '{}': {}", file, err);
                 exit_code = 1;
-            },
+            }
         }
     }
 
@@ -95,11 +95,14 @@ fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
                     if let Ok(subdir) = subdir {
                         let subdir_map = subdir.map(|r| r.unwrap());
 
-                        links = 2 + subdir_map.filter(|r| fs::metadata(r.path()).unwrap().is_dir()).count();
+                        links = 2 + subdir_map
+                            .filter(|r| fs::metadata(r.path()).unwrap().is_dir())
+                            .count();
                     }
                 }
 
-                println!("{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                println!(
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}",
                     perms,
                     links,
                     user.name(),
@@ -108,11 +111,11 @@ fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
                     modified_datetime.format("%b %e %k:%M"),
                     file_name,
                 );
-            },
+            }
             Err(err) => {
                 eprintln!("ls: {}", err);
                 exit_code = 1;
-            },
+            }
         }
     }
 

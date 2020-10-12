@@ -13,7 +13,7 @@ fn main() {
         Err(err) => {
             eprintln!("No OUT_DIR: {}", err);
             return;
-        },
+        }
     };
 
     app.gen_completions("ls", Shell::Zsh, out_dir.clone());

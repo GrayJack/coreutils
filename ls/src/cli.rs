@@ -16,17 +16,17 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("File(s) to list.")
                 .required(true)
                 .multiple(true)
-                .default_value(".")
+                .default_value("."),
         )
         .arg(
             Arg::with_name("list")
                 .help("Use a long listing format.")
-                .short("l")
+                .short("l"),
         )
         .arg(
             Arg::with_name("all")
                 .help("Do not ignore entries starting with .")
                 .short("a")
-                .long("all")
+                .long("all"),
         )
 }
