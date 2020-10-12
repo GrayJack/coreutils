@@ -44,13 +44,13 @@ fn main() {
     }
 }
 
-fn print_default(dir: Vec<fs::DirEntry>, hidden: bool) -> i32 {
+fn print_default(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
     let exit_code = 1;
 
     for entry in dir {
         let file_name = entry.file_name().into_string().unwrap();
 
-        if is_hidden(&file_name) && !hidden {
+        if is_hidden(&file_name) && !all {
             continue;
         }
 
@@ -61,7 +61,7 @@ fn print_default(dir: Vec<fs::DirEntry>, hidden: bool) -> i32 {
     exit_code
 }
 
-fn print_list(dir: Vec<fs::DirEntry>, hidden: bool) -> i32 {
+fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
     let mut exit_code = 1;
 
     for entry in dir {
@@ -69,7 +69,7 @@ fn print_list(dir: Vec<fs::DirEntry>, hidden: bool) -> i32 {
             Ok(meta_data) => {
                 let file_name = entry.file_name().into_string().unwrap();
 
-                if is_hidden(&file_name) && !hidden {
+                if is_hidden(&file_name) && !all {
                     continue;
                 }
 
