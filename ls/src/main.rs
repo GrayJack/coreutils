@@ -2,6 +2,8 @@ use std::{fs, process};
 use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 
+use coreutils_core::os::group::Group;
+
 extern crate chrono;
 
 use chrono::prelude::{DateTime, Utc};
@@ -77,10 +79,12 @@ fn print_list(dir: Vec<fs::DirEntry>, hidden: bool) -> i32 {
                 let modified = meta_data.modified().unwrap();
                 let modified_datetime: DateTime<Utc> = modified.into();
 
+                let group = Group::from_gid(meta_data.st_gid()).unwrap();
+
                 println!("{}\t1\t{}\t{}\t{}\t{}\t{}",
                     perms,
                     meta_data.st_uid(),
-                    meta_data.st_gid(),
+                    group.name(),
                     meta_data.len(),
                     modified_datetime.format("%b %e %k::%M"),
                     file_name,
