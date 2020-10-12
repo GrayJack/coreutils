@@ -3,6 +3,7 @@ use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 
 use coreutils_core::os::group::Group;
+use coreutils_core::os::passwd::Passwd;
 
 extern crate chrono;
 
@@ -79,14 +80,16 @@ fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
                 let modified = meta_data.modified().unwrap();
                 let modified_datetime: DateTime<Utc> = modified.into();
 
+                let user = Passwd::from_uid(meta_data.st_uid()).unwrap();
+
                 let group = Group::from_gid(meta_data.st_gid()).unwrap();
 
                 println!("{}\t1\t{}\t{}\t{}\t{}\t{}",
                     perms,
-                    meta_data.st_uid(),
+                    user.name(),
                     group.name(),
                     meta_data.len(),
-                    modified_datetime.format("%b %e %k::%M"),
+                    modified_datetime.format("%b %e %k:%M"),
                     file_name,
                 );
             },
