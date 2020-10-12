@@ -25,6 +25,7 @@ fn main() {
             Ok(dir) => {
                 let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
 
+                // Sort the directory entries by file name
                 dir.sort_by_key(|dir| dir.path());
 
                 if list {
@@ -45,6 +46,7 @@ fn main() {
     }
 }
 
+/// Prints information about a file in the default format
 fn print_default(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
     let exit_code = 1;
 
@@ -62,6 +64,7 @@ fn print_default(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
     exit_code
 }
 
+/// Prints information about the provided file in a long format
 fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
     let mut exit_code = 1;
 
