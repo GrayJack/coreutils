@@ -87,8 +87,21 @@ fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
 
                 let group = Group::from_gid(meta_data.st_gid()).unwrap();
 
-                println!("{}\t1\t{}\t{}\t{}\t{}\t{}",
+                let mut links = 1;
+
+                if meta_data.is_dir() {
+                    let subdir = fs::read_dir(entry.path());
+
+                    if let Ok(subdir) = subdir {
+                        let subdir_map = subdir.map(|r| r.unwrap());
+
+                        links = 2 + subdir_map.filter(|r| fs::metadata(r.path()).unwrap().is_dir()).count();
+                    }
+                }
+
+                println!("{}\t{}\t{}\t{}\t{}\t{}\t{}",
                     perms,
+                    links,
                     user.name(),
                     group.name(),
                     meta_data.len(),
