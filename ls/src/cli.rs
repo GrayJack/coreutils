@@ -1,0 +1,32 @@
+use clap::{
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
+};
+
+pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+    App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
+        .help_message("Display help information.")
+        .version_message("Display version information.")
+        .help_short("?")
+        .settings(&[ColoredHelp])
+        .arg(
+            Arg::with_name("FILE")
+                .help("File(s) to list.")
+                .required(true)
+                .multiple(true)
+                .default_value(".")
+        )
+        .arg(
+            Arg::with_name("list")
+                .help("Use a long listing format.")
+                .short("l")
+        )
+        .arg(
+            Arg::with_name("all")
+                .help("Do not ignore entries starting with .")
+                .short("a")
+                .long("all")
+        )
+}
