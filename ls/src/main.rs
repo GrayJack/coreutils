@@ -36,7 +36,11 @@ fn main() {
                     });
                 } else {
                     // Sort the directory entries by file name by default
-                    dir.sort_by_key(|dir| dir.path());
+                    dir.sort_by_key(|dir| {
+                        let file_name = dir.file_name().into_string().unwrap();
+
+                        file_name.to_lowercase()
+                    });
                 }
 
                 if flags.reverse {
