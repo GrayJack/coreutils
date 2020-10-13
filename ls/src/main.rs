@@ -1,9 +1,11 @@
-use std::os::linux::fs::MetadataExt;
-use std::os::unix::fs::PermissionsExt;
-use std::{fs, process};
+use clap::ArgMatches;
 
 use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
+
+use std::os::linux::fs::MetadataExt;
+use std::os::unix::fs::PermissionsExt;
+use std::{fs, process};
 
 extern crate chrono;
 
@@ -15,10 +17,7 @@ fn main() {
     let matches = cli::create_app().get_matches();
 
     let files = matches.values_of("FILE").unwrap();
-    let all = matches.is_present("all");
-    let list = matches.is_present("list");
-    let reverse = matches.is_present("reverse");
-    let time = matches.is_present("time");
+    let flags = LsFlags::from_matches(&matches);
 
     let mut exit_code = 0;
 
@@ -27,7 +26,7 @@ fn main() {
             Ok(dir) => {
                 let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
 
-                if time {
+                if flags.time {
                     dir.sort_by_key(|dir| {
                         let metadata = fs::metadata(dir.path()).expect("Failed to get metadata");
 
@@ -38,14 +37,14 @@ fn main() {
                     dir.sort_by_key(|dir| dir.path());
                 }
 
-                if reverse {
+                if flags.reverse {
                     dir.reverse();
                 }
 
-                if list {
-                    exit_code = print_list(dir, all);
+                if flags.list {
+                    exit_code = print_list(dir, flags);
                 } else {
-                    exit_code = print_default(dir, all);
+                    exit_code = print_default(dir, flags);
                 }
             }
             Err(err) => {
@@ -61,13 +60,13 @@ fn main() {
 }
 
 /// Prints information about a file in the default format
-fn print_default(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
+fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let exit_code = 1;
 
     for entry in dir {
         let file_name = entry.file_name().into_string().unwrap();
 
-        if is_hidden(&file_name) && !all {
+        if is_hidden(&file_name) && !flags.all {
             continue;
         }
 
@@ -79,7 +78,7 @@ fn print_default(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
 }
 
 /// Prints information about the provided file in a long format
-fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
+fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let mut exit_code = 1;
 
     for entry in dir {
@@ -87,7 +86,7 @@ fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
             Ok(meta_data) => {
                 let file_name = entry.file_name().into_string().unwrap();
 
-                if is_hidden(&file_name) && !all {
+                if is_hidden(&file_name) && !flags.all {
                     continue;
                 }
 
@@ -139,4 +138,28 @@ fn print_list(dir: Vec<fs::DirEntry>, all: bool) -> i32 {
 /// Checks if a string looks like a hidden unix file
 fn is_hidden(str: &str) -> bool {
     str.starts_with('.')
+}
+
+#[derive(Default, Copy, Clone)]
+struct LsFlags {
+    all: bool,
+    list: bool,
+    reverse: bool,
+    time: bool,
+}
+
+impl LsFlags {
+    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+        let all = matches.is_present("all");
+        let list = matches.is_present("list");
+        let reverse = matches.is_present("reverse");
+        let time = matches.is_present("time");
+
+        LsFlags {
+            all,
+            list,
+            reverse,
+            time,
+        }
+    }
 }
