@@ -30,6 +30,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("l"),
         )
         .arg(
+            Arg::with_name("reverse")
+                .help("Reverse order while sorting")
+                .short("r")
+                .long("reverse")
+        )
+        .arg(
             Arg::with_name("time")
                 .help("Sort by modification time, newest first.")
                 .short("t"),

@@ -17,6 +17,7 @@ fn main() {
     let files = matches.values_of("FILE").unwrap();
     let all = matches.is_present("all");
     let list = matches.is_present("list");
+    let reverse = matches.is_present("reverse");
     let time = matches.is_present("time");
 
     let mut exit_code = 0;
@@ -35,6 +36,10 @@ fn main() {
                 } else {
                     // Sort the directory entries by file name by default
                     dir.sort_by_key(|dir| dir.path());
+                }
+
+                if reverse {
+                    dir.reverse();
                 }
 
                 if list {
