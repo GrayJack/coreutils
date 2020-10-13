@@ -15,8 +15,9 @@ fn main() {
     let matches = cli::create_app().get_matches();
 
     let files = matches.values_of("FILE").unwrap();
-    let list = matches.is_present("list");
     let all = matches.is_present("all");
+    let list = matches.is_present("list");
+    let time = matches.is_present("time");
 
     let mut exit_code = 0;
 
@@ -25,8 +26,16 @@ fn main() {
             Ok(dir) => {
                 let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
 
-                // Sort the directory entries by file name
-                dir.sort_by_key(|dir| dir.path());
+                if time {
+                    dir.sort_by_key(|dir| {
+                        let metadata = fs::metadata(dir.path()).expect("Failed to get metadata");
+
+                        metadata.modified().expect("Failed to get file's modification time")
+                    });
+                } else {
+                    // Sort the directory entries by file name by default
+                    dir.sort_by_key(|dir| dir.path());
+                }
 
                 if list {
                     exit_code = print_list(dir, all);

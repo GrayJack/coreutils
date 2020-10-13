@@ -19,14 +19,20 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .default_value("."),
         )
         .arg(
-            Arg::with_name("list")
-                .help("Use a long listing format.")
-                .short("l"),
-        )
-        .arg(
             Arg::with_name("all")
                 .help("Do not ignore entries starting with .")
                 .short("a")
                 .long("all"),
         )
+        .arg(
+            Arg::with_name("list")
+                .help("Use a long listing format.")
+                .short("l"),
+        )
+        .arg(
+            Arg::with_name("time")
+                .help("Sort by modification time, newest first.")
+                .short("t"),
+        )
+
 }
