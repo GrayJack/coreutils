@@ -7,6 +7,8 @@ use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 use std::{fs, process};
 
+use ansi_term::Color;
+
 extern crate chrono;
 
 use chrono::prelude::{DateTime, Utc};
@@ -84,7 +86,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     for entry in dir {
         match fs::metadata(entry.path()) {
             Ok(meta_data) => {
-                let file_name = entry.file_name().into_string().unwrap();
+                let mut file_name = entry.file_name().into_string().unwrap();
 
                 if is_hidden(&file_name) && !flags.all {
                     continue;
@@ -102,7 +104,13 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
                 let mut links = 1;
 
+                if is_executable(meta_data.permissions()) {
+                    file_name = Color::Green.bold().paint(file_name).to_string();
+                }
+
                 if meta_data.is_dir() {
+                    file_name = Color::Blue.bold().paint(file_name).to_string();
+
                     let subdir = fs::read_dir(entry.path());
 
                     if let Ok(subdir) = subdir {
@@ -133,6 +141,10 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     }
 
     exit_code
+}
+
+fn is_executable(permissions: fs::Permissions) -> bool {
+    permissions.mode() & 0o111 != 0
 }
 
 /// Checks if a string looks like a hidden unix file

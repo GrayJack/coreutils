@@ -14,6 +14,7 @@ clap = { version = "^2.33.0", features = ["wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
 unix_mode = "0.1.1"
 chrono = "0.4"
+ansi_term = "0.12.1"
 
 [build-dependencies]
 clap = "^2.33.0"
