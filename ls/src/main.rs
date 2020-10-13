@@ -89,30 +89,30 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
     for entry in dir {
         match fs::metadata(entry.path()) {
-            Ok(meta_data) => {
+            Ok(metadata) => {
                 let mut file_name = entry.file_name().into_string().unwrap();
 
                 if is_hidden(&file_name) && !flags.all {
                     continue;
                 }
 
-                let mode = meta_data.permissions().mode();
+                let mode = metadata.permissions().mode();
                 let perms = unix_mode::to_string(mode);
 
-                let modified = meta_data.modified().unwrap();
+                let modified = metadata.modified().unwrap();
                 let modified_datetime: DateTime<Utc> = modified.into();
 
-                let user = Passwd::from_uid(meta_data.st_uid()).unwrap();
+                let user = Passwd::from_uid(metadata.st_uid()).unwrap();
 
-                let group = Group::from_gid(meta_data.st_gid()).unwrap();
+                let group = Group::from_gid(metadata.st_gid()).unwrap();
 
                 let mut links = 1;
 
-                if is_executable(meta_data.permissions()) {
+                if is_executable(&metadata) {
                     file_name = Color::Green.bold().paint(file_name).to_string();
                 }
 
-                if meta_data.is_dir() {
+                if metadata.is_dir() {
                     file_name = Color::Blue.bold().paint(file_name).to_string();
 
                     let subdir = fs::read_dir(entry.path());
@@ -132,7 +132,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                     links,
                     user.name(),
                     group.name(),
-                    meta_data.len(),
+                    metadata.len(),
                     modified_datetime.format("%b %e %k:%M"),
                     file_name,
                 );
@@ -147,8 +147,8 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     exit_code
 }
 
-fn is_executable(permissions: fs::Permissions) -> bool {
-    permissions.mode() & 0o111 != 0
+fn is_executable(metadata: &fs::Metadata) -> bool {
+    metadata.is_file() && metadata.permissions().mode() & 0o111 != 0
 }
 
 /// Checks if a string looks like a hidden unix file
