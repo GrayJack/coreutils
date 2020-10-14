@@ -31,6 +31,7 @@ fn main() {
 
                 if flags.time {
                     dir.sort_by_key(sort_by_time);
+                    dir.reverse();
                 } else {
                     // Sort the directory entries by file name by default
                     dir.sort_by_key(sort_by_name);
