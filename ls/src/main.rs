@@ -191,11 +191,6 @@ impl LsFlags {
         let reverse = matches.is_present("reverse");
         let time = matches.is_present("time");
 
-        LsFlags {
-            all,
-            list,
-            reverse,
-            time,
-        }
+        LsFlags { all, list, reverse, time }
     }
 }
