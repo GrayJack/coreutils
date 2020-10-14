@@ -70,10 +70,22 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let exit_code = 1;
 
     for entry in dir {
-        let file_name = entry.file_name().into_string().unwrap();
+        let mut file_name = entry.file_name().into_string().unwrap();
 
         if is_hidden(&file_name) && !flags.all {
             continue;
+        }
+
+        let metadata = fs::metadata(entry.path());
+
+        if let Ok(metadata) = metadata {
+            if is_executable(&metadata) {
+                file_name = add_executable_color(file_name);
+            }
+
+            if metadata.is_dir() {
+                file_name = add_directory_color(file_name);
+            }
         }
 
         print!("{} ", file_name);
@@ -109,11 +121,11 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                 let mut links = 1;
 
                 if is_executable(&metadata) {
-                    file_name = Color::Green.bold().paint(file_name).to_string();
+                    file_name = add_executable_color(file_name);
                 }
 
                 if metadata.is_dir() {
-                    file_name = Color::Blue.bold().paint(file_name).to_string();
+                    file_name = add_directory_color(file_name);
 
                     let subdir = fs::read_dir(entry.path());
 
@@ -145,6 +157,14 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     }
 
     exit_code
+}
+
+fn add_executable_color(file_name: String) -> String {
+    Color::Green.bold().paint(file_name).to_string()
+}
+
+fn add_directory_color(directory_name: String) -> String {
+    Color::Blue.bold().paint(directory_name).to_string()
 }
 
 fn is_executable(metadata: &fs::Metadata) -> bool {
