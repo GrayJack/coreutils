@@ -5,7 +5,7 @@ use coreutils_core::os::passwd::Passwd;
 
 use std::string::String;
 use std::os::linux::fs::MetadataExt;
-use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::{MetadataExt as UnixMetadata, PermissionsExt};
 use std::{fs, path, process};
 use std::time::SystemTime;
 
@@ -100,24 +100,10 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
                 let group = Group::from_gid(metadata.st_gid()).unwrap();
 
-                let mut links = 1;
-
-                if metadata.is_dir() {
-                    let subdir = fs::read_dir(entry.path());
-
-                    if let Ok(subdir) = subdir {
-                        let subdir_map = subdir.map(|r| r.unwrap());
-
-                        links = 2 + subdir_map
-                            .filter(|r| fs::metadata(r.path()).unwrap().is_dir())
-                            .count();
-                    }
-                }
-
                 println!(
                     "{}\t{}\t{}\t{}\t{}\t{}\t{}",
                     perms,
-                    links,
+                    metadata.nlink(),
                     user.name(),
                     group.name(),
                     metadata.len(),
