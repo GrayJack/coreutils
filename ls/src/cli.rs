@@ -13,7 +13,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .settings(&[ColoredHelp])
         .arg(
             Arg::with_name("FILE")
-                .help("File(s) to list.")
+                .help("File(s) to list")
                 .required(true)
                 .multiple(true)
                 .default_value("."),
@@ -25,8 +25,14 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("all"),
         )
         .arg(
+            Arg::with_name("size")
+                .help("Print the allocated size of each file, in blocks")
+                .short("s")
+                .long("size")
+        )
+        .arg(
             Arg::with_name("list")
-                .help("Use a long listing format.")
+                .help("Use a long listing format")
                 .short("l"),
         )
         .arg(
@@ -37,7 +43,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("time")
-                .help("Sort by modification time, newest first.")
+                .help("Sort by modification time, newest first")
                 .short("t"),
         )
 }

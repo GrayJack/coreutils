@@ -4,7 +4,6 @@ use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
 
 use std::string::String;
-use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::{MetadataExt as UnixMetadata, PermissionsExt};
 use std::{fs, path, process};
 use std::time::SystemTime;
@@ -96,20 +95,34 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                 let modified = metadata.modified().unwrap();
                 let modified_datetime: DateTime<Utc> = modified.into();
 
-                let user = Passwd::from_uid(metadata.st_uid()).unwrap();
+                let user = Passwd::from_uid(metadata.uid()).unwrap();
 
-                let group = Group::from_gid(metadata.st_gid()).unwrap();
+                let group = Group::from_gid(metadata.gid()).unwrap();
 
-                println!(
-                    "{}\t{}\t{}\t{}\t{}\t{}\t{}",
-                    perms,
-                    metadata.nlink(),
-                    user.name(),
-                    group.name(),
-                    metadata.len(),
-                    modified_datetime.format("%b %e %k:%M"),
-                    file_name,
-                );
+                if flags.size {
+                    println!(
+                        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                        metadata.blocks(),
+                        perms,
+                        metadata.nlink(),
+                        user.name(),
+                        group.name(),
+                        metadata.len(),
+                        modified_datetime.format("%b %e %k:%M"),
+                        file_name,
+                    );
+                } else {
+                    println!(
+                        "{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                        perms,
+                        metadata.nlink(),
+                        user.name(),
+                        group.name(),
+                        metadata.len(),
+                        modified_datetime.format("%b %e %k:%M"),
+                        file_name,
+                    );
+                }
             }
             Err(err) => {
                 eprintln!("ls: {}", err);
@@ -207,6 +220,7 @@ struct LsFlags {
     all: bool,
     list: bool,
     reverse: bool,
+    size: bool,
     time: bool,
 }
 
@@ -215,8 +229,9 @@ impl LsFlags {
         let all = matches.is_present("all");
         let list = matches.is_present("list");
         let reverse = matches.is_present("reverse");
+        let size = matches.is_present("size");
         let time = matches.is_present("time");
 
-        LsFlags { all, list, reverse, time }
+        LsFlags { all, list, reverse, size, time }
     }
 }
