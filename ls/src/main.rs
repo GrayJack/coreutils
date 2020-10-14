@@ -218,9 +218,13 @@ fn sort_by_name(dir: &fs::DirEntry) -> String {
 
 /// Sort a list of directories by modification time
 fn sort_by_time(dir: &fs::DirEntry) -> SystemTime {
-    let metadata = fs::metadata(dir.path()).expect("Failed to get metadata");
+    let metadata = fs::metadata(dir.path());
 
-    metadata.modified().expect("Failed to get file's modification time")
+    if let Ok(metadata) = metadata {
+        metadata.modified().unwrap()
+    } else {
+        SystemTime::now()
+    }
 }
 
 #[derive(Default, Copy, Clone)]
