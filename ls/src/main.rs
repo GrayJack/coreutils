@@ -65,7 +65,7 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     for entry in dir {
         let file_name = get_file_name(&entry);
 
-        if is_hidden(&file_name) && !flags.all {
+        if is_hidden(&entry) && !flags.all {
             continue;
         }
 
@@ -85,7 +85,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
             Ok(metadata) => {
                 let file_name = get_file_name(&entry);
 
-                if is_hidden(&file_name) && !flags.all {
+                if is_hidden(&entry) && !flags.all {
                     continue;
                 }
 
@@ -197,8 +197,16 @@ fn is_executable(path: &path::PathBuf) -> bool {
 }
 
 /// Checks if a string looks like a hidden unix file
-fn is_hidden(str: &str) -> bool {
-    str.starts_with('.')
+fn is_hidden(entry: &fs::DirEntry) -> bool {
+    let mut result = false;
+
+    let file_name = entry.file_name().into_string();
+
+    if let Ok(file_name) = file_name {
+        result = file_name.starts_with('.')
+    }
+
+    result
 }
 
 /// Sort a list of directories by file name alphabetically
