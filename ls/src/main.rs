@@ -3,9 +3,10 @@ use clap::ArgMatches;
 use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
 
+use std::string::String;
 use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
-use std::{fs, process};
+use std::{fs, path, process};
 
 use ansi_term::Color;
 
@@ -70,22 +71,10 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let exit_code = 1;
 
     for entry in dir {
-        let mut file_name = entry.file_name().into_string().unwrap();
+        let file_name = get_file_name(&entry);
 
         if is_hidden(&file_name) && !flags.all {
             continue;
-        }
-
-        let metadata = fs::metadata(entry.path());
-
-        if let Ok(metadata) = metadata {
-            if is_executable(&metadata) {
-                file_name = add_executable_color(file_name);
-            }
-
-            if metadata.is_dir() {
-                file_name = add_directory_color(file_name);
-            }
         }
 
         print!("{} ", file_name);
@@ -100,9 +89,9 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let mut exit_code = 1;
 
     for entry in dir {
-        match fs::metadata(entry.path()) {
+        match fs::symlink_metadata(entry.path()) {
             Ok(metadata) => {
-                let mut file_name = entry.file_name().into_string().unwrap();
+                let file_name = get_file_name(&entry);
 
                 if is_hidden(&file_name) && !flags.all {
                     continue;
@@ -120,13 +109,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
                 let mut links = 1;
 
-                if is_executable(&metadata) {
-                    file_name = add_executable_color(file_name);
-                }
-
                 if metadata.is_dir() {
-                    file_name = add_directory_color(file_name);
-
                     let subdir = fs::read_dir(entry.path());
 
                     if let Ok(subdir) = subdir {
@@ -159,16 +142,66 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     exit_code
 }
 
+/// Gets a file name from a directory entry and adds appropriate formatting
+fn get_file_name(file: &fs::DirEntry) -> String {
+    let mut file_name = file.file_name().into_string().unwrap();
+
+    let metadata = fs::symlink_metadata(file.path());
+
+    if let Ok(metadata) = metadata {
+        if is_executable(&file.path()) {
+            file_name = add_executable_color(file_name);
+        }
+
+        if metadata.file_type().is_symlink() {
+            file_name = add_symlink_color(file_name);
+            let symlink = fs::read_link(file.path());
+
+            if let Ok(symlink) = symlink {
+                let mut symlink_name = String::from(symlink.to_str().unwrap());
+
+                if is_executable(&symlink) {
+                    symlink_name = add_executable_color(symlink_name);
+                }
+
+                file_name = format!("{} -> {}", file_name, symlink_name);
+            }
+        }
+
+        if metadata.is_dir() {
+            file_name = add_directory_color(file_name);
+        }
+    }
+
+    file_name
+}
+
+/// Adds a bold green color to a file name to represent an executable
 fn add_executable_color(file_name: String) -> String {
     Color::Green.bold().paint(file_name).to_string()
 }
 
+/// Adds a bold blue color to a directory name
 fn add_directory_color(directory_name: String) -> String {
     Color::Blue.bold().paint(directory_name).to_string()
 }
 
-fn is_executable(metadata: &fs::Metadata) -> bool {
-    metadata.is_file() && metadata.permissions().mode() & 0o111 != 0
+/// Adds a bold cyan color to a file name to represent a symlink
+fn add_symlink_color(symlink_name: String) -> String {
+    Color::Cyan.bold().paint(symlink_name).to_string()
+}
+
+/// Check if a path is an executable file
+fn is_executable(path: &path::PathBuf) -> bool {
+    let mut result = false;
+
+    let metadata = fs::symlink_metadata(path);
+
+    if let Ok(metadata) = metadata {
+        result = metadata.is_file() && metadata.permissions().mode() & 0o111 != 0;
+    }
+
+    result
 }
 
 /// Checks if a string looks like a hidden unix file
