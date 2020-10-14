@@ -7,6 +7,7 @@ use std::string::String;
 use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 use std::{fs, path, process};
+use std::time::SystemTime;
 
 use ansi_term::Color;
 
@@ -30,18 +31,10 @@ fn main() {
                 let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
 
                 if flags.time {
-                    dir.sort_by_key(|dir| {
-                        let metadata = fs::metadata(dir.path()).expect("Failed to get metadata");
-
-                        metadata.modified().expect("Failed to get file's modification time")
-                    });
+                    dir.sort_by_key(sort_by_time);
                 } else {
                     // Sort the directory entries by file name by default
-                    dir.sort_by_key(|dir| {
-                        let file_name = dir.file_name().into_string().unwrap();
-
-                        file_name.to_lowercase()
-                    });
+                    dir.sort_by_key(sort_by_name);
                 }
 
                 if flags.reverse {
@@ -207,6 +200,20 @@ fn is_executable(path: &path::PathBuf) -> bool {
 /// Checks if a string looks like a hidden unix file
 fn is_hidden(str: &str) -> bool {
     str.starts_with('.')
+}
+
+/// Sort a list of directories by file name alphabetically
+fn sort_by_name(dir: &fs::DirEntry) -> String {
+    let file_name = dir.file_name().into_string().unwrap();
+
+    file_name.to_lowercase()
+}
+
+/// Sort a list of directories by modification time
+fn sort_by_time(dir: &fs::DirEntry) -> SystemTime {
+    let metadata = fs::metadata(dir.path()).expect("Failed to get metadata");
+
+    metadata.modified().expect("Failed to get file's modification time")
 }
 
 #[derive(Default, Copy, Clone)]
