@@ -41,7 +41,7 @@ fn main() {
                     dir.reverse();
                 }
 
-                if flags.list {
+                if flags.list || flags.no_owner {
                     exit_code = print_list(dir, flags);
                 } else {
                     exit_code = print_default(dir, flags);
@@ -96,15 +96,17 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
                 let mode = metadata.permissions().mode();
                 let perms = unix_mode::to_string(mode);
-                print!("{}\t", perms);
+                print!("{} ", perms);
 
                 print!("{:>3} ", metadata.nlink());
 
                 let user = Passwd::from_uid(metadata.uid()).unwrap();
                 print!("{}\t", user.name());
 
-                let group = Group::from_gid(metadata.gid()).unwrap();
-                print!("{}\t", group.name());
+                if !flags.no_owner {
+                    let group = Group::from_gid(metadata.gid()).unwrap();
+                    print!("{}\t", group.name());
+                }
 
                 print!("{:>5} ", metadata.len());
 
@@ -223,6 +225,7 @@ fn sort_by_time(dir: &fs::DirEntry) -> SystemTime {
 struct LsFlags {
     all: bool,
     list: bool,
+    no_owner: bool,
     reverse: bool,
     size: bool,
     time: bool,
@@ -232,10 +235,11 @@ impl LsFlags {
     fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
         let list = matches.is_present("list");
+        let no_owner = matches.is_present("no_owner");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
         let time = matches.is_present("time");
 
-        LsFlags { all, list, reverse, size, time }
+        LsFlags { all, list, no_owner, reverse, size, time }
     }
 }

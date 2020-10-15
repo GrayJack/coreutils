@@ -25,21 +25,26 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("all"),
         )
         .arg(
-            Arg::with_name("size")
-                .help("Print the allocated size of each file, in blocks")
-                .short("s")
-                .long("size")
-        )
-        .arg(
             Arg::with_name("list")
                 .help("Use a long listing format")
                 .short("l"),
+        )
+        .arg(
+            Arg::with_name("no_owner")
+                .help("like -l, but do not list owner")
+                .short("g")
         )
         .arg(
             Arg::with_name("reverse")
                 .help("Reverse order while sorting")
                 .short("r")
                 .long("reverse"),
+        )
+        .arg(
+            Arg::with_name("size")
+                .help("Print the allocated size of each file, in blocks")
+                .short("s")
+                .long("size")
         )
         .arg(
             Arg::with_name("time")
