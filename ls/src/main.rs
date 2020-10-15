@@ -64,7 +64,7 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let exit_code = 1;
 
     for entry in dir {
-        let file_name = get_file_name(&entry);
+        let file_name = get_file_name(&entry, flags);
 
         if is_hidden(&entry) && !flags.all {
             continue;
@@ -88,7 +88,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     for entry in dir {
         match fs::symlink_metadata(entry.path()) {
             Ok(metadata) => {
-                let file_name = get_file_name(&entry);
+                let file_name = get_file_name(&entry, flags);
 
                 if is_hidden(&entry) && !flags.all {
                     continue;
@@ -133,7 +133,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 }
 
 /// Gets a file name from a directory entry and adds appropriate formatting
-fn get_file_name(file: &fs::DirEntry) -> String {
+fn get_file_name(file: &fs::DirEntry, flags: LsFlags) -> String {
     let mut file_name = file.file_name().into_string().unwrap();
 
     let metadata = fs::symlink_metadata(file.path());
@@ -145,16 +145,19 @@ fn get_file_name(file: &fs::DirEntry) -> String {
 
         if metadata.file_type().is_symlink() {
             file_name = add_symlink_color(file_name);
-            let symlink = fs::read_link(file.path());
 
-            if let Ok(symlink) = symlink {
-                let mut symlink_name = String::from(symlink.to_str().unwrap());
+            if flags.list || flags.no_owner {
+                let symlink = fs::read_link(file.path());
 
-                if is_executable(&symlink) {
-                    symlink_name = add_executable_color(symlink_name);
+                if let Ok(symlink) = symlink {
+                    let mut symlink_name = String::from(symlink.to_str().unwrap());
+
+                    if is_executable(&symlink) {
+                        symlink_name = add_executable_color(symlink_name);
+                    }
+
+                    file_name = format!("{} -> {}", file_name, symlink_name);
                 }
-
-                file_name = format!("{} -> {}", file_name, symlink_name);
             }
         }
 
