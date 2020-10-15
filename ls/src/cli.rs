@@ -25,6 +25,11 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("all"),
         )
         .arg(
+            Arg::with_name("comma_separate")
+                .help("fill width with a comma separated list of entries")
+                .short("m")
+        )
+        .arg(
             Arg::with_name("list")
                 .help("Use a long listing format")
                 .short("l"),

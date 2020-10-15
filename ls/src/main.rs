@@ -41,7 +41,7 @@ fn main() {
                     dir.reverse();
                 }
 
-                if flags.list || flags.no_owner {
+                if !flags.comma_separate && flags.list || flags.no_owner {
                     exit_code = print_list(dir, flags);
                 } else {
                     exit_code = print_default(dir, flags);
@@ -70,7 +70,11 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
             continue;
         }
 
-        print!("{} ", file_name);
+        if flags.comma_separate {
+            print!("{}, ", file_name);
+        } else {
+            print!("{} ", file_name);
+        }
     }
     println!();
 
@@ -224,6 +228,7 @@ fn sort_by_time(dir: &fs::DirEntry) -> SystemTime {
 #[derive(Default, Copy, Clone)]
 struct LsFlags {
     all: bool,
+    comma_separate: bool,
     list: bool,
     no_owner: bool,
     reverse: bool,
@@ -234,12 +239,13 @@ struct LsFlags {
 impl LsFlags {
     fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
+        let comma_separate = matches.is_present("comma_separate");
         let list = matches.is_present("list");
         let no_owner = matches.is_present("no_owner");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
         let time = matches.is_present("time");
 
-        LsFlags { all, list, no_owner, reverse, size, time }
+        LsFlags { all, comma_separate, list, no_owner, reverse, size, time }
     }
 }
