@@ -3,9 +3,9 @@ use clap::ArgMatches;
 use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
 
-use std::string::String;
-use std::os::unix::fs::{MetadataExt as UnixMetadata, PermissionsExt};
 use std::{fs, path, process};
+use std::os::unix::fs::{MetadataExt as UnixMetadata, PermissionsExt};
+use std::string::String;
 use std::time::SystemTime;
 
 use ansi_term::Color;
@@ -90,40 +90,31 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                     continue;
                 }
 
+                if flags.size {
+                    print!("{:>3} ", metadata.blocks());
+                }
+
                 let mode = metadata.permissions().mode();
                 let perms = unix_mode::to_string(mode);
+                print!("{}\t", perms);
+
+                print!("{:>3} ", metadata.nlink());
+
+                let user = Passwd::from_uid(metadata.uid()).unwrap();
+                print!("{}\t", user.name());
+
+                let group = Group::from_gid(metadata.gid()).unwrap();
+                print!("{}\t", group.name());
+
+                print!("{:>5} ", metadata.len());
 
                 let modified = metadata.modified().unwrap();
                 let modified_datetime: DateTime<Utc> = modified.into();
+                print!("{} ", modified_datetime.format("%b %e %k:%M"));
 
-                let user = Passwd::from_uid(metadata.uid()).unwrap();
+                print!("{}", file_name);
 
-                let group = Group::from_gid(metadata.gid()).unwrap();
-
-                if flags.size {
-                    println!(
-                        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
-                        metadata.blocks(),
-                        perms,
-                        metadata.nlink(),
-                        user.name(),
-                        group.name(),
-                        metadata.len(),
-                        modified_datetime.format("%b %e %k:%M"),
-                        file_name,
-                    );
-                } else {
-                    println!(
-                        "{}\t{}\t{}\t{}\t{}\t{}\t{}",
-                        perms,
-                        metadata.nlink(),
-                        user.name(),
-                        group.name(),
-                        metadata.len(),
-                        modified_datetime.format("%b %e %k:%M"),
-                        file_name,
-                    );
-                }
+                println!();
             }
             Err(err) => {
                 eprintln!("ls: {}", err);
