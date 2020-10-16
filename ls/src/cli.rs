@@ -27,23 +27,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("comma_separate")
                 .help("fill width with a comma separated list of entries")
-                .short("m")
+                .short("m"),
         )
-        .arg(
-            Arg::with_name("list")
-                .help("Use a long listing format")
-                .short("l"),
-        )
-        .arg(
-            Arg::with_name("no_owner")
-                .help("like -l, but do not list owner")
-                .short("g")
-        )
+        .arg(Arg::with_name("list").help("Use a long listing format").short("l"))
+        .arg(Arg::with_name("no_owner").help("like -l, but do not list owner").short("g"))
         .arg(
             Arg::with_name("numeric_uid_gid")
                 .help("like -l, but list numeric user and group IDs")
                 .short("n")
-                .long("numeric-uid-gid")
+                .long("numeric-uid-gid"),
         )
         .arg(
             Arg::with_name("reverse")
@@ -55,11 +47,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("size")
                 .help("Print the allocated size of each file, in blocks")
                 .short("s")
-                .long("size")
+                .long("size"),
         )
-        .arg(
-            Arg::with_name("time")
-                .help("Sort by modification time, newest first")
-                .short("t"),
-        )
+        .arg(Arg::with_name("time").help("Sort by modification time, newest first").short("t"))
 }

@@ -3,10 +3,10 @@ use clap::ArgMatches;
 use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
 
-use std::{fs, path, process};
 use std::os::unix::fs::{MetadataExt as UnixMetadata, PermissionsExt};
 use std::string::String;
 use std::time::SystemTime;
+use std::{fs, path, process};
 
 use ansi_term::Color;
 
