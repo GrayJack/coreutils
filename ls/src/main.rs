@@ -73,10 +73,12 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
         if flags.comma_separate {
             print!("{}, ", file_name);
         } else {
-            print!("{} ", file_name);
+            println!("{}", file_name);
         }
     }
-    println!();
+    if flags.comma_separate {
+        println!();
+    }
 
     exit_code
 }
@@ -85,56 +87,45 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let mut exit_code = 1;
 
+    let mut rows: Vec<ListRow> = Vec::new();
+
     for entry in dir {
         match fs::symlink_metadata(entry.path()) {
             Ok(metadata) => {
-                let file_name = get_file_name(&entry, flags);
-
                 if is_hidden(&entry) && !flags.all {
                     continue;
                 }
 
-                if flags.size {
-                    print!("{:>3} ", metadata.blocks());
-                }
+                let list_row = ListRow::from(entry, metadata, flags);
 
-                let mode = metadata.permissions().mode();
-                let perms = unix_mode::to_string(mode);
-                print!("{} ", perms);
-
-                print!("{:>3} ", metadata.nlink());
-
-                if flags.numeric_uid_gid {
-                    print!("{}\t", metadata.uid());
-                } else {
-                    let user = Passwd::from_uid(metadata.uid()).unwrap();
-                    print!("{}\t", user.name());
-                }
-
-                if !flags.no_owner {
-                    if flags.numeric_uid_gid {
-                        print!("{}\t", metadata.gid());
-                    } else {
-                        let group = Group::from_gid(metadata.gid()).unwrap();
-                        print!("{}\t", group.name());
-                    }
-                }
-
-                print!("{:>5} ", metadata.len());
-
-                let modified = metadata.modified().unwrap();
-                let modified_datetime: DateTime<Utc> = modified.into();
-                print!("{} ", modified_datetime.format("%b %e %k:%M"));
-
-                print!("{}", file_name);
-
-                println!();
+                rows.push(list_row);
             }
             Err(err) => {
                 eprintln!("ls: {}", err);
                 exit_code = 1;
             }
         }
+    }
+
+    for row in rows {
+        if flags.size {
+            print!("{:>3} ", row.get_blocks());
+        }
+
+        print!("{} ", row.get_permissions());
+
+        print!("{:>3} ", row.get_hard_links());
+
+        print!("{}\t", row.get_user());
+        print!("{}\t", row.get_group());
+
+        print!("{:>5} ", row.get_size());
+
+        print!("{} ", row.get_time());
+
+        print!("{}", row.get_file_name());
+
+        println!();
     }
 
     exit_code
@@ -265,5 +256,86 @@ impl LsFlags {
     /// Whether to print as a list based ont the provided flags
     fn show_list(&self) -> bool {
         !self.comma_separate && self.list || self.no_owner || self.numeric_uid_gid
+    }
+}
+
+struct ListRow {
+    entry: fs::DirEntry,
+    metadata: fs::Metadata,
+    flags: LsFlags,
+}
+
+impl ListRow {
+    fn from(entry: fs::DirEntry, metadata: fs::Metadata, flags: LsFlags) -> Self {
+        ListRow { entry, metadata, flags }
+    }
+
+    fn get_blocks(&self) -> String {
+        let blocks_value = self.metadata.blocks();
+        let blocks: String = blocks_value.to_string();
+
+        blocks
+    }
+
+    fn get_permissions(&self) -> String {
+        let mode = self.metadata.permissions().mode();
+
+        unix_mode::to_string(mode)
+    }
+
+    fn get_hard_links(&self) -> String {
+        let hard_links_value = self.metadata.nlink();
+        let hard_links: String = hard_links_value.to_string();
+
+        hard_links
+    }
+
+    fn get_user(&self) -> String {
+        let user: String;
+
+        if self.flags.numeric_uid_gid {
+            let user_value = self.metadata.uid();
+            user = user_value.to_string();
+        } else {
+            let uid = Passwd::from_uid(self.metadata.uid()).unwrap();
+            let user_value = uid.name();
+            user = user_value.to_string();
+        }
+
+        user
+    }
+
+    fn get_group(&self) -> String {
+        let group: String;
+
+        if self.flags.numeric_uid_gid {
+            let group_value = self.metadata.gid();
+            group = group_value.to_string();
+        } else {
+            let gid = Group::from_gid(self.metadata.gid()).unwrap();
+            let group_value = gid.name();
+            group = group_value.to_string();
+        }
+
+        group
+    }
+
+    fn get_size(&self) -> String {
+        let size_value = self.metadata.len();
+        let size: String = size_value.to_string();
+
+        size
+    }
+
+    fn get_time(&self) -> String {
+        let modified = self.metadata.modified().unwrap();
+        let modified_datetime: DateTime<Utc> = modified.into();
+        let datetime: String = modified_datetime.format("%b %e %k:%M").to_string();
+
+        datetime
+    }
+
+    fn get_file_name(&self) -> String {
+        get_file_name(&self.entry, self.flags)
     }
 }
