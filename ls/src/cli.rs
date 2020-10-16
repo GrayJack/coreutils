@@ -40,6 +40,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("g")
         )
         .arg(
+            Arg::with_name("numeric_uid_gid")
+                .help("like -l, but list numeric user and group IDs")
+                .short("n")
+                .long("numeric-uid-gid")
+        )
+        .arg(
             Arg::with_name("reverse")
                 .help("Reverse order while sorting")
                 .short("r")

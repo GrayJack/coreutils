@@ -41,7 +41,7 @@ fn main() {
                     dir.reverse();
                 }
 
-                if !flags.comma_separate && flags.list || flags.no_owner {
+                if !flags.comma_separate && flags.show_list() {
                     exit_code = print_list(dir, flags);
                 } else {
                     exit_code = print_default(dir, flags);
@@ -104,12 +104,20 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
                 print!("{:>3} ", metadata.nlink());
 
-                let user = Passwd::from_uid(metadata.uid()).unwrap();
-                print!("{}\t", user.name());
+                if flags.numeric_uid_gid {
+                    print!("{}\t", metadata.uid());
+                } else {
+                    let user = Passwd::from_uid(metadata.uid()).unwrap();
+                    print!("{}\t", user.name());
+                }
 
                 if !flags.no_owner {
-                    let group = Group::from_gid(metadata.gid()).unwrap();
-                    print!("{}\t", group.name());
+                    if flags.numeric_uid_gid {
+                        print!("{}\t", metadata.gid());
+                    } else {
+                        let group = Group::from_gid(metadata.gid()).unwrap();
+                        print!("{}\t", group.name());
+                    }
                 }
 
                 print!("{:>5} ", metadata.len());
@@ -234,6 +242,7 @@ struct LsFlags {
     comma_separate: bool,
     list: bool,
     no_owner: bool,
+    numeric_uid_gid: bool,
     reverse: bool,
     size: bool,
     time: bool,
@@ -245,10 +254,16 @@ impl LsFlags {
         let comma_separate = matches.is_present("comma_separate");
         let list = matches.is_present("list");
         let no_owner = matches.is_present("no_owner");
+        let numeric_uid_gid = matches.is_present("numeric_uid_gid");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
         let time = matches.is_present("time");
 
-        LsFlags { all, comma_separate, list, no_owner, reverse, size, time }
+        LsFlags { all, comma_separate, list, no_owner, numeric_uid_gid, reverse, size, time }
+    }
+
+    /// Whether to print as a list based ont the provided flags
+    fn show_list(&self) -> bool {
+        !self.comma_separate && self.list || self.no_owner || self.numeric_uid_gid
     }
 }
