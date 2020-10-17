@@ -89,7 +89,7 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let mut exit_code = 1;
 
-    let mut rows: Vec<ListRow> = Vec::new();
+    let mut rows: Vec<File> = Vec::new();
 
     let mut block_width = 1;
     let mut hard_links_width = 1;
@@ -104,7 +104,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                     continue;
                 }
 
-                let row = ListRow::from(entry, metadata, flags);
+                let row = File::from(entry, metadata, flags);
 
                 if flags.size {
                     let block = row.get_blocks().len();
@@ -310,17 +310,18 @@ impl LsFlags {
     }
 }
 
-struct ListRow {
+struct File {
     entry: fs::DirEntry,
     metadata: fs::Metadata,
     flags: LsFlags,
 }
 
-impl ListRow {
+impl File {
     fn from(entry: fs::DirEntry, metadata: fs::Metadata, flags: LsFlags) -> Self {
-        ListRow { entry, metadata, flags }
+        File { entry, metadata, flags }
     }
 
+    /// Retrieves the number of blocks allocated to a file as a string
     fn get_blocks(&self) -> String {
         let blocks_value = self.metadata.blocks();
         let blocks: String = blocks_value.to_string();
@@ -328,12 +329,14 @@ impl ListRow {
         blocks
     }
 
+    /// Retrieves a files permissions as a string
     fn get_permissions(&self) -> String {
         let mode = self.metadata.permissions().mode();
 
         unix_mode::to_string(mode)
     }
 
+    /// Retrieves the number of hard links pointing to a file as a string
     fn get_hard_links(&self) -> String {
         let hard_links_value = self.metadata.nlink();
         let hard_links: String = hard_links_value.to_string();
@@ -341,6 +344,8 @@ impl ListRow {
         hard_links
     }
 
+    /// Retrieves the file's user name as a string. If the `-n` flag is set,
+    /// the the user's ID is returned
     fn get_user(&self) -> String {
         let user: String;
 
@@ -356,6 +361,8 @@ impl ListRow {
         user
     }
 
+    /// Retrieves the file's group name as a string. If the `-n` flag is set,
+    /// the the group's ID is returned
     fn get_group(&self) -> String {
         let group: String;
 
@@ -371,6 +378,7 @@ impl ListRow {
         group
     }
 
+    /// Retrieve the file's size, in bytes, as a string
     fn get_size(&self) -> String {
         let size_value = self.metadata.len();
         let size: String = size_value.to_string();
@@ -378,6 +386,7 @@ impl ListRow {
         size
     }
 
+    /// Retrieves the file's timestamp as a string
     fn get_time(&self) -> String {
         let modified = self.metadata.modified().unwrap();
         let modified_datetime: DateTime<Utc> = modified.into();
@@ -386,6 +395,7 @@ impl ListRow {
         datetime
     }
 
+    /// Retrieves the file's name and any terminal styling as a string
     fn get_file_name(&self) -> String {
         get_file_name(&self.entry, self.flags)
     }
