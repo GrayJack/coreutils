@@ -10,7 +10,7 @@ use std::{fs, path, process};
 
 use ansi_term::Color;
 
-use pad::{PadStr, Alignment};
+use pad::{Alignment, PadStr};
 
 extern crate chrono;
 
@@ -106,10 +106,12 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
                 let row = ListRow::from(entry, metadata, flags);
 
-                let block = row.get_blocks().len();
+                if flags.size {
+                    let block = row.get_blocks().len();
 
-                if block > block_width {
-                    block_width = block;
+                    if block > block_width {
+                        block_width = block;
+                    }
                 }
 
                 let hard_links = row.get_hard_links().len();
@@ -124,10 +126,12 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                     user_width = user;
                 }
 
-                let group = row.get_group().len();
+                if !flags.no_owner {
+                    let group = row.get_group().len();
 
-                if group > group_width {
-                    group_width = group;
+                    if group > group_width {
+                        group_width = group;
+                    }
                 }
 
                 let size = row.get_size().len();
@@ -147,19 +151,28 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
     for row in &rows {
         if flags.size {
-            print!("{} ", row.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right));
+            print!(
+                "{} ",
+                row.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
+            );
         }
 
         print!("{} ", row.get_permissions());
 
-        print!("{} ", row.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right));
+        print!(
+            "{} ",
+            row.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
+        );
 
         print!("{} ", row.get_user().pad_to_width(user_width));
-        print!("{} ", row.get_group().pad_to_width(group_width));
 
-        print!("{:>5} ", row.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
+        if !flags.no_owner {
+            print!("{} ", row.get_group().pad_to_width(group_width));
+        }
 
-        print!("{} ", row.get_time());
+        print!("{} ", row.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
+
+        print!("{}  ", row.get_time());
 
         print!("{}", row.get_file_name());
 
