@@ -15,6 +15,7 @@ coreutils_core = { path = "../coreutils_core" }
 unix_mode = "0.1.1"
 chrono = "0.4"
 ansi_term = "0.12.1"
+pad = "0.1.6"
 
 [build-dependencies]
 clap = "^2.33.0"

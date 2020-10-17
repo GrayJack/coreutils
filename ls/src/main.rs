@@ -10,6 +10,8 @@ use std::{fs, path, process};
 
 use ansi_term::Color;
 
+use pad::{PadStr, Alignment};
+
 extern crate chrono;
 
 use chrono::prelude::{DateTime, Utc};
@@ -89,6 +91,12 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
     let mut rows: Vec<ListRow> = Vec::new();
 
+    let mut block_width = 1;
+    let mut hard_links_width = 1;
+    let mut user_width = 1;
+    let mut group_width = 1;
+    let mut size_width = 1;
+
     for entry in dir {
         match fs::symlink_metadata(entry.path()) {
             Ok(metadata) => {
@@ -96,9 +104,39 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
                     continue;
                 }
 
-                let list_row = ListRow::from(entry, metadata, flags);
+                let row = ListRow::from(entry, metadata, flags);
 
-                rows.push(list_row);
+                let block = row.get_blocks().len();
+
+                if block > block_width {
+                    block_width = block;
+                }
+
+                let hard_links = row.get_hard_links().len();
+
+                if hard_links > hard_links_width {
+                    hard_links_width = hard_links;
+                }
+
+                let user = row.get_user().len();
+
+                if user > user_width {
+                    user_width = user;
+                }
+
+                let group = row.get_group().len();
+
+                if group > group_width {
+                    group_width = group;
+                }
+
+                let size = row.get_size().len();
+
+                if size > size_width {
+                    size_width = size;
+                }
+
+                rows.push(row);
             }
             Err(err) => {
                 eprintln!("ls: {}", err);
@@ -107,19 +145,19 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
         }
     }
 
-    for row in rows {
+    for row in &rows {
         if flags.size {
-            print!("{:>3} ", row.get_blocks());
+            print!("{} ", row.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right));
         }
 
         print!("{} ", row.get_permissions());
 
-        print!("{:>3} ", row.get_hard_links());
+        print!("{} ", row.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right));
 
-        print!("{}\t", row.get_user());
-        print!("{}\t", row.get_group());
+        print!("{} ", row.get_user().pad_to_width(user_width));
+        print!("{} ", row.get_group().pad_to_width(group_width));
 
-        print!("{:>5} ", row.get_size());
+        print!("{:>5} ", row.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
 
         print!("{} ", row.get_time());
 
