@@ -26,7 +26,7 @@ fn main() {
             Ok(dir) => {
                 let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
 
-                if flags.time  {
+                if flags.time {
                     if flags.last_accessed {
                         dir.sort_by_key(sort_by_access_time);
                     } else {
@@ -193,7 +193,7 @@ fn sort_by_access_time(dir: &fs::DirEntry) -> SystemTime {
     let metadata = dir.metadata();
 
     if let Ok(metadata) = metadata {
-       metadata.accessed().unwrap()
+        metadata.accessed().unwrap()
     } else {
         SystemTime::now()
     }
