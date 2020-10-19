@@ -35,6 +35,11 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Fill width with a comma separated list of entries")
                 .short("m"),
         )
+        .arg(
+            Arg::with_name("last_accessed")
+                .help("Use time of last access instead of last modification of the file for sorting -t or writing -l")
+                .short("u"),
+        )
         .arg(Arg::with_name("list").help("Use a long listing format").short("l"))
         .arg(Arg::with_name("no_owner").help("Like -l, but do not list owner").short("g"))
         .arg(

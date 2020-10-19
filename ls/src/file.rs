@@ -82,10 +82,17 @@ impl File {
 
     /// Retrieves the file's timestamp as a string
     pub fn get_time(&self) -> String {
-        let modified = self.metadata.modified().unwrap();
-        let modified_datetime: DateTime<Local> = modified.into();
+        let datetime: DateTime<Local>;
 
-        modified_datetime.format("%b %e %k:%M").to_string()
+        if self.flags.last_accessed {
+            let accessed = self.metadata.accessed().unwrap();
+            datetime = accessed.into();
+        } else {
+            let modified = self.metadata.modified().unwrap();
+            datetime = modified.into();
+        }
+
+        datetime.format("%b %e %k:%M").to_string()
     }
 
     /// Check if a path is an executable file

@@ -26,8 +26,12 @@ fn main() {
             Ok(dir) => {
                 let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
 
-                if flags.time {
-                    dir.sort_by_key(sort_by_time);
+                if flags.time  {
+                    if flags.last_accessed {
+                        dir.sort_by_key(sort_by_access_time);
+                    } else {
+                        dir.sort_by_key(sort_by_time);
+                    }
                     dir.reverse();
                 } else if flags.sort_size {
                     dir.sort_by_key(sort_by_size);
@@ -182,6 +186,17 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     }
 
     exit_code
+}
+
+/// Sort a list of directories by last accessed time
+fn sort_by_access_time(dir: &fs::DirEntry) -> SystemTime {
+    let metadata = dir.metadata();
+
+    if let Ok(metadata) = metadata {
+       metadata.accessed().unwrap()
+    } else {
+        SystemTime::now()
+    }
 }
 
 /// Sort a list of directories by file name alphabetically
