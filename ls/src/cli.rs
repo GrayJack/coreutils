@@ -25,6 +25,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("all"),
         )
         .arg(
+            Arg::with_name("classify")
+                .help("append indicator (one of */=>@|) to entries")
+                .short("F")
+                .long("classify"),
+        )
+        .arg(
             Arg::with_name("comma_separate")
                 .help("fill width with a comma separated list of entries")
                 .short("m"),

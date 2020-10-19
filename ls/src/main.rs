@@ -3,7 +3,7 @@ use clap::ArgMatches;
 use coreutils_core::os::group::Group;
 use coreutils_core::os::passwd::Passwd;
 
-use std::os::unix::fs::{MetadataExt as UnixMetadata, PermissionsExt};
+use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::string::String;
 use std::time::SystemTime;
 use std::{fs, path, process};
@@ -191,12 +191,20 @@ fn get_file_name(file: &fs::DirEntry, flags: LsFlags) -> String {
     if let Ok(metadata) = metadata {
         if is_executable(&file.path()) {
             file_name = add_executable_color(file_name);
+
+            if flags.classify {
+                file_name = format!("{}*", file_name);
+            }
         }
 
         if metadata.file_type().is_symlink() {
             file_name = add_symlink_color(file_name);
 
-            if flags.list || flags.no_owner {
+            if flags.classify && !flags.show_list() {
+                file_name = format!("{}@", file_name);
+            }
+
+            if flags.show_list() {
                 let symlink = fs::read_link(file.path());
 
                 if let Ok(symlink) = symlink {
@@ -204,6 +212,10 @@ fn get_file_name(file: &fs::DirEntry, flags: LsFlags) -> String {
 
                     if is_executable(&symlink) {
                         symlink_name = add_executable_color(symlink_name);
+
+                        if flags.classify {
+                            symlink_name = format!("{}*", symlink_name);
+                        }
                     }
 
                     file_name = format!("{} -> {}", file_name, symlink_name);
@@ -211,8 +223,20 @@ fn get_file_name(file: &fs::DirEntry, flags: LsFlags) -> String {
             }
         }
 
+        if metadata.file_type().is_fifo() {
+            file_name = add_named_pipe_color(file_name);
+
+            if flags.classify {
+                file_name = format!("{}|", file_name);
+            }
+        }
+
         if metadata.is_dir() {
             file_name = add_directory_color(file_name);
+
+            if flags.classify {
+                file_name = format!("{}/", file_name);
+            }
         }
     }
 
@@ -227,6 +251,10 @@ fn add_executable_color(file_name: String) -> String {
 /// Adds a bold blue color to a directory name
 fn add_directory_color(directory_name: String) -> String {
     Color::Blue.bold().paint(directory_name).to_string()
+}
+
+fn add_named_pipe_color(named_pipe_name: String) -> String {
+    Color::Yellow.on(Color::Black).paint(named_pipe_name).to_string()
 }
 
 /// Adds a bold cyan color to a file name to represent a symlink
@@ -281,6 +309,7 @@ fn sort_by_time(dir: &fs::DirEntry) -> SystemTime {
 #[derive(Default, Copy, Clone)]
 struct LsFlags {
     all: bool,
+    classify: bool,
     comma_separate: bool,
     list: bool,
     no_owner: bool,
@@ -293,6 +322,7 @@ struct LsFlags {
 impl LsFlags {
     fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
+        let classify = matches.is_present("classify");
         let comma_separate = matches.is_present("comma_separate");
         let list = matches.is_present("list");
         let no_owner = matches.is_present("no_owner");
@@ -301,7 +331,17 @@ impl LsFlags {
         let size = matches.is_present("size");
         let time = matches.is_present("time");
 
-        LsFlags { all, comma_separate, list, no_owner, numeric_uid_gid, reverse, size, time }
+        LsFlags {
+            all,
+            classify,
+            comma_separate,
+            list,
+            no_owner,
+            numeric_uid_gid,
+            reverse,
+            size,
+            time,
+        }
     }
 
     /// Whether to print as a list based ont the provided flags
