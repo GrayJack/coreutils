@@ -26,20 +26,20 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("classify")
-                .help("append indicator (one of */=>@|) to entries")
+                .help("Append indicator (one of */=>@|) to entries")
                 .short("F")
                 .long("classify"),
         )
         .arg(
             Arg::with_name("comma_separate")
-                .help("fill width with a comma separated list of entries")
+                .help("Fill width with a comma separated list of entries")
                 .short("m"),
         )
         .arg(Arg::with_name("list").help("Use a long listing format").short("l"))
-        .arg(Arg::with_name("no_owner").help("like -l, but do not list owner").short("g"))
+        .arg(Arg::with_name("no_owner").help("Like -l, but do not list owner").short("g"))
         .arg(
             Arg::with_name("numeric_uid_gid")
-                .help("like -l, but list numeric user and group IDs")
+                .help("Like -l, but list numeric user and group IDs")
                 .short("n")
                 .long("numeric-uid-gid"),
         )
