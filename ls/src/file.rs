@@ -26,10 +26,7 @@ impl File {
 
     /// Retrieves the number of blocks allocated to a file as a string
     pub fn get_blocks(&self) -> String {
-        let blocks_value = self.metadata.blocks();
-        let blocks: String = blocks_value.to_string();
-
-        blocks
+        self.metadata.blocks().to_string()
     }
 
     /// Retrieves a files permissions as a string
@@ -41,10 +38,7 @@ impl File {
 
     /// Retrieves the number of hard links pointing to a file as a string
     pub fn get_hard_links(&self) -> String {
-        let hard_links_value = self.metadata.nlink();
-        let hard_links: String = hard_links_value.to_string();
-
-        hard_links
+        self.metadata.nlink().to_string()
     }
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
@@ -83,10 +77,7 @@ impl File {
 
     /// Retrieve the file's size, in bytes, as a string
     pub fn get_size(&self) -> String {
-        let size_value = self.metadata.len();
-        let size: String = size_value.to_string();
-
-        size
+        self.metadata.len().to_string()
     }
 
     /// Retrieves the file's timestamp as a string
