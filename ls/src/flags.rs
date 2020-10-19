@@ -10,6 +10,7 @@ pub(crate) struct LsFlags {
     pub numeric_uid_gid: bool,
     pub reverse: bool,
     pub size: bool,
+    pub sort_size: bool,
     pub time: bool,
 }
 
@@ -23,6 +24,7 @@ impl LsFlags {
         let numeric_uid_gid = matches.is_present("numeric_uid_gid");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
+        let sort_size = matches.is_present("sort_size");
         let time = matches.is_present("time");
 
         LsFlags {
@@ -34,6 +36,7 @@ impl LsFlags {
             numeric_uid_gid,
             reverse,
             size,
+            sort_size,
             time,
         }
     }

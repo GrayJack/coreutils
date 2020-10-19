@@ -29,6 +29,9 @@ fn main() {
                 if flags.time {
                     dir.sort_by_key(sort_by_time);
                     dir.reverse();
+                } else if flags.sort_size {
+                    dir.sort_by_key(sort_by_size);
+                    dir.reverse();
                 } else {
                     // Sort the directory entries by file name by default
                     dir.sort_by_key(sort_by_name);
@@ -186,6 +189,19 @@ fn sort_by_name(dir: &fs::DirEntry) -> String {
     let file_name = dir.file_name().into_string().unwrap();
 
     file_name.to_lowercase()
+}
+
+/// Sort a list of directories by size
+fn sort_by_size(dir: &fs::DirEntry) -> u64 {
+    let metadata = dir.metadata();
+
+    if let Ok(metadata) = metadata {
+        metadata.len()
+    } else {
+        let default_size: u64 = 0 as u64;
+
+        default_size
+    }
 }
 
 /// Sort a list of directories by modification time

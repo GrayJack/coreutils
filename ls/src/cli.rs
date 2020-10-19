@@ -55,5 +55,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("s")
                 .long("size"),
         )
+        .arg(
+            Arg::with_name("sort_size")
+                .help("Sort by first file size, largest first")
+                .short("S"),
+        )
         .arg(Arg::with_name("time").help("Sort by modification time, newest first").short("t"))
 }
