@@ -36,6 +36,11 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("m"),
         )
         .arg(
+            Arg::with_name("indicator")
+                .help("Write a <slash> ( '/' ) after each filename if that file is a directory")
+                .short("p"),
+        )
+        .arg(
             Arg::with_name("last_accessed")
                 .help("Use time of last access instead of last modification of the file for sorting -t or writing -l")
                 .short("u"),

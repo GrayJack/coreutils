@@ -5,6 +5,7 @@ pub(crate) struct LsFlags {
     pub all: bool,
     pub classify: bool,
     pub comma_separate: bool,
+    pub indicator: bool,
     pub last_accessed: bool,
     pub list: bool,
     pub no_owner: bool,
@@ -20,6 +21,7 @@ impl LsFlags {
         let all = matches.is_present("all");
         let classify = matches.is_present("classify");
         let comma_separate = matches.is_present("comma_separate");
+        let indicator = matches.is_present("indicator");
         let last_accessed = matches.is_present("last_accessed");
         let list = matches.is_present("list");
         let no_owner = matches.is_present("no_owner");
@@ -33,6 +35,7 @@ impl LsFlags {
             all,
             classify,
             comma_separate,
+            indicator,
             last_accessed,
             list,
             no_owner,

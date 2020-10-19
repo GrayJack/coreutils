@@ -174,7 +174,7 @@ impl File {
             if metadata.is_dir() {
                 file_name = self.add_directory_color(file_name);
 
-                if flags.classify {
+                if flags.classify || flags.indicator {
                     file_name = format!("{}/", file_name);
                 }
             }
