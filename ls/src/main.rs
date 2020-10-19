@@ -14,7 +14,7 @@ use pad::{Alignment, PadStr};
 
 extern crate chrono;
 
-use chrono::prelude::{DateTime, Utc};
+use chrono::prelude::{DateTime, Local};
 
 mod cli;
 
@@ -172,7 +172,7 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 
         print!("{} ", row.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
 
-        print!("{}  ", row.get_time());
+        print!("{} ", row.get_time());
 
         print!("{}", row.get_file_name());
 
@@ -389,10 +389,9 @@ impl File {
     /// Retrieves the file's timestamp as a string
     fn get_time(&self) -> String {
         let modified = self.metadata.modified().unwrap();
-        let modified_datetime: DateTime<Utc> = modified.into();
-        let datetime: String = modified_datetime.format("%b %e %k:%M").to_string();
+        let modified_datetime: DateTime<Local> = modified.into();
 
-        datetime
+        modified_datetime.format("%b %e %k:%M").to_string()
     }
 
     /// Retrieves the file's name and any terminal styling as a string
