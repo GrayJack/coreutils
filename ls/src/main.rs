@@ -31,8 +31,18 @@ fn main() {
                     todo!();
                 }
 
-                let mut dir: Vec<_> =
-                    dir.map(|entry| File::from(entry.unwrap(), flags).unwrap()).collect();
+                let mut dir: Vec<_> = dir
+                    .map(|entry| File::from(entry.unwrap(), flags).unwrap())
+                    .filter(|file| {
+                        let mut result = true;
+
+                        if File::is_hidden(&file.name) && !flags.show_hidden() {
+                            result = false;
+                        }
+
+                        result
+                    })
+                    .collect();
 
                 if flags.time {
                     if flags.last_accessed {
@@ -76,10 +86,6 @@ fn main() {
 /// Prints information about a file in the default format
 fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
     for file in files {
-        if File::is_hidden(&file.name) && !flags.show_hidden() {
-            continue;
-        }
-
         let file_name = file.get_file_name();
 
         if flags.comma_separate {
@@ -95,7 +101,7 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Re
     Ok(())
 }
 
-/// Prints information about the provided file in a long format
+/// Prints information about the provided file in the long (`-l`) format
 fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
@@ -105,10 +111,6 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
     let mut size_width = 1;
 
     for file in &files {
-        if File::is_hidden(&file.name) && !flags.show_hidden() {
-            continue;
-        }
-
         if flags.inode {
             let inode = file.get_inode().len();
 
