@@ -12,13 +12,13 @@ mod file;
 mod flags;
 
 use file::File;
-use flags::LsFlags;
+use flags::Flags;
 
 fn main() {
     let matches = cli::create_app().get_matches();
 
     let files = matches.values_of("FILE").unwrap();
-    let flags = LsFlags::from_matches(&matches);
+    let flags = Flags::from_matches(&matches);
 
     let mut exit_code = 0;
 
@@ -71,7 +71,7 @@ fn main() {
 }
 
 /// Prints information about a file in the default format
-fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: LsFlags) -> Result<()> {
+fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
     for file in files {
         if File::is_hidden(&file.name) && !flags.all {
             continue;
@@ -93,7 +93,7 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: LsFlags) -> 
 }
 
 /// Prints information about the provided file in a long format
-fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: LsFlags) -> Result<()> {
+fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
 
     let mut block_width = 1;
     let mut hard_links_width = 1;

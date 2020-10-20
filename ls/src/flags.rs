@@ -1,7 +1,7 @@
 use clap::ArgMatches;
 
 #[derive(Default, Copy, Clone)]
-pub(crate) struct LsFlags {
+pub(crate) struct Flags {
     pub all: bool,
     pub classify: bool,
     pub comma_separate: bool,
@@ -16,7 +16,7 @@ pub(crate) struct LsFlags {
     pub time: bool,
 }
 
-impl LsFlags {
+impl Flags {
     pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
         let classify = matches.is_present("classify");
@@ -31,7 +31,7 @@ impl LsFlags {
         let sort_size = matches.is_present("sort_size");
         let time = matches.is_present("time");
 
-        LsFlags {
+        Flags {
             all,
             classify,
             comma_separate,

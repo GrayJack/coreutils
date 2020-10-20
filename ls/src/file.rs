@@ -11,17 +11,17 @@ extern crate chrono;
 
 use chrono::prelude::{DateTime, Local};
 
-use crate::flags::LsFlags;
+use crate::flags::Flags;
 
 pub(crate) struct File {
     pub name: String,
     pub path: path::PathBuf,
     pub metadata: fs::Metadata,
-    flags: LsFlags,
+    flags: Flags,
 }
 
 impl File {
-    pub fn from(entry: fs::DirEntry, flags: LsFlags) -> io::Result<Self> {
+    pub fn from(entry: fs::DirEntry, flags: Flags) -> io::Result<Self> {
         let path = entry.path();
         let metadata = fs::symlink_metadata(path.clone()).expect("Failed to read metadata");
 
