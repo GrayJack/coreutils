@@ -47,6 +47,10 @@ impl File {
         self.metadata.nlink().to_string()
     }
 
+    pub fn get_inode(&self) -> String {
+        self.metadata.ino().to_string()
+    }
+
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
     pub fn get_user(&self) -> String {

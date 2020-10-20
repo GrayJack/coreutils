@@ -95,6 +95,7 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Re
 /// Prints information about the provided file in a long format
 fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
 
+    let mut inode_width = 1;
     let mut block_width = 1;
     let mut hard_links_width = 1;
     let mut user_width = 1;
@@ -104,6 +105,14 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
     for file in &files {
         if File::is_hidden(&file.name) && !flags.all {
             continue;
+        }
+
+        if flags.inode {
+            let inode = file.get_inode().len();
+
+            if inode > inode_width {
+                inode_width = inode;
+            }
         }
 
         if flags.size {
@@ -142,6 +151,10 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
     }
 
     for file in &files {
+        if flags.inode {
+            write!(writer, "{} ", file.get_inode().pad_to_width_with_alignment(inode_width, Alignment::Right))?;
+        }
+
         if flags.size {
             write!(writer, "{}", file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right))?;
         }

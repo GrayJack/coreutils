@@ -41,6 +41,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("p"),
         )
         .arg(
+            Arg::with_name("inode")
+                .help("For each file, write the file's file serial number")
+                .short("i")
+                .long("inode"),
+        )
+        .arg(
             Arg::with_name("last_accessed")
                 .help("Use time of last access instead of last modification of the file for sorting -t or writing -l")
                 .short("u"),
