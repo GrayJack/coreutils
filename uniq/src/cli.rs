@@ -11,17 +11,9 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
+        .arg(Arg::with_name("INPUT").help("Input file path, or '-' for stdin (default).").index(1))
         .arg(
-            Arg::with_name("INPUT")
-                .help("Input file path, or '-' for stdin (default).")
-                .index(1)
-                // .default_value("-"),
-        )
-        .arg(
-            Arg::with_name("OUTPUT")
-                .help("Output file path, or '-' for stdin (default).")
-                .index(2)
-                // .default_value("-"),
+            Arg::with_name("OUTPUT").help("Output file path, or '-' for stdin (default).").index(2),
         )
         .arg(
             Arg::with_name("count")
@@ -43,7 +35,9 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .value_name("N"),
         )
         .arg(
-            Arg::with_name("skip-chars")
+            // We chose "skip-bytes" instead of "skip-chars" in the util internal implementation to
+            // avoid confusion.
+            Arg::with_name("skip-bytes")
                 .help("Avoid comparing the first N characters.")
                 .short("s")
                 .long("skip-chars")
