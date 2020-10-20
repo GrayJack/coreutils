@@ -114,7 +114,7 @@ impl File {
         result
     }
 
-    pub fn is_hidden(name: &String) -> bool {
+    pub fn is_hidden(name: &str) -> bool {
         name.starts_with('.')
     }
 

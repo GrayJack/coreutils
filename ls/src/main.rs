@@ -1,3 +1,4 @@
+use std::io::{self, Result, Write};
 use std::string::String;
 use std::time::SystemTime;
 use std::{fs, process};
@@ -20,6 +21,8 @@ fn main() {
     let flags = LsFlags::from_matches(&matches);
 
     let mut exit_code = 0;
+
+    let mut writer: Box<dyn Write> = Box::new(io::stdout());
 
     for file in files {
         match fs::read_dir(file) {
@@ -48,9 +51,11 @@ fn main() {
                 }
 
                 if !flags.comma_separate && flags.show_list() {
-                    exit_code = print_list(dir, flags);
-                } else {
-                    exit_code = print_default(dir, flags);
+                    if print_list(dir, &mut writer, flags).is_err() {
+                        exit_code = 1
+                    }
+                } else if print_default(dir, &mut writer, flags).is_err() {
+                    exit_code = 1;
                 }
             }
             Err(err) => {
@@ -66,9 +71,7 @@ fn main() {
 }
 
 /// Prints information about a file in the default format
-fn print_default(files: Vec<File>, flags: LsFlags) -> i32 {
-    let exit_code = 1;
-
+fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: LsFlags) -> Result<()> {
     for file in files {
         if File::is_hidden(&file.name) && !flags.all {
             continue;
@@ -77,21 +80,20 @@ fn print_default(files: Vec<File>, flags: LsFlags) -> i32 {
         let file_name = file.get_file_name();
 
         if flags.comma_separate {
-            print!("{}, ", file_name);
+            write!(writer, "{}, ", file_name)?;
         } else {
-            println!("{}", file_name);
+            writeln!(writer, "{}", file_name)?;
         }
     }
     if flags.comma_separate {
-        println!();
+        writeln!(writer)?;
     }
 
-    exit_code
+    Ok(())
 }
 
 /// Prints information about the provided file in a long format
-fn print_list(files: Vec<File>, flags: LsFlags) -> i32 {
-    let exit_code = 1;
+fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: LsFlags) -> Result<()> {
 
     let mut block_width = 1;
     let mut hard_links_width = 1;
@@ -141,35 +143,33 @@ fn print_list(files: Vec<File>, flags: LsFlags) -> i32 {
 
     for file in &files {
         if flags.size {
-            print!(
-                "{} ",
-                file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
-            );
+            write!(writer, "{}", file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right))?;
         }
 
-        print!("{} ", file.get_permissions());
+        write!(writer, "{} ", file.get_permissions())?;
 
-        print!(
+        write!(
+            writer,
             "{} ",
             file.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
-        );
+        )?;
 
-        print!("{} ", file.get_user().pad_to_width(user_width));
+        write!(writer, "{} ", file.get_user().pad_to_width(user_width))?;
 
         if !flags.no_owner {
-            print!("{} ", file.get_group().pad_to_width(group_width));
+            write!(writer, "{} ", file.get_group().pad_to_width(group_width))?;
         }
 
-        print!("{} ", file.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
+        write!(writer, "{} ", file.get_size().pad_to_width_with_alignment(size_width, Alignment::Right))?;
 
-        print!("{} ", file.get_time());
+        write!(writer, "{} ", file.get_time())?;
 
-        print!("{}", file.get_file_name());
+        write!(writer, "{}", file.get_file_name())?;
 
-        println!();
+        writeln!(writer)?;
     }
 
-    exit_code
+    Ok(())
 }
 
 /// Sort a list of files by last accessed time
