@@ -3,7 +3,7 @@ use coreutils_core::os::passwd::Passwd;
 
 use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::string::String;
-use std::{fs, path};
+use std::{fs, io, path};
 
 use ansi_term::Color;
 
@@ -14,14 +14,20 @@ use chrono::prelude::{DateTime, Local};
 use crate::flags::LsFlags;
 
 pub(crate) struct File {
-    entry: fs::DirEntry,
-    metadata: fs::Metadata,
+    pub name: String,
+    pub path: path::PathBuf,
+    pub metadata: fs::Metadata,
     flags: LsFlags,
 }
 
 impl File {
-    pub fn from(entry: fs::DirEntry, metadata: fs::Metadata, flags: LsFlags) -> Self {
-        File { entry, metadata, flags }
+    pub fn from(entry: fs::DirEntry, flags: LsFlags) -> io::Result<Self> {
+        let path = entry.path();
+        let metadata = fs::symlink_metadata(path.clone()).expect("Failed to read metadata");
+
+        let name = entry.file_name().into_string().expect("Failed to get file name as string");
+
+        Ok(File { name, path, metadata, flags })
     }
 
     /// Retrieves the number of blocks allocated to a file as a string
@@ -108,75 +114,63 @@ impl File {
         result
     }
 
-    pub fn is_hidden(entry: &fs::DirEntry) -> bool {
-        let mut result = false;
-
-        let file_name = entry.file_name().into_string();
-
-        if let Ok(file_name) = file_name {
-            result = file_name.starts_with('.')
-        }
-
-        result
+    pub fn is_hidden(name: &String) -> bool {
+        name.starts_with('.')
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting
     pub fn get_file_name(&self) -> String {
-        let mut file_name = self.entry.file_name().into_string().unwrap();
+        let mut file_name = self.name.clone();
 
         let flags = self.flags;
 
-        let metadata = fs::symlink_metadata(self.entry.path());
+        if File::is_executable(&self.path) {
+            file_name = self.add_executable_color(file_name);
 
-        if let Ok(metadata) = metadata {
-            if File::is_executable(&self.entry.path()) {
-                file_name = self.add_executable_color(file_name);
+            if flags.classify {
+                file_name = format!("{}*", file_name);
+            }
+        }
 
-                if flags.classify {
-                    file_name = format!("{}*", file_name);
-                }
+        if self.metadata.file_type().is_symlink() {
+            file_name = self.add_symlink_color(file_name);
+
+            if flags.classify && !flags.show_list() {
+                file_name = format!("{}@", file_name);
             }
 
-            if metadata.file_type().is_symlink() {
-                file_name = self.add_symlink_color(file_name);
+            if flags.show_list() {
+                let symlink = fs::read_link(self.path.clone());
 
-                if flags.classify && !flags.show_list() {
-                    file_name = format!("{}@", file_name);
-                }
+                if let Ok(symlink) = symlink {
+                    let mut symlink_name = String::from(symlink.to_str().unwrap());
 
-                if flags.show_list() {
-                    let symlink = fs::read_link(self.entry.path());
+                    if File::is_executable(&symlink) {
+                        symlink_name = self.add_executable_color(symlink_name);
 
-                    if let Ok(symlink) = symlink {
-                        let mut symlink_name = String::from(symlink.to_str().unwrap());
-
-                        if File::is_executable(&symlink) {
-                            symlink_name = self.add_executable_color(symlink_name);
-
-                            if flags.classify {
-                                symlink_name = format!("{}*", symlink_name);
-                            }
+                        if flags.classify {
+                            symlink_name = format!("{}*", symlink_name);
                         }
-
-                        file_name = format!("{} -> {}", file_name, symlink_name);
                     }
+
+                    file_name = format!("{} -> {}", file_name, symlink_name);
                 }
             }
+        }
 
-            if metadata.file_type().is_fifo() {
-                file_name = self.add_named_pipe_color(file_name);
+        if self.metadata.file_type().is_fifo() {
+            file_name = self.add_named_pipe_color(file_name);
 
-                if flags.classify {
-                    file_name = format!("{}|", file_name);
-                }
+            if flags.classify {
+                file_name = format!("{}|", file_name);
             }
+        }
 
-            if metadata.is_dir() {
-                file_name = self.add_directory_color(file_name);
+        if self.metadata.is_dir() {
+            file_name = self.add_directory_color(file_name);
 
-                if flags.classify || flags.indicator {
-                    file_name = format!("{}/", file_name);
-                }
+            if flags.classify || flags.indicator {
+                file_name = format!("{}/", file_name);
             }
         }
 

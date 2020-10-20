@@ -24,7 +24,9 @@ fn main() {
     for file in files {
         match fs::read_dir(file) {
             Ok(dir) => {
-                let mut dir: Vec<_> = dir.map(|r| r.unwrap()).collect();
+                let mut dir: Vec<_> = dir.map(|entry| {
+                    File::from(entry.unwrap(), flags).unwrap()
+                }).collect();
 
                 if flags.time {
                     if flags.last_accessed {
@@ -64,17 +66,13 @@ fn main() {
 }
 
 /// Prints information about a file in the default format
-fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
+fn print_default(files: Vec<File>, flags: LsFlags) -> i32 {
     let exit_code = 1;
 
-    for entry in dir {
-        if File::is_hidden(&entry) && !flags.all {
+    for file in files {
+        if File::is_hidden(&file.name) && !flags.all {
             continue;
         }
-
-        let path = entry.path();
-
-        let file = File::from(entry, fs::symlink_metadata(path).unwrap(), flags);
 
         let file_name = file.get_file_name();
 
@@ -92,10 +90,8 @@ fn print_default(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
 }
 
 /// Prints information about the provided file in a long format
-fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
-    let mut exit_code = 1;
-
-    let mut rows: Vec<File> = Vec::new();
+fn print_list(files: Vec<File>, flags: LsFlags) -> i32 {
+    let exit_code = 1;
 
     let mut block_width = 1;
     let mut hard_links_width = 1;
@@ -103,84 +99,72 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     let mut group_width = 1;
     let mut size_width = 1;
 
-    for entry in dir {
-        match fs::symlink_metadata(entry.path()) {
-            Ok(metadata) => {
-                if File::is_hidden(&entry) && !flags.all {
-                    continue;
-                }
+    for file in &files {
+        if File::is_hidden(&file.name) && !flags.all {
+            continue;
+        }
 
-                let row = File::from(entry, metadata, flags);
+        if flags.size {
+            let block = file.get_blocks().len();
 
-                if flags.size {
-                    let block = row.get_blocks().len();
-
-                    if block > block_width {
-                        block_width = block;
-                    }
-                }
-
-                let hard_links = row.get_hard_links().len();
-
-                if hard_links > hard_links_width {
-                    hard_links_width = hard_links;
-                }
-
-                let user = row.get_user().len();
-
-                if user > user_width {
-                    user_width = user;
-                }
-
-                if !flags.no_owner {
-                    let group = row.get_group().len();
-
-                    if group > group_width {
-                        group_width = group;
-                    }
-                }
-
-                let size = row.get_size().len();
-
-                if size > size_width {
-                    size_width = size;
-                }
-
-                rows.push(row);
+            if block > block_width {
+                block_width = block;
             }
-            Err(err) => {
-                eprintln!("ls: {}", err);
-                exit_code = 1;
+        }
+
+        let hard_links = file.get_hard_links().len();
+
+        if hard_links > hard_links_width {
+            hard_links_width = hard_links;
+        }
+
+        let user = file.get_user().len();
+
+        if user > user_width {
+            user_width = user;
+        }
+
+        if !flags.no_owner {
+            let group = file.get_group().len();
+
+            if group > group_width {
+                group_width = group;
             }
+        }
+
+        let size = file.get_size().len();
+
+        if size > size_width {
+            size_width = size;
         }
     }
 
-    for row in &rows {
+    for file in &files {
         if flags.size {
             print!(
                 "{} ",
-                row.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
+                file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
             );
         }
 
-        print!("{} ", row.get_permissions());
+        print!("{} ", file.get_permissions());
 
         print!(
             "{} ",
-            row.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
+            file.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
         );
 
-        print!("{} ", row.get_user().pad_to_width(user_width));
+        print!("{} ", file.get_user().pad_to_width(user_width));
 
         if !flags.no_owner {
-            print!("{} ", row.get_group().pad_to_width(group_width));
+            print!("{} ", file.get_group().pad_to_width(group_width));
         }
 
-        print!("{} ", row.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
+        print!("{} ", file.get_size().pad_to_width_with_alignment(size_width, Alignment::Right));
 
-        print!("{} ", row.get_time());
+        print!("{} ", file.get_time());
 
-        print!("{}", row.get_file_name());
+        print!("{}", file.get_file_name());
 
         println!();
     }
@@ -188,44 +172,24 @@ fn print_list(dir: Vec<fs::DirEntry>, flags: LsFlags) -> i32 {
     exit_code
 }
 
-/// Sort a list of directories by last accessed time
-fn sort_by_access_time(dir: &fs::DirEntry) -> SystemTime {
-    let metadata = dir.metadata();
+/// Sort a list of files by last accessed time
+fn sort_by_access_time(file: &File) -> SystemTime {
+    let metadata = file.metadata.clone();
 
-    if let Ok(metadata) = metadata {
-        metadata.accessed().unwrap()
-    } else {
-        SystemTime::now()
-    }
+    metadata.accessed().unwrap()
 }
 
-/// Sort a list of directories by file name alphabetically
-fn sort_by_name(dir: &fs::DirEntry) -> String {
-    let file_name = dir.file_name().into_string().unwrap();
-
-    file_name.to_lowercase()
+/// Sort a list of files by file name alphabetically
+fn sort_by_name(file: &File) -> String {
+    file.name.to_lowercase()
 }
 
-/// Sort a list of directories by size
-fn sort_by_size(dir: &fs::DirEntry) -> u64 {
-    let metadata = dir.metadata();
-
-    if let Ok(metadata) = metadata {
-        metadata.len()
-    } else {
-        let default_size: u64 = 0 as u64;
-
-        default_size
-    }
+/// Sort a list of files by size
+fn sort_by_size(file: &File) -> u64 {
+    file.metadata.len()
 }
 
 /// Sort a list of directories by modification time
-fn sort_by_time(dir: &fs::DirEntry) -> SystemTime {
-    let metadata = fs::metadata(dir.path());
-
-    if let Ok(metadata) = metadata {
-        metadata.modified().unwrap()
-    } else {
-        SystemTime::now()
-    }
+fn sort_by_time(file: &File) -> SystemTime {
+    file.metadata.modified().unwrap()
 }
