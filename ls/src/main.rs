@@ -14,7 +14,7 @@ mod flags;
 use file::File;
 use flags::Flags;
 
-fn main() {
+fn main() -> io::Result<()> {
     let matches = cli::create_app().get_matches();
 
     let files = matches.values_of("FILE").unwrap();
@@ -23,6 +23,8 @@ fn main() {
     let mut exit_code = 0;
 
     let mut writer: Box<dyn Write> = Box::new(io::stdout());
+
+    let multiple = files.len() > 1;
 
     for file in files {
         match fs::read_dir(file) {
@@ -34,7 +36,7 @@ fn main() {
                 let mut dir: Vec<_> = dir
                     // Collect information about the file or directory
                     .map(|entry| File::from(entry.unwrap(), flags).unwrap())
-                    // Hide hidden files and directories if `-a` or `-A` flags 
+                    // Hide hidden files and directories if `-a` or `-A` flags
                     // weren't provided
                     .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
                     .collect();
@@ -58,6 +60,10 @@ fn main() {
                     dir.reverse();
                 }
 
+                if multiple {
+                    writeln!(writer, "\n{}:", file)?;
+                }
+
                 if !flags.comma_separate && flags.show_list() {
                     if print_list(dir, &mut writer, flags).is_err() {
                         exit_code = 1
@@ -76,6 +82,8 @@ fn main() {
     if exit_code != 0 {
         process::exit(exit_code);
     }
+
+    Ok(())
 }
 
 /// Prints information about a file in the default format
