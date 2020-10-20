@@ -27,9 +27,8 @@ fn main() {
     for file in files {
         match fs::read_dir(file) {
             Ok(dir) => {
-                let mut dir: Vec<_> = dir.map(|entry| {
-                    File::from(entry.unwrap(), flags).unwrap()
-                }).collect();
+                let mut dir: Vec<_> =
+                    dir.map(|entry| File::from(entry.unwrap(), flags).unwrap()).collect();
 
                 if flags.time {
                     if flags.last_accessed {
@@ -94,7 +93,6 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Re
 
 /// Prints information about the provided file in a long format
 fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
-
     let mut inode_width = 1;
     let mut block_width = 1;
     let mut hard_links_width = 1;
@@ -152,11 +150,19 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
 
     for file in &files {
         if flags.inode {
-            write!(writer, "{} ", file.get_inode().pad_to_width_with_alignment(inode_width, Alignment::Right))?;
+            write!(
+                writer,
+                "{} ",
+                file.get_inode().pad_to_width_with_alignment(inode_width, Alignment::Right)
+            )?;
         }
 
         if flags.size {
-            write!(writer, "{}", file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right))?;
+            write!(
+                writer,
+                "{}",
+                file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
+            )?;
         }
 
         write!(writer, "{} ", file.get_permissions())?;
@@ -173,7 +179,11 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
             write!(writer, "{} ", file.get_group().pad_to_width(group_width))?;
         }
 
-        write!(writer, "{} ", file.get_size().pad_to_width_with_alignment(size_width, Alignment::Right))?;
+        write!(
+            writer,
+            "{} ",
+            file.get_size().pad_to_width_with_alignment(size_width, Alignment::Right)
+        )?;
 
         write!(writer, "{} ", file.get_time())?;
 
