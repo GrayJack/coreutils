@@ -32,16 +32,11 @@ fn main() {
                 }
 
                 let mut dir: Vec<_> = dir
+                    // Collect information about the file or directory
                     .map(|entry| File::from(entry.unwrap(), flags).unwrap())
-                    .filter(|file| {
-                        let mut result = true;
-
-                        if File::is_hidden(&file.name) && !flags.show_hidden() {
-                            result = false;
-                        }
-
-                        result
-                    })
+                    // Hide hidden files and directories if `-a` or `-A` flags 
+                    // weren't provided
+                    .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
                     .collect();
 
                 if flags.time {
