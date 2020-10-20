@@ -27,6 +27,10 @@ fn main() {
     for file in files {
         match fs::read_dir(file) {
             Ok(dir) => {
+                if flags.all {
+                    todo!();
+                }
+
                 let mut dir: Vec<_> =
                     dir.map(|entry| File::from(entry.unwrap(), flags).unwrap()).collect();
 
@@ -72,7 +76,7 @@ fn main() {
 /// Prints information about a file in the default format
 fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
     for file in files {
-        if File::is_hidden(&file.name) && !flags.all {
+        if File::is_hidden(&file.name) && !flags.show_hidden() {
             continue;
         }
 
@@ -101,7 +105,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
     let mut size_width = 1;
 
     for file in &files {
-        if File::is_hidden(&file.name) && !flags.all {
+        if File::is_hidden(&file.name) && !flags.show_hidden() {
             continue;
         }
 
@@ -160,7 +164,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
         if flags.size {
             write!(
                 writer,
-                "{}",
+                "{} ",
                 file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
             )?;
         }

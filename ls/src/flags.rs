@@ -3,6 +3,7 @@ use clap::ArgMatches;
 #[derive(Default, Copy, Clone)]
 pub(crate) struct Flags {
     pub all: bool,
+    pub almost_all: bool,
     pub classify: bool,
     pub comma_separate: bool,
     pub indicator: bool,
@@ -20,6 +21,7 @@ pub(crate) struct Flags {
 impl Flags {
     pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
+        let almost_all = matches.is_present("almost_all");
         let classify = matches.is_present("classify");
         let comma_separate = matches.is_present("comma_separate");
         let indicator = matches.is_present("indicator");
@@ -35,6 +37,7 @@ impl Flags {
 
         Flags {
             all,
+            almost_all,
             classify,
             comma_separate,
             inode,
@@ -53,5 +56,10 @@ impl Flags {
     /// Whether to print as a list based ont the provided flags
     pub fn show_list(&self) -> bool {
         !self.comma_separate && self.list || self.no_owner || self.numeric_uid_gid
+    }
+
+    /// Whether or not to show hidden files and directories
+    pub fn show_hidden(&self) -> bool {
+        self.all || self.almost_all
     }
 }

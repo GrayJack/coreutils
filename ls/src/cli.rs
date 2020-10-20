@@ -20,9 +20,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("all")
-                .help("Do not ignore entries starting with .")
+                .help("Write out all directory entries, including those whose names begin with a <period> ( '.' )")
                 .short("a")
                 .long("all"),
+        )
+        .arg(
+            Arg::with_name("almost_all")
+                .help("Write out all directory entries, including those whose names begin with a <period> ( '.' ) but excluding the entries dot and dot-dot (if they exist)")
+                .short("A")
+                .long("almost-all")
         )
         .arg(
             Arg::with_name("classify")
