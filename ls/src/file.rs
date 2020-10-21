@@ -25,6 +25,16 @@ impl File {
         let path = entry.path();
         let metadata = fs::symlink_metadata(path.clone()).expect("Failed to read metadata");
 
+        if flags.dereference && metadata.file_type().is_symlink() {
+            let symlink = fs::read_link(path.clone())?;
+
+            let name: String = symlink.file_name().unwrap().to_str().unwrap().to_string();
+
+            let metadata = fs::metadata(&path).unwrap();
+
+            return Ok(File { name, path: symlink, metadata, flags });
+        }
+
         let name = entry.file_name().into_string().expect("Failed to get file name as string");
 
         Ok(File { name, path, metadata, flags })
@@ -136,7 +146,7 @@ impl File {
             }
         }
 
-        if self.metadata.file_type().is_symlink() {
+        if self.metadata.file_type().is_symlink() && !flags.dereference {
             file_name = self.add_symlink_color(file_name);
 
             if flags.classify && !flags.show_list() {

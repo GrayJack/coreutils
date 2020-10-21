@@ -42,6 +42,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("m"),
         )
         .arg(
+            Arg::with_name("dereference")
+                .help("When showing file information for a symbolic link, show information for the file the link references rather than for the link itself")
+                .short("L")
+                .long("dereference"),
+        )
+        .arg(
             Arg::with_name("indicator")
                 .help("Write a <slash> ( '/' ) after each filename if that file is a directory")
                 .short("p"),
