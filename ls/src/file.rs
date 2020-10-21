@@ -13,6 +13,7 @@ use chrono::prelude::{DateTime, Local};
 
 use crate::flags::Flags;
 
+/// Represents a file and it's properties
 pub(crate) struct File {
     pub name: String,
     pub path: path::PathBuf,

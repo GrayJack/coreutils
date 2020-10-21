@@ -1,5 +1,6 @@
 use clap::ArgMatches;
 
+/// Represents the command line arguments available to `ls`
 #[derive(Default, Copy, Clone)]
 pub(crate) struct Flags {
     pub all: bool,
@@ -20,6 +21,7 @@ pub(crate) struct Flags {
 }
 
 impl Flags {
+    /// Create a `Flags` instance from the parsed command line arguments
     pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
         let almost_all = matches.is_present("almost_all");
