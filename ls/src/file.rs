@@ -22,6 +22,7 @@ pub(crate) struct File {
 }
 
 impl File {
+    /// Creates a `File` instance from a `DirEntry`
     pub fn from(entry: fs::DirEntry, flags: Flags) -> io::Result<Self> {
         let path = entry.path();
         let metadata = fs::symlink_metadata(path.clone()).expect("Failed to read metadata");
