@@ -206,9 +206,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
 
 /// Sort a list of files by last accessed time
 fn sort_by_access_time(file: &File) -> SystemTime {
-    let metadata = file.metadata.clone();
-
-    metadata.accessed().unwrap()
+    file.metadata.accessed().unwrap()
 }
 
 /// Sort a list of files by file name alphabetically
