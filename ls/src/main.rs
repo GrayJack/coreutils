@@ -29,7 +29,6 @@ fn main() -> io::Result<()> {
     for file in files {
         match fs::read_dir(file) {
             Ok(dir) => {
-
                 let mut dir: Vec<_> = dir
                     // Collect information about the file or directory
                     .map(|entry| File::from(entry.unwrap().path(), flags).unwrap())
