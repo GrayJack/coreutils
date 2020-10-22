@@ -65,7 +65,7 @@ fn main() -> io::Result<()> {
                     let dot = File::from_name(".".to_string(), current.clone(), flags).expect("Failed to read .");
 
                     // Retrieve the parent path. Default to the current path if the parent doesn't exist
-                    let parent_path = path::PathBuf::from(dot.path.parent().unwrap_or(current.as_path()));
+                    let parent_path = path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
 
                     let dot_dot = File::from_name("..".to_string(), parent_path, flags).expect("Failed to read ..");
 

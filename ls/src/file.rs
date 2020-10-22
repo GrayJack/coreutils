@@ -43,9 +43,6 @@ impl File {
 
     /// Creates a `File` instance from a `DirEntry` and supplies a file name
     pub fn from_name(name: String, path: path::PathBuf, flags: Flags) -> io::Result<Self> {
-        if path.is_relative() {
-            println!("{}", File::path_to_file_name(&path));
-        }
         let metadata = path.metadata().expect("Failed to read metadata");
 
         Ok(File { name, path, metadata, flags })
