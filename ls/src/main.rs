@@ -1,7 +1,7 @@
 use std::io::{self, Result, Write};
 use std::string::String;
 use std::time::SystemTime;
-use std::{fs, process};
+use std::{fs, path, process};
 
 use pad::{Alignment, PadStr};
 
@@ -29,13 +29,10 @@ fn main() -> io::Result<()> {
     for file in files {
         match fs::read_dir(file) {
             Ok(dir) => {
-                if flags.all {
-                    todo!();
-                }
 
                 let mut dir: Vec<_> = dir
                     // Collect information about the file or directory
-                    .map(|entry| File::from(entry.unwrap(), flags).unwrap())
+                    .map(|entry| File::from(entry.unwrap().path(), flags).unwrap())
                     // Hide hidden files and directories if `-a` or `-A` flags
                     // weren't provided
                     .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
@@ -58,6 +55,22 @@ fn main() -> io::Result<()> {
 
                 if flags.reverse {
                     dir.reverse();
+                }
+
+                if flags.all {
+                    // Retrieve the current directories information. This must
+                    // be canonicalize incase the path is relative
+                    let current = path::PathBuf::from(file).canonicalize().unwrap();
+
+                    let dot = File::from_name(".".to_string(), current.clone(), flags).expect("Failed to read .");
+
+                    // Retrieve the parent path. Default to the current path if the parent doesn't exist
+                    let parent_path = path::PathBuf::from(dot.path.parent().unwrap_or(current.as_path()));
+
+                    let dot_dot = File::from_name("..".to_string(), parent_path, flags).expect("Failed to read ..");
+
+                    dir.insert(0, dot);
+                    dir.insert(1, dot_dot);
                 }
 
                 if multiple {

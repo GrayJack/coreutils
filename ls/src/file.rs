@@ -23,21 +23,30 @@ pub(crate) struct File {
 
 impl File {
     /// Creates a `File` instance from a `DirEntry`
-    pub fn from(entry: fs::DirEntry, flags: Flags) -> io::Result<Self> {
-        let path = entry.path();
-        let metadata = fs::symlink_metadata(path.clone()).expect("Failed to read metadata");
+    pub fn from(path: path::PathBuf, flags: Flags) -> io::Result<Self> {
+        let metadata = path.symlink_metadata().expect("Failed to read metadata?");
 
         if flags.dereference && metadata.file_type().is_symlink() {
             let symlink = fs::read_link(path.clone())?;
 
-            let name: String = symlink.file_name().unwrap().to_str().unwrap().to_string();
+            let name: String = File::path_to_file_name(&symlink);
 
-            let metadata = fs::metadata(&path).unwrap();
+            let metadata = path.metadata().unwrap();
 
             return Ok(File { name, path: symlink, metadata, flags });
         }
 
-        let name = entry.file_name().into_string().expect("Failed to get file name as string");
+        let name = File::path_to_file_name(&path);
+
+        Ok(File { name, path, metadata, flags })
+    }
+
+    /// Creates a `File` instance from a `DirEntry` and supplies a file name
+    pub fn from_name(name: String, path: path::PathBuf, flags: Flags) -> io::Result<Self> {
+        if path.is_relative() {
+            println!("{}", File::path_to_file_name(&path));
+        }
+        let metadata = path.metadata().expect("Failed to read metadata");
 
         Ok(File { name, path, metadata, flags })
     }
@@ -132,6 +141,12 @@ impl File {
 
     pub fn is_hidden(name: &str) -> bool {
         name.starts_with('.')
+    }
+
+    pub fn path_to_file_name(path: &path::PathBuf) -> String {
+        let file_name = path.file_name().expect("Failed to retrieve file name");
+
+        file_name.to_str().unwrap().to_string()
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting
