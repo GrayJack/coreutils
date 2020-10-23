@@ -13,6 +13,7 @@ pub(crate) struct Flags {
     pub last_accessed: bool,
     pub list: bool,
     pub no_owner: bool,
+    pub no_sort: bool,
     pub numeric_uid_gid: bool,
     pub reverse: bool,
     pub size: bool,
@@ -33,6 +34,7 @@ impl Flags {
         let last_accessed = matches.is_present("last_accessed");
         let list = matches.is_present("list");
         let no_owner = matches.is_present("no_owner");
+        let no_sort = matches.is_present("no_sort");
         let numeric_uid_gid = matches.is_present("numeric_uid_gid");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
@@ -50,6 +52,7 @@ impl Flags {
             last_accessed,
             list,
             no_owner,
+            no_sort,
             numeric_uid_gid,
             reverse,
             size,
@@ -64,5 +67,5 @@ impl Flags {
     }
 
     /// Whether or not to show hidden files and directories
-    pub fn show_hidden(&self) -> bool { self.all || self.almost_all }
+    pub fn show_hidden(&self) -> bool { self.all || self.almost_all || self.no_sort }
 }

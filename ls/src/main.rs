@@ -40,26 +40,28 @@ fn main() -> io::Result<()> {
                     .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
                     .collect();
 
-                if flags.time {
-                    if flags.last_accessed {
-                        dir.sort_by_key(sort_by_access_time);
+                if !flags.no_sort {
+                    if flags.time {
+                        if flags.last_accessed {
+                            dir.sort_by_key(sort_by_access_time);
+                        } else {
+                            dir.sort_by_key(sort_by_time);
+                        }
+                        dir.reverse();
+                    } else if flags.sort_size {
+                        dir.sort_by_key(sort_by_size);
+                        dir.reverse();
                     } else {
-                        dir.sort_by_key(sort_by_time);
+                        // Sort the directory entries by file name by default
+                        dir.sort_by_key(sort_by_name);
                     }
-                    dir.reverse();
-                } else if flags.sort_size {
-                    dir.sort_by_key(sort_by_size);
-                    dir.reverse();
-                } else {
-                    // Sort the directory entries by file name by default
-                    dir.sort_by_key(sort_by_name);
+
+                    if flags.reverse {
+                        dir.reverse();
+                    }
                 }
 
-                if flags.reverse {
-                    dir.reverse();
-                }
-
-                if flags.all {
+                if flags.all || flags.no_sort {
                     // Retrieve the current directories information. This must
                     // be canonicalize incase the path is relative
                     let current = path::PathBuf::from(file).canonicalize().unwrap();

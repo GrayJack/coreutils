@@ -37,6 +37,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("almost-all"),
         )
         .arg(
+            Arg::with_name("no_sort")
+                .help(
+                    "Output is not sorted. This option turns on -a. It also negates the effect of \
+                     the -r, -S and -t options.",
+                )
+                .short("f")
+                .long("no-sort"),
+        )
+        .arg(
             Arg::with_name("classify")
                 .help("Append indicator (one of */=>@|) to entries")
                 .short("F")
