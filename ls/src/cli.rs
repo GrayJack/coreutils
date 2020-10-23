@@ -45,7 +45,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("comma_separate")
                 .help("Fill width with a comma separated list of entries")
-                .short("m"),
+                .short("m")
+                .long("comma_separate"),
         )
         .arg(
             Arg::with_name("dereference")
@@ -59,7 +60,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("indicator")
                 .help("Write a <slash> ( '/' ) after each filename if that file is a directory")
-                .short("p"),
+                .short("p")
+                .long("indicator"),
         )
         .arg(
             Arg::with_name("inode")
@@ -73,10 +75,16 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                     "Use time of last access instead of last modification of the file for sorting \
                      -t or writing -l",
                 )
-                .short("u"),
+                .short("u")
+                .long("last-accessed"),
         )
-        .arg(Arg::with_name("list").help("Use a long listing format").short("l"))
-        .arg(Arg::with_name("no_owner").help("Like -l, but do not list owner").short("g"))
+        .arg(Arg::with_name("list").help("Use a long listing format").short("l").long("list"))
+        .arg(
+            Arg::with_name("no_owner")
+                .help("Like -l, but do not list owner")
+                .short("g")
+                .long("no-owner"),
+        )
         .arg(
             Arg::with_name("numeric_uid_gid")
                 .help("Like -l, but list numeric user and group IDs")
@@ -95,6 +103,16 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("s")
                 .long("size"),
         )
-        .arg(Arg::with_name("sort_size").help("Sort by first file size, largest first").short("S"))
-        .arg(Arg::with_name("time").help("Sort by modification time, newest first").short("t"))
+        .arg(
+            Arg::with_name("sort_size")
+                .help("Sort by first file size, largest first")
+                .short("S")
+                .long("sort-size"),
+        )
+        .arg(
+            Arg::with_name("time")
+                .help("Sort by modification time, newest first")
+                .short("t")
+                .long("time"),
+        )
 }
