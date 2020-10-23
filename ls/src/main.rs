@@ -1,7 +1,10 @@
-use std::io::{self, Result, Write};
-use std::string::String;
-use std::time::SystemTime;
-use std::{fs, path, process};
+use std::{
+    fs,
+    io::{self, Result, Write},
+    path, process,
+    string::String,
+    time::SystemTime,
+};
 
 use pad::{Alignment, PadStr};
 
@@ -61,12 +64,16 @@ fn main() -> io::Result<()> {
                     // be canonicalize incase the path is relative
                     let current = path::PathBuf::from(file).canonicalize().unwrap();
 
-                    let dot = File::from_name(".".to_string(), current.clone(), flags).expect("Failed to read .");
+                    let dot = File::from_name(".".to_string(), current.clone(), flags)
+                        .expect("Failed to read .");
 
-                    // Retrieve the parent path. Default to the current path if the parent doesn't exist
-                    let parent_path = path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
+                    // Retrieve the parent path. Default to the current path if the parent doesn't
+                    // exist
+                    let parent_path =
+                        path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
 
-                    let dot_dot = File::from_name("..".to_string(), parent_path, flags).expect("Failed to read ..");
+                    let dot_dot = File::from_name("..".to_string(), parent_path, flags)
+                        .expect("Failed to read ..");
 
                     dir.insert(0, dot);
                     dir.insert(1, dot_dot);
@@ -83,11 +90,11 @@ fn main() -> io::Result<()> {
                 } else if print_default(dir, &mut writer, flags).is_err() {
                     exit_code = 1;
                 }
-            }
+            },
             Err(err) => {
                 eprintln!("ls: cannot access '{}': {}", file, err);
                 exit_code = 1;
-            }
+            },
         }
     }
 
@@ -217,21 +224,13 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
 }
 
 /// Sort a list of files by last accessed time
-fn sort_by_access_time(file: &File) -> SystemTime {
-    file.metadata.accessed().unwrap()
-}
+fn sort_by_access_time(file: &File) -> SystemTime { file.metadata.accessed().unwrap() }
 
 /// Sort a list of files by file name alphabetically
-fn sort_by_name(file: &File) -> String {
-    file.name.to_lowercase()
-}
+fn sort_by_name(file: &File) -> String { file.name.to_lowercase() }
 
 /// Sort a list of files by size
-fn sort_by_size(file: &File) -> u64 {
-    file.metadata.len()
-}
+fn sort_by_size(file: &File) -> u64 { file.metadata.len() }
 
 /// Sort a list of directories by modification time
-fn sort_by_time(file: &File) -> SystemTime {
-    file.metadata.modified().unwrap()
-}
+fn sort_by_time(file: &File) -> SystemTime { file.metadata.modified().unwrap() }

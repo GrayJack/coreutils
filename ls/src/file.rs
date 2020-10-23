@@ -1,9 +1,11 @@
-use coreutils_core::os::group::Group;
-use coreutils_core::os::passwd::Passwd;
+use coreutils_core::os::{group::Group, passwd::Passwd};
 
-use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
-use std::string::String;
-use std::{fs, io, path};
+use std::{
+    fs, io,
+    os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
+    path,
+    string::String,
+};
 
 use ansi_term::Color;
 
@@ -49,9 +51,7 @@ impl File {
     }
 
     /// Retrieves the number of blocks allocated to a file as a string
-    pub fn get_blocks(&self) -> String {
-        self.metadata.blocks().to_string()
-    }
+    pub fn get_blocks(&self) -> String { self.metadata.blocks().to_string() }
 
     /// Retrieves a files permissions as a string
     pub fn get_permissions(&self) -> String {
@@ -61,13 +61,9 @@ impl File {
     }
 
     /// Retrieves the number of hard links pointing to a file as a string
-    pub fn get_hard_links(&self) -> String {
-        self.metadata.nlink().to_string()
-    }
+    pub fn get_hard_links(&self) -> String { self.metadata.nlink().to_string() }
 
-    pub fn get_inode(&self) -> String {
-        self.metadata.ino().to_string()
-    }
+    pub fn get_inode(&self) -> String { self.metadata.ino().to_string() }
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
@@ -104,9 +100,7 @@ impl File {
     }
 
     /// Retrieve the file's size, in bytes, as a string
-    pub fn get_size(&self) -> String {
-        self.metadata.len().to_string()
-    }
+    pub fn get_size(&self) -> String { self.metadata.len().to_string() }
 
     /// Retrieves the file's timestamp as a string
     pub fn get_time(&self) -> String {
@@ -136,9 +130,7 @@ impl File {
         result
     }
 
-    pub fn is_hidden(name: &str) -> bool {
-        name.starts_with('.')
-    }
+    pub fn is_hidden(name: &str) -> bool { name.starts_with('.') }
 
     pub fn path_to_file_name(path: &path::PathBuf) -> String {
         let file_name = path.file_name().expect("Failed to retrieve file name");

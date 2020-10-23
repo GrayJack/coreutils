@@ -20,15 +20,21 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("all")
-                .help("Write out all directory entries, including those whose names begin with a <period> ( '.' )")
+                .help(
+                    "Write out all directory entries, including those whose names begin with a \
+                     <period> ( '.' )",
+                )
                 .short("a")
                 .long("all"),
         )
         .arg(
             Arg::with_name("almost_all")
-                .help("Write out all directory entries, including those whose names begin with a <period> ( '.' ) but excluding the entries dot and dot-dot (if they exist)")
+                .help(
+                    "Write out all directory entries, including those whose names begin with a \
+                     <period> ( '.' ) but excluding the entries dot and dot-dot (if they exist)",
+                )
                 .short("A")
-                .long("almost-all")
+                .long("almost-all"),
         )
         .arg(
             Arg::with_name("classify")
@@ -43,7 +49,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("dereference")
-                .help("When showing file information for a symbolic link, show information for the file the link references rather than for the link itself")
+                .help(
+                    "When showing file information for a symbolic link, show information for the \
+                     file the link references rather than for the link itself",
+                )
                 .short("L")
                 .long("dereference"),
         )
@@ -60,7 +69,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("last_accessed")
-                .help("Use time of last access instead of last modification of the file for sorting -t or writing -l")
+                .help(
+                    "Use time of last access instead of last modification of the file for sorting \
+                     -t or writing -l",
+                )
                 .short("u"),
         )
         .arg(Arg::with_name("list").help("Use a long listing format").short("l"))
@@ -83,10 +95,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("s")
                 .long("size"),
         )
-        .arg(
-            Arg::with_name("sort_size")
-                .help("Sort by first file size, largest first")
-                .short("S"),
-        )
+        .arg(Arg::with_name("sort_size").help("Sort by first file size, largest first").short("S"))
         .arg(Arg::with_name("time").help("Sort by modification time, newest first").short("t"))
 }

@@ -64,7 +64,5 @@ impl Flags {
     }
 
     /// Whether or not to show hidden files and directories
-    pub fn show_hidden(&self) -> bool {
-        self.all || self.almost_all
-    }
+    pub fn show_hidden(&self) -> bool { self.all || self.almost_all }
 }
