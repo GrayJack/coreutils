@@ -19,14 +19,11 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      single dash (‘-’) or absent, sort reads from the standard input.",
                 )
                 .multiple(true),
-            
         )
         .arg(
             Arg::with_name("merge_only")
                 .help("Merge only")
-                .long_help(
-                    "Merge only; the input file shall be assumed to be already sorted.",
-                )
+                .long_help("Merge only; the input file shall be assumed to be already sorted.")
                 .short("m"),
         )
         .arg(
@@ -34,7 +31,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Output file")
                 .value_name("FILE")
                 .long_help(
-                    "Specify the name of an output file to be used instead of the standard output. This file can be the same as one of the input files.",
+                    "Specify the name of an output file to be used instead of the standard \
+                     output. This file can be the same as one of the input files.",
                 )
                 .short("o"),
         )
