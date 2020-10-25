@@ -102,7 +102,7 @@ cargo install --path .
 |  rmdir   |             |         |   X   |
 |   sed    |      X      |         |       |
 |   seq    |             |    X    |       |
-|   sort   |      X      |         |       |
+|   sort   |             |    X    |       |
 |  sleep   |             |         |   X   |
 |  split   |      X      |         |       |
 |   stat   |      X      |         |       |
