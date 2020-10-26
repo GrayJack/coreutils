@@ -11,7 +11,7 @@ use ansi_term::Color;
 
 extern crate chrono;
 
-use chrono::prelude::{DateTime, Local};
+use chrono::{DateTime, Local};
 
 use crate::flags::Flags;
 
@@ -103,6 +103,12 @@ impl File {
     pub fn get_size(&self) -> String { self.metadata.len().to_string() }
 
     /// Retrieves the file's timestamp as a string
+    ///
+    /// By default the file's modified time is displayed. The `-u` flag will
+    /// display the last accessed time. The `-c` flag will display the last
+    /// modified time of the file's status information. The date format used is
+    /// `%b %e %H:%M` unless the duration is greater than six months, which case
+    /// the date format will be `%b %e  %Y`.
     pub fn get_time(&self) -> String {
         let datetime: DateTime<Local>;
 
@@ -114,7 +120,19 @@ impl File {
             datetime = modified.into();
         }
 
-        datetime.format("%b %e %k:%M").to_string()
+        let mut fmt = "%b %e %H:%M";
+
+        let now: DateTime<Local> = Local::now();
+
+        let duration = datetime.signed_duration_since(now);
+
+        let six_months = -182;
+
+        if duration.num_days() < six_months {
+            fmt = "%b %e  %Y";
+        }
+
+        datetime.format(fmt).to_string()
     }
 
     /// Check if a path is an executable file
