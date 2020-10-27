@@ -51,23 +51,23 @@ impl File {
     }
 
     /// Retrieves the number of blocks allocated to a file as a string
-    pub fn get_blocks(&self) -> String { self.metadata.blocks().to_string() }
+    pub fn blocks(&self) -> String { self.metadata.blocks().to_string() }
 
     /// Retrieves a files permissions as a string
-    pub fn get_permissions(&self) -> String {
+    pub fn permissions(&self) -> String {
         let mode = self.metadata.permissions().mode();
 
         unix_mode::to_string(mode)
     }
 
     /// Retrieves the number of hard links pointing to a file as a string
-    pub fn get_hard_links(&self) -> String { self.metadata.nlink().to_string() }
+    pub fn hard_links(&self) -> String { self.metadata.nlink().to_string() }
 
-    pub fn get_inode(&self) -> String { self.metadata.ino().to_string() }
+    pub fn inode(&self) -> String { self.metadata.ino().to_string() }
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
-    pub fn get_user(&self) -> String {
+    pub fn user(&self) -> String {
         let user: String;
 
         if self.flags.numeric_uid_gid {
@@ -84,7 +84,7 @@ impl File {
 
     /// Retrieves the file's group name as a string. If the `-n` flag is set,
     /// the the group's ID is returned
-    pub fn get_group(&self) -> String {
+    pub fn group(&self) -> String {
         let group: String;
 
         if self.flags.numeric_uid_gid {
@@ -100,7 +100,7 @@ impl File {
     }
 
     /// Retrieve the file's size, in bytes, as a string
-    pub fn get_size(&self) -> String { self.metadata.len().to_string() }
+    pub fn size(&self) -> String { self.metadata.len().to_string() }
 
     /// Retrieves the file's timestamp as a string
     ///
@@ -109,7 +109,7 @@ impl File {
     /// modified time of the file's status information. The date format used is
     /// `%b %e %H:%M` unless the duration is greater than six months, which case
     /// the date format will be `%b %e  %Y`.
-    pub fn get_time(&self) -> String {
+    pub fn time(&self) -> String {
         let datetime: DateTime<Local>;
 
         if self.flags.last_accessed {
@@ -157,7 +157,7 @@ impl File {
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting
-    pub fn get_file_name(&self) -> String {
+    pub fn file_name(&self) -> String {
         let mut file_name = self.name.clone();
 
         let flags = self.flags;

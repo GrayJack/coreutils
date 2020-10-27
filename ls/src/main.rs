@@ -110,7 +110,7 @@ fn main() -> io::Result<()> {
 /// Prints information about a file in the default format
 fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
     for file in files {
-        let file_name = file.get_file_name();
+        let file_name = file.file_name();
 
         if flags.comma_separate {
             write!(writer, "{}, ", file_name)?;
@@ -136,7 +136,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
 
     for file in &files {
         if flags.inode {
-            let inode = file.get_inode().len();
+            let inode = file.inode().len();
 
             if inode > inode_width {
                 inode_width = inode;
@@ -144,34 +144,34 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
         }
 
         if flags.size {
-            let block = file.get_blocks().len();
+            let block = file.blocks().len();
 
             if block > block_width {
                 block_width = block;
             }
         }
 
-        let hard_links = file.get_hard_links().len();
+        let hard_links = file.hard_links().len();
 
         if hard_links > hard_links_width {
             hard_links_width = hard_links;
         }
 
-        let user = file.get_user().len();
+        let user = file.user().len();
 
         if user > user_width {
             user_width = user;
         }
 
         if !flags.no_owner {
-            let group = file.get_group().len();
+            let group = file.group().len();
 
             if group > group_width {
                 group_width = group;
             }
         }
 
-        let size = file.get_size().len();
+        let size = file.size().len();
 
         if size > size_width {
             size_width = size;
@@ -183,7 +183,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
             write!(
                 writer,
                 "{} ",
-                file.get_inode().pad_to_width_with_alignment(inode_width, Alignment::Right)
+                file.inode().pad_to_width_with_alignment(inode_width, Alignment::Right)
             )?;
         }
 
@@ -191,33 +191,33 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
             write!(
                 writer,
                 "{} ",
-                file.get_blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
+                file.blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
             )?;
         }
 
-        write!(writer, "{} ", file.get_permissions())?;
+        write!(writer, "{} ", file.permissions())?;
 
         write!(
             writer,
             "{} ",
-            file.get_hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
+            file.hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
         )?;
 
-        write!(writer, "{} ", file.get_user().pad_to_width(user_width))?;
+        write!(writer, "{} ", file.user().pad_to_width(user_width))?;
 
         if !flags.no_owner {
-            write!(writer, "{} ", file.get_group().pad_to_width(group_width))?;
+            write!(writer, "{} ", file.group().pad_to_width(group_width))?;
         }
 
         write!(
             writer,
             "{} ",
-            file.get_size().pad_to_width_with_alignment(size_width, Alignment::Right)
+            file.size().pad_to_width_with_alignment(size_width, Alignment::Right)
         )?;
 
-        write!(writer, "{} ", file.get_time())?;
+        write!(writer, "{} ", file.time())?;
 
-        write!(writer, "{}", file.get_file_name())?;
+        write!(writer, "{}", file.file_name())?;
 
         writeln!(writer)?;
     }
