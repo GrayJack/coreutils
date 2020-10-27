@@ -15,10 +15,7 @@ fn main() {
     let exit_code = match result {
         Ok(_) => 0,
         Err(err) => {
-            match writeln!(std::io::stderr(), "{:?}", err) {
-                Err(err) => println!("{:?}", err),
-                _ => {},
-            };
+            eprintln!("sort: {:?}", err);
             1
         },
     };
@@ -44,8 +41,8 @@ fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Box<dyn Read>>, SortErro
     match matches.values_of("FILE") {
         Some(m) => {
             println!("{:?}", m);
-            let files: Vec<Result<File, Error>> = m.map(|filename| File::open(filename)).collect();
-            let files: Result<Vec<File>, Error> = files.into_iter().map(|p| p).collect();
+            let files: Vec<Result<File, Error>> = m.map(File::open).collect();
+            let files: Result<Vec<File>, Error> = files.into_iter().collect();
 
             match files {
                 Ok(files) => {
@@ -66,7 +63,7 @@ fn sort(
     flags: &SortFlags, inputs: Box<dyn Iterator<Item = Box<dyn Read>>>,
 ) -> Result<impl Iterator<Item = String>, SortError> {
     let lines: Result<Vec<String>, std::io::Error> =
-        inputs.map(|file| BufReader::new(file)).flat_map(|reader| reader.lines()).collect();
+        inputs.map(BufReader::new).flat_map(|reader| reader.lines()).collect();
 
     let mut lines = lines.map_err(SortError::FileReadError)?;
     if !flags.merge_only {
@@ -77,7 +74,7 @@ fn sort(
 }
 
 fn print_line(line: String, flags: &mut SortFlags) -> Result<(), SortError> {
-    writeln!(flags.output, "{}", line).map_err(|err| SortError::FileWriteError(err))
+    writeln!(flags.output, "{}", line).map_err(SortError::FileWriteError)
 }
 
 struct SortFlags {
