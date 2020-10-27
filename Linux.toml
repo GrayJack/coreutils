@@ -24,6 +24,7 @@ members = [
     "head",
     "id",
     "link",
+    'ls',
     "logname",
     "mkdir",
     "mkfifo",
