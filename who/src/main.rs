@@ -173,7 +173,7 @@ fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmp> {
 }
 
 #[cfg(not(target_os = "openbsd"))]
-fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
+fn filter_entries(uts: &UtmpSet, flags: WhoFlags) -> Vec<&Utmpx> {
     let mut uts_user: Vec<_>;
     let mut uts_boot: Vec<_>;
     let mut uts_dead: Vec<_>;
