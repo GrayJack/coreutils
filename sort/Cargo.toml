@@ -1,0 +1,21 @@
+[package]
+name = "sort"
+version = "0.1.0"
+authors = ["Anubhab Ghosh <anubhabghosh.me@gmail.com>"]
+license = "MPL-2.0-no-copyleft-exception"
+build = "build.rs"
+edition = "2018"
+description = "Sort or merge all FILE(s)."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["wrap_help"] }
+fail = "0.4.0"
+
+[build-dependencies]
+clap = "^2.33.0"
+
+[dev-dependencies]
+tempfile = "3.1.0"
+fail = "0.4.0"
