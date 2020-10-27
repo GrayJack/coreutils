@@ -1,9 +1,13 @@
-use coreutils_core::os::{group::Group, passwd::Passwd};
+use coreutils_core::os::{
+    group::{Error as GroupError, Group},
+    passwd::{Error as PasswdError, Passwd},
+};
 
 use std::{
     fs, io,
     os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
     path,
+    result::Result,
     string::String,
 };
 
@@ -67,36 +71,28 @@ impl File {
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
-    pub fn user(&self) -> String {
-        let user: String;
-
+    pub fn user(&self) -> Result<String, PasswdError> {
         if self.flags.numeric_uid_gid {
-            let user_value = self.metadata.uid();
-            user = user_value.to_string();
-        } else {
-            let uid = Passwd::from_uid(self.metadata.uid()).unwrap();
-            let user_value = uid.name();
-            user = user_value.to_string();
+            return Ok(self.metadata.uid().to_string());
         }
 
-        user
+        match Passwd::from_uid(self.metadata.uid()) {
+            Ok(passwd) => Ok(passwd.name().to_string()),
+            Err(err) => Err(err),
+        }
     }
 
     /// Retrieves the file's group name as a string. If the `-n` flag is set,
     /// the the group's ID is returned
-    pub fn group(&self) -> String {
-        let group: String;
-
+    pub fn group(&self) -> Result<String, GroupError> {
         if self.flags.numeric_uid_gid {
-            let group_value = self.metadata.gid();
-            group = group_value.to_string();
-        } else {
-            let gid = Group::from_gid(self.metadata.gid()).unwrap();
-            let group_value = gid.name();
-            group = group_value.to_string();
+            return Ok(self.metadata.gid().to_string());
         }
 
-        group
+        match Group::from_gid(self.metadata.gid()) {
+            Ok(group) => Ok(group.name().to_string()),
+            Err(err) => Err(err),
+        }
     }
 
     /// Retrieve the file's size, in bytes, as a string

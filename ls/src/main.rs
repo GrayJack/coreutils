@@ -1,6 +1,6 @@
 use std::{
     fs,
-    io::{self, Result, Write},
+    io::{self, Write},
     path, process,
     string::String,
     time::SystemTime,
@@ -108,7 +108,7 @@ fn main() -> io::Result<()> {
 }
 
 /// Prints information about a file in the default format
-fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
+fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
     for file in files {
         let file_name = file.file_name();
 
@@ -126,7 +126,7 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Re
 }
 
 /// Prints information about the provided file in the long (`-l`) format
-fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Result<()> {
+fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
     let mut hard_links_width = 1;
@@ -157,14 +157,34 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
             hard_links_width = hard_links;
         }
 
-        let user = file.user().len();
+        let user: usize;
+
+        match file.user() {
+            Ok(file_user) => {
+                user = file_user.len();
+            },
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                process::exit(1);
+            },
+        }
 
         if user > user_width {
             user_width = user;
         }
 
         if !flags.no_owner {
-            let group = file.group().len();
+            let group: usize;
+
+            match file.group() {
+                Ok(file_group) => {
+                    group = file_group.len();
+                },
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    process::exit(1);
+                },
+            }
 
             if group > group_width {
                 group_width = group;
@@ -203,10 +223,26 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> Resul
             file.hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
         )?;
 
-        write!(writer, "{} ", file.user().pad_to_width(user_width))?;
+        match file.user() {
+            Ok(user) => {
+                write!(writer, "{} ", user.pad_to_width(user_width))?;
+            },
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                process::exit(1);
+            },
+        }
 
         if !flags.no_owner {
-            write!(writer, "{} ", file.group().pad_to_width(group_width))?;
+            match file.group() {
+                Ok(group) => {
+                    write!(writer, "{} ", group.pad_to_width(group_width))?;
+                },
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    process::exit(1);
+                },
+            }
         }
 
         write!(
