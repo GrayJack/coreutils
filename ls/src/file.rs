@@ -26,14 +26,14 @@ pub(crate) struct File {
 impl File {
     /// Creates a `File` instance from a `DirEntry`
     pub fn from(path: path::PathBuf, flags: Flags) -> io::Result<Self> {
-        let metadata = path.symlink_metadata().expect("Failed to read metadata?");
+        let metadata = path.symlink_metadata()?;
 
         if flags.dereference && metadata.file_type().is_symlink() {
             let symlink = fs::read_link(path.clone())?;
 
             let name: String = File::path_to_file_name(&symlink);
 
-            let metadata = path.metadata().unwrap();
+            let metadata = path.metadata()?;
 
             return Ok(File { name, path: symlink, metadata, flags });
         }
@@ -45,7 +45,7 @@ impl File {
 
     /// Creates a `File` instance from a `DirEntry` and supplies a file name
     pub fn from_name(name: String, path: path::PathBuf, flags: Flags) -> io::Result<Self> {
-        let metadata = path.metadata().expect("Failed to read metadata");
+        let metadata = path.metadata()?;
 
         Ok(File { name, path, metadata, flags })
     }
