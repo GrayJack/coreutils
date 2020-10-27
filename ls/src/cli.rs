@@ -22,7 +22,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("all")
                 .help(
                     "Write out all directory entries, including those whose names begin with a \
-                     <period> ( '.' )",
+                     <period> ( '.' ).",
                 )
                 .short("a")
                 .long("all"),
