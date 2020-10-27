@@ -39,20 +39,9 @@ fn main() {
 fn basename(full_path: &str, suffix: &str) -> String {
     let split_full_path: Vec<&str> = full_path.split('/').collect();
     match split_full_path.last() {
-        Some(name) => strip_suffix(name, suffix),
+        Some(name) => name.strip_suffix(suffix).unwrap_or(name).to_string(),
         None => "".to_string(),
     }
-}
-
-/// Removes the given `suffix` from the `name`.
-fn strip_suffix(name: &str, suffix: &str) -> String {
-    if name == suffix {
-        return name.to_string();
-    }
-    if name.ends_with(suffix) {
-        return name[..(name.len() - suffix.len())].to_owned();
-    }
-    name.to_string()
 }
 
 #[cfg(test)]
