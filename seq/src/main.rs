@@ -116,10 +116,10 @@ impl Iterator for SeqIterator {
                 Some(width) if width > digits => {
                     let mut padded = String::with_capacity(value.len() + (width - digits));
 
-                    if value.starts_with('-') {
+                    if let Some(val) = value.strip_prefix('-') {
                         padded.push('-');
                         padded.push_str(&"0".repeat(width - digits));
-                        padded.push_str(&value[1..]);
+                        padded.push_str(val);
                     } else {
                         padded.push_str(&"0".repeat(width - digits));
                         padded.push_str(&value);

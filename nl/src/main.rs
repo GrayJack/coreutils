@@ -76,8 +76,8 @@ impl Style {
             Some("t") => Style::Nonempty,
             Some("n") => Style::None,
             Some(reg) => {
-                if reg.starts_with('p') {
-                    let regex = Regex::new(&reg[1..]).unwrap_or_else(|err| {
+                if let Some(r) = reg.strip_prefix('p') {
+                    let regex = Regex::new(r).unwrap_or_else(|err| {
                         eprintln!("{}", err.to_string());
                         std::process::exit(1);
                     });

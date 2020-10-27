@@ -34,8 +34,8 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
             (true, false) => {
                 let value = matches.value_of("OPERAND").unwrap();
 
-                if value.starts_with('+') {
-                    (&value[1..], "now")
+                if let Some(s) = value.strip_prefix('+') {
+                    (s, "now")
                 } else if is_rfc2822 {
                     (RFC_2822_FMT, value)
                 } else if is_iso8601 {
