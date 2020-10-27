@@ -15,7 +15,7 @@ fn main() {
     let mut stdout = BufWriter::new(io::stdout());
 
     loop {
-        write!(stdout, "{}", string).unwrap_or_else(|err| {
+        writeln!(stdout, "{}", string).unwrap_or_else(|err| {
             eprintln!("yes: failed to write to standard out: {}", err);
             std::process::exit(1);
         });
