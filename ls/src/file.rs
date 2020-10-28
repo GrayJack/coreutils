@@ -105,16 +105,14 @@ impl File {
     /// modified time of the file's status information. The date format used is
     /// `%b %e %H:%M` unless the duration is greater than six months, which case
     /// the date format will be `%b %e  %Y`.
-    pub fn time(&self) -> String {
-        let datetime: DateTime<Local>;
-
-        if self.flags.last_accessed {
-            let accessed = self.metadata.accessed().unwrap();
-            datetime = accessed.into();
+    pub fn time(&self) -> io::Result<String> {
+        let system_time = if self.flags.last_accessed {
+            self.metadata.accessed()?
         } else {
-            let modified = self.metadata.modified().unwrap();
-            datetime = modified.into();
-        }
+            self.metadata.modified()?
+        };
+
+        let datetime: DateTime<Local> = system_time.into();
 
         let mut fmt = "%b %e %H:%M";
 
@@ -128,7 +126,7 @@ impl File {
             fmt = "%b %e  %Y";
         }
 
-        datetime.format(fmt).to_string()
+        Ok(datetime.format(fmt).to_string())
     }
 
     /// Check if a path is an executable file

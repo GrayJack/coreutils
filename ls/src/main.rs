@@ -251,7 +251,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
             file.size().pad_to_width_with_alignment(size_width, Alignment::Right)
         )?;
 
-        write!(writer, "{} ", file.time())?;
+        write!(writer, "{} ", file.time()?)?;
 
         write!(writer, "{}", file.file_name())?;
 
