@@ -67,6 +67,7 @@ impl File {
     /// Retrieves the number of hard links pointing to a file as a string
     pub fn hard_links(&self) -> String { self.metadata.nlink().to_string() }
 
+    /// Retrieves the inode number as a string
     pub fn inode(&self) -> String { self.metadata.ino().to_string() }
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
@@ -142,6 +143,7 @@ impl File {
         result
     }
 
+    /// Checks if a string looks like a hidden unix file name
     pub fn is_hidden(name: &str) -> bool { name.starts_with('.') }
 
     /// Gets the file name from a `PathBuf`
