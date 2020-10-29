@@ -66,16 +66,14 @@ fn main() -> io::Result<()> {
                     // be canonicalize incase the path is relative
                     let current = path::PathBuf::from(file).canonicalize().unwrap();
 
-                    let dot = File::from_name(".".to_string(), current.clone(), flags)
-                        .expect("Failed to read .");
+                    let dot = File::from_name(".".to_string(), current.clone(), flags)?;
 
                     // Retrieve the parent path. Default to the current path if the parent doesn't
                     // exist
                     let parent_path =
                         path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
 
-                    let dot_dot = File::from_name("..".to_string(), parent_path, flags)
-                        .expect("Failed to read ..");
+                    let dot_dot = File::from_name("..".to_string(), parent_path, flags)?;
 
                     dir.insert(0, dot);
                     dir.insert(1, dot_dot);
