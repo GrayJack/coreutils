@@ -35,14 +35,14 @@ impl File {
         if flags.dereference && metadata.file_type().is_symlink() {
             let symlink = fs::read_link(path.clone())?;
 
-            let name: String = File::path_to_file_name(&symlink);
+            let name = File::path_buf_to_file_name(&symlink)?.to_string();
 
             let metadata = path.metadata()?;
 
             return Ok(File { name, path: symlink, metadata, flags });
         }
 
-        let name = File::path_to_file_name(&path);
+        let name = File::path_buf_to_file_name(&path)?.to_string();
 
         Ok(File { name, path, metadata, flags })
     }
@@ -144,10 +144,32 @@ impl File {
 
     pub fn is_hidden(name: &str) -> bool { name.starts_with('.') }
 
-    pub fn path_to_file_name(path: &path::PathBuf) -> String {
-        let file_name = path.file_name().expect("Failed to retrieve file name");
+    /// Gets the file name from a `PathBuf`
+    ///
+    /// Will return `Error` if the path terminates at '..' or if the file name
+    /// contains invalid unicode characters.
+    pub fn path_buf_to_file_name(path: &path::PathBuf) -> io::Result<&str> {
+        // Create a new IO Error.
+        let io_error = |kind: io::ErrorKind, msg: &str| io::Error::new(kind, msg);
 
-        file_name.to_str().unwrap().to_string()
+        let file_name = match path.file_name() {
+            Some(file_name) => file_name,
+            None => {
+                return Err(io_error(io::ErrorKind::NotFound, "Path terminates at \"..\""));
+            },
+        };
+
+        let file_name = match file_name.to_str() {
+            Some(file_name) => file_name,
+            None => {
+                return Err(io_error(
+                    io::ErrorKind::InvalidData,
+                    "File name contains invalid unicode",
+                ));
+            },
+        };
+
+        Ok(file_name)
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting

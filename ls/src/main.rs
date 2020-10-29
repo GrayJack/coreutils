@@ -86,11 +86,21 @@ fn main() -> io::Result<()> {
                 }
 
                 if !flags.comma_separate && flags.show_list() {
-                    if print_list(dir, &mut writer, flags).is_err() {
-                        exit_code = 1
+                    match print_list(dir, &mut writer, flags) {
+                        Ok(_) => {},
+                        Err(err) => {
+                            eprintln!("ls: cannot access '{}': {}", file, err);
+                            exit_code = 1;
+                        },
                     }
-                } else if print_default(dir, &mut writer, flags).is_err() {
-                    exit_code = 1;
+                } else {
+                    match print_default(dir, &mut writer, flags) {
+                        Ok(_) => {},
+                        Err(err) => {
+                            eprintln!("ls: cannot access '{}': {}", file, err);
+                            exit_code = 1;
+                        },
+                    }
                 }
             },
             Err(err) => {
