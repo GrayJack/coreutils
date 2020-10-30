@@ -1,6 +1,7 @@
 use std::{
     fs,
     io::{self, Write},
+    os::unix::fs::MetadataExt,
     path, process,
     string::String,
     time::SystemTime,
@@ -133,135 +134,165 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io
     Ok(())
 }
 
+struct Column {
+    pub alignment: Alignment,
+    width: *mut usize,
+    pub value: String,
+}
+
+impl Column {
+    pub fn from(value: String, width: *mut usize, alignment: Alignment) -> Self {
+        Column { alignment, width, value }
+    }
+
+    pub fn width(&self) -> usize {
+        unsafe {
+            *self.width
+        }
+    }
+}
+
 /// Prints information about the provided file in the long (`-l`) format
 fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
+    let mut permissions_width = 1;
     let mut hard_links_width = 1;
     let mut user_width = 1;
     let mut group_width = 1;
     let mut size_width = 1;
+    let mut time_width = 1;
+    let mut file_name_width = 1;
+
+    let mut rows: Vec<Vec<Column>> = Vec::new();
 
     for file in &files {
+        let mut row: Vec<Column> = Vec::new();
+
+        // Process the file's inode
         if flags.inode {
-            let inode = file.inode().len();
+            let inode = file.inode();
+            let inode_len = inode.len();
 
-            if inode > inode_width {
-                inode_width = inode;
+            if inode_len > inode_width {
+                inode_width = inode_len;
             }
+
+            let inode_width_ptr: *mut usize = &mut inode_width;
+
+            row.push(Column::from(inode, inode_width_ptr, Alignment::Right));
         }
 
+        // Process the file's block size
         if flags.size {
-            let block = file.blocks().len();
+            let block = file.blocks();
+            let block_len = block.len();
 
-            if block > block_width {
-                block_width = block;
+            if block_len > block_width {
+                block_width = block_len;
             }
+
+            let block_width_ptr: *mut usize = &mut block_width;
+
+            row.push(Column::from(block, block_width_ptr, Alignment::Right));
         }
 
-        let hard_links = file.hard_links().len();
+        // Process the file's permissions
+        let permissions = file.permissions();
 
-        if hard_links > hard_links_width {
-            hard_links_width = hard_links;
+        let permissions_width_ptr: *mut usize = &mut permissions_width;
+
+        row.push(Column::from(permissions, permissions_width_ptr, Alignment::Left));
+
+        // Process the file's hard links
+        let hard_links = file.hard_links();
+        let hard_links_len = hard_links.len();
+
+        if hard_links_len > hard_links_width {
+            hard_links_width = hard_links_len;
         }
 
-        let user: usize;
+        let hard_links_width_ptr: *mut usize = &mut hard_links_width;
 
-        match file.user() {
+        row.push(Column::from(hard_links, hard_links_width_ptr, Alignment::Right));
+
+        // Process the file's user name
+        let user = match file.user() {
             Ok(file_user) => {
-                user = file_user.len();
+                file_user
             },
             Err(err) => {
                 eprintln!("ls: {}", err);
-                process::exit(1);
+                file.metadata.uid().to_string()
             },
+        };
+
+        let user_len = user.len();
+
+        if user_len > user_width {
+            user_width = user_len;
         }
 
-        if user > user_width {
-            user_width = user;
-        }
+        let user_width_ptr: *mut usize = &mut user_width;
 
+        row.push(Column::from(user, user_width_ptr, Alignment::Left));
+
+        // Process the file's group name
         if !flags.no_owner {
-            let group: usize;
-
-            match file.group() {
+            let group = match file.group() {
                 Ok(file_group) => {
-                    group = file_group.len();
+                    file_group
                 },
                 Err(err) => {
                     eprintln!("ls: {}", err);
-                    process::exit(1);
+                    file.metadata.gid().to_string()
                 },
+            };
+
+            let group_len = group.len();
+
+            if group_len > group_width {
+                group_width = group_len;
             }
 
-            if group > group_width {
-                group_width = group;
-            }
+            let group_width_ptr: *mut usize = &mut group_width;
+
+            row.push(Column::from(group, group_width_ptr, Alignment::Left));
         }
 
-        let size = file.size().len();
+        // Process the file's size
+        let size = file.size();
+        let size_len = file.size().len();
 
-        if size > size_width {
-            size_width = size;
+        if size_len > size_width {
+            size_width = size_len;
         }
+
+        let size_width_ptr: *mut usize = &mut size_width;
+
+        row.push(Column::from(size, size_width_ptr, Alignment::Right));
+
+        // Process the file's timestamp
+        let time_width_ptr: *mut usize = &mut time_width;
+
+        row.push(Column::from(file.time()?, time_width_ptr, Alignment::Left));
+
+        // Process the file's name
+        let file_name_width_ptr: *mut usize = &mut file_name_width;
+
+        row.push(Column::from(file.file_name(), file_name_width_ptr, Alignment::Left));
+
+        rows.push(row);
     }
 
-    for file in &files {
-        if flags.inode {
+    for row in rows {
+        for column in row {
             write!(
                 writer,
                 "{} ",
-                file.inode().pad_to_width_with_alignment(inode_width, Alignment::Right)
+                column.value.pad_to_width_with_alignment(column.width(), column.alignment)
             )?;
         }
-
-        if flags.size {
-            write!(
-                writer,
-                "{} ",
-                file.blocks().pad_to_width_with_alignment(block_width, Alignment::Right)
-            )?;
-        }
-
-        write!(writer, "{} ", file.permissions())?;
-
-        write!(
-            writer,
-            "{} ",
-            file.hard_links().pad_to_width_with_alignment(hard_links_width, Alignment::Right)
-        )?;
-
-        match file.user() {
-            Ok(user) => {
-                write!(writer, "{} ", user.pad_to_width(user_width))?;
-            },
-            Err(err) => {
-                eprintln!("ls: {}", err);
-                process::exit(1);
-            },
-        }
-
-        if !flags.no_owner {
-            match file.group() {
-                Ok(group) => {
-                    write!(writer, "{} ", group.pad_to_width(group_width))?;
-                },
-                Err(err) => {
-                    eprintln!("ls: {}", err);
-                    process::exit(1);
-                },
-            }
-        }
-
-        write!(
-            writer,
-            "{} ",
-            file.size().pad_to_width_with_alignment(size_width, Alignment::Right)
-        )?;
-
-        write!(writer, "{} ", file.time()?)?;
-
-        write!(writer, "{}", file.file_name())?;
 
         writeln!(writer)?;
     }
