@@ -30,82 +30,101 @@ fn main() -> io::Result<()> {
 
     let multiple = files.len() > 1;
 
-    for file in files {
-        match fs::read_dir(file) {
-            Ok(dir) => {
-                let mut dir: Vec<_> = dir
-                    // Collect information about the file or directory
-                    .map(|entry| File::from(entry.unwrap().path(), flags).unwrap())
-                    // Hide hidden files and directories if `-a` or `-A` flags
-                    // weren't provided
-                    .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
-                    .collect();
+    for (i, file) in files.enumerate() {
+        if multiple {
+            if i == 0 {
+                writeln!(writer, "{}:", file)?;
+            } else {
+                writeln!(writer, "\n{}:", file)?;
+            }
+        }
 
-                if !flags.no_sort {
-                    if flags.time {
-                        if flags.last_accessed {
-                            dir.sort_by_key(sort_by_access_time);
+        let mut result: Vec<File>;
+
+        let path = path::PathBuf::from(file);
+
+        if path.is_file() {
+            result = Vec::new();
+            
+            let item = File::from(path::PathBuf::from(file), flags)?;
+
+            result.push(item);
+        } else {
+            match fs::read_dir(file) {
+                Ok(dir) => {
+                    result = dir
+                        // Collect information about the file or directory
+                        .map(|entry| File::from(entry.unwrap().path(), flags).unwrap())
+                        // Hide hidden files and directories if `-a` or `-A` flags
+                        // weren't provided
+                        .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
+                        .collect();
+
+                    if !flags.no_sort {
+                        if flags.time {
+                            if flags.last_accessed {
+                                result.sort_by_key(sort_by_access_time);
+                            } else {
+                                result.sort_by_key(sort_by_time);
+                            }
+                            result.reverse();
+                        } else if flags.sort_size {
+                            result.sort_by_key(sort_by_size);
+                            result.reverse();
                         } else {
-                            dir.sort_by_key(sort_by_time);
+                            // Sort the directory entries by file name by default
+                            result.sort_by_key(sort_by_name);
                         }
-                        dir.reverse();
-                    } else if flags.sort_size {
-                        dir.sort_by_key(sort_by_size);
-                        dir.reverse();
-                    } else {
-                        // Sort the directory entries by file name by default
-                        dir.sort_by_key(sort_by_name);
+
+                        if flags.reverse {
+                            result.reverse();
+                        }
                     }
+                },
+                Err(err) => {
+                    eprintln!("ls: cannot access '{}': {}", file, err);
+                    exit_code = 1;
 
-                    if flags.reverse {
-                        dir.reverse();
-                    }
-                }
+                    break;
+                },
 
-                if flags.all || flags.no_sort {
-                    // Retrieve the current directories information. This must
-                    // be canonicalize incase the path is relative
-                    let current = path::PathBuf::from(file).canonicalize().unwrap();
+            }
+        }
 
-                    let dot = File::from_name(".".to_string(), current.clone(), flags)?;
+        if flags.all || flags.no_sort {
+            // Retrieve the current directories information. This must
+            // be canonicalize incase the path is relative
+            let current = path::PathBuf::from(file).canonicalize().unwrap();
 
-                    // Retrieve the parent path. Default to the current path if the parent doesn't
-                    // exist
-                    let parent_path =
-                        path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
+            let dot = File::from_name(".".to_string(), current.clone(), flags)?;
 
-                    let dot_dot = File::from_name("..".to_string(), parent_path, flags)?;
+            // Retrieve the parent path. Default to the current path if the parent doesn't
+            // exist
+            let parent_path =
+                path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
 
-                    dir.insert(0, dot);
-                    dir.insert(1, dot_dot);
-                }
+            let dot_dot = File::from_name("..".to_string(), parent_path, flags)?;
 
-                if multiple {
-                    writeln!(writer, "\n{}:", file)?;
-                }
+            result.insert(0, dot);
+            result.insert(1, dot_dot);
+        }
 
-                if !flags.comma_separate && flags.show_list() {
-                    match print_list(dir, &mut writer, flags) {
-                        Ok(_) => {},
-                        Err(err) => {
-                            eprintln!("ls: cannot access '{}': {}", file, err);
-                            exit_code = 1;
-                        },
-                    }
-                } else {
-                    match print_default(dir, &mut writer, flags) {
-                        Ok(_) => {},
-                        Err(err) => {
-                            eprintln!("ls: cannot access '{}': {}", file, err);
-                            exit_code = 1;
-                        },
-                    }
-                }
-            },
-            Err(err) => {
-                eprintln!("ls: cannot access '{}': {}", file, err);
-                exit_code = 1;
-            },
+        if !flags.comma_separate && flags.show_list() {
+            match print_list(result, &mut writer, flags) {
+                Ok(_) => {},
+                Err(err) => {
+                    eprintln!("ls: cannot access '{}': {}", file, err);
+                    exit_code = 1;
+                },
+            }
+        } else {
+            match print_default(result, &mut writer, flags) {
+                Ok(_) => {},
+                Err(err) => {
+                    eprintln!("ls: cannot access '{}': {}", file, err);
+                    exit_code = 1;
+                },
+            }
         }
     }
 
