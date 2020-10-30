@@ -1,6 +1,6 @@
 use std::{
-    fs::File,
-    io::{prelude::*, stdin, BufReader},
+    fs::{self, File},
+    io::{self, prelude::*},
 };
 
 use clap::ArgMatches;
@@ -10,24 +10,17 @@ mod cli;
 fn main() {
     let matches = cli::create_app().get_matches();
 
-    let result = main_sort(matches);
-
-    let exit_code = match result {
-        Ok(_) => 0,
-        Err(err) => {
-            eprintln!("sort: {:?}", err);
-            1
-        },
-    };
-    std::process::exit(exit_code);
+    main_sort(matches).unwrap_or_else(|err| {
+        eprintln!("sort: {:?}.", err);
+        std::process::exit(2);
+    });
 }
 
 fn main_sort(matches: clap::ArgMatches) -> Result<(), SortError> {
     let mut flags = SortFlags::from_matches(&matches)?;
     let inputs = get_inputs(&matches)?;
 
-    let lines = sort(&flags, Box::new(inputs.into_iter()))?;
-
+    let lines = sort(&flags, inputs)?;
     for line in lines {
         print_line(line, &mut flags)?;
     }
@@ -36,41 +29,31 @@ fn main_sort(matches: clap::ArgMatches) -> Result<(), SortError> {
 }
 
 fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Box<dyn Read>>, SortError> {
-    use std::io::Error;
+    match matches.values_of("INPUT_FILES") {
+        Some(files) => {
+            let files: io::Result<Vec<File>> = files.map(File::open).collect();
+            let files = files.map_err(SortError::FileReadError)?;
 
-    match matches.values_of("FILE") {
-        Some(m) => {
-            println!("{:?}", m);
-            let files: Vec<Result<File, Error>> = m.map(File::open).collect();
-            let files: Result<Vec<File>, Error> = files.into_iter().collect();
-
-            match files {
-                Ok(files) => {
-                    let mut inputs: Vec<Box<dyn Read>> = vec![];
-                    for file in files {
-                        inputs.push(Box::new(file));
-                    }
-                    Ok(inputs)
-                },
-                Err(err) => Err(SortError::FileReadError(err)),
+            let mut inputs: Vec<Box<dyn Read>> = vec![];
+            for file in files {
+                inputs.push(Box::new(file));
             }
+            Ok(inputs)
         },
-        None => Ok(vec![Box::new(stdin())]),
+        None => Ok(vec![Box::new(io::stdin())]),
     }
 }
 
-fn sort(
-    flags: &SortFlags, inputs: Box<dyn Iterator<Item = Box<dyn Read>>>,
-) -> Result<impl Iterator<Item = String>, SortError> {
-    let lines: Result<Vec<String>, std::io::Error> =
-        inputs.map(BufReader::new).flat_map(|reader| reader.lines()).collect();
+fn sort(flags: &SortFlags, inputs: Vec<Box<dyn Read>>) -> Result<Vec<String>, SortError> {
+    let lines: io::Result<Vec<String>> =
+        inputs.into_iter().map(io::BufReader::new).flat_map(|reader| reader.lines()).collect();
 
     let mut lines = lines.map_err(SortError::FileReadError)?;
     if !flags.merge_only {
         lines.sort();
     }
 
-    Ok(lines.into_iter())
+    Ok(lines)
 }
 
 fn print_line(line: String, flags: &mut SortFlags) -> Result<(), SortError> {
@@ -85,12 +68,12 @@ struct SortFlags {
 impl SortFlags {
     pub fn from_matches(matches: &ArgMatches) -> Result<Self, SortError> {
         let merge_only = matches.is_present("merge_only");
-        let output: Box<dyn Write> = match matches.value_of("output") {
+        let output: Box<dyn Write> = match matches.value_of("OUTPUT_FILE") {
             Some(path) => match File::create(path) {
                 Ok(file) => Box::new(file),
                 Err(err) => return Err(SortError::FileWriteError(err)),
             },
-            None => Box::new(std::io::stdout()),
+            None => Box::new(io::stdout()),
         };
         Ok(SortFlags { merge_only, output })
     }
@@ -98,8 +81,8 @@ impl SortFlags {
 
 #[derive(Debug)]
 enum SortError {
-    FileReadError(std::io::Error),
-    FileWriteError(std::io::Error),
+    FileReadError(io::Error),
+    FileWriteError(io::Error),
 }
 
 #[cfg(test)]
@@ -154,6 +137,10 @@ mod tests {
         };
     }
 
+    fn default_flags() -> SortFlags {
+        SortFlags { merge_only: false, output: Box::new(io::stdout()) }
+    }
+
     #[test]
     fn test_get_inputs_with_values() {
         let (file1, file2, file3) = create_temp_files!();
@@ -164,8 +151,8 @@ mod tests {
         assert_eq!(3, inputs.len());
 
         let expected: Vec<String> =
-            vec![file1, file2, file3].iter().map(|f| std::fs::read_to_string(f).unwrap()).collect();
-        assert_eq!(vec!["file1\n", "file2\n", "file3\n",], expected);
+            vec![file1, file2, file3].iter().map(|f| fs::read_to_string(f).unwrap()).collect();
+        assert_eq!(vec!["file1\n", "file2\n", "file3\n"], expected);
     }
 
     #[test]
@@ -173,18 +160,11 @@ mod tests {
         let wrong_path = "/unexisting/path/I/hope";
         let matches = get_matches!(wrong_path);
 
-        let error = get_inputs(&matches);
-
-        let error = match error {
-            Err(err) => err,
-            Ok(_) => panic!("Wrong!"),
-        };
-        let error = match error {
-            SortError::FileReadError(err) => err,
-            _ => panic!("Wrong!"),
-        };
-
-        assert_eq!(std::io::ErrorKind::NotFound, error.kind());
+        match get_inputs(&matches) {
+            // Expected fail
+            Err(SortError::FileReadError(err)) if err.kind() == io::ErrorKind::NotFound => {},
+            _ => panic!(),
+        }
     }
 
     #[test]
@@ -197,57 +177,44 @@ mod tests {
 
     #[test]
     fn test_sort() {
-        let flags = SortFlags { merge_only: false, output: Box::new(std::io::stdout()) };
         let (file1, file2, file3) = create_temp_files!("file3", "file2", "file1");
         let matches = get_matches!(file1, file2, file3);
 
         let inputs = get_inputs(&matches).unwrap();
+        let res = sort(&default_flags(), inputs).unwrap();
 
-        let res = sort(&flags, Box::new(inputs.into_iter())).unwrap();
-
-        let res: Vec<String> = res.collect();
-
-        assert_eq!(vec!["file1", "file2", "file3",], res)
+        assert_eq!(vec!["file1", "file2", "file3"], res)
     }
 
     #[test]
     fn test_sort_multi_lines() {
-        let flags = SortFlags { merge_only: false, output: Box::new(std::io::stdout()) };
         let (file1, file2, file3) =
             create_temp_files!("line1\nline3\nline4", "line8\nline2\nline5", "line6\nline7\nline9");
         let matches = get_matches!(file1, file2, file3);
 
         let inputs = get_inputs(&matches).unwrap();
-
-        let res = sort(&flags, Box::new(inputs.into_iter())).unwrap();
-
-        let res: Vec<String> = res.collect();
+        let res = sort(&default_flags(), inputs).unwrap();
 
         assert_eq!(
-            vec!["line1", "line2", "line3", "line4", "line5", "line6", "line7", "line8", "line9",],
+            vec!["line1", "line2", "line3", "line4", "line5", "line6", "line7", "line8", "line9"],
             res
         )
     }
 
     #[test]
     fn test_sort_different_file_length() {
-        let flags = SortFlags { merge_only: false, output: Box::new(std::io::stdout()) };
         let (file1, file2, file3) =
             create_temp_files!("line1\nline3\nline4\nline8\nline2\nline5\nline6", "line7", "line9");
         let matches = get_matches!(file1, file2, file3);
 
         let inputs = get_inputs(&matches).unwrap();
-
-        let res = sort(&flags, Box::new(inputs.into_iter())).unwrap();
-
-        let res: Vec<String> = res.collect();
+        let res = sort(&default_flags(), inputs).unwrap();
 
         assert_eq!(
-            vec!["line1", "line2", "line3", "line4", "line5", "line6", "line7", "line8", "line9",],
+            vec!["line1", "line2", "line3", "line4", "line5", "line6", "line7", "line8", "line9"],
             res
         )
     }
-
 
     #[test]
     fn test_main_sort() {
@@ -265,7 +232,7 @@ mod tests {
                 "line1", "line2", "line3", "line4", "line5", "line6", "line7", "line8", "line9", ""
             ]
             .join("\n"),
-            std::fs::read_to_string(output_file_path).unwrap()
+            fs::read_to_string(output_file_path).unwrap()
         )
     }
 }
