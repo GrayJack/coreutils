@@ -45,7 +45,7 @@ fn main() -> io::Result<()> {
 
         if path.is_file() {
             result = Vec::new();
-            
+
             let item = File::from(path::PathBuf::from(file), flags)?;
 
             result.push(item);
@@ -94,7 +94,7 @@ fn main() -> io::Result<()> {
         if flags.all || flags.no_sort {
             // Retrieve the current directories information. This must
             // be canonicalize incase the path is relative
-            let current = path::PathBuf::from(file).canonicalize().unwrap();
+            let current = path::PathBuf::from(file).canonicalize()?;
 
             let dot = File::from_name(".".to_string(), current.clone(), flags)?;
 
@@ -185,6 +185,8 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
     let mut rows: Vec<Vec<Column>> = Vec::new();
 
+    let mut total: u64 = 0;
+
     for file in &files {
         let mut row: Vec<Column> = Vec::new();
 
@@ -201,6 +203,8 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
             row.push(Column::from(inode, inode_width_ptr, Alignment::Right));
         }
+
+        total += file.metadata.blocks();
 
         // Process the file's block size
         if flags.size {
@@ -303,6 +307,8 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
         rows.push(row);
     }
+
+    writeln!(writer, "total {}", total)?;
 
     for row in rows {
         for column in row {
