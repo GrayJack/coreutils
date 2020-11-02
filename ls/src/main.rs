@@ -33,10 +33,10 @@ fn main() -> io::Result<()> {
     for (i, file) in files.enumerate() {
         if multiple {
             if i == 0 {
-                writeln!(writer, "{}:", file)?;
-            } else {
-                writeln!(writer, "\n{}:", file)?;
+                writeln!(writer, "\n")?;
             }
+
+            writeln!(writer, "{}:", file)?;
         }
 
         let mut result: Vec<File>;
