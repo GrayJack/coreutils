@@ -330,7 +330,9 @@ fn sort_by_access_time(file: &File) -> SystemTime {
 }
 
 /// Sort a list of files by file name alphabetically
-fn sort_by_name(file: &File) -> String { file.name.to_lowercase() }
+fn sort_by_name(file: &File) -> String {
+    file.name.to_lowercase().trim_start_matches('.').to_string()
+}
 
 /// Sort a list of files by size
 fn sort_by_size(file: &File) -> u64 { file.metadata.len() }
