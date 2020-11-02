@@ -325,7 +325,7 @@ fn sort_by_access_time(file: &File) -> SystemTime {
         Err(err) => {
             eprintln!("ls: {}", err);
             SystemTime::now()
-        }
+        },
     }
 }
 
@@ -344,6 +344,6 @@ fn sort_by_time(file: &File) -> SystemTime {
         Err(err) => {
             eprintln!("ls: {}", err);
             SystemTime::now()
-        }
+        },
     }
 }
