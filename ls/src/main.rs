@@ -87,7 +87,6 @@ fn main() -> io::Result<()> {
 
                     break;
                 },
-
             }
         }
 
@@ -164,11 +163,7 @@ impl Column {
         Column { alignment, width, value }
     }
 
-    pub fn width(&self) -> usize {
-        unsafe {
-            *self.width
-        }
-    }
+    pub fn width(&self) -> usize { unsafe { *self.width } }
 }
 
 /// Prints information about the provided file in the long (`-l`) format
@@ -241,9 +236,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
         // Process the file's user name
         let user = match file.user() {
-            Ok(file_user) => {
-                file_user
-            },
+            Ok(file_user) => file_user,
             Err(err) => {
                 eprintln!("ls: {}", err);
                 file.metadata.uid().to_string()
@@ -263,9 +256,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
         // Process the file's group name
         if !flags.no_owner {
             let group = match file.group() {
-                Ok(file_group) => {
-                    file_group
-                },
+                Ok(file_group) => file_group,
                 Err(err) => {
                     eprintln!("ls: {}", err);
                     file.metadata.gid().to_string()
