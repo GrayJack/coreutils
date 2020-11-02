@@ -199,7 +199,7 @@ impl File {
                 let symlink = fs::read_link(self.path.clone());
 
                 if let Ok(symlink) = symlink {
-                    let mut symlink_name = String::from(symlink.to_str().unwrap());
+                    let mut symlink_name = symlink.to_string_lossy().to_string();
 
                     if File::is_executable(&symlink) {
                         symlink_name = self.add_executable_color(symlink_name);
