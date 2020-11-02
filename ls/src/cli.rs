@@ -31,7 +31,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("almost_all")
                 .help(
                     "Write out all directory entries, including those whose names begin with a \
-                     <period> ( '.' ) but excluding the entries dot and dot-dot (if they exist)",
+                     <period> ( '.' ) but excluding the entries dot and dot-dot (if they exist).",
                 )
                 .short("A")
                 .long("almost-all"),
@@ -47,13 +47,13 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("classify")
-                .help("Append indicator (one of */=>@|) to entries")
+                .help("Append indicator (one of */=>@|) to entries.")
                 .short("F")
                 .long("classify"),
         )
         .arg(
             Arg::with_name("comma_separate")
-                .help("Fill width with a comma separated list of entries")
+                .help("Fill width with a comma separated list of entries.")
                 .short("m")
                 .long("comma_separate"),
         )
@@ -61,20 +61,20 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("dereference")
                 .help(
                     "When showing file information for a symbolic link, show information for the \
-                     file the link references rather than for the link itself",
+                     file the link references rather than for the link itself.",
                 )
                 .short("L")
                 .long("dereference"),
         )
         .arg(
             Arg::with_name("indicator")
-                .help("Write a <slash> ( '/' ) after each filename if that file is a directory")
+                .help("Write a <slash> ( '/' ) after each filename if that file is a directory.")
                 .short("p")
                 .long("indicator"),
         )
         .arg(
             Arg::with_name("inode")
-                .help("For each file, write the file's file serial number")
+                .help("For each file, write the file's file serial number.")
                 .short("i")
                 .long("inode"),
         )
@@ -82,7 +82,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("last_accessed")
                 .help(
                     "Use time of last access instead of last modification of the file for sorting \
-                     -t or writing -l",
+                     -t or writing -l.",
                 )
                 .short("u")
                 .long("last-accessed"),
@@ -90,37 +90,37 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(Arg::with_name("list").help("Use a long listing format").short("l").long("list"))
         .arg(
             Arg::with_name("no_owner")
-                .help("Like -l, but do not list owner")
+                .help("Like -l, but do not list owner.")
                 .short("g")
                 .long("no-owner"),
         )
         .arg(
             Arg::with_name("numeric_uid_gid")
-                .help("Like -l, but list numeric user and group IDs")
+                .help("Like -l, but list numeric user and group IDs.")
                 .short("n")
                 .long("numeric-uid-gid"),
         )
         .arg(
             Arg::with_name("reverse")
-                .help("Reverse order while sorting")
+                .help("Reverse order while sorting.")
                 .short("r")
                 .long("reverse"),
         )
         .arg(
             Arg::with_name("size")
-                .help("Print the allocated size of each file, in blocks")
+                .help("Print the allocated size of each file, in blocks.")
                 .short("s")
                 .long("size"),
         )
         .arg(
             Arg::with_name("sort_size")
-                .help("Sort by first file size, largest first")
+                .help("Sort by first file size, largest first.")
                 .short("S")
                 .long("sort-size"),
         )
         .arg(
             Arg::with_name("time")
-                .help("Sort by modification time, newest first")
+                .help("Sort by modification time, newest first.")
                 .short("t")
                 .long("time"),
         )
