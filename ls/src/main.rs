@@ -317,7 +317,17 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 }
 
 /// Sort a list of files by last accessed time
-fn sort_by_access_time(file: &File) -> SystemTime { file.metadata.accessed().unwrap() }
+fn sort_by_access_time(file: &File) -> SystemTime {
+    let accessed = file.metadata.accessed();
+
+    match accessed {
+        Ok(accessed) => accessed,
+        Err(err) => {
+            eprintln!("ls: {}", err);
+            SystemTime::now()
+        }
+    }
+}
 
 /// Sort a list of files by file name alphabetically
 fn sort_by_name(file: &File) -> String { file.name.to_lowercase() }
@@ -326,4 +336,14 @@ fn sort_by_name(file: &File) -> String { file.name.to_lowercase() }
 fn sort_by_size(file: &File) -> u64 { file.metadata.len() }
 
 /// Sort a list of directories by modification time
-fn sort_by_time(file: &File) -> SystemTime { file.metadata.modified().unwrap() }
+fn sort_by_time(file: &File) -> SystemTime {
+    let modified = file.metadata.modified();
+
+    match modified {
+        Ok(modified) => modified,
+        Err(err) => {
+            eprintln!("ls: {}", err);
+            SystemTime::now()
+        }
+    }
+}
