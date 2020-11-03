@@ -1,6 +1,7 @@
 use std::{
-    fs::{self, File},
-    io::{self, prelude::*},
+    error, fmt,
+    fs::File,
+    io::{self, prelude::*, BufReader, BufWriter},
 };
 
 use clap::ArgMatches;
@@ -11,7 +12,7 @@ fn main() {
     let matches = cli::create_app().get_matches();
 
     main_sort(matches).unwrap_or_else(|err| {
-        eprintln!("sort: {:?}.", err);
+        eprintln!("sort: {}.", err);
         std::process::exit(2);
     });
 }
@@ -31,12 +32,16 @@ fn main_sort(matches: clap::ArgMatches) -> Result<(), SortError> {
 fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Box<dyn Read>>, SortError> {
     match matches.values_of("INPUT_FILES") {
         Some(files) => {
-            let files: io::Result<Vec<File>> = files.map(File::open).collect();
-            let files = files.map_err(SortError::FileReadError)?;
+            let files: Result<Vec<(String, File)>, SortError> = files
+                .map(|v| {
+                    File::open(v).map(|f| (v.to_string(), f)).map_err(|err| SortError::read(v, err))
+                })
+                .collect();
+            let files = files?;
 
-            let mut inputs: Vec<Box<dyn Read>> = vec![];
-            for file in files {
-                inputs.push(Box::new(file));
+            let mut inputs: Vec<(String, Box<dyn Read>)> = vec![];
+            for (s, file) in files {
+                inputs.push((s, Box::new(file)));
             }
             Ok(inputs)
         },
@@ -44,11 +49,16 @@ fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Box<dyn Read>>, SortErro
     }
 }
 
-fn sort(flags: &SortFlags, inputs: Vec<Box<dyn Read>>) -> Result<Vec<String>, SortError> {
-    let lines: io::Result<Vec<String>> =
-        inputs.into_iter().map(io::BufReader::new).flat_map(|reader| reader.lines()).collect();
+fn sort(flags: &SortFlags, inputs: Vec<(String, Box<dyn Read>)>) -> Result<Vec<String>, SortError> {
+    let lines: Result<Vec<String>, _> = inputs
+        .into_iter()
+        .map(|(path, f)| (path, BufReader::new(f)))
+        .flat_map(|(path, reader)| {
+            reader.lines().map(move |res| res.map_err(|err| SortError::read(&path, err)))
+        })
+        .collect();
 
-    let mut lines = lines.map_err(SortError::FileReadError)?;
+    let mut lines = lines?;
     if !flags.merge_only {
         lines.sort();
     }
@@ -57,7 +67,7 @@ fn sort(flags: &SortFlags, inputs: Vec<Box<dyn Read>>) -> Result<Vec<String>, So
 }
 
 fn print_line(line: String, flags: &mut SortFlags) -> Result<(), SortError> {
-    writeln!(flags.output, "{}", line).map_err(SortError::FileWriteError)
+    writeln!(flags.output, "{}", line).map_err(|err| SortError::write(&line, err))
 }
 
 struct SortFlags {
@@ -70,8 +80,7 @@ impl SortFlags {
         let merge_only = matches.is_present("merge_only");
         let output: Box<dyn Write> = match matches.value_of("OUTPUT_FILE") {
             Some(path) => match File::create(path) {
-                Ok(file) => Box::new(file),
-                Err(err) => return Err(SortError::FileWriteError(err)),
+                Err(err) => return Err(SortError::write(path, err)),
             },
             None => Box::new(io::stdout()),
         };
@@ -80,14 +89,53 @@ impl SortFlags {
 }
 
 #[derive(Debug)]
-enum SortError {
+struct SortError {
+    path: String,
+    ty:   SortErrorTy,
+}
+
+impl SortError {
+    fn read(path: &str, err: io::Error) -> Self {
+        SortError { path: path.to_string(), ty: SortErrorTy::FileReadError(err) }
+    }
+
+    fn write(path: &str, err: io::Error) -> Self {
+        SortError { path: path.to_string(), ty: SortErrorTy::FileWriteError(err) }
+    }
+}
+
+#[derive(Debug)]
+enum SortErrorTy {
     FileReadError(io::Error),
     FileWriteError(io::Error),
+}
+
+impl fmt::Display for SortError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.ty {
+            SortErrorTy::FileReadError(ref err) => {
+                write!(f, "failed to read file {}: {}", self.path, err)
+            },
+            SortErrorTy::FileWriteError(ref err) => {
+                write!(f, "failed to write file {}: {}", self.path, err)
+            },
+        }
+    }
+}
+
+impl error::Error for SortError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self.ty {
+            SortErrorTy::FileReadError(ref err) => Some(err),
+            SortErrorTy::FileWriteError(ref err) => Some(err),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
     use tempfile::NamedTempFile;
 
     macro_rules! create_temp_files {
