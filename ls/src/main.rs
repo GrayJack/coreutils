@@ -4,7 +4,6 @@ use std::{
     os::unix::fs::MetadataExt,
     path, process,
     string::String,
-    time::SystemTime,
 };
 
 extern crate chrono;
@@ -82,6 +81,8 @@ fn main() {
                         if flags.time {
                             if flags.last_accessed {
                                 result.sort_by_key(sort_by_access_time);
+                            } else if flags.file_status_modification {
+                                result.sort_by_key(sort_by_ctime)
                             } else {
                                 result.sort_by_key(sort_by_time);
                             }
@@ -363,17 +364,10 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 }
 
 /// Sort a list of files by last accessed time
-fn sort_by_access_time(file: &File) -> SystemTime {
-    let accessed = file.metadata.accessed();
+fn sort_by_access_time(file: &File) -> i64 { file.metadata.atime() }
 
-    match accessed {
-        Ok(accessed) => accessed,
-        Err(err) => {
-            eprintln!("ls: {}", err);
-            SystemTime::now()
-        },
-    }
-}
+/// Sort a list of files by last change of file status information
+fn sort_by_ctime(file: &File) -> i64 { file.metadata.ctime() }
 
 /// Sort a list of files by file name alphabetically
 fn sort_by_name(file: &File) -> String {
@@ -384,14 +378,4 @@ fn sort_by_name(file: &File) -> String {
 fn sort_by_size(file: &File) -> u64 { file.metadata.len() }
 
 /// Sort a list of directories by modification time
-fn sort_by_time(file: &File) -> SystemTime {
-    let modified = file.metadata.modified();
-
-    match modified {
-        Ok(modified) => modified,
-        Err(err) => {
-            eprintln!("ls: {}", err);
-            SystemTime::now()
-        },
-    }
-}
+fn sort_by_time(file: &File) -> i64 { file.metadata.mtime() }

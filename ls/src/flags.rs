@@ -9,6 +9,7 @@ pub(crate) struct Flags {
     pub classify: bool,
     pub comma_separate: bool,
     pub dereference: bool,
+    pub file_status_modification: bool,
     pub indicator: bool,
     pub inode: bool,
     pub last_accessed: bool,
@@ -31,6 +32,7 @@ impl Flags {
         let classify = matches.is_present("classify");
         let comma_separate = matches.is_present("comma_separate");
         let dereference = matches.is_present("dereference");
+        let file_status_modification = matches.is_present("file_status_modification");
         let indicator = matches.is_present("indicator");
         let inode = matches.is_present("inode");
         let last_accessed = matches.is_present("last_accessed");
@@ -50,6 +52,7 @@ impl Flags {
             classify,
             comma_separate,
             dereference,
+            file_status_modification,
             inode,
             indicator,
             last_accessed,

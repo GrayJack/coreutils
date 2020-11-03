@@ -15,7 +15,7 @@ use ansi_term::Color;
 
 extern crate chrono;
 
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, TimeZone};
 
 use crate::flags::Flags;
 
@@ -117,13 +117,19 @@ impl File {
     /// `%b %e %H:%M` unless the duration is greater than six months, which case
     /// the date format will be `%b %e  %Y`.
     pub fn time(&self) -> io::Result<String> {
-        let system_time = if self.flags.last_accessed {
-            self.metadata.accessed()?
+        let (secs, nsecs) = if self.flags.last_accessed {
+            // Retrieve the files last accessed time
+            (self.metadata.atime(), self.metadata.atime_nsec() as u32)
+        } else if self.flags.file_status_modification {
+            // Retrieve the files last modification time of the status
+            // information
+            (self.metadata.ctime(), self.metadata.ctime_nsec() as u32)
         } else {
-            self.metadata.modified()?
+            // Retrieve the files modification time
+            (self.metadata.mtime(), self.metadata.mtime_nsec() as u32)
         };
 
-        let datetime: DateTime<Local> = system_time.into();
+        let datetime: DateTime<Local> = Local.timestamp(secs, nsecs);
 
         let mut fmt = "%b %e %H:%M";
 

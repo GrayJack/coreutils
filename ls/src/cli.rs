@@ -37,6 +37,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("almost-all"),
         )
         .arg(
+            Arg::with_name("file_status_modification")
+                .help(
+                    "Use time of last modification of the file status information instead of last \
+                     modification of the file itself for sorting -t or writing -l.",
+                )
+                .short("c")
+                .long("file_status_modification"),
+        )
+        .arg(
             Arg::with_name("no_sort")
                 .help(
                     "Output is not sorted. This option turns on -a. It also negates the effect of \
