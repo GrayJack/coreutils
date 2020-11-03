@@ -7,8 +7,6 @@ use std::{
     time::SystemTime,
 };
 
-use pad::{Alignment, PadStr};
-
 extern crate chrono;
 
 mod cli;
@@ -150,6 +148,12 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io
     }
 
     Ok(())
+}
+
+#[derive(PartialEq, Eq)]
+enum Alignment {
+    Left,
+    Right,
 }
 
 struct Column {
@@ -303,11 +307,11 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
     for row in rows {
         for column in row {
-            write!(
-                writer,
-                "{} ",
-                column.value.pad_to_width_with_alignment(column.width(), column.alignment)
-            )?;
+            if column.alignment == Alignment::Left {
+                write!(writer, "{:<1$} ", column.value, column.width())?;
+            } else if column.alignment == Alignment::Right {
+                write!(writer, "{:>1$} ", column.value, column.width())?;
+            }
         }
 
         writeln!(writer)?;
