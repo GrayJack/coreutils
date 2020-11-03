@@ -16,7 +16,7 @@ mod flags;
 use file::File;
 use flags::Flags;
 
-fn main() -> io::Result<()> {
+fn main() {
     let matches = cli::create_app().get_matches();
 
     let files = matches.values_of("FILE").unwrap();
@@ -31,10 +31,22 @@ fn main() -> io::Result<()> {
     for (i, file) in files.enumerate() {
         if multiple {
             if i == 0 {
-                writeln!(writer, "\n")?;
+                match writeln!(writer, "\n") {
+                    Ok(_) => {},
+                    Err(err) => {
+                        eprintln!("ls: {}", err);
+                        process::exit(1);
+                    }
+                }
             }
 
-            writeln!(writer, "{}:", file)?;
+            match writeln!(writer, "{}:", file) {
+                Ok(_) => {},
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    process::exit(1);
+                }
+            }
         }
 
         let mut result: Vec<File>;
@@ -44,9 +56,17 @@ fn main() -> io::Result<()> {
         if path.is_file() {
             result = Vec::new();
 
-            let item = File::from(path::PathBuf::from(file), flags)?;
+            let item = File::from(path::PathBuf::from(file), flags);
 
-            result.push(item);
+            match item {
+                Ok(item) => {
+                    result.push(item);
+                },
+                Err(err) => {
+                    eprintln!("ls: cannot access {}: {}", err, file);
+                    process::exit(1);
+                }
+            }
         } else {
             match fs::read_dir(file) {
                 Ok(dir) => {
@@ -91,16 +111,40 @@ fn main() -> io::Result<()> {
         if flags.all || flags.no_sort {
             // Retrieve the current directories information. This must
             // be canonicalize incase the path is relative
-            let current = path::PathBuf::from(file).canonicalize()?;
+            let current = path::PathBuf::from(file).canonicalize();
 
-            let dot = File::from_name(".".to_string(), current.clone(), flags)?;
+            let current = match current {
+                Ok(current) => current,
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    process::exit(1);
+                }
+            };
+
+            let dot = File::from_name(".".to_string(), current.clone(), flags);
+
+            let dot = match dot {
+                Ok(dot) => dot,
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    process::exit(1);
+                }
+            };
 
             // Retrieve the parent path. Default to the current path if the parent doesn't
             // exist
             let parent_path =
                 path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
 
-            let dot_dot = File::from_name("..".to_string(), parent_path, flags)?;
+            let dot_dot = File::from_name("..".to_string(), parent_path, flags);
+
+            let dot_dot = match dot_dot {
+                Ok(dot_dot) => dot_dot,
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    process::exit(1);
+                }
+            };
 
             result.insert(0, dot);
             result.insert(1, dot_dot);
@@ -128,8 +172,6 @@ fn main() -> io::Result<()> {
     if exit_code != 0 {
         process::exit(exit_code);
     }
-
-    Ok(())
 }
 
 /// Prints information about a file in the default format
