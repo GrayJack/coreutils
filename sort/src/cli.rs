@@ -12,7 +12,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .help_short("?")
         .settings(&[ColoredHelp])
         .arg(
-            Arg::with_name("FILE")
+            Arg::with_name("INPUT_FILES")
+                .value_name("INPUT_FILES")
                 .help("File(s) to be sorted, merged or checked.")
                 .long_help(
                     "File(s) to be sorted, merged or checked.\n\nIf FILE is ‘-’ or absent, sort \
@@ -24,15 +25,16 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("merge_only")
                 .help("Merge files.")
                 .long_help("Merge files\n\nThe input FILE(s) are assumed to be already sorted.")
-                .short("m"),
+                .short("m")
+                .long("merge"),
         )
         .arg(
-            Arg::with_name("output")
+            Arg::with_name("OUTPUT_FILE")
                 .value_name("FILE")
                 .help("Write result to FILE instead of standard output.")
                 .long_help(
                     "Write result to FILE instead of standard output.\n\nThis FILE can be the \
-                     same one as one of the input FILE(s)",
+                     same one as one of the input FILE(s).",
                 )
                 .short("o"),
         )
