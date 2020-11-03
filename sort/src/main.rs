@@ -29,23 +29,24 @@ fn main_sort(matches: clap::ArgMatches) -> Result<(), SortError> {
     Ok(())
 }
 
-fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Box<dyn Read>>, SortError> {
+fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<(String, Box<dyn Read>)>, SortError> {
     match matches.values_of("INPUT_FILES") {
         Some(files) => {
-            let files: Result<Vec<(String, File)>, SortError> = files
-                .map(|v| {
-                    File::open(v).map(|f| (v.to_string(), f)).map_err(|err| SortError::read(v, err))
-                })
-                .collect();
-            let files = files?;
+            let files = files.map(|path| {
+                File::open(path)
+                    .map(Box::new)
+                    .map(|f| (path.to_string(), f))
+                    .map_err(|err| SortError::read(path, err))
+            });
 
-            let mut inputs: Vec<(String, Box<dyn Read>)> = vec![];
-            for (s, file) in files {
-                inputs.push((s, Box::new(file)));
+            let mut inputs: Vec<(String, Box<dyn Read>)> = Vec::with_capacity(files.len());
+            for file in files {
+                let (s, f) = file?;
+                inputs.push((s, f));
             }
             Ok(inputs)
         },
-        None => Ok(vec![Box::new(io::stdin())]),
+        None => Ok(vec![("stdin".to_string(), Box::new(io::stdin()))]),
     }
 }
 
@@ -80,9 +81,10 @@ impl SortFlags {
         let merge_only = matches.is_present("merge_only");
         let output: Box<dyn Write> = match matches.value_of("OUTPUT_FILE") {
             Some(path) => match File::create(path) {
+                Ok(file) => Box::new(BufWriter::new(file)),
                 Err(err) => return Err(SortError::write(path, err)),
             },
-            None => Box::new(io::stdout()),
+            None => Box::new(BufWriter::new(io::stdout())),
         };
         Ok(SortFlags { merge_only, output })
     }
@@ -210,7 +212,8 @@ mod tests {
 
         match get_inputs(&matches) {
             // Expected fail
-            Err(SortError::FileReadError(err)) if err.kind() == io::ErrorKind::NotFound => {},
+            Err(SortError { ty: SortErrorTy::FileReadError(err), .. })
+                if err.kind() == io::ErrorKind::NotFound => {},
             _ => panic!(),
         }
     }
