@@ -36,7 +36,7 @@ fn main() {
                     Err(err) => {
                         eprintln!("ls: {}", err);
                         process::exit(1);
-                    }
+                    },
                 }
             }
 
@@ -45,7 +45,7 @@ fn main() {
                 Err(err) => {
                     eprintln!("ls: {}", err);
                     process::exit(1);
-                }
+                },
             }
         }
 
@@ -65,7 +65,7 @@ fn main() {
                 Err(err) => {
                     eprintln!("ls: cannot access {}: {}", err, file);
                     process::exit(1);
-                }
+                },
             }
         } else {
             match fs::read_dir(file) {
@@ -118,7 +118,7 @@ fn main() {
                 Err(err) => {
                     eprintln!("ls: {}", err);
                     process::exit(1);
-                }
+                },
             };
 
             let dot = File::from_name(".".to_string(), current.clone(), flags);
@@ -128,7 +128,7 @@ fn main() {
                 Err(err) => {
                     eprintln!("ls: {}", err);
                     process::exit(1);
-                }
+                },
             };
 
             // Retrieve the parent path. Default to the current path if the parent doesn't
@@ -143,7 +143,7 @@ fn main() {
                 Err(err) => {
                     eprintln!("ls: {}", err);
                     process::exit(1);
-                }
+                },
             };
 
             result.insert(0, dot);
