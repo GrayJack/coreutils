@@ -203,12 +203,12 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
             row.push(Column::from(inode, inode_width_ptr, Alignment::Right));
         }
 
-        total += file.metadata.blocks();
+        total += file.blocks();
 
         // Process the file's block size
         if flags.size {
-            let block = file.blocks();
-            let block_len = block.len();
+            let block = file.blocks() as usize;
+            let block_len = block.to_string().len();
 
             if block_len > block_width {
                 block_width = block_len;
@@ -216,7 +216,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
             let block_width_ptr: *mut usize = &mut block_width;
 
-            row.push(Column::from(block, block_width_ptr, Alignment::Right));
+            row.push(Column::from(block.to_string(), block_width_ptr, Alignment::Right));
         }
 
         // Process the file's permissions

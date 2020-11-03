@@ -52,6 +52,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("classify"),
         )
         .arg(
+            Arg::with_name("block_size")
+                .help(
+                    "Set the block size for the -s option and the per-directory block count \
+                     written for the -l, -n, -s, -g, and -o options to 1024 bytes.",
+                )
+                .short("k")
+                .long("block_size"),
+        )
+        .arg(
             Arg::with_name("comma_separate")
                 .help("Fill width with a comma separated list of entries.")
                 .short("m")

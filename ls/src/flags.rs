@@ -5,6 +5,7 @@ use clap::ArgMatches;
 pub(crate) struct Flags {
     pub all: bool,
     pub almost_all: bool,
+    pub block_size: bool,
     pub classify: bool,
     pub comma_separate: bool,
     pub dereference: bool,
@@ -26,6 +27,7 @@ impl Flags {
     pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let all = matches.is_present("all");
         let almost_all = matches.is_present("almost_all");
+        let block_size = matches.is_present("block_size");
         let classify = matches.is_present("classify");
         let comma_separate = matches.is_present("comma_separate");
         let dereference = matches.is_present("dereference");
@@ -44,6 +46,7 @@ impl Flags {
         Flags {
             all,
             almost_all,
+            block_size,
             classify,
             comma_separate,
             dereference,

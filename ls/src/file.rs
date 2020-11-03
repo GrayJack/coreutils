@@ -55,7 +55,17 @@ impl File {
     }
 
     /// Retrieves the number of blocks allocated to a file as a string
-    pub fn blocks(&self) -> String { self.metadata.blocks().to_string() }
+    pub fn blocks(&self) -> u64 {
+        let blocks = self.metadata.blocks();
+
+        if self.flags.block_size {
+            let st_size = blocks * 512;
+
+            st_size / 1024
+        } else {
+            blocks
+        }
+    }
 
     /// Retrieves a files permissions as a string
     pub fn permissions(&self) -> String {
