@@ -1,6 +1,6 @@
 use std::{
     fs,
-    io::{self, Write},
+    io::{self, BufWriter, Write},
     os::unix::fs::MetadataExt,
     path, process,
     string::String,
@@ -24,7 +24,7 @@ fn main() -> io::Result<()> {
 
     let mut exit_code = 0;
 
-    let mut writer: Box<dyn Write> = Box::new(io::stdout());
+    let mut writer = BufWriter::new(io::stdout());
 
     let multiple = files.len() > 1;
 
