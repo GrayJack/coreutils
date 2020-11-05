@@ -11,9 +11,11 @@ extern crate chrono;
 mod cli;
 mod file;
 mod flags;
+mod table;
 
 use file::File;
 use flags::Flags;
+use table::{Row, Table};
 
 fn main() {
     let matches = cli::create_app().get_matches();
@@ -193,44 +195,24 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io
     Ok(())
 }
 
-#[derive(PartialEq, Eq)]
-enum Alignment {
-    Left,
-    Right,
-}
-
-struct Column {
-    pub alignment: Alignment,
-    width: *mut usize,
-    pub value: String,
-}
-
-impl Column {
-    pub fn from(value: String, width: *mut usize, alignment: Alignment) -> Self {
-        Column { alignment, width, value }
-    }
-
-    pub fn width(&self) -> usize { unsafe { *self.width } }
-}
-
 /// Prints information about the provided file in the long (`-l`) format
 fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
-    let mut permissions_width = 1;
+    let permissions_width = 1;
     let mut hard_links_width = 1;
     let mut user_width = 1;
     let mut group_width = 1;
     let mut size_width = 1;
-    let mut time_width = 1;
-    let mut file_name_width = 1;
+    let time_width = 1;
+    let file_name_width = 1;
 
-    let mut rows: Vec<Vec<Column>> = Vec::new();
+    let mut rows = Table::new();
 
     let mut total: u64 = 0;
 
     for file in &files {
-        let mut row: Vec<Column> = Vec::new();
+        let mut row = Row::new();
 
         // Process the file's inode
         if flags.inode {
@@ -241,9 +223,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
                 inode_width = inode_len;
             }
 
-            let inode_width_ptr: *mut usize = &mut inode_width;
-
-            row.push(Column::from(inode, inode_width_ptr, Alignment::Right));
+            row.inode = inode;
         }
 
         total += file.blocks();
@@ -257,17 +237,13 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
                 block_width = block_len;
             }
 
-            let block_width_ptr: *mut usize = &mut block_width;
-
-            row.push(Column::from(block.to_string(), block_width_ptr, Alignment::Right));
+            row.block = block.to_string();
         }
 
         // Process the file's permissions
         let permissions = file.permissions();
 
-        let permissions_width_ptr: *mut usize = &mut permissions_width;
-
-        row.push(Column::from(permissions, permissions_width_ptr, Alignment::Left));
+        row.permissions = permissions;
 
         // Process the file's hard links
         let hard_links = file.hard_links();
@@ -277,9 +253,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
             hard_links_width = hard_links_len;
         }
 
-        let hard_links_width_ptr: *mut usize = &mut hard_links_width;
-
-        row.push(Column::from(hard_links, hard_links_width_ptr, Alignment::Right));
+        row.hard_links = hard_links;
 
         // Process the file's user name
         let user = match file.user() {
@@ -296,9 +270,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
             user_width = user_len;
         }
 
-        let user_width_ptr: *mut usize = &mut user_width;
-
-        row.push(Column::from(user, user_width_ptr, Alignment::Left));
+        row.user = user;
 
         // Process the file's group name
         if !flags.no_owner {
@@ -316,9 +288,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
                 group_width = group_len;
             }
 
-            let group_width_ptr: *mut usize = &mut group_width;
-
-            row.push(Column::from(group, group_width_ptr, Alignment::Left));
+            row.group = group;
         }
 
         // Process the file's size
@@ -329,33 +299,43 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
             size_width = size_len;
         }
 
-        let size_width_ptr: *mut usize = &mut size_width;
-
-        row.push(Column::from(size, size_width_ptr, Alignment::Right));
+        row.size = size;
 
         // Process the file's timestamp
-        let time_width_ptr: *mut usize = &mut time_width;
-
-        row.push(Column::from(file.time()?, time_width_ptr, Alignment::Left));
+        row.time = file.time()?;
 
         // Process the file's name
-        let file_name_width_ptr: *mut usize = &mut file_name_width;
-
-        row.push(Column::from(file.file_name(), file_name_width_ptr, Alignment::Left));
+        row.file_name = file.file_name();
 
         rows.push(row);
     }
 
     writeln!(writer, "total {}", total)?;
 
-    for row in rows {
-        for column in row {
-            if column.alignment == Alignment::Left {
-                write!(writer, "{:<1$} ", column.value, column.width())?;
-            } else if column.alignment == Alignment::Right {
-                write!(writer, "{:>1$} ", column.value, column.width())?;
-            }
+    for row in rows.rows {
+        if flags.inode {
+            write!(writer, "{:>1$} ", row.inode, inode_width)?;
         }
+
+        if flags.size {
+            write!(writer, "{:>1$} ", row.block, block_width)?;
+        }
+
+        write!(writer, "{:<1$} ", row.permissions, permissions_width)?;
+
+        write!(writer, "{:>1$} ", row.hard_links, hard_links_width)?;
+
+        write!(writer, "{:<1$} ", row.user, user_width)?;
+
+        if !flags.no_owner {
+            write!(writer, "{:<1$} ", row.group, group_width)?;
+        }
+
+        write!(writer, "{:>1$} ", row.size, size_width)?;
+
+        write!(writer, "{:<1$} ", row.time, time_width)?;
+
+        write!(writer, "{:<1$} ", row.file_name, file_name_width)?;
 
         writeln!(writer)?;
     }
