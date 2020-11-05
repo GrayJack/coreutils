@@ -302,7 +302,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
         row.size = size;
 
         // Process the file's timestamp
-        row.time = file.time()?;
+        row.time = file.time();
 
         // Process the file's name
         row.file_name = file.file_name();
