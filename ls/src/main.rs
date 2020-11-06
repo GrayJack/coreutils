@@ -17,7 +17,7 @@ mod file;
 mod flags;
 mod table;
 
-use file::File;
+use file::{File, FileColor};
 use flags::Flags;
 use table::{Row, Table};
 
@@ -223,8 +223,8 @@ fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) 
     for file in &files {
         grid.add(Cell {
             alignment: Alignment::Left,
-            contents:  file.file_name(),
-            width:     file.name.len(),
+            contents:  file.file_name(FileColor::Show),
+            width:     file.file_name(FileColor::Hide).len(),
         });
     }
 
@@ -233,9 +233,13 @@ fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) 
             write!(writer, "{}", display)?;
             Ok(())
         },
-        None => Ok(for file in &files {
-            writeln!(writer, "{}", file.file_name())?;
-        }),
+        None => {
+            for file in &files {
+                writeln!(writer, "{}", file.file_name(FileColor::Show))?;
+            }
+
+            Ok(())
+        },
     }
 }
 
@@ -349,7 +353,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
         row.time = file.time();
 
         // Process the file's name
-        row.file_name = file.file_name();
+        row.file_name = file.file_name(FileColor::Show);
 
         rows.push(row);
     }

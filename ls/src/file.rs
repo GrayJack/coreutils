@@ -19,6 +19,12 @@ use chrono::{DateTime, Local, TimeZone};
 
 use crate::flags::Flags;
 
+#[derive(PartialEq, Eq)]
+pub(crate) enum FileColor {
+    Show,
+    Hide,
+}
+
 /// Represents a file and it's properties
 pub(crate) struct File {
     pub name: String,
@@ -191,7 +197,7 @@ impl File {
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting
-    pub fn file_name(&self) -> String {
+    pub fn file_name(&self, color: FileColor) -> String {
         let mut file_name = self.name.clone();
 
         let file_type = self.metadata.file_type();
@@ -199,7 +205,9 @@ impl File {
         let flags = self.flags;
 
         if File::is_executable(&self.path) {
-            file_name = self.add_executable_color(file_name);
+            if color == FileColor::Show {
+                file_name = self.add_executable_color(file_name);
+            }
 
             if flags.classify {
                 file_name = format!("{}*", file_name);
@@ -207,7 +215,9 @@ impl File {
         }
 
         if file_type.is_symlink() && !flags.dereference {
-            file_name = self.add_symlink_color(file_name);
+            if color == FileColor::Show {
+                file_name = self.add_symlink_color(file_name);
+            }
 
             if flags.classify && !flags.show_list() {
                 file_name = format!("{}@", file_name);
@@ -233,19 +243,23 @@ impl File {
         }
 
         if file_type.is_fifo() {
-            file_name = self.add_fifo_color(file_name);
+            if color == FileColor::Show {
+                file_name = self.add_fifo_color(file_name);
+            }
 
             if flags.classify {
                 file_name = format!("{}|", file_name);
             }
         }
 
-        if file_type.is_char_device() {
+        if file_type.is_char_device() && color == FileColor::Show {
             file_name = self.add_char_device_color(file_name);
         }
 
         if self.metadata.is_dir() {
-            file_name = self.add_directory_color(file_name);
+            if color == FileColor::Show {
+                file_name = self.add_directory_color(file_name);
+            }
 
             if flags.classify || flags.indicator {
                 file_name = format!("{}/", file_name);
