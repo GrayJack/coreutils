@@ -7,6 +7,7 @@ use std::{
 };
 
 use coreutils_core::os::tty::{is_tty, tty_dimensions};
+
 use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};
 
 extern crate chrono;
@@ -188,24 +189,23 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io
         }
 
         return Ok(());
-    } else if flags.order_left_to_right {
+    } else if flags.comma_separate {
+        for (i, file) in files.iter().enumerate() {
+            let file_name = &file.name;
+
+            if (i + 1) == files.len() {
+                writeln!(writer, "{}", file_name)?;
+            } else {
+                write!(writer, "{}, ", file_name)?;
+            }
+        }
+
+        return Ok(());
+    } else if flags.order_left_to_right && !flags.order_top_to_bottom {
         return print_grid(files, writer, Direction::LeftToRight);
     }
 
-    for file in &files {
-        let file_name = &file.name;
-
-        if flags.comma_separate {
-            write!(writer, "{}, ", file_name)?;
-        } else {
-            writeln!(writer, "{}", file_name)?;
-        }
-    }
-    if flags.comma_separate {
-        writeln!(writer)?;
-    }
-
-    Ok(())
+    print_grid(files, writer, Direction::TopToBottom)
 }
 
 fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) -> io::Result<()> {

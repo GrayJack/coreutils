@@ -46,6 +46,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("file_status_modification"),
         )
         .arg(
+            Arg::with_name("order_top_to_bottom")
+                .help("Write multi-text-column output with entries sorted down the columns.")
+                .short("C")
+                .long("order_top_to_bottom"),
+        )
+        .arg(
             Arg::with_name("no_sort")
                 .help(
                     "Output is not sorted. This option turns on -a. It also negates the effect of \

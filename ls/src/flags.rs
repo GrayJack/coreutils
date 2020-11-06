@@ -18,6 +18,7 @@ pub(crate) struct Flags {
     pub no_sort: bool,
     pub numeric_uid_gid: bool,
     pub order_left_to_right: bool,
+    pub order_top_to_bottom: bool,
     pub reverse: bool,
     pub size: bool,
     pub sort_size: bool,
@@ -42,6 +43,7 @@ impl Flags {
         let no_sort = matches.is_present("no_sort");
         let numeric_uid_gid = matches.is_present("numeric_uid_gid");
         let order_left_to_right = matches.is_present("order_left_to_right");
+        let order_top_to_bottom = matches.is_present("order_top_to_bottom");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
         let sort_size = matches.is_present("sort_size");
@@ -63,6 +65,7 @@ impl Flags {
             no_sort,
             numeric_uid_gid,
             order_left_to_right,
+            order_top_to_bottom,
             reverse,
             size,
             sort_size,
@@ -72,7 +75,7 @@ impl Flags {
 
     /// Whether to print as a list based ont the provided flags
     pub fn show_list(&self) -> bool {
-        !(self.comma_separate || self.order_left_to_right)
+        !(self.comma_separate || self.order_left_to_right || self.order_top_to_bottom)
             && (self.list || self.no_owner || self.numeric_uid_gid)
     }
 
