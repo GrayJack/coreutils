@@ -105,7 +105,7 @@ pub fn is_tty(file_descriptor: &impl AsRawFd) -> bool {
 /// ## Example
 /// ``` rust
 /// use coreutils_core::os::tty::tty_dimensions;
-/// let (width, height) = tty_dimensions(&std::io::stdout()).unwrap();
+/// let dimensions = tty_dimensions(&std::io::stdout());
 /// ```
 #[inline]
 pub fn tty_dimensions(file_descriptor: &impl AsRawFd) -> Option<(u16, u16)> {
