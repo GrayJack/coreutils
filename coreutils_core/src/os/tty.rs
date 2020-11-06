@@ -113,12 +113,7 @@ pub fn tty_dimensions(file_descriptor: &impl AsRawFd) -> Option<(u16, u16)> {
         return None;
     }
 
-    let mut size = winsize {
-        ws_row: 0,
-        ws_col: 0,
-        ws_xpixel: 0,
-        ws_ypixel: 0,
-    };
+    let mut size = winsize { ws_row: 0, ws_col: 0, ws_xpixel: 0, ws_ypixel: 0 };
 
     if unsafe { ioctl(file_descriptor.as_raw_fd(), TIOCGWINSZ, &mut size) } == -1 {
         return None;
