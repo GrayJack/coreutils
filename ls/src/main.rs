@@ -6,6 +6,9 @@ use std::{
     string::String,
 };
 
+use coreutils_core::os::tty::{is_tty, tty_dimensions};
+use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};
+
 extern crate chrono;
 
 mod cli;
@@ -179,8 +182,18 @@ fn main() {
 
 /// Prints information about a file in the default format
 fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
-    for file in files {
-        let file_name = file.file_name();
+    if !is_tty(&io::stdout()) {
+        for file in &files {
+            writeln!(writer, "{}", file.name)?;
+        }
+
+        return Ok(());
+    } else if flags.order_left_to_right {
+        return print_grid(files, writer, Direction::LeftToRight);
+    }
+
+    for file in &files {
+        let file_name = &file.name;
 
         if flags.comma_separate {
             write!(writer, "{}, ", file_name)?;
@@ -193,6 +206,35 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io
     }
 
     Ok(())
+}
+
+fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) -> io::Result<()> {
+    let io_error = |kind: io::ErrorKind, msg: &str| io::Error::new(kind, msg);
+
+    let mut grid = Grid::new(GridOptions { filling: Filling::Spaces(2), direction });
+
+    let width = match tty_dimensions(&io::stdout()) {
+        Some(result) => result.0,
+        None => {
+            return Err(io_error(io::ErrorKind::Other, "Unable to retrieve terminal dimensions."));
+        },
+    };
+
+    for file in files {
+        grid.add(Cell {
+            alignment: Alignment::Left,
+            contents:  file.file_name(),
+            width:     file.name.len(),
+        });
+    }
+
+    match grid.fit_into_width(width.into()) {
+        Some(display) => {
+            write!(writer, "{}", display)?;
+            Ok(())
+        },
+        None => Err(io_error(io::ErrorKind::Other, "Cell width exceeds terminal width.")),
+    }
 }
 
 /// Prints information about the provided file in the long (`-l`) format

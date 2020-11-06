@@ -142,4 +142,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("t")
                 .long("time"),
         )
+        .arg(
+            Arg::with_name("order_left_to_right")
+                .help("Sort columns left to right.")
+                .short("x")
+                .long("order_left_to_right"),
+        )
 }
