@@ -194,6 +194,8 @@ impl File {
     pub fn file_name(&self) -> String {
         let mut file_name = self.name.clone();
 
+        let file_type = self.metadata.file_type();
+
         let flags = self.flags;
 
         if File::is_executable(&self.path) {
@@ -204,7 +206,7 @@ impl File {
             }
         }
 
-        if self.metadata.file_type().is_symlink() && !flags.dereference {
+        if file_type.is_symlink() && !flags.dereference {
             file_name = self.add_symlink_color(file_name);
 
             if flags.classify && !flags.show_list() {
@@ -230,12 +232,16 @@ impl File {
             }
         }
 
-        if self.metadata.file_type().is_fifo() {
-            file_name = self.add_named_pipe_color(file_name);
+        if file_type.is_fifo() {
+            file_name = self.add_fifo_color(file_name);
 
             if flags.classify {
                 file_name = format!("{}|", file_name);
             }
+        }
+
+        if file_type.is_char_device() {
+            file_name = self.add_char_device_color(file_name);
         }
 
         if self.metadata.is_dir() {
@@ -259,8 +265,12 @@ impl File {
         Color::Blue.bold().paint(directory_name).to_string()
     }
 
-    pub fn add_named_pipe_color(&self, named_pipe_name: String) -> String {
+    pub fn add_fifo_color(&self, named_pipe_name: String) -> String {
         Color::Yellow.on(Color::Black).paint(named_pipe_name).to_string()
+    }
+
+    pub fn add_char_device_color(&self, char_device_name: String) -> String {
+        Color::Yellow.on(Color::Black).bold().paint(char_device_name).to_string()
     }
 
     /// Adds a bold cyan color to a file name to represent a symlink
