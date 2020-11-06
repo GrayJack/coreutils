@@ -233,11 +233,9 @@ fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) 
             write!(writer, "{}", display)?;
             Ok(())
         },
-        None => {
-            Ok(for file in &files {
-                writeln!(writer, "{}", file.file_name())?;
-            })
-        },
+        None => Ok(for file in &files {
+            writeln!(writer, "{}", file.file_name())?;
+        }),
     }
 }
 
