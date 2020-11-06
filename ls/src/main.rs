@@ -220,7 +220,7 @@ fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) 
         },
     };
 
-    for file in files {
+    for file in &files {
         grid.add(Cell {
             alignment: Alignment::Left,
             contents:  file.file_name(),
@@ -233,7 +233,11 @@ fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) 
             write!(writer, "{}", display)?;
             Ok(())
         },
-        None => Err(io_error(io::ErrorKind::Other, "Cell width exceeds terminal width.")),
+        None => {
+            Ok(for file in &files {
+                writeln!(writer, "{}", file.file_name())?;
+            })
+        },
     }
 }
 
