@@ -360,7 +360,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
     writeln!(writer, "total {}", total)?;
 
-    for row in rows.rows {
+    for row in rows {
         if flags.inode {
             write!(writer, "{:>1$} ", row.inode, inode_width)?;
         }

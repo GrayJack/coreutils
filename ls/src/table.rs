@@ -1,19 +1,5 @@
 /// Contains each row displayed in the -l` option.
-pub(crate) struct Table {
-    pub rows: Vec<Row>,
-}
-
-impl Table {
-    /// Initialize a new table
-    pub fn new() -> Self {
-        let rows = Vec::new();
-
-        Table { rows }
-    }
-
-    /// Add a row the list of table.
-    pub fn push(&mut self, row: Row) { self.rows.push(row) }
-}
+pub(crate) type Table = Vec<Row>;
 
 /// Contains each column displayed in the `-l` option.
 pub(crate) struct Row {
