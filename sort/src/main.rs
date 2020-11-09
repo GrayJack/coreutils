@@ -58,12 +58,6 @@ fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Buffer>, SortError> {
                     Ok(inputs)
                 })?;
 
-            // for lines in files {
-            //     for line in lines {
-            //         inputs.push(line?);
-            //     }
-            // }
-
             Ok(inputs)
         },
         None => BufReader::new(io::stdin())
