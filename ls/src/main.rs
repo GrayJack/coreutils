@@ -58,10 +58,14 @@ fn main() {
 
         let path = path::PathBuf::from(file);
 
-        if path.is_file() {
+        if flags.directory || path.is_file() {
             result = Vec::new();
 
-            let item = File::from(path::PathBuf::from(file), flags);
+            let item = if flags.directory {
+                File::from_name(path.to_string_lossy().to_string(), path, flags)
+            } else {
+                File::from(path::PathBuf::from(file), flags)
+            };
 
             match item {
                 Ok(item) => {
@@ -115,7 +119,7 @@ fn main() {
             }
         }
 
-        if flags.all || flags.no_sort {
+        if !flags.directory && (flags.all || flags.no_sort) {
             // Retrieve the current directories information. This must
             // be canonicalize incase the path is relative
             let current = path::PathBuf::from(file).canonicalize();

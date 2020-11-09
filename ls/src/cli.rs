@@ -52,6 +52,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("order_top_to_bottom"),
         )
         .arg(
+            Arg::with_name("directory")
+                .help("List directories and files themselves, rather than their contents.")
+                .short("d")
+                .long("directory"),
+        )
+        .arg(
             Arg::with_name("no_sort")
                 .help(
                     "Output is not sorted. This option turns on -a. It also negates the effect of \
