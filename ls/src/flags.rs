@@ -15,6 +15,7 @@ pub(crate) struct Flags {
     pub inode: bool,
     pub last_accessed: bool,
     pub list: bool,
+    pub no_group: bool,
     pub no_owner: bool,
     pub no_sort: bool,
     pub numeric_uid_gid: bool,
@@ -41,6 +42,7 @@ impl Flags {
         let inode = matches.is_present("inode");
         let last_accessed = matches.is_present("last_accessed");
         let list = matches.is_present("list");
+        let no_group = matches.is_present("no_group");
         let no_owner = matches.is_present("no_owner");
         let no_sort = matches.is_present("no_sort");
         let numeric_uid_gid = matches.is_present("numeric_uid_gid");
@@ -64,6 +66,7 @@ impl Flags {
             indicator,
             last_accessed,
             list,
+            no_group,
             no_owner,
             no_sort,
             numeric_uid_gid,
@@ -79,7 +82,7 @@ impl Flags {
     /// Whether to print as a list based ont the provided flags
     pub fn show_list(&self) -> bool {
         !(self.comma_separate || self.order_left_to_right || self.order_top_to_bottom)
-            && (self.list || self.no_owner || self.numeric_uid_gid)
+            && (self.list || self.no_owner || self.no_group || self.numeric_uid_gid)
     }
 
     /// Whether or not to show hidden files and directories

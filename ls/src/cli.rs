@@ -131,6 +131,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("numeric-uid-gid"),
         )
         .arg(
+            Arg::with_name("no_group")
+                .help("Like -l, but do not list group.")
+                .short("o")
+                .long("no-group"),
+        )
+        .arg(
             Arg::with_name("reverse")
                 .help("Reverse order while sorting.")
                 .short("r")

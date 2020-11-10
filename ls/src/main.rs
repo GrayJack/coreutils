@@ -308,24 +308,26 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
         row.hard_links = hard_links;
 
         // Process the file's user name
-        let user = match file.user() {
-            Ok(file_user) => file_user,
-            Err(err) => {
-                eprintln!("ls: {}", err);
-                file.metadata.uid().to_string()
-            },
-        };
+        if !flags.no_owner {
+            let user = match file.user() {
+                Ok(file_user) => file_user,
+                Err(err) => {
+                    eprintln!("ls: {}", err);
+                    file.metadata.uid().to_string()
+                },
+            };
 
-        let user_len = user.len();
+            let user_len = user.len();
 
-        if user_len > user_width {
-            user_width = user_len;
+            if user_len > user_width {
+                user_width = user_len;
+            }
+
+            row.user = user;
         }
 
-        row.user = user;
-
         // Process the file's group name
-        if !flags.no_owner {
+        if !flags.no_group {
             let group = match file.group() {
                 Ok(file_group) => file_group,
                 Err(err) => {
@@ -377,9 +379,11 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
 
         write!(writer, "{:>1$} ", row.hard_links, hard_links_width)?;
 
-        write!(writer, "{:<1$} ", row.user, user_width)?;
-
         if !flags.no_owner {
+            write!(writer, "{:<1$} ", row.user, user_width)?;
+        }
+
+        if !flags.no_group {
             write!(writer, "{:<1$} ", row.group, group_width)?;
         }
 
