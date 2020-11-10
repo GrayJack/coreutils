@@ -393,10 +393,7 @@ impl UtmpxSet {
     #[cfg_attr(feature = "inline-more", inline)]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
-            let str = match path.as_ref().to_str() {
-                Some(s) => s,
-                None => "",
-            };
+            let str = path.as_ref().to_str().unwrap_or("");
             CString::new(str).unwrap_or_default()
         };
 
@@ -528,10 +525,7 @@ impl UtmpxIter {
     #[inline]
     pub fn from_file(path: impl AsRef<Path>) -> io::Result<Self> {
         let file = {
-            let str = match path.as_ref().to_str() {
-                Some(s) => s,
-                None => "",
-            };
+            let str = path.as_ref().to_str().unwrap_or("");
             CString::new(str).unwrap_or_default()
         };
 
