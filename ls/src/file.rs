@@ -1,6 +1,7 @@
 use coreutils_core::os::{
     group::{Error as GroupError, Group},
     passwd::{Error as PasswdError, Passwd},
+    tty::is_tty,
 };
 
 use std::{
@@ -198,6 +199,9 @@ impl File {
 
     /// Gets a file name from a directory entry and adds appropriate formatting
     pub fn file_name(&self, color: FileColor) -> String {
+        // Determine if the file name should have a color applied.
+        let show_color = color == FileColor::Show && is_tty(&io::stdout());
+
         let mut file_name = self.name.clone();
 
         let file_type = self.metadata.file_type();
@@ -205,7 +209,7 @@ impl File {
         let flags = self.flags;
 
         if File::is_executable(&self.path) {
-            if color == FileColor::Show {
+            if show_color {
                 file_name = self.add_executable_color(file_name);
             }
 
@@ -215,7 +219,7 @@ impl File {
         }
 
         if file_type.is_symlink() && !flags.dereference {
-            if color == FileColor::Show {
+            if show_color {
                 file_name = self.add_symlink_color(file_name);
             }
 
@@ -243,7 +247,7 @@ impl File {
         }
 
         if file_type.is_fifo() {
-            if color == FileColor::Show {
+            if show_color {
                 file_name = self.add_fifo_color(file_name);
             }
 
@@ -252,12 +256,12 @@ impl File {
             }
         }
 
-        if file_type.is_char_device() && color == FileColor::Show {
+        if file_type.is_char_device() && show_color {
             file_name = self.add_char_device_color(file_name);
         }
 
         if self.metadata.is_dir() {
-            if color == FileColor::Show {
+            if show_color {
                 file_name = self.add_directory_color(file_name);
             }
 
