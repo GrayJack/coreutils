@@ -11,7 +11,7 @@ impl TabStops {
     pub fn new(tabs_str: Option<&str>) -> Result<Self, String> {
         match tabs_str {
             Some(tabs_str) => {
-                if tabs_str == "" {
+                if tabs_str.is_empty() {
                     return Ok(TabStops { offset: None, repetable: Some(8), positions: vec![] });
                 }
 

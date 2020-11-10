@@ -26,7 +26,7 @@ fn main() {
             .collect()
     };
 
-    let success = if flags.target_directory != "" {
+    let success = if !flags.target_directory.is_empty() {
         move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
     } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
         let target = sources.last().unwrap();
