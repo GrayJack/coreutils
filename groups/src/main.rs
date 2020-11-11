@@ -11,12 +11,9 @@ mod cli;
 fn main() {
     let matches = cli::create_app().get_matches();
 
-    let by_name = matches.is_present("USER");
     let id = matches.is_present("id");
 
-    let name = matches.value_of("USER").unwrap_or("");
-
-    let groups = if by_name {
+    let groups = if let Some(name) = matches.value_of("USER") {
         match Groups::from_username(name) {
             Ok(g) => g,
             Err(Passwd(box_err)) => match Box::leak(box_err) {
