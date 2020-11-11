@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Write},
+    io::{self, BufWriter, Write},
     iter::Peekable,
     process,
     str::Chars,
@@ -27,7 +27,7 @@ fn main() {
 /// If `no_newline` true, it does not print a newline after.
 fn echo(strings: &[&str], escape: bool, no_newline: bool) -> io::Result<()> {
     let stdout = io::stdout();
-    let mut output = stdout.lock();
+    let mut output = BufWriter::new(stdout.lock());
 
     for (i, string) in strings.iter().enumerate() {
         if i > 0 {
