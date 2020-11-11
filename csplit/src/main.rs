@@ -33,9 +33,12 @@ fn main() {
 }
 
 fn csplit(args: &ArgMatches, created: &mut Vec<String>) -> Result<()> {
+    // Ok to unwrap because it has default value
     let prefix = args.value_of("prefix").unwrap();
     let silent = args.is_present("silent");
+    // Ok to unwrap because it is required
     let filename = args.value_of("FILE").unwrap();
+    // Ok to unwrap because it has default value
     let digits = parse_number(args.value_of("digits").unwrap())?;
     let mut reader = open_input(filename)?;
     let mut filer = Filer::new(prefix, digits, created, silent)?;
