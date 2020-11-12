@@ -2,10 +2,7 @@ use coreutils_core::{BString, ByteSlice};
 use std::{
     fs,
     io::{self, BufWriter, Write},
-    os::unix::{
-        ffi::OsStrExt,
-        fs::MetadataExt,
-    },
+    os::unix::{ffi::OsStrExt, fs::MetadataExt},
     path, process,
     string::String,
 };
@@ -222,7 +219,10 @@ fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) 
     let width = match tty_dimensions(&io::stdout()) {
         Some(result) => result.0,
         None => {
-            return Err(io::Error::new(io::ErrorKind::Other, "Unable to retrieve terminal dimensions."));
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Unable to retrieve terminal dimensions.",
+            ));
         },
     };
 
