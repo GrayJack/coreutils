@@ -33,9 +33,7 @@ fn main() {
                     return String::from("-");
                 }
 
-                file.split_whitespace()
-                    .map(|s| cwd.join(s.to_string()).to_str().unwrap().to_string())
-                    .collect()
+                file.split_whitespace().map(|s| cwd.join(s).to_str().unwrap().to_string()).collect()
             })
             .collect(),
         None => vec!["-".to_string()],
