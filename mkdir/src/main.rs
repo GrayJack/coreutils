@@ -5,6 +5,7 @@ mod cli;
 fn main() {
     let matches = cli::create_app().get_matches();
 
+    // Required, so ok to unwrap
     let directories = matches.values_of("DIRECTORY").unwrap();
     let verbose = matches.is_present("verbose");
     let parents = matches.is_present("parents");

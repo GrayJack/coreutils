@@ -7,6 +7,7 @@ fn main() {
 
     let line_ending = if matches.is_present("zero") { '\0' } else { '\n' };
 
+    // We know that NAME is required, so it's ok to unwrap
     let paths = matches.values_of("NAME").unwrap();
     for path in paths {
         print!("{} {}", dirname(path), line_ending)

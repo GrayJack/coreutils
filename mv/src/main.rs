@@ -17,6 +17,7 @@ fn main() {
     let sources: Vec<PathBuf> = {
         let strip = flags.strip_trailing_slashes;
 
+        // "SOURCE" is required, so it is ok to unwrap
         matches
             .values_of("SOURCE")
             .unwrap()
