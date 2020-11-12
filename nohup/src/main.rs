@@ -2,7 +2,7 @@ use std::{
     env,
     fs::{File, OpenOptions},
     io,
-    os::{raw::c_int, unix::process::CommandExt},
+    os::unix::process::CommandExt,
     process::{self, Command, Stdio},
 };
 

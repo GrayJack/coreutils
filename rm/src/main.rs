@@ -23,12 +23,11 @@ fn main() {
         },
     };
 
-    let files_relative: Vec<String> =
-        matches.values_of("FILE").unwrap().map(String::from).collect();
+    // Safe to unwrap since we said it is required on clap configuration
+    let files_relative: Vec<&str> = matches.values_of("FILE").unwrap().collect();
 
     // Safe to unwrap since we said it is required on clap configuration
-    let files: Vec<PathBuf> =
-        matches.values_of("FILE").unwrap().map(|s| cwd.join(s.to_owned())).collect();
+    let files: Vec<PathBuf> = matches.values_of("FILE").unwrap().map(|s| cwd.join(s)).collect();
 
     if flags.preserve_root && files.contains(&PathBuf::from("/")) {
         eprintln!(
@@ -135,7 +134,7 @@ fn ask(
     Err(())
 }
 
-fn rm(files: &[PathBuf], relative: &[String], flags: RmFlags) -> io::Result<()> {
+fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
     for (index, file) in files.iter().enumerate() {
         let metadata = file.metadata()?;
         let permissions = metadata.permissions();
