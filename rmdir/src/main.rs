@@ -11,6 +11,7 @@ mod cli;
 fn main() {
     let matches = cli::create_app().get_matches();
 
+    // "DIRECTORY" is required, so it is ok to unwrap
     let dirs: Vec<PathBuf> = matches.values_of("DIRECTORY").unwrap().map(PathBuf::from).collect();
 
     let flags = RmDirFlags::from_matches(&matches);
