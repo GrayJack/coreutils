@@ -1,7 +1,7 @@
 use std::{
     cmp,
     fs::File,
-    io::{self, BufRead, BufReader, Read, Write},
+    io::{self, BufRead, BufReader, BufWriter, Write},
     process,
 };
 
@@ -13,23 +13,22 @@ fn main() {
     let output_filename = matches.value_of("OUTPUT").unwrap_or("-");
     let flags = Flags::from_matches(&matches);
 
-    let reader: Box<dyn io::Read> = if input_filename == "-" {
-        Box::new(io::stdin())
+    let mut reader: Box<dyn BufRead> = if input_filename == "-" {
+        Box::new(BufReader::new(io::stdin()))
     } else {
-        Box::new(File::open(input_filename).unwrap_or_else(|err| {
+        Box::new(BufReader::new(File::open(input_filename).unwrap_or_else(|err| {
             eprintln!("uniq: Cannot open '{}' for reading: {}.", input_filename, err);
             process::exit(1);
-        }))
+        })))
     };
-    let mut reader = BufReader::new(reader);
 
-    let mut writer: Box<dyn io::Write> = if output_filename == "-" {
-        Box::new(io::stdout())
+    let mut writer: Box<dyn Write> = if output_filename == "-" {
+        Box::new(BufWriter::new(io::stdout()))
     } else {
-        Box::new(File::create(output_filename).unwrap_or_else(|err| {
+        Box::new(BufWriter::new(File::create(output_filename).unwrap_or_else(|err| {
             eprintln!("uniq: Cannot create '{}' for writing: {}.", output_filename, err);
             process::exit(1);
-        }))
+        })))
     };
 
     uniq(&mut reader, &mut writer, flags).unwrap_or_else(|err| {
@@ -111,8 +110,8 @@ fn skip_fields_and_bytes(string: &str, fields: usize, bytes: usize) -> usize {
     skipped
 }
 
-fn uniq<R: Read, W: Write>(
-    reader: &mut BufReader<R>, writer: &mut W, flags: Flags,
+fn uniq<R: BufRead, W: Write>(
+    reader: &mut R, writer: &mut W, flags: Flags,
 ) -> Result<(), io::Error> {
     // If -s and -f are unset, last_line is guaranteed to be equals to the previous line,
     // else, last_line is the first line in the last set of lines that with each other,

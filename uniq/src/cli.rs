@@ -11,9 +11,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
-        .arg(Arg::with_name("INPUT").help("Input file path, or '-' for stdin (default).").index(1))
         .arg(
-            Arg::with_name("OUTPUT").help("Output file path, or '-' for stdin (default).").index(2),
+            Arg::with_name("INPUT")
+                .help("Input file to read, or '-' to read from standard input.")
+                .index(1),
+        )
+        .arg(
+            Arg::with_name("OUTPUT")
+                .help("Output file to write, or '-' to write from standard output.")
+                .index(2),
         )
         .arg(
             Arg::with_name("count")
