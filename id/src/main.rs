@@ -40,14 +40,12 @@ fn main() {
     }
 
     // Checks if real_flag is being used as expected
-    if flags.is_real_valid() {
+    if !flags.is_real_valid() {
         eprintln!("id: Cannot print only names or real IDs in default format");
         process::exit(1);
     }
 
-    let name = matches.value_of("USER").unwrap_or("");
-
-    let passwd = if flags.by_name {
+    let passwd = if let Some(name) = flags.by_name {
         Passwd::from_name(name)
     } else if (flags.user || flags.group) && flags.real {
         Passwd::real()
@@ -92,9 +90,9 @@ fn main() {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-struct IdFlags {
+struct IdFlags<'a> {
     audit:   bool,
-    by_name: bool,
+    by_name: Option<&'a str>,
     file:    bool,
     group:   bool,
     groups:  bool,
@@ -106,11 +104,11 @@ struct IdFlags {
     zero:    bool,
 }
 
-impl IdFlags {
-    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+impl<'a> IdFlags<'a> {
+    fn from_matches(matches: &'a ArgMatches<'_>) -> Self {
         IdFlags {
             audit:   matches.is_present("audit"),
-            by_name: matches.is_present("USER"),
+            by_name: matches.value_of("USER"),
             file:    matches.is_present("file"),
             group:   matches.is_present("group"),
             groups:  matches.is_present("groups"),
