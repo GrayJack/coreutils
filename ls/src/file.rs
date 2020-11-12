@@ -1,12 +1,18 @@
-use coreutils_core::os::{
-    group::{Error as GroupError, Group},
-    passwd::{Error as PasswdError, Passwd},
-    tty::is_tty,
+use coreutils_core::{
+    bstr::{BStr, BString},
+    os::{
+        group::{Error as GroupError, Group},
+        passwd::{Error as PasswdError, Passwd},
+        tty::is_tty,
+    },
 };
 
 use std::{
     fs, io,
-    os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
+    os::unix::{
+        ffi::OsStrExt,
+        fs::{FileTypeExt, MetadataExt, PermissionsExt},
+    },
     path,
     result::Result,
     string::String,
@@ -28,7 +34,7 @@ pub(crate) enum FileColor {
 
 /// Represents a file and it's properties
 pub(crate) struct File {
-    pub name: String,
+    pub name: BString,
     pub path: path::PathBuf,
     pub metadata: fs::Metadata,
     flags: Flags,
@@ -42,20 +48,20 @@ impl File {
         if flags.dereference && metadata.file_type().is_symlink() {
             let symlink = fs::read_link(path.clone())?;
 
-            let name = File::path_buf_to_file_name(&symlink)?.to_string();
+            let name = File::path_buf_to_file_name(&symlink)?;
 
             let metadata = path.metadata()?;
 
             return Ok(File { name, path: symlink, metadata, flags });
         }
 
-        let name = File::path_buf_to_file_name(&path)?.to_string();
+        let name = File::path_buf_to_file_name(&path)?;
 
         Ok(File { name, path, metadata, flags })
     }
 
     /// Creates a `File` instance from a `DirEntry` and supplies a file name
-    pub fn from_name(name: String, path: path::PathBuf, flags: Flags) -> io::Result<Self> {
+    pub fn from_name(name: BString, path: path::PathBuf, flags: Flags) -> io::Result<Self> {
         let metadata = path.metadata()?;
 
         Ok(File { name, path, metadata, flags })
@@ -102,13 +108,13 @@ impl File {
 
     /// Retrieves the file's group name as a string. If the `-n` flag is set,
     /// the the group's ID is returned
-    pub fn group(&self) -> Result<String, GroupError> {
+    pub fn group(&self) -> Result<BString, GroupError> {
         if self.flags.numeric_uid_gid {
-            return Ok(self.metadata.gid().to_string());
+            return Ok(BString::from(self.metadata.gid().to_string()));
         }
 
         match Group::from_gid(self.metadata.gid()) {
-            Ok(group) => Ok(group.name().to_string()),
+            Ok(group) => Ok(BString::from(group.name())),
             Err(err) => Err(err),
         }
     }
@@ -167,13 +173,13 @@ impl File {
     }
 
     /// Checks if a string looks like a hidden unix file name
-    pub fn is_hidden(name: &str) -> bool { name.starts_with('.') }
+    pub fn is_hidden(name: &BStr) -> bool { name.to_string().starts_with('.') }
 
     /// Gets the file name from a `PathBuf`
     ///
     /// Will return `Error` if the path terminates at '..' or if the file name
     /// contains invalid unicode characters.
-    pub fn path_buf_to_file_name(path: &path::PathBuf) -> io::Result<&str> {
+    pub fn path_buf_to_file_name(path: &path::PathBuf) -> io::Result<BString> {
         // Create a new IO Error.
         let io_error = |kind: io::ErrorKind, msg: &str| io::Error::new(kind, msg);
 
@@ -184,17 +190,7 @@ impl File {
             },
         };
 
-        let file_name = match file_name.to_str() {
-            Some(file_name) => file_name,
-            None => {
-                return Err(io_error(
-                    io::ErrorKind::InvalidData,
-                    "File name contains invalid unicode",
-                ));
-            },
-        };
-
-        Ok(file_name)
+        Ok(BString::from(file_name.as_bytes()))
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting
@@ -202,7 +198,9 @@ impl File {
         // Determine if the file name should have a color applied.
         let show_color = color == FileColor::Show && is_tty(&io::stdout());
 
-        let mut file_name = self.name.clone();
+        let file_name = self.name.clone();
+
+        let mut result = file_name.to_string();
 
         let file_type = self.metadata.file_type();
 
@@ -210,89 +208,90 @@ impl File {
 
         if File::is_executable(&self.path) {
             if show_color {
-                file_name = self.add_executable_color(file_name);
+                result = self.add_executable_color(&file_name);
             }
 
             if flags.classify {
-                file_name = format!("{}*", file_name);
+                result = format!("{}*", result);
             }
         }
 
         if file_type.is_symlink() && !flags.dereference {
             if show_color {
-                file_name = self.add_symlink_color(file_name);
+                result = self.add_symlink_color(&file_name);
             }
 
             if flags.classify && !flags.show_list() {
-                file_name = format!("{}@", file_name);
+                result = format!("{}@", result);
             }
 
             if flags.show_list() {
                 let symlink = fs::read_link(self.path.clone());
 
                 if let Ok(symlink) = symlink {
-                    let mut symlink_name = symlink.to_string_lossy().to_string();
+                    let symlink_name = BString::from(symlink.as_os_str().as_bytes());
+                    let mut symlink_result = symlink_name.to_string();
 
                     if File::is_executable(&symlink) {
-                        symlink_name = self.add_executable_color(symlink_name);
+                        symlink_result = self.add_executable_color(&symlink_name);
 
                         if flags.classify {
-                            symlink_name = format!("{}*", symlink_name);
+                            symlink_result = format!("{}*", symlink_result);
                         }
                     }
 
-                    file_name = format!("{} -> {}", file_name, symlink_name);
+                    result = format!("{} -> {}", result, symlink_result);
                 }
             }
         }
 
         if file_type.is_fifo() {
             if show_color {
-                file_name = self.add_fifo_color(file_name);
+                result = self.add_fifo_color(&file_name);
             }
 
             if flags.classify {
-                file_name = format!("{}|", file_name);
+                result = format!("{}|", result);
             }
         }
 
         if file_type.is_char_device() && show_color {
-            file_name = self.add_char_device_color(file_name);
+            result = self.add_char_device_color(&file_name);
         }
 
         if self.metadata.is_dir() {
             if show_color {
-                file_name = self.add_directory_color(file_name);
+                result = self.add_directory_color(&file_name);
             }
 
             if flags.classify || flags.indicator {
-                file_name = format!("{}/", file_name);
+                result = format!("{}/", result);
             }
         }
 
-        file_name
+        result
     }
 
     /// Adds a bold green color to a file name to represent an executable
-    pub fn add_executable_color(&self, file_name: String) -> String {
-        Color::Green.bold().paint(file_name).to_string()
+    pub fn add_executable_color(&self, file_name: &BString) -> String {
+        Color::Green.bold().paint(file_name.to_string()).to_string()
     }
 
     /// Adds a bold blue color to a directory name
-    pub fn add_directory_color(&self, directory_name: String) -> String {
-        Color::Blue.bold().paint(directory_name).to_string()
+    pub fn add_directory_color(&self, directory_name: &BString) -> String {
+        Color::Blue.bold().paint(directory_name.to_string()).to_string()
     }
 
-    pub fn add_fifo_color(&self, named_pipe_name: String) -> String {
-        Color::Yellow.on(Color::Black).paint(named_pipe_name).to_string()
+    pub fn add_fifo_color(&self, named_pipe_name: &BString) -> String {
+        Color::Yellow.on(Color::Black).paint(named_pipe_name.to_string()).to_string()
     }
 
-    pub fn add_char_device_color(&self, char_device_name: String) -> String {
-        Color::Yellow.on(Color::Black).bold().paint(char_device_name).to_string()
+    pub fn add_char_device_color(&self, char_device_name: &BString) -> String {
+        Color::Yellow.on(Color::Black).bold().paint(char_device_name.to_string()).to_string()
     }
 
     /// Adds a bold cyan color to a file name to represent a symlink
-    pub fn add_symlink_color(&self, symlink_name: String) -> String {
-        Color::Cyan.bold().paint(symlink_name).to_string()
+    pub fn add_symlink_color(&self, symlink_name: &BString) -> String {
+        Color::Cyan.bold().paint(symlink_name.to_string()).to_string()
     }
 }

@@ -1,7 +1,11 @@
+use coreutils_core::{BString, ByteSlice};
 use std::{
     fs,
     io::{self, BufWriter, Write},
-    os::unix::fs::MetadataExt,
+    os::unix::{
+        ffi::OsStrExt,
+        fs::MetadataExt,
+    },
     path, process,
     string::String,
 };
@@ -62,7 +66,7 @@ fn main() {
             result = Vec::new();
 
             let item = if flags.directory {
-                File::from_name(path.to_string_lossy().to_string(), path, flags)
+                File::from_name(BString::from(path.as_os_str().as_bytes()), path, flags)
             } else {
                 File::from(path::PathBuf::from(file), flags)
             };
@@ -84,7 +88,7 @@ fn main() {
                         .map(|entry| File::from(entry.unwrap().path(), flags).unwrap())
                         // Hide hidden files and directories if `-a` or `-A` flags
                         // weren't provided
-                        .filter(|file| !File::is_hidden(&file.name) || flags.show_hidden())
+                        .filter(|file| !File::is_hidden(&file.name.as_bstr()) || flags.show_hidden())
                         .collect();
 
                     if !flags.no_sort {
@@ -132,7 +136,7 @@ fn main() {
                 },
             };
 
-            let dot = File::from_name(".".to_string(), current.clone(), flags);
+            let dot = File::from_name(BString::from("."), current.clone(), flags);
 
             let dot = match dot {
                 Ok(dot) => dot,
@@ -147,7 +151,7 @@ fn main() {
             let parent_path =
                 path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
 
-            let dot_dot = File::from_name("..".to_string(), parent_path, flags);
+            let dot_dot = File::from_name(BString::from(".."), parent_path, flags);
 
             let dot_dot = match dot_dot {
                 Ok(dot_dot) => dot_dot,
@@ -213,14 +217,12 @@ fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io
 }
 
 fn print_grid<W: Write>(files: Vec<File>, writer: &mut W, direction: Direction) -> io::Result<()> {
-    let io_error = |kind: io::ErrorKind, msg: &str| io::Error::new(kind, msg);
-
     let mut grid = Grid::new(GridOptions { filling: Filling::Spaces(2), direction });
 
     let width = match tty_dimensions(&io::stdout()) {
         Some(result) => result.0,
         None => {
-            return Err(io_error(io::ErrorKind::Other, "Unable to retrieve terminal dimensions."));
+            return Err(io::Error::new(io::ErrorKind::Other, "Unable to retrieve terminal dimensions."));
         },
     };
 
@@ -332,7 +334,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
                 Ok(file_group) => file_group,
                 Err(err) => {
                     eprintln!("ls: {}", err);
-                    file.metadata.gid().to_string()
+                    BString::from(file.metadata.gid().to_string())
                 },
             };
 
@@ -407,7 +409,7 @@ fn sort_by_ctime(file: &File) -> i64 { file.metadata.ctime() }
 
 /// Sort a list of files by file name alphabetically
 fn sort_by_name(file: &File) -> String {
-    file.name.to_lowercase().trim_start_matches('.').to_string()
+    file.name.to_string().to_lowercase().trim_start_matches('.').to_string()
 }
 
 /// Sort a list of files by size

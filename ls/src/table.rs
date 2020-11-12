@@ -1,3 +1,5 @@
+use coreutils_core::BString;
+
 /// Contains each row displayed in the -l` option.
 pub(crate) type Table = Vec<Row>;
 
@@ -8,7 +10,7 @@ pub(crate) struct Row {
     pub permissions: String,
     pub hard_links: String,
     pub user: String,
-    pub group: String,
+    pub group: BString,
     pub size: String,
     pub time: String,
     pub file_name: String,
@@ -22,7 +24,7 @@ impl Row {
         let permissions = String::new();
         let hard_links = String::new();
         let user = String::new();
-        let group = String::new();
+        let group = BString::from("");
         let size = String::new();
         let time = String::new();
         let file_name = String::new();
