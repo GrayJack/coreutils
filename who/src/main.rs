@@ -21,9 +21,7 @@ fn main() {
 
     let flags = WhoFlags::from_matches(&matches);
 
-    let uts = if matches.is_present("FILE") {
-        let file = PathBuf::from(matches.value_of("FILE").unwrap());
-
+    let uts = if let Some(file) = matches.value_of("FILE") {
         match UtmpSet::from_file(&file) {
             Ok(u) => u,
             #[cfg(not(any(target_os = "openbsd")))]
