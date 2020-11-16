@@ -176,7 +176,8 @@ fn main() {
 fn print_default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
     if !is_tty(&io::stdout()) {
         for file in &files {
-            writeln!(writer, "{}", file.name)?;
+            writer.write_all(file.name.as_bytes())?;
+            writeln!(writer)?;
         }
 
         return Ok(());
