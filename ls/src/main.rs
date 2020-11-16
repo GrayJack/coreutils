@@ -7,8 +7,8 @@ use std::{
 };
 
 use coreutils_core::{
-    BString, ByteSlice,
     os::tty::{is_tty, tty_dimensions},
+    BString, ByteSlice,
 };
 
 use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};

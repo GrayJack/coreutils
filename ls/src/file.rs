@@ -1,10 +1,10 @@
 use coreutils_core::{
-    BStr, BString,
     os::{
         group::{Error as GroupError, Group},
         passwd::{Error as PasswdError, Passwd},
         tty::is_tty,
     },
+    BStr, BString,
 };
 
 use std::{
