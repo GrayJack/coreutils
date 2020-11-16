@@ -1,5 +1,5 @@
 use coreutils_core::{
-    bstr::{BStr, BString},
+    BStr, BString,
     os::{
         group::{Error as GroupError, Group},
         passwd::{Error as PasswdError, Passwd},
@@ -95,13 +95,13 @@ impl File {
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
-    pub fn user(&self) -> Result<String, PasswdError> {
+    pub fn user(&self) -> Result<BString, PasswdError> {
         if self.flags.numeric_uid_gid {
-            return Ok(self.metadata.uid().to_string());
+            return Ok(BString::from(self.metadata.uid().to_string()));
         }
 
         match Passwd::from_uid(self.metadata.uid()) {
-            Ok(passwd) => Ok(passwd.name().to_string()),
+            Ok(passwd) => Ok(passwd.name().to_owned()),
             Err(err) => Err(err),
         }
     }
@@ -114,7 +114,7 @@ impl File {
         }
 
         match Group::from_gid(self.metadata.gid()) {
-            Ok(group) => Ok(BString::from(group.name())),
+            Ok(group) => Ok(group.name().to_owned()),
             Err(err) => Err(err),
         }
     }

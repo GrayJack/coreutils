@@ -9,7 +9,7 @@ pub(crate) struct Row {
     pub block: String,
     pub permissions: String,
     pub hard_links: String,
-    pub user: String,
+    pub user: BString,
     pub group: BString,
     pub size: String,
     pub time: String,
@@ -23,7 +23,7 @@ impl Row {
         let block = String::new();
         let permissions = String::new();
         let hard_links = String::new();
-        let user = String::new();
+        let user = BString::from("");
         let group = BString::from("");
         let size = String::new();
         let time = String::new();

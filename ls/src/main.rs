@@ -1,4 +1,3 @@
-use coreutils_core::{BString, ByteSlice};
 use std::{
     fs,
     io::{self, BufWriter, Write},
@@ -7,7 +6,10 @@ use std::{
     string::String,
 };
 
-use coreutils_core::os::tty::{is_tty, tty_dimensions};
+use coreutils_core::{
+    BString, ByteSlice,
+    os::tty::{is_tty, tty_dimensions},
+};
 
 use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};
 
@@ -315,7 +317,7 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
                 Ok(file_user) => file_user,
                 Err(err) => {
                     eprintln!("ls: {}", err);
-                    file.metadata.uid().to_string()
+                    BString::from(file.metadata.uid().to_string())
                 },
             };
 
@@ -382,11 +384,11 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
         write!(writer, "{:>1$} ", row.hard_links, hard_links_width)?;
 
         if !flags.no_owner {
-            write!(writer, "{:<1$} ", row.user, user_width)?;
+            write!(writer, "{:<1$} ", row.user.to_string(), user_width)?;
         }
 
         if !flags.no_group {
-            write!(writer, "{:<1$} ", row.group, group_width)?;
+            write!(writer, "{:<1$} ", row.group.to_string(), group_width)?;
         }
 
         write!(writer, "{:>1$} ", row.size, size_width)?;
