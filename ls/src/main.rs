@@ -2,7 +2,8 @@ use std::{
     fs,
     io::{self, BufWriter, Write},
     os::unix::{ffi::OsStrExt, fs::MetadataExt},
-    path, process,
+    path::PathBuf,
+    process,
     string::String,
 };
 
@@ -59,7 +60,7 @@ fn main() {
 
         let mut result: Vec<File>;
 
-        let path = path::PathBuf::from(file);
+        let path = PathBuf::from(file);
 
         if flags.directory || path.is_file() {
             result = Vec::new();
@@ -67,7 +68,7 @@ fn main() {
             let item = if flags.directory {
                 File::from_name(BString::from(path.as_os_str().as_bytes()), path, flags)
             } else {
-                File::from(path::PathBuf::from(file), flags)
+                File::from(PathBuf::from(file), flags)
             };
 
             match item {
@@ -91,26 +92,7 @@ fn main() {
                         .collect();
 
                     if !flags.no_sort {
-                        if flags.time {
-                            if flags.last_accessed {
-                                result.sort_by_key(sort_by_access_time);
-                            } else if flags.file_status_modification {
-                                result.sort_by_key(sort_by_ctime)
-                            } else {
-                                result.sort_by_key(sort_by_time);
-                            }
-                            result.reverse();
-                        } else if flags.sort_size {
-                            result.sort_by_key(sort_by_size);
-                            result.reverse();
-                        } else {
-                            // Sort the directory entries by file name by default
-                            result.sort_by_key(sort_by_name);
-                        }
-
-                        if flags.reverse {
-                            result.reverse();
-                        }
+                        sort(&mut result, &flags);
                     }
                 },
                 Err(err) => {
@@ -125,7 +107,7 @@ fn main() {
         if !flags.directory && (flags.all || flags.no_sort) {
             // Retrieve the current directories information. This must
             // be canonicalize incase the path is relative
-            let current = path::PathBuf::from(file).canonicalize();
+            let current = PathBuf::from(file).canonicalize();
 
             let current = match current {
                 Ok(current) => current,
@@ -145,12 +127,14 @@ fn main() {
                 },
             };
 
-            // Retrieve the parent path. Default to the current path if the parent doesn't
-            // exist
-            let parent_path =
-                path::PathBuf::from(dot.path.parent().unwrap_or_else(|| current.as_path()));
+            // Retrieve the parent path. Default to the current path if the
+            // parent doesn't exist
+            let parent_path = match dot.path.parent() {
+                Some(parent) => parent,
+                None => current.as_path(),
+            };
 
-            let dot_dot = File::from_name(BString::from(".."), parent_path, flags);
+            let dot_dot = File::from_name(BString::from(".."), PathBuf::from(parent_path), flags);
 
             let dot_dot = match dot_dot {
                 Ok(dot_dot) => dot_dot,
@@ -401,6 +385,30 @@ fn print_list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::R
     }
 
     Ok(())
+}
+
+/// Sort a list of files based on the provided flags.
+fn sort(files: &mut Vec<file::File>, flags: &Flags) {
+    if flags.time {
+        if flags.last_accessed {
+            files.sort_by_key(sort_by_access_time);
+        } else if flags.file_status_modification {
+            files.sort_by_key(sort_by_ctime)
+        } else {
+            files.sort_by_key(sort_by_time);
+        }
+        files.reverse();
+    } else if flags.sort_size {
+        files.sort_by_key(sort_by_size);
+        files.reverse();
+    } else {
+        // Sort the directory entries by file name by default
+        files.sort_by_key(sort_by_name);
+    }
+
+    if flags.reverse {
+        files.reverse();
+    }
 }
 
 /// Sort a list of files by last accessed time
