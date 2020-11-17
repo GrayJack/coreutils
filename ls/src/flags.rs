@@ -1,3 +1,7 @@
+use std::io;
+
+use coreutils_core::os::tty::is_tty;
+
 use clap::ArgMatches;
 
 /// Represents the command line arguments available to `ls`
@@ -83,6 +87,11 @@ impl Flags {
     pub fn show_list(&self) -> bool {
         !(self.comma_separate || self.order_left_to_right || self.order_top_to_bottom)
             && (self.list || self.no_owner || self.no_group || self.numeric_uid_gid)
+    }
+
+    pub fn show_grid(&self) -> bool {
+        !self.comma_separate
+            && (self.order_left_to_right || self.order_top_to_bottom || is_tty(&io::stdout()))
     }
 
     /// Whether or not to show hidden files and directories
