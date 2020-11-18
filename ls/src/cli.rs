@@ -43,13 +43,13 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      modification of the file itself for sorting -t or writing -l.",
                 )
                 .short("c")
-                .long("file_status_modification"),
+                .long("file-status-modification"),
         )
         .arg(
             Arg::with_name("order_top_to_bottom")
                 .help("Write multi-text-column output with entries sorted down the columns.")
                 .short("C")
-                .long("order_top_to_bottom"),
+                .long("order-top-to-bottom"),
         )
         .arg(
             Arg::with_name("directory")
@@ -79,13 +79,13 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      written for the -l, -n, -s, -g, and -o options to 1024 bytes.",
                 )
                 .short("k")
-                .long("block_size"),
+                .long("block-size"),
         )
         .arg(
             Arg::with_name("comma_separate")
                 .help("Fill width with a comma separated list of entries.")
                 .short("m")
-                .long("comma_separate"),
+                .long("comma-separate"),
         )
         .arg(
             Arg::with_name("dereference")
@@ -164,6 +164,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("order_left_to_right")
                 .help("Sort columns left to right.")
                 .short("x")
-                .long("order_left_to_right"),
+                .long("order-left-to-right"),
+        )
+        .arg(
+            Arg::with_name("one_per_line")
+                .help("Force output to be one entry per line.")
+                .short("1")
+                .long("one-per-line"),
         )
 }

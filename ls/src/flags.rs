@@ -23,6 +23,7 @@ pub(crate) struct Flags {
     pub no_owner: bool,
     pub no_sort: bool,
     pub numeric_uid_gid: bool,
+    pub one_per_line: bool,
     pub order_left_to_right: bool,
     pub order_top_to_bottom: bool,
     pub reverse: bool,
@@ -50,6 +51,7 @@ impl Flags {
         let no_owner = matches.is_present("no_owner");
         let no_sort = matches.is_present("no_sort");
         let numeric_uid_gid = matches.is_present("numeric_uid_gid");
+        let one_per_line = matches.is_present("one_per_line");
         let order_left_to_right = matches.is_present("order_left_to_right");
         let order_top_to_bottom = matches.is_present("order_top_to_bottom");
         let reverse = matches.is_present("reverse");
@@ -74,6 +76,7 @@ impl Flags {
             no_owner,
             no_sort,
             numeric_uid_gid,
+            one_per_line,
             order_left_to_right,
             order_top_to_bottom,
             reverse,
@@ -91,6 +94,7 @@ impl Flags {
 
     pub fn show_grid(&self) -> bool {
         !self.comma_separate
+            && !self.one_per_line
             && (self.order_left_to_right || self.order_top_to_bottom || is_tty(&io::stdout()))
     }
 

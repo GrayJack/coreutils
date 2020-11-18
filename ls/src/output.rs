@@ -27,6 +27,14 @@ pub(crate) fn default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) 
         }
 
         return Ok(());
+    } else if flags.one_per_line {
+        for file in &files {
+            let file_name = file.file_name(FileColor::Show);
+
+            writeln!(writer, "{}", file_name)?;
+        }
+
+        return Ok(());
     } else if flags.comma_separate {
         for (i, file) in files.iter().enumerate() {
             let file_name = file.file_name(FileColor::Show);
