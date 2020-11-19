@@ -1,12 +1,3 @@
-use coreutils_core::{
-    os::{
-        group::{Error as GroupError, Group},
-        passwd::{Error as PasswdError, Passwd},
-        tty::is_tty,
-    },
-    BStr, BString,
-};
-
 use std::{
     fs, io,
     os::unix::{
@@ -16,6 +7,15 @@ use std::{
     path::PathBuf,
     result::Result,
     string::String,
+};
+
+use coreutils_core::{
+    os::{
+        group::{Error as GroupError, Group},
+        passwd::{Error as PasswdError, Passwd},
+        tty::is_tty,
+    },
+    BStr, BString,
 };
 
 use ansi_term::Color;
