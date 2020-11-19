@@ -193,7 +193,7 @@ impl File {
     }
 
     /// Retrieves the metadata from a `PathBuf`.
-    /// 
+    ///
     /// Symbolic links will be followed if the `-H` flag is present.
     pub fn metadata(path: &PathBuf, flags: &Flags) -> io::Result<fs::Metadata> {
         if flags.no_dereference { fs::metadata(path) } else { fs::symlink_metadata(path) }
