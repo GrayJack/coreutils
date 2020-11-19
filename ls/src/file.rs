@@ -32,6 +32,8 @@ pub(crate) enum FileColor {
     Hide,
 }
 
+pub(crate) type Files = Vec<File>;
+
 /// Represents a file and it's properties
 pub(crate) struct File {
     pub name: BString,
@@ -180,13 +182,10 @@ impl File {
     /// Will return `Error` if the path terminates at '..' or if the file name
     /// contains invalid unicode characters.
     pub fn path_buf_to_file_name(path: &path::PathBuf) -> io::Result<BString> {
-        // Create a new IO Error.
-        let io_error = |kind: io::ErrorKind, msg: &str| io::Error::new(kind, msg);
-
         let file_name = match path.file_name() {
             Some(file_name) => file_name,
             None => {
-                return Err(io_error(io::ErrorKind::NotFound, "Path terminates at \"..\""));
+                return Err(io::Error::new(io::ErrorKind::NotFound, "Path terminates in \"..\""));
             },
         };
 

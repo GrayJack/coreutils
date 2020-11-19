@@ -13,13 +13,13 @@ use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};
 extern crate chrono;
 
 use crate::{
-    file::{File, FileColor},
+    file::{FileColor, Files},
     flags::Flags,
     table::{Row, Table},
 };
 
 /// Writes the provided files in the default format.
-pub(crate) fn default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
+pub(crate) fn default<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
     if !is_tty(&io::stdout()) {
         for file in &files {
             writer.write_all(file.name.as_bytes())?;
@@ -53,9 +53,7 @@ pub(crate) fn default<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) 
 }
 
 /// Writes the provided files in a grid format.
-pub(crate) fn grid<W: Write>(
-    files: Vec<File>, writer: &mut W, direction: Direction,
-) -> io::Result<()> {
+pub(crate) fn grid<W: Write>(files: Files, writer: &mut W, direction: Direction) -> io::Result<()> {
     let mut grid = Grid::new(GridOptions { filling: Filling::Spaces(2), direction });
 
     let width = match tty_dimensions(&io::stdout()) {
@@ -92,7 +90,7 @@ pub(crate) fn grid<W: Write>(
 }
 
 /// Writes the provided files in a list format.
-pub(crate) fn list<W: Write>(files: Vec<File>, writer: &mut W, flags: Flags) -> io::Result<()> {
+pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
     let permissions_width = 1;

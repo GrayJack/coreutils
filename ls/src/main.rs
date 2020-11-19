@@ -19,7 +19,7 @@ mod flags;
 mod output;
 mod table;
 
-use file::File;
+use file::{File, Files};
 use flags::Flags;
 use output::{default, grid, list};
 
@@ -56,7 +56,7 @@ fn main() {
             }
         }
 
-        let mut result: Vec<File>;
+        let mut result: Files;
 
         let path = PathBuf::from(file);
 
@@ -186,12 +186,12 @@ fn main() {
 }
 
 /// Sort a list of files based on the provided flags.
-fn sort(files: &mut Vec<file::File>, flags: &Flags) {
+fn sort(files: &mut Files, flags: &Flags) {
     if flags.time {
         if flags.last_accessed {
             files.sort_by_key(sort_by_access_time);
         } else if flags.file_status_modification {
-            files.sort_by_key(sort_by_ctime)
+            files.sort_by_key(sort_by_last_changed_time)
         } else {
             files.sort_by_key(sort_by_time);
         }
@@ -213,7 +213,7 @@ fn sort(files: &mut Vec<file::File>, flags: &Flags) {
 fn sort_by_access_time(file: &File) -> i64 { file.metadata.atime() }
 
 /// Sort a list of files by last change of file status information
-fn sort_by_ctime(file: &File) -> i64 { file.metadata.ctime() }
+fn sort_by_last_changed_time(file: &File) -> i64 { file.metadata.ctime() }
 
 /// Sort a list of files by file name alphabetically
 fn sort_by_name(file: &File) -> String {
