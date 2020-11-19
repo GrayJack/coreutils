@@ -93,13 +93,10 @@ pub(crate) fn grid<W: Write>(files: Files, writer: &mut W, direction: Direction)
 pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
-    let permissions_width = 1;
     let mut hard_links_width = 1;
     let mut user_width = 1;
     let mut group_width = 1;
     let mut size_width = 1;
-    let time_width = 1;
-    let file_name_width = 1;
 
     let mut rows = Table::new();
 
@@ -219,7 +216,7 @@ pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::
             write!(writer, "{:>1$} ", row.block, block_width)?;
         }
 
-        write!(writer, "{:<1$} ", row.permissions, permissions_width)?;
+        write!(writer, "{:<1} ", row.permissions)?;
 
         write!(writer, "{:>1$} ", row.hard_links, hard_links_width)?;
 
@@ -233,9 +230,9 @@ pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::
 
         write!(writer, "{:>1$} ", row.size, size_width)?;
 
-        write!(writer, "{:<1$} ", row.time, time_width)?;
+        write!(writer, "{:<1} ", row.time)?;
 
-        write!(writer, "{:<1$} ", row.file_name, file_name_width)?;
+        write!(writer, "{:<1} ", row.file_name)?;
 
         writeln!(writer)?;
     }
