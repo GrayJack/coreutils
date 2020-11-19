@@ -179,8 +179,7 @@ impl File {
 
     /// Gets the file name from a `PathBuf`
     ///
-    /// Will return `Error` if the path terminates at '..' or if the file name
-    /// contains invalid unicode characters.
+    /// Will return `Error` if the path terminates at '..'.
     pub fn path_buf_to_file_name(path: &PathBuf) -> io::Result<BString> {
         let file_name = match path.file_name() {
             Some(file_name) => file_name,
