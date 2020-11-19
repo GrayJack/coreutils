@@ -103,7 +103,7 @@ fn main() {
 
             if !flags.directory && (flags.all || flags.no_sort) {
                 // Retrieve the current directories information. This must
-                // be canonicalize incase the path is relative
+                // be canonicalized in case the path is relative.
                 let current = PathBuf::from(file).canonicalize();
 
                 let current = match current {
