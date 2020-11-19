@@ -13,7 +13,7 @@ use std::{
         ffi::OsStrExt,
         fs::{FileTypeExt, MetadataExt, PermissionsExt},
     },
-    path,
+    path::PathBuf,
     result::Result,
     string::String,
 };
@@ -37,22 +37,22 @@ pub(crate) type Files = Vec<File>;
 /// Represents a file and it's properties
 pub(crate) struct File {
     pub name: BString,
-    pub path: path::PathBuf,
+    pub path: PathBuf,
     pub metadata: fs::Metadata,
     flags: Flags,
 }
 
 impl File {
-    /// Creates a `File` instance from a `DirEntry`
-    pub fn from(path: path::PathBuf, flags: Flags) -> io::Result<Self> {
-        let metadata = path.symlink_metadata()?;
+    /// Creates a `File` instance from a `PathBuf`
+    pub fn from(path: PathBuf, flags: Flags) -> io::Result<Self> {
+        let metadata = File::metadata(&path, &flags)?;
 
         if flags.dereference && metadata.file_type().is_symlink() {
-            let symlink = fs::read_link(path.clone())?;
+            let symlink = fs::read_link(path)?;
 
             let name = File::path_buf_to_file_name(&symlink)?;
 
-            let metadata = path.metadata()?;
+            let metadata = File::metadata(&symlink, &flags)?;
 
             return Ok(File { name, path: symlink, metadata, flags });
         }
@@ -62,9 +62,9 @@ impl File {
         Ok(File { name, path, metadata, flags })
     }
 
-    /// Creates a `File` instance from a `DirEntry` and supplies a file name
-    pub fn from_name(name: BString, path: path::PathBuf, flags: Flags) -> io::Result<Self> {
-        let metadata = path.metadata()?;
+    /// Creates a `File` instance from a `PathBuf` and supplies a file name
+    pub fn from_name(name: BString, path: PathBuf, flags: Flags) -> io::Result<Self> {
+        let metadata = File::metadata(&path, &flags)?;
 
         Ok(File { name, path, metadata, flags })
     }
@@ -162,7 +162,7 @@ impl File {
     }
 
     /// Check if a path is an executable file
-    pub fn is_executable(path: &path::PathBuf) -> bool {
+    pub fn is_executable(path: &PathBuf) -> bool {
         let mut result = false;
 
         let metadata = fs::symlink_metadata(path);
@@ -181,7 +181,7 @@ impl File {
     ///
     /// Will return `Error` if the path terminates at '..' or if the file name
     /// contains invalid unicode characters.
-    pub fn path_buf_to_file_name(path: &path::PathBuf) -> io::Result<BString> {
+    pub fn path_buf_to_file_name(path: &PathBuf) -> io::Result<BString> {
         let file_name = match path.file_name() {
             Some(file_name) => file_name,
             None => {
@@ -190,6 +190,13 @@ impl File {
         };
 
         Ok(BString::from(file_name.as_bytes()))
+    }
+
+    /// Retrieves the metadata from a `PathBuf`.
+    /// 
+    /// Symbolic links will be followed if the `-H` flag is present.
+    pub fn metadata(path: &PathBuf, flags: &Flags) -> io::Result<fs::Metadata> {
+        if flags.no_dereference { fs::metadata(path) } else { fs::symlink_metadata(path) }
     }
 
     /// Gets a file name from a directory entry and adds appropriate formatting

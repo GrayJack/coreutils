@@ -19,6 +19,7 @@ pub(crate) struct Flags {
     pub inode: bool,
     pub last_accessed: bool,
     pub list: bool,
+    pub no_dereference: bool,
     pub no_group: bool,
     pub no_owner: bool,
     pub no_sort: bool,
@@ -47,6 +48,7 @@ impl Flags {
         let inode = matches.is_present("inode");
         let last_accessed = matches.is_present("last_accessed");
         let list = matches.is_present("list");
+        let no_dereference = matches.is_present("no_dereference");
         let no_group = matches.is_present("no_group");
         let no_owner = matches.is_present("no_owner");
         let no_sort = matches.is_present("no_sort");
@@ -72,6 +74,7 @@ impl Flags {
             indicator,
             last_accessed,
             list,
+            no_dereference,
             no_group,
             no_owner,
             no_sort,

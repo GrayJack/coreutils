@@ -73,6 +73,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("classify"),
         )
         .arg(
+            Arg::with_name("no_dereference")
+                .help("Follow symbolic links listed on the command line.")
+                .short("H")
+                .long("no-dereference"),
+        )
+        .arg(
             Arg::with_name("block_size")
                 .help(
                     "Set the block size for the -s option and the per-directory block count \
