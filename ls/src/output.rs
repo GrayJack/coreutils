@@ -217,7 +217,6 @@ pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::
         }
 
         write!(writer, "{:<1} ", row.permissions)?;
-
         write!(writer, "{:>1$} ", row.hard_links, hard_links_width)?;
 
         if !flags.no_owner {
@@ -229,9 +228,7 @@ pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::
         }
 
         write!(writer, "{:>1$} ", row.size, size_width)?;
-
         write!(writer, "{:<1} ", row.time)?;
-
         write!(writer, "{:<1} ", row.file_name)?;
 
         writeln!(writer)?;
