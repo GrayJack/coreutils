@@ -18,6 +18,44 @@ use crate::{
     table::{Row, Table},
 };
 
+pub(crate) fn output<W: Write>(result: Files, writer: &mut W, flags: Flags) -> i32 {
+    let mut exit_code = 0;
+
+    if flags.show_list() {
+        match list(result, writer, flags) {
+            Ok(_) => {},
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                exit_code = 1;
+            },
+        }
+    } else if flags.show_grid() {
+        let direction = if flags.order_left_to_right && !flags.order_top_to_bottom {
+            Direction::LeftToRight
+        } else {
+            Direction::TopToBottom
+        };
+
+        match grid(result, writer, direction) {
+            Ok(_) => {},
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                exit_code = 1;
+            },
+        }
+    } else {
+        match default(result, writer, flags) {
+            Ok(_) => {},
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                exit_code = 1;
+            },
+        }
+    }
+
+    exit_code
+}
+
 /// Writes the provided files in the default format.
 pub(crate) fn default<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
     if !is_tty(&io::stdout()) {
