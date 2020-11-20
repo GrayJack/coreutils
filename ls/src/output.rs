@@ -22,8 +22,12 @@ use crate::{
 pub(crate) fn default<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
     if !is_tty(&io::stdout()) {
         for file in &files {
-            writer.write_all(file.name.as_bytes())?;
-            writeln!(writer)?;
+            if flags.hide_control_chars {
+                writeln!(writer, "{}", file.name)?;
+            } else {
+                writer.write_all(file.name.as_bytes())?;
+                writeln!(writer)?;
+            }
         }
 
         return Ok(());

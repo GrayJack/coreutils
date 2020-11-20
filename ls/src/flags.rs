@@ -15,6 +15,7 @@ pub(crate) struct Flags {
     pub directory: bool,
     pub dereference: bool,
     pub file_status_modification: bool,
+    pub hide_control_chars: bool,
     pub indicator: bool,
     pub inode: bool,
     pub last_accessed: bool,
@@ -44,6 +45,7 @@ impl Flags {
         let dereference = matches.is_present("dereference");
         let directory = matches.is_present("directory");
         let file_status_modification = matches.is_present("file_status_modification");
+        let hide_control_chars = matches.is_present("hide_control_chars");
         let indicator = matches.is_present("indicator");
         let inode = matches.is_present("inode");
         let last_accessed = matches.is_present("last_accessed");
@@ -70,6 +72,7 @@ impl Flags {
             directory,
             dereference,
             file_status_modification,
+            hide_control_chars,
             inode,
             indicator,
             last_accessed,

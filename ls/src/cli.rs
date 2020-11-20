@@ -143,6 +143,16 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("no-group"),
         )
         .arg(
+            Arg::with_name("hide_control_chars")
+                .help(
+                    "Force each instance of non-printable filename characters to be written as \
+                     the � character. This is the default behavior if the output is to a terminal \
+                     device.",
+                )
+                .short("q")
+                .long("hide-control-chars"),
+        )
+        .arg(
             Arg::with_name("reverse")
                 .help("Reverse order while sorting.")
                 .short("r")
