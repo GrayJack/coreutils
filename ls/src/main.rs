@@ -96,13 +96,15 @@ fn main() {
             } else {
                 match fs::read_dir(file) {
                     Ok(dir) => {
-                        result = dir
-                            // Collect information about the file or directory
-                            .map(|entry| File::from(entry.unwrap().path(), flags).unwrap())
-                            // Hide hidden files and directories if `-a` or `-A` flags
-                            // weren't provided
-                            .filter(|file| !File::is_hidden(&file.name.as_bstr()) || flags.show_hidden())
-                            .collect();
+                        result = match collect(dir, &flags) {
+                            Ok(files) => files,
+                            Err(err) => {
+                                eprintln!("ls: cannot access '{}': {}", file, err);
+                                exit_code = 1;
+
+                                break;
+                            },
+                        };
 
                         if !flags.no_sort {
                             sort(&mut result, &flags);
@@ -169,6 +171,23 @@ fn main() {
     if exit_code != 0 {
         process::exit(exit_code);
     }
+}
+
+/// Collect the results from reading a directory into a `File` collection.
+fn collect(dir: fs::ReadDir, flags: &Flags) -> io::Result<Files> {
+    let mut files = Files::new();
+
+    for entry in dir {
+        let entry = entry?;
+
+        let file = File::from(entry.path(), *flags)?;
+
+        if !File::is_hidden(&file.name.as_bstr()) || flags.show_hidden() {
+            files.push(file);
+        }
+    }
+
+    Ok(files)
 }
 
 /// Sort a list of files based on the provided flags.
