@@ -28,6 +28,7 @@ pub(crate) struct Flags {
     pub one_per_line: bool,
     pub order_left_to_right: bool,
     pub order_top_to_bottom: bool,
+    pub recursive: bool,
     pub reverse: bool,
     pub size: bool,
     pub sort_size: bool,
@@ -58,6 +59,7 @@ impl Flags {
         let one_per_line = matches.is_present("one_per_line");
         let order_left_to_right = matches.is_present("order_left_to_right");
         let order_top_to_bottom = matches.is_present("order_top_to_bottom");
+        let recursive = matches.is_present("recursive");
         let reverse = matches.is_present("reverse");
         let size = matches.is_present("size");
         let sort_size = matches.is_present("sort_size");
@@ -85,6 +87,7 @@ impl Flags {
             one_per_line,
             order_left_to_right,
             order_top_to_bottom,
+            recursive,
             reverse,
             size,
             sort_size,

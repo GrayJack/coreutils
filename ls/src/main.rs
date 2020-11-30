@@ -53,6 +53,8 @@ fn main() {
         sort(&mut result, &flags);
 
         exit_code = output(result, &mut writer, flags);
+    } else if flags.recursive {
+        todo!();
     } else {
         let multiple = files.len() > 1;
 
@@ -94,74 +96,7 @@ fn main() {
                     },
                 }
             } else {
-                match fs::read_dir(file) {
-                    Ok(dir) => {
-                        result = match collect(dir, &flags) {
-                            Ok(files) => files,
-                            Err(err) => {
-                                eprintln!("ls: cannot access '{}': {}", file, err);
-                                exit_code = 1;
-
-                                break;
-                            },
-                        };
-
-                        if !flags.no_sort {
-                            sort(&mut result, &flags);
-                        }
-                    },
-                    Err(err) => {
-                        eprintln!("ls: cannot access '{}': {}", file, err);
-                        exit_code = 1;
-
-                        break;
-                    },
-                }
-
-                if !flags.directory && (flags.all || flags.no_sort) {
-                    // Retrieve the current directories information. This must
-                    // be canonicalized in case the path is relative.
-                    let current = PathBuf::from(file).canonicalize();
-
-                    let current = match current {
-                        Ok(current) => current,
-                        Err(err) => {
-                            eprintln!("ls: {}", err);
-                            process::exit(1);
-                        },
-                    };
-
-                    let dot = File::from_name(BString::from("."), current.clone(), flags);
-
-                    let dot = match dot {
-                        Ok(dot) => dot,
-                        Err(err) => {
-                            eprintln!("ls: {}", err);
-                            process::exit(1);
-                        },
-                    };
-
-                    // Retrieve the parent path. Default to the current path if the
-                    // parent doesn't exist
-                    let parent_path = match dot.path.parent() {
-                        Some(parent) => parent,
-                        None => current.as_path(),
-                    };
-
-                    let dot_dot =
-                        File::from_name(BString::from(".."), PathBuf::from(parent_path), flags);
-
-                    let dot_dot = match dot_dot {
-                        Ok(dot_dot) => dot_dot,
-                        Err(err) => {
-                            eprintln!("ls: {}", err);
-                            process::exit(1);
-                        },
-                    };
-
-                    result.insert(0, dot);
-                    result.insert(1, dot_dot);
-                }
+                result = collect(file, &flags);
             }
 
             exit_code = output(result, &mut writer, flags);
@@ -173,21 +108,88 @@ fn main() {
     }
 }
 
-/// Collect the results from reading a directory into a `File` collection.
-fn collect(dir: fs::ReadDir, flags: &Flags) -> io::Result<Files> {
-    let mut files = Files::new();
+fn collect(file: &str, flags: &Flags) -> Files {
+    let mut result = Files::new();
 
-    for entry in dir {
-        let entry = entry?;
+    match fs::read_dir(file) {
+        Ok(dir) => {
+            for entry in dir {
+                let entry = match entry {
+                    Ok(entry) => entry,
+                    Err(err) => {
+                        eprintln!("ls: cannot access '{}': {}", file, err);
+                        process::exit(1);
+                    },
+                };
 
-        let file = File::from(entry.path(), *flags)?;
+                let file = match File::from(entry.path(), *flags) {
+                    Ok(file) => file,
+                    Err(err) => {
+                        eprintln!("ls: cannot access '{}': {}", file, err);
+                        process::exit(1);
+                    },
+                };
 
-        if !File::is_hidden(&file.name.as_bstr()) || flags.show_hidden() {
-            files.push(file);
-        }
+                if !File::is_hidden(&file.name.as_bstr()) || flags.show_hidden() {
+                    result.push(file);
+                }
+            }
+
+            if !flags.no_sort {
+                sort(&mut result, &flags);
+            }
+        },
+        Err(err) => {
+            eprintln!("ls: cannot access '{}': {}", file, err);
+            process::exit(1);
+        },
     }
 
-    Ok(files)
+    if !flags.directory && (flags.all || flags.no_sort) {
+        // Retrieve the current directories information. This must
+        // be canonicalized in case the path is relative.
+        let current = PathBuf::from(file).canonicalize();
+
+        let current = match current {
+            Ok(current) => current,
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                process::exit(1);
+            },
+        };
+
+        let dot = File::from_name(BString::from("."), current.clone(), *flags);
+
+        let dot = match dot {
+            Ok(dot) => dot,
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                process::exit(1);
+            },
+        };
+
+        // Retrieve the parent path. Default to the current path if the
+        // parent doesn't exist
+        let parent_path = match dot.path.parent() {
+            Some(parent) => parent,
+            None => current.as_path(),
+        };
+
+        let dot_dot = File::from_name(BString::from(".."), PathBuf::from(parent_path), *flags);
+
+        let dot_dot = match dot_dot {
+            Ok(dot_dot) => dot_dot,
+            Err(err) => {
+                eprintln!("ls: {}", err);
+                process::exit(1);
+            },
+        };
+
+        result.insert(0, dot);
+        result.insert(1, dot_dot);
+    }
+
+    result
 }
 
 /// Sort a list of files based on the provided flags.

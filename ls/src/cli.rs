@@ -159,6 +159,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("reverse"),
         )
         .arg(
+            Arg::with_name("recursive")
+                .help("Recursively print subdirectories.")
+                .short("R")
+                .long("recursive"),
+        )
+        .arg(
             Arg::with_name("size")
                 .help("Print the allocated size of each file, in blocks.")
                 .short("s")
