@@ -54,7 +54,9 @@ fn main() {
 
         exit_code = output(result, &mut writer, flags);
     } else if flags.recursive {
-        todo!();
+        for file in files {
+            exit_code = recursive_output(file, &mut writer, &flags);
+        }
     } else {
         let multiple = files.len() > 1;
 
@@ -103,9 +105,7 @@ fn main() {
         }
     }
 
-    if exit_code != 0 {
-        process::exit(exit_code);
-    }
+    process::exit(exit_code);
 }
 
 fn collect(file: &str, flags: &Flags) -> Files {
@@ -190,6 +190,67 @@ fn collect(file: &str, flags: &Flags) -> Files {
     }
 
     result
+}
+
+/// Recursively display sub directories from a given path.
+fn recursive_output<W: Write>(file: &str, writer: &mut W, flags: &Flags) -> i32 {
+    match writeln!(writer, "\n{}:", file) {
+        Ok(_) => {},
+        Err(err) => {
+            eprintln!("ls:  '{}'", err);
+        },
+    }
+
+    let path = PathBuf::from(file);
+
+    let files = if path.is_file() {
+        let mut result = Files::new();
+        let item = File::from(PathBuf::from(file), *flags);
+
+        match item {
+            Ok(item) => {
+                result.push(item);
+            },
+            Err(err) => {
+                eprintln!("ls: cannot access {}: {}", err, file);
+            },
+        };
+
+        result
+    } else {
+        collect(file, flags)
+    };
+    let mut exit_code = output(files, writer, *flags);
+
+    if path.is_file() {
+        return exit_code;
+    }
+
+    match fs::read_dir(file) {
+        Ok(dir) => {
+            for entry in dir {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
+
+                        if path.is_dir() {
+                            let file_string = path.to_string_lossy().to_string();
+
+                            exit_code = recursive_output(&file_string, writer, &flags);
+                        }
+                    },
+                    Err(err) => {
+                        eprintln!("ls: cannot access '{}': {}", file, err);
+                    },
+                };
+            }
+        },
+        Err(err) => {
+            eprintln!("ls: cannot access '{}': {}", file, err);
+        },
+    }
+
+    exit_code
 }
 
 /// Sort a list of files based on the provided flags.
