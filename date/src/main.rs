@@ -26,8 +26,14 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
     let rfc3339 = matches.value_of("rfc3339");
     let is_set = matches.is_present("set") && !matches.is_present("no_set");
 
-    let utc_off =
-        if matches.is_present("utc") { UtcOffset::UTC } else { UtcOffset::current_local_offset() };
+    let utc_off = if matches.is_present("utc") {
+        UtcOffset::UTC
+    } else {
+        UtcOffset::try_current_local_offset().unwrap_or_else(|err| {
+            eprintln!("uptime: {}: UTC offset default value will be used (offset zero)", err);
+            UtcOffset::UTC
+        })
+    };
 
     let (out_fmt, date_str) = {
         match (matches.value_of("OPERAND"), matches.value_of("DATE")) {
@@ -255,8 +261,10 @@ fn rfc3339_format_str(value: &str) -> &str {
 fn set_os_time(datetime: DateTime) -> Result<(), String> {
     use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
 
-    let time =
-        TimeVal { tv_sec: datetime.timestamp() as Time, tv_usec: datetime.microsecond() as Susec };
+    let time = TimeVal {
+        tv_sec:  datetime.unix_timestamp() as Time,
+        tv_usec: datetime.microsecond() as Susec,
+    };
 
     match set_time_of_day(time) {
         Ok(_) => Ok(()),
