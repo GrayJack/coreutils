@@ -392,7 +392,7 @@ impl Groups {
                 } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
                     buff.reserve(buff_size);
                 } else {
-                    return Err(Passwd(Box::new(PwError::Io(IoError::last_os_error()))).into());
+                    return Err(IoError::last_os_error());
                 }
             };
 

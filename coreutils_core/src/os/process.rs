@@ -42,12 +42,12 @@ pub fn change_root(newroot: &str) -> io::Result<()> {
 ///
 /// [`Passwd`]: ../passwd/struct.Passwd.html
 #[inline]
-pub fn set_user(user: &str) -> Result<(), PwError> {
+pub fn set_user(user: &str) -> io::Result<()> {
     let user = Passwd::from_name(user)?;
 
     match unsafe { libc::setuid(user.uid()) } {
         0 => Ok(()),
-        _ => Err(PwError::Io(io::Error::last_os_error())),
+        _ => Err(io::Error::last_os_error()),
     }
 }
 

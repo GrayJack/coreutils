@@ -5,7 +5,7 @@ use std::{
     error::Error as StdError,
     ffi::{CStr, CString, NulError},
     fmt::{self, Display},
-    io::Error as IOError,
+    io::{self, Error as IoError},
     mem::MaybeUninit,
     os::raw::c_char,
     ptr,
@@ -32,8 +32,6 @@ use self::Error::*;
 use libc::{geteuid, getpwnam_r, getpwuid_r, getuid, passwd};
 
 use bstr::{BStr, BString, ByteSlice};
-
-pub type Result<T> = StdResult<T, Error>;
 
 /// This struct holds information about a passwd of UNIX/UNIX-like systems.
 ///
@@ -62,8 +60,6 @@ pub enum Error {
     CommentCheckFailed,
     /// Happens when the [`passwd`] is not found.
     PasswdNotFound,
-    /// Happens when there is a IO error
-    Io(IOError),
     /// Happens when something happens when finding what [`Group`] a [`Passwd`] belongs
     Group(Box<GrError>),
     /// Happens when fails to create a CString
@@ -89,7 +85,6 @@ impl Display for Error {
             AgeCheckFailed => write!(f, "Passwd class check failed, `.pw_age` is null"),
             CommentCheckFailed => write!(f, "Passwd class check failed, `.pw_comment` is null"),
             PasswdNotFound => write!(f, "Passwd was not found in the system"),
-            Io(err) => write!(f, "{}", err),
             Group(err) => write!(f, "Group error: {}", err),
             Cstring(err) => write!(f, "Failed to create CString: {}", err),
         }
@@ -100,7 +95,6 @@ impl StdError for Error {
     #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
-            Io(err) => Some(err),
             Group(err) => Some(err),
             Cstring(err) => Some(err),
             _ => None,
@@ -118,9 +112,9 @@ impl From<NulError> for Error {
     fn from(err: NulError) -> Self { Cstring(err) }
 }
 
-impl From<IOError> for Error {
+impl From<Error> for IoError {
     #[inline]
-    fn from(err: IOError) -> Error { Io(err) }
+    fn from(err: Error) -> Self { Self::new(io::ErrorKind::Other, err) }
 }
 
 /// This struct holds the information of a user in UNIX/UNIX-like systems.
@@ -186,7 +180,7 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn effective() -> Result<Self> {
+    pub fn effective() -> io::Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this size from manual page about getpwuid_r
@@ -205,19 +199,19 @@ impl Passwd {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(PasswdNotFound);
+                    break Err(PasswdNotFound.into());
                 } else {
                     // Now that pw is initialized we get it
                     let pw = unsafe { pw.assume_init() };
 
                     break Ok(Passwd::try_from(pw)?);
                 }
-            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
                 // If there was a ERANGE error, that means the buffer was too small, so we add more
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IOError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -229,7 +223,7 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn real() -> Result<Self> {
+    pub fn real() -> io::Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this size from manual page about getpwuid_r
@@ -248,19 +242,19 @@ impl Passwd {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(PasswdNotFound);
+                    break Err(PasswdNotFound.into());
                 } else {
                     // Now that pw is initialized we get it
                     let pw = unsafe { pw.assume_init() };
 
                     break Ok(Passwd::try_from(pw)?);
                 }
-            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
                 // If there was a ERANGE error, that means the buffer was too small, so we add more
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IOError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -271,7 +265,7 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn from_uid(id: Uid) -> Result<Self> {
+    pub fn from_uid(id: Uid) -> io::Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this size from manual page about getpwuid_r
@@ -284,19 +278,19 @@ impl Passwd {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(PasswdNotFound);
+                    break Err(PasswdNotFound.into());
                 } else {
                     // Now that pw is initialized we get it
                     let pw = unsafe { pw.assume_init() };
 
                     break Ok(Passwd::try_from(pw)?);
                 }
-            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
                 // If there was a ERANGE error, that means the buffer was too small, so we add more
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IOError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -307,7 +301,7 @@ impl Passwd {
     /// If there is a error ocurrence when getting [`passwd`] (C struct) or converting it
     /// into [`Passwd`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn from_name(name: &str) -> Result<Self> {
+    pub fn from_name(name: &str) -> io::Result<Self> {
         let mut pw = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this size from manual page about getpwuid_r
@@ -328,19 +322,19 @@ impl Passwd {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(PasswdNotFound);
+                    break Err(PasswdNotFound.into());
                 } else {
                     // Now that pw is initialized we get it
                     let pw = unsafe { pw.assume_init() };
 
                     break Ok(Passwd::try_from(pw)?);
                 }
-            } else if let Some(libc::ERANGE) = IOError::last_os_error().raw_os_error() {
+            } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
                 // If there was a ERANGE error, that means the buffer was too small, so we add more
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IOError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -417,7 +411,7 @@ impl Passwd {
     /// If it fails to get the [`Groups`] where [`Passwd`] (user) belongs, an error
     /// variant is returned.
     #[inline]
-    pub fn belongs_to(&self) -> Result<Groups> {
+    pub fn belongs_to(&self) -> io::Result<Groups> {
         let name = {
             let mut n = self.name.to_string();
             n.push('\0');
