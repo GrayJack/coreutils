@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Write},
+    io::{self, BufWriter, Write},
     os::unix::fs::MetadataExt,
 };
 
@@ -18,11 +18,13 @@ use crate::{
     table::{Row, Table},
 };
 
-pub(crate) fn output<W: Write>(result: Files, writer: &mut W, flags: Flags) -> i32 {
+pub(crate) fn output(result: Files, flags: Flags) -> i32 {
     let mut exit_code = 0;
 
+    let mut writer = BufWriter::new(io::stdout());
+
     if flags.show_list() {
-        match list(result, writer, flags) {
+        match list(result, &mut writer, flags) {
             Ok(_) => {},
             Err(err) => {
                 eprintln!("ls: {}", err);
@@ -36,7 +38,7 @@ pub(crate) fn output<W: Write>(result: Files, writer: &mut W, flags: Flags) -> i
             Direction::TopToBottom
         };
 
-        match grid(result, writer, direction) {
+        match grid(result, &mut writer, direction) {
             Ok(_) => {},
             Err(err) => {
                 eprintln!("ls: {}", err);
@@ -44,7 +46,7 @@ pub(crate) fn output<W: Write>(result: Files, writer: &mut W, flags: Flags) -> i
             },
         }
     } else {
-        match default(result, writer, flags) {
+        match default(result, &mut writer, flags) {
             Ok(_) => {},
             Err(err) => {
                 eprintln!("ls: {}", err);

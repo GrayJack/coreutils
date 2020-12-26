@@ -52,7 +52,7 @@ fn main() {
 
         sort(&mut result, &flags);
 
-        exit_code = output(result, &mut writer, flags);
+        exit_code = output(result, flags);
     } else if flags.recursive {
         for file in files {
             exit_code = recursive_output(file, &mut writer, &flags);
@@ -101,7 +101,7 @@ fn main() {
                 result = collect(file, &flags);
             }
 
-            exit_code = output(result, &mut writer, flags);
+            exit_code = output(result, flags);
         }
     }
 
@@ -221,7 +221,7 @@ fn recursive_output<W: Write>(file: &str, writer: &mut W, flags: &Flags) -> i32 
     } else {
         collect(file, flags)
     };
-    let mut exit_code = output(files, writer, *flags);
+    let mut exit_code = output(files, *flags);
 
     if path.is_file() {
         return exit_code;
