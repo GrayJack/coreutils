@@ -117,10 +117,10 @@ impl RangeSet {
         // Split the string at commas and parse the pieces as ranges.
         let ranges =
             string.split(',').map(|rng| Range::from_string(rng)).collect::<Result<Vec<Range>>>()?;
-        Self::from_vec(ranges)
+        Ok(Self::from_vec(ranges))
     }
 
-    fn from_vec(mut ranges: Vec<Range>) -> Result<Self> {
+    fn from_vec(mut ranges: Vec<Range>) -> Self {
         // Sort the ranges on the start of the range. This will place
         // all ranges in correct order in the vector for the merging
         // below.
@@ -146,7 +146,7 @@ impl RangeSet {
         if let Some(rng) = current {
             points.push(rng);
         }
-        Ok(RangeSet { points })
+        RangeSet { points }
     }
 
     // In-place complement a range set.
@@ -198,7 +198,7 @@ struct Bytes {
 }
 
 impl Bytes {
-    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Result<Self> { Ok(Bytes { range_set }) }
+    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Self { Bytes { range_set } }
 }
 
 impl Cutter for Bytes {
@@ -222,7 +222,7 @@ struct Chars {
 }
 
 impl Chars {
-    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Result<Self> { Ok(Chars { range_set }) }
+    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Self { Chars { range_set } }
 }
 
 impl Cutter for Chars {
@@ -305,14 +305,14 @@ fn make_cutter(matches: &ArgMatches, options: &Options) -> Result<Box<dyn Cutter
         if options.complement {
             range_set.complement();
         }
-        let cutter = Bytes::new(range_set, matches)?;
+        let cutter = Bytes::new(range_set, matches);
         Ok(Box::new(cutter))
     } else if let Some(rng) = matches.value_of("chars") {
         let mut range_set = RangeSet::from_string(rng)?;
         if options.complement {
             range_set.complement();
         }
-        let cutter = Chars::new(range_set, matches)?;
+        let cutter = Chars::new(range_set, matches);
         Ok(Box::new(cutter))
     } else if let Some(rng) = matches.value_of("fields") {
         let mut range_set = RangeSet::from_string(rng)?;

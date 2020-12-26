@@ -80,7 +80,8 @@ fn csplit(args: &ArgMatches, created: &mut Vec<String>) -> Result<()> {
 
             pattern.process_line(&mut filer, lineno, &buffer)?;
         }
-        filer.flush()
+        filer.flush();
+        Ok(())
     } else {
         Err(Error::MissingOperand(filename.to_string()))
     }
@@ -183,11 +184,10 @@ impl<'a> Filer<'a> {
             .map_err(|err| Error::WriteFailed(self.current.clone(), err))
     }
 
-    fn flush(&mut self) -> Result<()> {
+    fn flush(&mut self) {
         if !self.silent {
             println!("{}", self.bytes);
         }
-        Ok(())
     }
 }
 

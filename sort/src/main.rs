@@ -23,7 +23,7 @@ fn main_sort(matches: clap::ArgMatches) -> Result<(), SortError> {
     let mut flags = SortFlags::from_matches(&matches)?;
     let inputs = get_inputs(&matches)?;
 
-    let lines = sort(&flags, inputs)?;
+    let lines = sort(&flags, inputs);
     for line in lines {
         print_line(line, &mut flags)?;
     }
@@ -67,12 +67,12 @@ fn get_inputs(matches: &clap::ArgMatches) -> Result<Vec<Buffer>, SortError> {
     }
 }
 
-fn sort(flags: &SortFlags, mut inputs: Vec<Buffer>) -> Result<Vec<Buffer>, SortError> {
+fn sort(flags: &SortFlags, mut inputs: Vec<Buffer>) -> Vec<Buffer> {
     if !flags.merge_only {
         inputs.sort_unstable();
     }
 
-    Ok(inputs)
+    inputs
 }
 
 fn print_line(line: Buffer, flags: &mut SortFlags) -> Result<(), SortError> {
@@ -248,7 +248,7 @@ mod tests {
         let matches = get_matches!(file1, file2, file3);
 
         let inputs = get_inputs(&matches).unwrap();
-        let res = sort(&default_flags(), inputs).unwrap();
+        let res = sort(&default_flags(), inputs);
 
         assert_eq!(vec![b"file1".to_vec(), b"file2".to_vec(), b"file3".to_vec()], res)
     }
@@ -260,7 +260,7 @@ mod tests {
         let matches = get_matches!(file1, file2, file3);
 
         let inputs = get_inputs(&matches).unwrap();
-        let res = sort(&default_flags(), inputs).unwrap();
+        let res = sort(&default_flags(), inputs);
 
         assert_eq!(
             vec![
@@ -285,7 +285,7 @@ mod tests {
         let matches = get_matches!(file1, file2, file3);
 
         let inputs = get_inputs(&matches).unwrap();
-        let res = sort(&default_flags(), inputs).unwrap();
+        let res = sort(&default_flags(), inputs);
 
         assert_eq!(
             vec![

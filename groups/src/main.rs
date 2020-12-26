@@ -1,10 +1,4 @@
-use coreutils_core::os::{
-    group::{Error as GrError, Groups},
-    passwd::Error as PwError,
-};
-
-use GrError::*;
-use PwError::*;
+use coreutils_core::os::group::Groups;
 
 mod cli;
 
