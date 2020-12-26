@@ -108,6 +108,7 @@ fn main() {
     process::exit(exit_code);
 }
 
+/// Read the `&str` as a directory and collect the results into a `File` vector.
 fn collect(file: &str, flags: &Flags) -> Files {
     let mut result = Files::new();
 
