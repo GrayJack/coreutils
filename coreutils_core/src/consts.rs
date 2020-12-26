@@ -1,6 +1,5 @@
 //! CFG constants
 
-// TODO: Add illumos target once it's done
 #[cfg(target_os = "linux")]
 pub const HOST_OS: &str = "Linux";
 #[cfg(target_os = "freebsd")]

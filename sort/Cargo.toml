@@ -1,18 +1,19 @@
 [package]
-name = "seq"
+name = "sort"
 version = "0.1.0"
-authors = ["John Pradeep Vincent <yehohanan7@gmail.com>"]
+authors = ["Anubhab Ghosh <anubhabghosh.me@gmail.com>", "Eric Shimizu Karbstein <gr41.j4ck@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2018"
-description = """
-Display numbers from FIRST to LAST, in steps of INCREMENT.
-"""
+description = "Sort or merge all FILE(s)."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
-sugars = "^3.0.0"
 
 [build-dependencies]
 clap = "^2.33.0"
+
+[dev-dependencies]
+tempfile = "3.1.0"

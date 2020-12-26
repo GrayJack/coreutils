@@ -58,8 +58,12 @@ fn main() {
             process::exit(1);
         });
 
-        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec as i64)
-            .to_offset(UtcOffset::current_local_offset());
+        let utc_offset = UtcOffset::try_current_local_offset().unwrap_or_else(|err| {
+            eprintln!("uptime: {}: UTC offset default value will be used (offset zero)", err);
+            UtcOffset::UTC
+        });
+
+        boot_time = DateTime::from_unix_timestamp(boot_timeval.tv_sec as i64).to_offset(utc_offset);
     }
 
     if since_flag {
@@ -101,7 +105,10 @@ fn uptime(boot_time: DateTime) -> Result<i64, ostime::Error> {
 }
 
 fn fmt_time() -> String {
-    let now = DateTime::now_local();
+    let now = DateTime::try_now_local().unwrap_or_else(|err| {
+        eprintln!("uptime: {}: UTC offset default value will be used (offset zero)", err);
+        DateTime::now_utc()
+    });
 
     format!(" {:02}:{:02}:{:02}", now.hour(), now.minute(), now.second())
 }

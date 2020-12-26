@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Write},
+    io::{self, BufWriter, Write},
     iter::Peekable,
     process,
     str::Chars,
@@ -10,15 +10,8 @@ mod cli;
 fn main() {
     let matches = cli::create_app().get_matches();
 
-    let strings: Vec<String> = {
-        // Safe to unwrap since we said it is required on clap configuration
-        let values = matches.values_of("STRING").unwrap();
-        let mut v = Vec::new();
-        for value in values {
-            v.push(value.to_owned());
-        }
-        v
-    };
+    // Safe to unwrap since we said it is required on clap configuration
+    let strings: Vec<&str> = matches.values_of("STRING").map(|values| values.collect()).unwrap();
 
     match echo(&strings, matches.is_present("escape"), matches.is_present("no_newline")) {
         Ok(_) => (),
@@ -32,9 +25,9 @@ fn main() {
 /// Print given `strings` to standard output.
 /// If `scape` true, it also prints the scape codes inside `strings`.
 /// If `no_newline` true, it does not print a newline after.
-fn echo(strings: &[String], escape: bool, no_newline: bool) -> io::Result<()> {
+fn echo(strings: &[&str], escape: bool, no_newline: bool) -> io::Result<()> {
     let stdout = io::stdout();
-    let mut output = stdout.lock();
+    let mut output = BufWriter::new(stdout.lock());
 
     for (i, string) in strings.iter().enumerate() {
         if i > 0 {

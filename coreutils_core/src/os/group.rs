@@ -7,11 +7,10 @@ use std::{
     error::Error as StdError,
     ffi::{CStr, CString, NulError},
     fmt::{self, Display},
-    io::Error as IoError,
+    io::{self, Error as IoError},
     mem::MaybeUninit,
     os::raw::c_char,
     ptr,
-    result::Result as StdResult,
     slice::Iter,
 };
 
@@ -36,8 +35,6 @@ extern "C" {
     ) -> c_int;
 }
 
-pub type Result<T> = StdResult<T, Error>;
-
 /// A iterator of group members.
 pub type Members = Vec<BString>;
 
@@ -56,8 +53,6 @@ pub enum Error {
     ///
     /// This can happen even if [`getgrgid_r`] or [`getgrnam_r`] return 0.
     GroupNotFound,
-    /// Happens when calling [`getgroups`] or [`getgrouplist`] C function.
-    Io(IoError),
     /// Happens when creating a [`Passwd`] fails.
     Passwd(Box<PwError>),
     /// Happens when creating a [`CString`] fails.
@@ -77,7 +72,6 @@ impl Display for Error {
             NameCheckFailed => write!(f, "Group name check failed, `.gr_name` field is null"),
             PasswdCheckFailed => write!(f, "Group passwd check failed, `.gr_passwd` is null"),
             GroupNotFound => write!(f, "Group was not found in the system"),
-            Io(err) => write!(f, "{}", err),
             Passwd(err) => write!(f, "Passwd error: {}", err),
             Cstring(err) => write!(f, "Failed to create CString: {}", err),
         }
@@ -88,17 +82,11 @@ impl StdError for Error {
     #[inline]
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
-            Io(err) => Some(err),
             Passwd(err) => Some(err),
             Cstring(err) => Some(err),
             _ => None,
         }
     }
-}
-
-impl From<IoError> for Error {
-    #[inline]
-    fn from(err: IoError) -> Self { Io(err) }
 }
 
 impl From<NulError> for Error {
@@ -109,6 +97,11 @@ impl From<NulError> for Error {
 impl From<PwError> for Error {
     #[inline]
     fn from(err: PwError) -> Self { Passwd(Box::new(err)) }
+}
+
+impl From<Error> for IoError {
+    #[inline]
+    fn from(err: Error) -> Self { Self::new(io::ErrorKind::Other, err) }
 }
 
 /// This struct holds information about a group of UNIX/UNIX-like systems.
@@ -133,7 +126,7 @@ impl Group {
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
     /// into [`Group`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn new() -> Result<Self> {
+    pub fn new() -> io::Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this from manual page about `getgrgid_r`.
@@ -152,7 +145,7 @@ impl Group {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(GroupNotFound);
+                    break Err(GroupNotFound.into());
                 } else {
                     // Now that gr is initialized we get it
                     let gr = unsafe { gr.assume_init() };
@@ -164,7 +157,7 @@ impl Group {
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IoError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -175,7 +168,7 @@ impl Group {
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
     /// into [`Group`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn from_gid(id: Gid) -> Result<Self> {
+    pub fn from_gid(id: Gid) -> io::Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this from manual page about `getgrgid_r`.
@@ -188,7 +181,7 @@ impl Group {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(GroupNotFound);
+                    break Err(GroupNotFound.into());
                 } else {
                     // Now that gr is initialized we get it
                     let gr = unsafe { gr.assume_init() };
@@ -200,7 +193,7 @@ impl Group {
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IoError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -211,7 +204,7 @@ impl Group {
     /// If there is a error ocurrence when getting [`group`] (C struct) or converting it
     /// into [`Group`], an error variant is returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn from_name(name: &str) -> Result<Self> {
+    pub fn from_name(name: &str) -> io::Result<Self> {
         let mut gr = MaybeUninit::uninit();
         let mut result = ptr::null_mut();
         let buff_size = 16384; // Got this from manual page about `getgrgid_r`.
@@ -232,7 +225,7 @@ impl Group {
 
             if error_flag == 0 {
                 if result.is_null() {
-                    break Err(GroupNotFound);
+                    break Err(GroupNotFound.into());
                 } else {
                     // Now that gr is initialized we get it
                     let gr = unsafe { gr.assume_init() };
@@ -244,7 +237,7 @@ impl Group {
                 // `buff_size` each time we get that error
                 buff.reserve(buff_size);
             } else {
-                break Err(Io(IoError::last_os_error()));
+                break Err(IoError::last_os_error());
             }
         }
     }
@@ -270,7 +263,7 @@ impl TryFrom<group> for Group {
     type Error = Error;
 
     #[inline]
-    fn try_from(gr: group) -> StdResult<Self, Self::Error> {
+    fn try_from(gr: group) -> Result<Self, Self::Error> {
         let name_ptr = gr.gr_name;
         let pw_ptr = gr.gr_passwd;
         let mut mem_list_ptr = gr.gr_mem;
@@ -329,20 +322,20 @@ impl Groups {
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn caller() -> Result<Self> {
+    pub fn caller() -> io::Result<Self> {
         // First we check if we indeed have groups.
         // "If gidsetsize is 0 (fist parameter), getgroups() returns the number of supplementary
         // group IDs associated with the calling process without modifying the array
         // pointed to by grouplist."
         let num_groups = unsafe { getgroups(0, ptr::null_mut()) };
         if num_groups == -1 {
-            return Err(Io(IoError::last_os_error()));
+            return Err(IoError::last_os_error());
         }
 
         let mut groups_ids = Vec::with_capacity(num_groups as usize);
         let num_groups = unsafe { getgroups(num_groups, groups_ids.as_mut_ptr()) };
         if num_groups == -1 {
-            return Err(Io(IoError::last_os_error()));
+            return Err(IoError::last_os_error());
         } else {
             unsafe {
                 groups_ids.set_len(num_groups as usize);
@@ -367,7 +360,7 @@ impl Groups {
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
     #[cfg_attr(feature = "inline-more", inline)]
-    pub fn from_username(username: &str) -> Result<Self> {
+    pub fn from_username(username: &str) -> io::Result<Self> {
         let mut num_gr: i32 = 8;
         let mut groups_ids = Vec::with_capacity(num_gr as usize);
 
@@ -392,14 +385,14 @@ impl Groups {
 
                 if res_pwnam == 0 {
                     if pw_result.is_null() {
-                        return Err(Passwd(Box::new(PwError::PasswdNotFound)));
+                        return Err(Passwd(Box::new(PwError::PasswdNotFound)).into());
                     } else {
                         break passwd.assume_init();
                     }
                 } else if let Some(libc::ERANGE) = IoError::last_os_error().raw_os_error() {
                     buff.reserve(buff_size);
                 } else {
-                    return Err(Passwd(Box::new(PwError::Io(IoError::last_os_error()))));
+                    return Err(IoError::last_os_error());
                 }
             };
 
@@ -438,9 +431,9 @@ impl Groups {
         }
 
         if res == -1 && (cfg!(target_os = "solaris") || cfg!(target_os = "illumos")) {
-            return Err(GetGroupFailed("_getgroupsbymember", res));
+            return Err(GetGroupFailed("_getgroupsbymember", res).into());
         } else if res == -1 {
-            return Err(GetGroupFailed("getgrouplist", res));
+            return Err(GetGroupFailed("getgrouplist", res).into());
         }
 
         groups_ids.truncate(num_gr as usize);
@@ -466,20 +459,11 @@ impl Groups {
     /// # Errors
     /// If it fails to get a [`Group`], an error variant will be returned.
     #[inline]
-    pub fn from_group_list(group_list: &[&str]) -> Result<Self> {
-        let groups: Result<Vec<Group>> =
+    pub fn from_group_list(group_list: &[&str]) -> io::Result<Self> {
+        let groups: io::Result<Vec<Group>> =
             group_list.iter().map(|&group_name| Group::from_name(group_name)).collect();
 
-        match groups {
-            Ok(gs) => {
-                let mut groups = Self::new();
-                for group in gs {
-                    groups.push(group);
-                }
-                Ok(groups)
-            },
-            Err(err) => Err(err),
-        }
+        groups.map(|groups| Self { inner: groups })
     }
 
     /// Insert a [`Group`] on [`Groups`].

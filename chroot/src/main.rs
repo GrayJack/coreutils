@@ -1,14 +1,12 @@
 use std::{
+    io,
     os::{raw::c_int, unix::process::CommandExt},
     process::{self, Command},
 };
 
 use coreutils_core::{
     libc::ENOENT,
-    os::{
-        group::Error as GrError,
-        process::{change_root, set_group, set_groups, set_user},
-    },
+    os::process::{change_root, set_group, set_groups, set_user},
 };
 
 mod cli;
@@ -72,12 +70,12 @@ fn main() {
     }
 }
 
-fn set_groups_from_list(groups_list: &str) -> Result<(), GrError> {
+fn set_groups_from_list(groups_list: &str) -> io::Result<()> {
     let groups: Vec<&str> = groups_list.split(',').collect();
     Ok(set_groups(&groups)?)
 }
 
-fn set_user_from_userspec(userspec: &str) -> Result<(), GrError> {
+fn set_user_from_userspec(userspec: &str) -> io::Result<()> {
     let parts: Vec<&str> = userspec.split(':').collect();
     if parts.len() != 2 {
         eprintln!("chroot: Userspec is in an incorrect format");

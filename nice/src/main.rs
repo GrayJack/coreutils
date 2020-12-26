@@ -57,7 +57,7 @@ fn main() {
 
     let err = Command::new(command).args(args).exec();
 
-    if err.raw_os_error().unwrap() as c_int == ENOENT {
+    if let Some(ENOENT) = err.raw_os_error() {
         eprintln!("nice: '{}': {}", command, err);
         process::exit(127);
     } else {

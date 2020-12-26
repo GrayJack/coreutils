@@ -2,7 +2,7 @@ use std::{
     env,
     fs::{File, OpenOptions},
     io,
-    os::{raw::c_int, unix::process::CommandExt},
+    os::unix::process::CommandExt,
     process::{self, Command, Stdio},
 };
 
@@ -70,7 +70,7 @@ fn main() {
 
     let err = command_c.exec();
 
-    if err.raw_os_error().unwrap() as c_int == ENOENT {
+    if let Some(ENOENT) = err.raw_os_error() {
         eprintln!("nohup: '{}': {}", command_name, err);
         process::exit(127);
     } else {

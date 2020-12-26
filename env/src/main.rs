@@ -26,15 +26,8 @@ fn main() {
         }
     };
 
-    let unset_keys = {
-        let mut unset_keys = Vec::new();
-
-        if let Some(keys) = matches.values_of("unset") {
-            keys.for_each(|k| unset_keys.push(k));
-        }
-
-        unset_keys
-    };
+    let unset_keys: Vec<_> =
+        matches.values_of("unset").map(|values| values.collect()).unwrap_or_default();
 
     let ignore_environemnt = matches.is_present("ignore_environment");
     let eol = if matches.is_present("null") { '\0' } else { '\n' };

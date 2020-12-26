@@ -76,8 +76,8 @@ impl Style {
             Some("t") => Style::Nonempty,
             Some("n") => Style::None,
             Some(reg) => {
-                if reg.starts_with('p') {
-                    let regex = Regex::new(&reg[1..]).unwrap_or_else(|err| {
+                if let Some(r) = reg.strip_prefix('p') {
+                    let regex = Regex::new(r).unwrap_or_else(|err| {
                         eprintln!("{}", err.to_string());
                         std::process::exit(1);
                     });
@@ -271,10 +271,10 @@ impl Nl {
 
         let should_number: bool = match numbering {
             Style::All => {
-                line != "" || self.num_of_prev_blank_lines + 1 == self.args.join_blank_lines
+                !line.is_empty() || self.num_of_prev_blank_lines + 1 == self.args.join_blank_lines
             },
             Style::None => false,
-            Style::Nonempty => line != "",
+            Style::Nonempty => !line.is_empty(),
             Style::Regex(re) => re.is_match(line.as_str()),
         };
 
@@ -303,9 +303,9 @@ impl Nl {
 
             self.ind += self.args.line_increment as i64;
             self.num_of_prev_blank_lines = 0;
-        } else if line != "" {
+        } else if !line.is_empty() {
             new_line.push_str(&String::from(" ").repeat(self.args.number_width + 1));
-        } else if line == "" {
+        } else if line.is_empty() {
             self.num_of_prev_blank_lines += 1;
         }
 

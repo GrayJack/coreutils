@@ -14,7 +14,7 @@ Suspends execution for a NUMBER of SUFFIX time. SUFFIX can be 'sec' or 's' for s
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
-sugars = "^2.0.0"
+sugars = "^3.0.0"
 
 [build-dependencies]
 clap = "^2.33.0"

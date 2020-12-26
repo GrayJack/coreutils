@@ -21,9 +21,7 @@ fn main() {
 
     let flags = WhoFlags::from_matches(&matches);
 
-    let uts = if matches.is_present("FILE") {
-        let file = PathBuf::from(matches.value_of("FILE").unwrap());
-
+    let uts = if let Some(file) = matches.value_of("FILE") {
         match UtmpSet::from_file(&file) {
             Ok(u) => u,
             #[cfg(not(any(target_os = "openbsd")))]
@@ -173,7 +171,7 @@ fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmp> {
 }
 
 #[cfg(not(target_os = "openbsd"))]
-fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmpx> {
+fn filter_entries(uts: &UtmpSet, flags: WhoFlags) -> Vec<&Utmpx> {
     let mut uts_user: Vec<_>;
     let mut uts_boot: Vec<_>;
     let mut uts_dead: Vec<_>;
@@ -380,7 +378,7 @@ fn def_status(
     let idle = if last_change == 0 {
         "?".to_string()
     } else {
-        let now = DateTime::now_utc().timestamp();
+        let now = DateTime::now_utc().unix_timestamp();
         if 0 < last_change && now - 24 * 3600 < last_change && last_change <= now {
             let seconds_idle = now - last_change;
             if seconds_idle < 60 {

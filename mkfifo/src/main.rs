@@ -13,14 +13,14 @@ fn main() {
     // Ok to unwrap because always have a default.
     let mode = matches.value_of("mode").unwrap();
     let mode: u32 = u32::from_str_radix(mode, 8).unwrap_or_else(|_| {
-        eprintln!("mkfifo: Invalid mode. '{}' is not an octal number.", mode);
+        eprintln!("mkfifo: Invalid mode: '{}' is not an octal number", mode);
         process::exit(1);
     });
 
     match mkfifo(filepath, mode) {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("mkfifo: Failed creating the fifo.\n{}", e);
+            eprintln!("mkfifo: Failed creating the fifo:\n{}", e);
             process::exit(1);
         },
     }

@@ -16,9 +16,7 @@ fn main() {
     let unsafe_flag = matches.is_present("unsafe");
 
     // Construct a template appropriate for use with mkstemp/mkdtemp
-    let template = if matches.is_present("TEMPLATE") {
-        let template_arg = matches.value_of("TEMPLATE").unwrap();
-
+    let template = if let Some(template_arg) = matches.value_of("TEMPLATE") {
         if flag_t {
             // Use value of environment value TMPDIR if set, otherwise /tmp
             let tmpdir = if let Ok(res) = env::var("TMPDIR") {

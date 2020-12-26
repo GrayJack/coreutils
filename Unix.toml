@@ -38,6 +38,7 @@ members = [
     "rmdir",
     "seq",
     "sleep",
+    "sort",
     "touch",
     "true",
     "tty",

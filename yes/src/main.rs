@@ -1,16 +1,22 @@
+use std::io::{self, BufWriter, Write};
+
 mod cli;
 
 fn main() {
     let matches = cli::create_app().get_matches();
 
-    let string = if matches.is_present("STRING") {
-        let inputs = matches.values_of("STRING").unwrap();
+    let string = if let Some(inputs) = matches.values_of("STRING") {
         inputs.fold(String::new(), |res, s| res + s + " ")
     } else {
         "y".to_string()
     };
 
+    let mut stdout = BufWriter::new(io::stdout());
+
     loop {
-        println!("{}", string);
+        writeln!(stdout, "{}", string).unwrap_or_else(|err| {
+            eprintln!("yes: failed to write to standard out: {}", err);
+            std::process::exit(1);
+        });
     }
 }

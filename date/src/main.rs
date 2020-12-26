@@ -21,59 +21,45 @@ fn main() {
 }
 
 fn date(matches: &ArgMatches) -> Result<(), String> {
-    let is_iso8601 = matches.is_present("iso8601");
-    let is_rfc2822 = matches.is_present("rfc2822");
-    let is_rfc3339 = matches.is_present("rfc3339");
+    let iso8601 = matches.value_of("iso8601");
+    let rfc2822 = matches.value_of("rfc2822");
+    let rfc3339 = matches.value_of("rfc3339");
     let is_set = matches.is_present("set") && !matches.is_present("no_set");
 
-    let utc_off =
-        if matches.is_present("utc") { UtcOffset::UTC } else { UtcOffset::current_local_offset() };
+    let utc_off = if matches.is_present("utc") {
+        UtcOffset::UTC
+    } else {
+        UtcOffset::try_current_local_offset().unwrap_or_else(|err| {
+            eprintln!("uptime: {}: UTC offset default value will be used (offset zero)", err);
+            UtcOffset::UTC
+        })
+    };
 
     let (out_fmt, date_str) = {
-        match (matches.is_present("OPERAND"), matches.is_present("DATE")) {
-            (true, false) => {
-                let value = matches.value_of("OPERAND").unwrap();
-
-                if value.starts_with('+') {
-                    (&value[1..], "now")
-                } else if is_rfc2822 {
-                    (RFC_2822_FMT, value)
-                } else if is_iso8601 {
-                    // Ok to unwrap cause we just checked that it's present and it has default
-                    // value.
-                    let fmt_str = matches.value_of("iso8601").unwrap();
-                    (iso8601_format_str(fmt_str), value)
-                } else if is_rfc3339 {
-                    // Ok to unwrap cause we just checked that it's present and it has default
-                    // value.
-                    let fmt_str = matches.value_of("rfc3339").unwrap();
-                    (rfc3339_format_str(fmt_str), value)
+        match (matches.value_of("OPERAND"), matches.value_of("DATE")) {
+            (Some(operand), None) => {
+                if let Some(s) = operand.strip_prefix('+') {
+                    (s, "now")
+                } else if rfc2822.is_some() {
+                    (RFC_2822_FMT, operand)
+                } else if let Some(fmt_str) = iso8601 {
+                    (iso8601_format_str(fmt_str), operand)
+                } else if let Some(fmt_str) = rfc3339 {
+                    (rfc3339_format_str(fmt_str), operand)
                 } else {
-                    (DEFAULT_FMT_OUT, value)
+                    (DEFAULT_FMT_OUT, operand)
                 }
             },
-            (true, true) => {
-                let op = matches.value_of("OPERAND").unwrap();
-                let date = matches.value_of("DATE").unwrap();
-
-                if !op.starts_with('+') {
-                    return Err("Operand format is invalid: Must have '+' at start".to_string());
-                }
-
-                (&op[1..], date)
+            (Some(operand), Some(date)) => match operand.strip_prefix('+') {
+                Some(op) => (op, date),
+                None => return Err("Operand format is invalid: Must have '+' at start".to_string()),
             },
-            (false, false) => {
-                if is_rfc2822 {
+            (None, None) => {
+                if rfc2822.is_some() {
                     (RFC_2822_FMT, "now")
-                } else if is_iso8601 {
-                    // Ok to unwrap cause we just checked that it's present and it has default
-                    // value.
-                    let iso_str = matches.value_of("iso8601").unwrap();
+                } else if let Some(iso_str) = iso8601 {
                     (iso8601_format_str(iso_str), "now")
-                } else if is_rfc3339 {
-                    // Ok to unwrap cause we just checked that it's present and it has default
-                    // value.
-                    let fmt_str = matches.value_of("rfc3339").unwrap();
+                } else if let Some(fmt_str) = rfc3339 {
                     (rfc3339_format_str(fmt_str), "now")
                 } else {
                     (DEFAULT_FMT_OUT, "now")
@@ -81,7 +67,7 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
             },
             // SAFETY: Cannot happen, because it will always get the first argument as "OPERAND"
             // We fix that on the (true, false) case.
-            (false, true) => unreachable!(),
+            (None, Some(_)) => unreachable!(),
         }
     };
 
@@ -219,28 +205,24 @@ where
     T: FromStr,
     T::Err: std::fmt::Display,
 {
-    match chars.iter().collect::<String>().parse::<T>() {
-        Ok(x) => Ok(x),
-        Err(err) => Err(format!("Failed to parse date string: {}", err)),
-    }
+    chars
+        .iter()
+        .collect::<String>()
+        .parse::<T>()
+        .map_err(|err| format!("Failed to parse date string: {}", err))
 }
 
 /// Build a [`Date`]. Convenience method that resturn the same type of error as
 /// [`build_datetime`].
 fn build_date(year: i32, month: u8, day: u8) -> Result<Date, String> {
-    match Date::try_from_ymd(year, month, day) {
-        Ok(d) => Ok(d),
-        Err(err) => Err(format!("Invalid date digits: {}", err)),
-    }
+    Date::try_from_ymd(year, month, day).map_err(|err| format!("Invalid date digits: {}", err))
 }
 
 /// Build a [`Time`]. Convenience method that resturn the same type of error as
 /// [`build_datetime`].
 fn build_time(hour: u8, min: u8, sec: u8, nano: u32) -> Result<Time, String> {
-    match Time::try_from_hms_nano(hour, min, sec, nano) {
-        Ok(t) => Ok(t),
-        Err(err) => Err(format!("Invalid time digits: {}", err)),
-    }
+    Time::try_from_hms_nano(hour, min, sec, nano)
+        .map_err(|err| format!("Invalid time digits: {}", err))
 }
 
 /// Returns the fortmat string acording to possible ISO8601 values.
@@ -279,8 +261,10 @@ fn rfc3339_format_str(value: &str) -> &str {
 fn set_os_time(datetime: DateTime) -> Result<(), String> {
     use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
 
-    let time =
-        TimeVal { tv_sec: datetime.timestamp() as Time, tv_usec: datetime.microsecond() as Susec };
+    let time = TimeVal {
+        tv_sec:  datetime.unix_timestamp() as Time,
+        tv_usec: datetime.microsecond() as Susec,
+    };
 
     match set_time_of_day(time) {
         Ok(_) => Ok(()),

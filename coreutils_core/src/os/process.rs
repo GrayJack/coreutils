@@ -6,8 +6,8 @@ use std::{convert::TryInto, io};
 use crate::{
     libc,
     os::{
-        group::{Error as GrError, Group, Groups},
-        passwd::{Error as PwError, Passwd},
+        group::{Group, Groups},
+        passwd::Passwd,
         Gid,
     },
 };
@@ -42,12 +42,12 @@ pub fn change_root(newroot: &str) -> io::Result<()> {
 ///
 /// [`Passwd`]: ../passwd/struct.Passwd.html
 #[inline]
-pub fn set_user(user: &str) -> Result<(), PwError> {
+pub fn set_user(user: &str) -> io::Result<()> {
     let user = Passwd::from_name(user)?;
 
     match unsafe { libc::setuid(user.uid()) } {
         0 => Ok(()),
-        _ => Err(PwError::Io(io::Error::last_os_error())),
+        _ => Err(io::Error::last_os_error()),
     }
 }
 
@@ -57,7 +57,7 @@ pub fn set_user(user: &str) -> Result<(), PwError> {
 /// If a internal call set a errno (I/O OS error) or it fails to get [`Groups`], an error
 /// variant will be returned.
 #[inline]
-pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
+pub fn set_groups(groups: &[&str]) -> io::Result<()> {
     let groups = Groups::from_group_list(&groups)?;
     let groups: Vec<Gid> = groups.iter().map(|g| g.id()).collect();
 
@@ -66,7 +66,7 @@ pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
 
     match unsafe { libc::setgroups(size, groups.as_ptr()) } {
         0 => Ok(()),
-        _ => Err(GrError::Io(io::Error::last_os_error())),
+        _ => Err(io::Error::last_os_error()),
     }
 }
 
@@ -76,11 +76,11 @@ pub fn set_groups(groups: &[&str]) -> Result<(), GrError> {
 /// If a internal call set a errno (I/O OS error) or it fails to get [`Group`], an error
 /// variant will be returned.
 #[inline]
-pub fn set_group(group: &str) -> Result<(), GrError> {
+pub fn set_group(group: &str) -> io::Result<()> {
     let group = Group::from_name(group)?;
 
     match unsafe { libc::setgid(group.id()) } {
         0 => Ok(()),
-        _ => Err(GrError::Io(io::Error::last_os_error())),
+        _ => Err(io::Error::last_os_error()),
     }
 }

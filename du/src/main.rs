@@ -247,9 +247,9 @@ fn parse_time(matches: &ArgMatches) -> Option<TimeOption> {
 
 fn parse_time_style(value: Option<&str>) -> TimeStyleOption {
     if let Some(style) = value {
-        if style.starts_with('+') {
+        if let Some(s) = style.strip_prefix('+') {
             let f = match style.chars().nth(1) {
-                Some(_) => &style[1..],
+                Some(_) => s,
                 None => "",
             };
             return TimeStyleOption::Format(f);

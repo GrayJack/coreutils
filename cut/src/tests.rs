@@ -41,7 +41,7 @@ fn rangeset_from_string() {
     );
     assert_eq!(
         RangeSet::from_string("2,5-"),
-        RangeSet::from_vec(vec![Range(1, 2), Range(4, usize::max_value())])
+        Ok(RangeSet::from_vec(vec![Range(1, 2), Range(4, usize::max_value())]))
     );
     assert_eq!(
         RangeSet::from_string("-2,5-"),
@@ -50,9 +50,9 @@ fn rangeset_from_string() {
 }
 
 fn complement_rangeset_helper(ranges: Vec<Range>, expected: Vec<Range>) {
-    let mut range_set = RangeSet::from_vec(ranges).unwrap();
+    let mut range_set = RangeSet::from_vec(ranges);
     range_set.complement();
-    assert_eq!(range_set, RangeSet::from_vec(expected).unwrap());
+    assert_eq!(range_set, RangeSet::from_vec(expected));
 }
 
 #[test]

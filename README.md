@@ -11,7 +11,7 @@ An in-progress safe implementation of `coreutils` aiming for a minimal and yet c
 This project has no intent to be 100% compatible with _GNU's coreutils_, like [Uutils' coreutils](https://github.com/uutils/coreutils), but if it happens to be, it's okay too.
 
 ## Minimum Rust Version Policy
-This project's minimum supported `rustc` version (_MSRV_) is _1.43.0_.
+This project's minimum supported `rustc` version (_MSRV_) is _1.45.0_.
 
 This will not be conservative until we get to a _1.0_ version. So it can be changed at any point in time.
 
@@ -102,7 +102,7 @@ cargo install --path .
 |  rmdir   |             |         |   X   |
 |   sed    |      X      |         |       |
 |   seq    |             |    X    |       |
-|   sort   |      X      |         |       |
+|   sort   |             |    X    |       |
 |  sleep   |             |         |   X   |
 |  split   |      X      |         |       |
 |   stat   |      X      |         |       |
