@@ -7,7 +7,7 @@ use crate::{
     libc,
     os::{
         group::{Group, Groups},
-        passwd::{Error as PwError, Passwd},
+        passwd::Passwd,
         Gid,
     },
 };

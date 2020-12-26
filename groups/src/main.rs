@@ -16,16 +16,6 @@ fn main() {
     let groups = if let Some(name) = matches.value_of("USER") {
         match Groups::from_username(name) {
             Ok(g) => g,
-            Err(Passwd(box_err)) => match Box::leak(box_err) {
-                PasswdNotFound => {
-                    eprintln!("groups: Unknown user {}", name);
-                    std::process::exit(1);
-                },
-                a => {
-                    eprintln!("groups: {}", a);
-                    std::process::exit(1);
-                },
-            },
             Err(err) => {
                 eprintln!("groups: {}", err);
                 std::process::exit(1);
