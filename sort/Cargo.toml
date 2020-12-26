@@ -11,7 +11,6 @@ description = "Sort or merge all FILE(s)."
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
-fail = "0.4.0"
 
 [build-dependencies]
 clap = "^2.33.0"
