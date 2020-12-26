@@ -18,6 +18,7 @@ use crate::{
     table::{Row, Table},
 };
 
+/// Outputs in the provided files in a style depending on the flags provided.
 pub(crate) fn output(result: Files, flags: Flags) -> i32 {
     let mut exit_code = 0;
 

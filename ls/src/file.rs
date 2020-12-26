@@ -280,10 +280,12 @@ impl File {
         Color::Blue.bold().paint(directory_name.to_string()).to_string()
     }
 
+    /// Adds a yellow color on a black background to an FIFO name.
     pub fn add_fifo_color(&self, named_pipe_name: &BString) -> String {
         Color::Yellow.on(Color::Black).paint(named_pipe_name.to_string()).to_string()
     }
 
+    /// Adds a bold yellow color on a black background to a char device name.
     pub fn add_char_device_color(&self, char_device_name: &BString) -> String {
         Color::Yellow.on(Color::Black).bold().paint(char_device_name.to_string()).to_string()
     }
