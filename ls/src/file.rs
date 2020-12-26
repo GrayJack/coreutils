@@ -5,22 +5,15 @@ use std::{
         fs::{FileTypeExt, MetadataExt, PermissionsExt},
     },
     path::PathBuf,
-    result::Result,
     string::String,
 };
 
 use coreutils_core::{
-    os::{
-        group::{Error as GroupError, Group},
-        passwd::{Error as PasswdError, Passwd},
-        tty::is_tty,
-    },
+    os::{group::Group, passwd::Passwd, tty::is_tty},
     BStr, BString,
 };
 
 use ansi_term::Color;
-
-extern crate chrono;
 
 use chrono::{DateTime, Local, TimeZone};
 
@@ -97,7 +90,7 @@ impl File {
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
-    pub fn user(&self) -> Result<BString, PasswdError> {
+    pub fn user(&self) -> io::Result<BString> {
         if self.flags.numeric_uid_gid {
             return Ok(BString::from(self.metadata.uid().to_string()));
         }
@@ -110,7 +103,7 @@ impl File {
 
     /// Retrieves the file's group name as a string. If the `-n` flag is set,
     /// the the group's ID is returned
-    pub fn group(&self) -> Result<BString, GroupError> {
+    pub fn group(&self) -> io::Result<BString> {
         if self.flags.numeric_uid_gid {
             return Ok(BString::from(self.metadata.gid().to_string()));
         }
