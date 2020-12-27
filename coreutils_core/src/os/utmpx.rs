@@ -13,7 +13,6 @@ use std::{
     collections::{hash_set, HashSet},
     convert::TryFrom,
     error::Error as StdError,
-    ffi::CStr,
     fmt::{self, Display},
     io,
     path::Path,

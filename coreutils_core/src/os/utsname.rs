@@ -1,7 +1,6 @@
 //! Module for system information.
 use std::{
     convert::TryFrom,
-    ffi::CStr,
     fmt::{self, Display},
     io,
     mem::MaybeUninit,
@@ -80,34 +79,40 @@ impl TryFrom<utsname> for UtsName {
     #[inline]
     fn try_from(uts_name: utsname) -> Result<Self, Self::Error> {
         let sysname = {
-            let name = unsafe { CStr::from_ptr(&uts_name.sysname[0]) };
-            BString::from(name.to_bytes())
+            let name: Vec<_> =
+                uts_name.sysname.iter().map(|&cc| cc as u8).filter(|&cc| cc != b'\0').collect();
+            BString::from(name)
         };
 
         let nodename = {
-            let name = unsafe { CStr::from_ptr(&uts_name.nodename[0]) };
-            BString::from(name.to_bytes())
+            let name: Vec<_> =
+                uts_name.nodename.iter().map(|&cc| cc as u8).filter(|&cc| cc != b'\0').collect();
+            BString::from(name)
         };
 
         let release = {
-            let name = unsafe { CStr::from_ptr(&uts_name.release[0]) };
-            BString::from(name.to_bytes())
+            let name: Vec<_> =
+                uts_name.release.iter().map(|&cc| cc as u8).filter(|&cc| cc != b'\0').collect();
+            BString::from(name)
         };
 
         let version = {
-            let name = unsafe { CStr::from_ptr(&uts_name.version[0]) };
-            BString::from(name.to_bytes())
+            let name: Vec<_> =
+                uts_name.version.iter().map(|&cc| cc as u8).filter(|&cc| cc != b'\0').collect();
+            BString::from(name)
         };
 
         let machine = {
-            let name = unsafe { CStr::from_ptr(&uts_name.machine[0]) };
-            BString::from(name.to_bytes())
+            let name: Vec<_> =
+                uts_name.machine.iter().map(|&cc| cc as u8).filter(|&cc| cc != b'\0').collect();
+            BString::from(name)
         };
 
         #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
         let domainname = {
-            let name = unsafe { CStr::from_ptr(&uts_name.domainname[0]) };
-            BString::from(name.to_bytes())
+            let name: Vec<_> =
+                uts_name.domainname.iter().map(|&cc| cc as u8).filter(|&cc| cc != b'\0').collect();
+            BString::from(name)
         };
 
         Ok(UtsName {
