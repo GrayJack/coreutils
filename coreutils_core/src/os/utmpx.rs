@@ -13,6 +13,7 @@ use std::{
     collections::{hash_set, HashSet},
     convert::TryFrom,
     error::Error as StdError,
+    ffi::CStr,
     fmt::{self, Display},
     io,
     path::Path,
@@ -257,51 +258,35 @@ impl From<utmpx> for Utmpx {
     fn from(c_utmpx: utmpx) -> Self {
         #[cfg(not(any(target_os = "netbsd", target_os = "dragonfly")))]
         let user = {
-            let cstr: String = c_utmpx
-                .ut_user
-                .iter()
-                .map(|cc| *cc as u8 as char)
-                .filter(|cc| cc != &'\0')
-                .collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                c_utmpx.ut_user.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
         let user = {
-            let cstr: String = c_utmpx
-                .ut_name
-                .iter()
-                .map(|cc| *cc as u8 as char)
-                .filter(|cc| cc != &'\0')
-                .collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                c_utmpx.ut_name.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         let host = {
-            let cstr: String = c_utmpx
-                .ut_host
-                .iter()
-                .map(|cc| *cc as u8 as char)
-                .filter(|cc| cc != &'\0')
-                .collect();
+            let cstr: Vec<_> =
+                c_utmpx.ut_host.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
             BString::from(cstr.as_bytes())
         };
 
         let pid = c_utmpx.ut_pid;
 
         let id = {
-            let cstr: String =
-                c_utmpx.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                c_utmpx.ut_id.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         let line = {
-            let cstr: String = c_utmpx
-                .ut_line
-                .iter()
-                .map(|cc| *cc as u8 as char)
-                .filter(|cc| cc != &'\0')
-                .collect();
+            let cstr: Vec<_> =
+                c_utmpx.ut_line.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
             BString::from(cstr.as_bytes())
         };
 

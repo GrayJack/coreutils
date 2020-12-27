@@ -104,36 +104,36 @@ impl From<utmp> for Utmp {
     fn from(utm: utmp) -> Self {
         #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         let user = {
-            let cstr: String =
-                utm.ut_name.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                utm.ut_name.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let user = {
-            let cstr: String =
-                utm.ut_user.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                utm.ut_user.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         let host = {
-            let cstr: String =
-                utm.ut_host.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                utm.ut_host.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let id = {
-            let cstr: String =
-                utm.ut_id.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                utm.ut_id.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         let line = {
-            let cstr: String =
-                utm.ut_line.iter().map(|cc| *cc as u8 as char).filter(|cc| cc != &'\0').collect();
-            BString::from(cstr.as_bytes())
+            let cstr: Vec<_> =
+                utm.ut_line.iter().map(|cc| *cc as u8).filter(|cc| cc != &b'\0').collect();
+            BString::from(cstr)
         };
 
         let time = utm.ut_time;
