@@ -100,7 +100,7 @@ fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
             Ok(dt) => dt.assume_utc(),
             Err(err) => return Err(format!("Problem parsing date arguments: {}", err)),
         };
-        let time = FileTime::from_unix_time(date.unix_timestamp(), date.microsecond());
+        let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
 
         Ok((time, time))
     } else if let Some(flags_reference) = flags.reference_path {
@@ -143,7 +143,7 @@ fn new_filetimes(flags: TouchFlags) -> Result<(FileTime, FileTime), String> {
             Ok(dt) => dt.assume_utc(),
             Err(err) => return Err(format!("Problem parsing timestamp argument: {}", err)),
         };
-        let time = FileTime::from_unix_time(date.unix_timestamp(), date.microsecond());
+        let time = FileTime::from_unix_time(date.timestamp(), date.microsecond());
 
         Ok((time, time))
     } else {
