@@ -1,0 +1,21 @@
+[package]
+name = "ls"
+version = "0.1.0"
+authors = ["Jeremy Jackson <git@jeremyvii.com>"]
+license = "MPL-2.0-no-copyleft-exception"
+build = "build.rs"
+edition = "2018"
+description = "List information about the FILEs (the current directory by default)."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["wrap_help"] }
+coreutils_core = { path = "../coreutils_core" }
+unix_mode = "0.1.1"
+chrono = "0.4"
+ansi_term = "0.12.1"
+term_grid = "0.2.0"
+
+[build-dependencies]
+clap = "^2.33.0"

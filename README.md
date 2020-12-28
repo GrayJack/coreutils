@@ -85,7 +85,7 @@ cargo install --path .
 |   link   |             |         |   X   |
 |    ln    |      X      |         |       |
 | logname  |             |         |   X   |
-|    ls    |      X      |         |       |
+|    ls    |             |    X    |       |
 |  mkdir   |             |         |   X   |
 |  mktemp  |             |         |   X   |
 |  mkfifo  |      X      |         |       |

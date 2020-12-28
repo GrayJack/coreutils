@@ -23,6 +23,7 @@ members = [
     "groups",
     "head",
     "id",
+    'ls',
     "link",
     "logname",
     "mkdir",

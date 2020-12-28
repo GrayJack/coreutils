@@ -7,7 +7,7 @@ use std::{
     os::unix::io::AsRawFd,
 };
 
-use libc::ttyname;
+use libc::{ioctl, ttyname, winsize, TIOCGWINSZ};
 
 // use crate::file_descriptor::FileDescriptor;
 
@@ -98,4 +98,31 @@ impl<T: AsRawFd> IsTTY for T {
 #[inline]
 pub fn is_tty(file_descriptor: &impl AsRawFd) -> bool {
     unsafe { libc::isatty(file_descriptor.as_raw_fd()) == 1 }
+}
+
+/// Gets the width and height of a TTY.
+///
+/// ## Example
+/// ``` rust
+/// use coreutils_core::os::tty::tty_dimensions;
+/// let dimensions = tty_dimensions(&std::io::stdout());
+/// ```
+#[inline]
+pub fn tty_dimensions(file_descriptor: &impl AsRawFd) -> Option<(u16, u16)> {
+    if !is_tty(file_descriptor) {
+        return None;
+    }
+
+    let mut size = winsize { ws_row: 0, ws_col: 0, ws_xpixel: 0, ws_ypixel: 0 };
+
+    let tiocgwinsz = TIOCGWINSZ;
+
+    #[cfg(target_os = "freebsd")]
+    let tiocgwinsz: u64 = tiocgwinsz.into();
+
+    if unsafe { ioctl(file_descriptor.as_raw_fd(), tiocgwinsz, &mut size) } == -1 {
+        return None;
+    }
+
+    Some((size.ws_col, size.ws_row))
 }
