@@ -1,13 +1,14 @@
 use std::{
-    io::{self, Write},
+    io::{self, BufWriter, Write},
     os::unix::fs::MetadataExt,
 };
 
 use coreutils_core::{
-    os::tty::{is_tty, tty_dimensions},
+    os::tty::{tty_dimensions, IsTTY},
     BString, ByteSlice,
 };
 
+use io::Stdout;
 use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};
 
 extern crate chrono;
@@ -18,7 +19,7 @@ use crate::{
     table::{Row, Table},
 };
 
-pub(crate) fn output<W: Write>(result: Files, writer: &mut W, flags: Flags) -> i32 {
+pub(crate) fn output(result: Files, writer: &mut BufWriter<io::Stdout>, flags: Flags) -> i32 {
     let mut exit_code = 0;
 
     if flags.show_list() {
@@ -57,8 +58,10 @@ pub(crate) fn output<W: Write>(result: Files, writer: &mut W, flags: Flags) -> i
 }
 
 /// Writes the provided files in the default format.
-pub(crate) fn default<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
-    if !is_tty(&io::stdout()) {
+pub(crate) fn default(
+    files: Files, writer: &mut BufWriter<Stdout>, flags: Flags,
+) -> io::Result<()> {
+    if !writer.get_ref().is_tty() {
         for file in &files {
             if flags.hide_control_chars {
                 writeln!(writer, "{}", file.name)?;
@@ -95,7 +98,9 @@ pub(crate) fn default<W: Write>(files: Files, writer: &mut W, flags: Flags) -> i
 }
 
 /// Writes the provided files in a grid format.
-pub(crate) fn grid<W: Write>(files: Files, writer: &mut W, direction: Direction) -> io::Result<()> {
+pub(crate) fn grid(
+    files: Files, writer: &mut BufWriter<Stdout>, direction: Direction,
+) -> io::Result<()> {
     let mut grid = Grid::new(GridOptions { filling: Filling::Spaces(2), direction });
 
     let width = match tty_dimensions(&io::stdout()) {
@@ -132,7 +137,7 @@ pub(crate) fn grid<W: Write>(files: Files, writer: &mut W, direction: Direction)
 }
 
 /// Writes the provided files in a list format.
-pub(crate) fn list<W: Write>(files: Files, writer: &mut W, flags: Flags) -> io::Result<()> {
+pub(crate) fn list(files: Files, writer: &mut BufWriter<Stdout>, flags: Flags) -> io::Result<()> {
     let mut inode_width = 1;
     let mut block_width = 1;
     let mut hard_links_width = 1;

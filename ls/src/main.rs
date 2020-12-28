@@ -196,7 +196,7 @@ fn collect(file: &str, flags: &Flags) -> Files {
 }
 
 /// Recursively display sub directories from a given path.
-fn recursive_output<W: Write>(file: &str, writer: &mut W, flags: &Flags) -> i32 {
+fn recursive_output(file: &str, writer: &mut BufWriter<io::Stdout>, flags: &Flags) -> i32 {
     match writeln!(writer, "\n{}:", file) {
         Ok(_) => {},
         Err(err) => {
