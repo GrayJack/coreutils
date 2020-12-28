@@ -115,11 +115,11 @@ fn fmt_time() -> String {
 
 fn fmt_load() -> String {
     match load_average() {
-        Err(err) => {
-            eprintln!("{}", err);
+        None => {
+            eprintln!("uptime: Failed to get load average");
             "".to_string()
         },
-        Ok(slice) => {
+        Some(slice) => {
             let mut msg = String::from("load average: ");
             for item in &slice {
                 if (item - slice[2]).abs() < std::f64::EPSILON {
