@@ -105,7 +105,9 @@ fn main() {
         }
     }
 
-    process::exit(exit_code);
+    if exit_code != 0 {
+        process::exit(exit_code);
+    }
 }
 
 /// Read the `&str` as a directory and collect the results into a `File` vector.
