@@ -1,0 +1,23 @@
+[package]
+name = "tail"
+version = "0.1.0"
+authors = ["Jeremy Jackson <git@jeremyvii.com>"]
+license = "MPL-2.0-no-copyleft-exception"
+build = "build.rs"
+edition = "2018"
+description = """
+This filter displays the last count lines or bytes of each specified FILE, or \
+of the standard input if no files are specified. If count is omitted it \
+defaults to 10.
+
+If more than a single file is specified, each file is preceded by a header \
+consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
+""" # Edit this
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["wrap_help"] }
+
+[build-dependencies]
+clap = "^2.33.0"
