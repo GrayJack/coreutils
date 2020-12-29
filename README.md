@@ -3,14 +3,15 @@
 [![Hits-of-Code](https://hitsofcode.com/github/GrayJack/coreutils)](https://hitsofcode.com/view/github/GrayJack/coreutils)
 [![Build Status](https://api.travis-ci.com/GrayJack/coreutils.svg?branch=master)](https://travis-ci.com/GrayJack/coreutils)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_shield)
-<!-- [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_large) -->
 
+<!-- [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_large) -->
 
 An in-progress safe implementation of `coreutils` aiming for a minimal and yet complete set of utilities. This project aims at the _POSIX_ specification basic requirements, plus common and useful features present in other implementations of the utility.
 
 This project has no intent to be 100% compatible with _GNU's coreutils_, like [Uutils' coreutils](https://github.com/uutils/coreutils), but if it happens to be, it's okay too.
 
 ## Minimum Rust Version Policy
+
 This project's minimum supported `rustc` version (_MSRV_) is _1.45.0_.
 
 This will not be conservative until we get to a _1.0_ version. So it can be changed at any point in time.
@@ -18,6 +19,7 @@ This will not be conservative until we get to a _1.0_ version. So it can be chan
 <!-- In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot). -->
 
 ## Compilation tests guarantees
+
 Compilation is tested for Rust Tier 1 and Tier 2 _x86_64 Unix/Unix-like_ platforms (except _Redox_), with _CI_.
 
 All platforms are tested on _MSRV_ and _stable_ _Rust_, and Tier 1 platforms are also tested on _beta_ and _nightly_ _Rust_ (Tier 2 and 3 only guarantee _stable_ full capacity).
@@ -37,9 +39,11 @@ Also note that Tier 3 Rust tests can fail before it hits the compilation check, 
 |    Haiku     | Tier 3 |        [![Haiku](https://github.com/GrayJack/coreutils/workflows/Haiku/badge.svg)](https://github.com/GrayJack/coreutils/actions)        |                          -                           |
 
 ## Compilation
+
 Since not all targets provide full _Unix_ API coverage (they aren't _Unix_ or lack _libc_ crate support), some can provide a `Cargo.toml` that have all utilities that should work on the target.
 
 ### Compilation example for
+
 ```sh
 cp <PLATFORM>.toml Cargo.toml
 cargo build --release
@@ -52,108 +56,111 @@ cargo install --path .
 ``` -->
 
 ## Tools
-|   Name   | Not Started | Started | Done  |
-| :------: | :---------: | :-----: | :---: |
-| basename |             |         |   X   |
-|   cat    |             |    X    |       |
-|  chgrp   |      X      |         |       |
-|  chmod   |      X      |         |       |
-|  chown   |      X      |         |       |
-|  chroot  |             |         |   X   |
-|  clear   |             |         |   X   |
-|   comm   |      X      |         |       |
-|    cp    |      X      |         |       |
-|  csplit  |             |    X    |       |
-|   cut    |             |         |   X   |
-|   date   |             |    X    |       |
-|    dd    |      X      |         |       |
-|    df    |      X      |         |       |
-|   diff   |      X      |         |       |
-| dirname  |             |         |   X   |
-|    du    |             |         |   X   |
-|   echo   |             |         |   X   |
-|   env    |             |         |   X   |
-|  expand  |             |         |   X   |
-|   expr   |      X      |         |       |
-|  false   |             |         |   X   |
-|  groups  |             |         |   X   |
-|   hash   |      X      |         |       |
-|   head   |             |         |   X   |
-|    id    |             |         |   X   |
-| install  |      X      |         |       |
-|   join   |      X      |         |       |
-|   link   |             |         |   X   |
-|    ln    |      X      |         |       |
-| logname  |             |         |   X   |
-|    ls    |             |    X    |       |
-|  mkdir   |             |         |   X   |
-|  mktemp  |             |         |   X   |
-|  mkfifo  |      X      |         |       |
-|    mv    |             |         |   X   |
-|   nice   |             |         |   X   |
-|    nl    |             |         |   X   |
-|  nohup   |             |         |   X   |
-|    od    |      X      |         |       |
-|  paste   |      X      |         |       |
-|  patch   |      X      |         |       |
-|  printf  |      X      |         |       |
-|   pwd    |             |         |   X   |
-|    rm    |             |         |   x   |
-|  rmdir   |             |         |   X   |
-|   sed    |      X      |         |       |
-|   seq    |             |    X    |       |
-|   sort   |             |    X    |       |
-|  sleep   |             |         |   X   |
-|  split   |      X      |         |       |
-|   stat   |      X      |         |       |
-|   stty   |      X      |         |       |
-|   tail   |      X      |         |       |
-|   tee    |      X      |         |       |
-|   test   |      X      |         |       |
-|   time   |      X      |         |       |
-|  touch   |             |    X    |       |
-|    tr    |      X      |         |       |
-|   true   |             |         |   X   |
-|  tsort   |      X      |         |       |
-|   tty    |             |         |   X   |
-|  uname   |             |         |   X   |
-| unexpand |             |         |   X   |
-|   uniq   |             |    X    |       |
-|  unlink  |             |         |   X   |
-|  uptime  |             |         |   X   |
-|  users   |             |         |   X   |
-|    wc    |             |         |   X   |
-|   who    |             |         |   X   |
-|  whoami  |             |         |   X   |
-|   yes    |             |         |   X   |
 
+|   Name   | Not Started | Started | Done |
+| :------: | :---------: | :-----: | :--: |
+| basename |             |         |  X   |
+|   cat    |             |    X    |      |
+|  chgrp   |      X      |         |      |
+|  chmod   |      X      |         |      |
+|  chown   |      X      |         |      |
+|  chroot  |             |         |  X   |
+|  clear   |             |         |  X   |
+|   comm   |      X      |         |      |
+|    cp    |      X      |         |      |
+|  csplit  |             |    X    |      |
+|   cut    |             |         |  X   |
+|   date   |             |    X    |      |
+|    dd    |      X      |         |      |
+|    df    |      X      |         |      |
+|   diff   |      X      |         |      |
+| dirname  |             |         |  X   |
+|    du    |             |         |  X   |
+|   echo   |             |         |  X   |
+|   env    |             |         |  X   |
+|  expand  |             |         |  X   |
+|   expr   |      X      |         |      |
+|  false   |             |         |  X   |
+|  groups  |             |         |  X   |
+|   hash   |      X      |         |      |
+|   head   |             |         |  X   |
+|    id    |             |         |  X   |
+| install  |      X      |         |      |
+|   join   |      X      |         |      |
+|   link   |             |         |  X   |
+|    ln    |      X      |         |      |
+| logname  |             |         |  X   |
+|    ls    |             |         |  X   |
+|  mkdir   |             |         |  X   |
+|  mktemp  |             |         |  X   |
+|  mkfifo  |      X      |         |      |
+|    mv    |             |         |  X   |
+|   nice   |             |         |  X   |
+|    nl    |             |         |  X   |
+|  nohup   |             |         |  X   |
+|    od    |      X      |         |      |
+|  paste   |      X      |         |      |
+|  patch   |      X      |         |      |
+|  printf  |      X      |         |      |
+|   pwd    |             |         |  X   |
+|    rm    |             |         |  x   |
+|  rmdir   |             |         |  X   |
+|   sed    |      X      |         |      |
+|   seq    |             |    X    |      |
+|   sort   |             |    X    |      |
+|  sleep   |             |         |  X   |
+|  split   |      X      |         |      |
+|   stat   |      X      |         |      |
+|   stty   |      X      |         |      |
+|   tail   |      X      |         |      |
+|   tee    |      X      |         |      |
+|   test   |      X      |         |      |
+|   time   |      X      |         |      |
+|  touch   |             |    X    |      |
+|    tr    |      X      |         |      |
+|   true   |             |         |  X   |
+|  tsort   |      X      |         |      |
+|   tty    |             |         |  X   |
+|  uname   |             |         |  X   |
+| unexpand |             |         |  X   |
+|   uniq   |             |    X    |      |
+|  unlink  |             |         |  X   |
+|  uptime  |             |         |  X   |
+|  users   |             |         |  X   |
+|    wc    |             |         |  X   |
+|   who    |             |         |  X   |
+|  whoami  |             |         |  X   |
+|   yes    |             |         |  X   |
 
 ## Licensing
+
 This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE) (MPL). If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
 
 ## Contributing
+
 We appreciate contributions, please check [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to contribute to the project with issue reports, git commits messages, etc.
 
 The document also gives orientation on where to start if you wanna implement a pending tool from scratch.
 
 ## Contributors
+
 Without them this project would not be what it is today.
 
- * Ashwin-A-K
- * [@bojan88](https://github.com/bojan88) - _Bojan Đurđević_
- * [@Celeo](https://github.com/Celeo) - _Celeo_
- * [@FedericoPonzi](https://github.com/FedericoPonzi) - _Federico Ponzi_
- * [@Larisho](https://github.com/Larisho) - _Gab David_
- * [@silverweed](https://github.com/silverweed) - _Giacomo Parolini_
- * [@marcospb19](https://github.com/marcospb19) - _João M. Bezerra_
- * [@kegesch](https://github.com/kegesch) - _Jonas Geschke_
- * Ladysamantha
- * [@mkindahl](https://github.com/mkindahl) - _Mats Kindah_
- * [@MichelKansou](https://github.com/MichelKansou) - _Michel Kansou_
- * [@twe4ked](https://github.com/twe4ked) - _Odin Dutton_
- * [@rodrigocam](https://github.com/rodrigocam) - _Rodrigo Oliveira Campos_
- * [@Albibek](https://github.com/Albibek) - _Sergey Noskov_
- * [@palfrey](https://github.com/palfrey) - _Tom Parker-Shemilt_
- * [@tobbez](https://github.com/tobbez) - _Torbjörn Lönnemark_
- * [@vaibhav-y](https://github.com/vaibhav-y) - _Vaibhav Yenamandra_
- * [@muskuloes](https://github.com/muskuloes) - _Victor Tuekam_
+- Ashwin-A-K
+- [@bojan88](https://github.com/bojan88) - _Bojan Đurđević_
+- [@Celeo](https://github.com/Celeo) - _Celeo_
+- [@FedericoPonzi](https://github.com/FedericoPonzi) - _Federico Ponzi_
+- [@Larisho](https://github.com/Larisho) - _Gab David_
+- [@silverweed](https://github.com/silverweed) - _Giacomo Parolini_
+- [@marcospb19](https://github.com/marcospb19) - _João M. Bezerra_
+- [@kegesch](https://github.com/kegesch) - _Jonas Geschke_
+- Ladysamantha
+- [@mkindahl](https://github.com/mkindahl) - _Mats Kindah_
+- [@MichelKansou](https://github.com/MichelKansou) - _Michel Kansou_
+- [@twe4ked](https://github.com/twe4ked) - _Odin Dutton_
+- [@rodrigocam](https://github.com/rodrigocam) - _Rodrigo Oliveira Campos_
+- [@Albibek](https://github.com/Albibek) - _Sergey Noskov_
+- [@palfrey](https://github.com/palfrey) - _Tom Parker-Shemilt_
+- [@tobbez](https://github.com/tobbez) - _Torbjörn Lönnemark_
+- [@vaibhav-y](https://github.com/vaibhav-y) - _Vaibhav Yenamandra_
+- [@muskuloes](https://github.com/muskuloes) - _Victor Tuekam_
