@@ -76,56 +76,63 @@ fn tail(flags: &Flags, input_list: Vec<Input>) -> io::Result<()> {
         if i > 0 {
             writeln!(writer)?;
         }
-        match input {
-            Input::File(file) => {
-                let f = File::open(file)?;
 
+        let buffer = match input {
+            Input::File(file) => {
                 if files_count > 1 {
                     writeln!(writer, "==> {} <==", file)?;
                 }
 
-                let count = match flags {
-                    Flags::LinesCount(_) => line_count(file)?,
-                    Flags::BytesCount(_) => byte_count(file)?,
-                };
+                // Move the contents of the file into a cloneable buffer so the
+                // buffer's bytes or lines of the file can be counted without
+                // clearing the original buffer.
+                let mut buffer: Vec<u8> = Vec::new();
+                let mut f = File::open(file)?;
+                f.read_to_end(&mut buffer)?;
 
-                let reader = BufReader::new(f);
-                read_stream(flags, reader, &mut writer, count)?;
+                buffer
             },
-
             Input::Stdin => {
                 if files_count > 1 {
                     writeln!(writer, "==> standard input <==")?;
                 }
 
-                let mut buffer = String::new();
+                // Move the contents of the standard input into a cloneable
+                // buffer so the buffer's bytes or lines of the file can be
+                // counted without clearing the original buffer.
+                let mut buffer: Vec<u8> = Vec::new();
                 let mut stdin = io::stdin();
-                stdin.read_to_string(&mut buffer)?;
+                stdin.read_to_end(&mut buffer)?;
 
-                let reader = BufReader::new(buffer.as_bytes());
-
-                let count = match flags {
-                    Flags::LinesCount(_) => lines_count_stdin(buffer.clone()),
-                    Flags::BytesCount(_) => byte_count_stdin(buffer.clone()),
-                };
-
-                read_stream(flags, reader, &mut writer, count)?;
+                buffer
             },
-        }
+        };
+
+        let reader: BufReader<&[u8]> = BufReader::new(buffer.as_ref());
+
+        // Determine the total number of bytes or lines in the buffer. This is
+        // essential in offsetting the beginning of the file.
+        let count = match flags {
+            Flags::LinesCount(_) => line_count(buffer.clone()),
+            Flags::BytesCount(_) => byte_count(buffer.clone()),
+        };
+
+        read_stream(flags, reader, &mut writer, count)?;
     }
 
     Ok(())
 }
 
-/// Read from a stream, truncated at a number of lines or bytes and write back to a stream
+/// Read from a stream, truncated at a number of lines or bytes from the end,
+/// and write back to a stream
 fn read_stream<R: Read, W: Write>(
     flags: &Flags, mut reader: BufReader<R>, writer: &mut W, count: usize,
 ) -> Result<(), io::Error> {
     match flags {
         Flags::LinesCount(lines_count) => {
-            let lines_count_difference = count - lines_count.to_owned();
+            let difference = count - lines_count.to_owned();
 
-            for line in reader.lines().skip(lines_count_difference) {
+            for line in reader.lines().skip(difference) {
                 let line = match line {
                     Ok(line) => line,
                     Err(err) => {
@@ -137,43 +144,32 @@ fn read_stream<R: Read, W: Write>(
             }
         },
         Flags::BytesCount(bytes_count) => {
-            let bytes_count_difference = count - bytes_count.to_owned();
+            let difference = count - bytes_count.to_owned();
 
             let mut buffer = Vec::new();
 
             reader.fill_buf()?;
-            reader.consume(bytes_count_difference);
+            reader.consume(difference);
 
             reader.take(*bytes_count as u64).read_to_end(&mut buffer)?;
 
             writer.write_all(&buffer)?;
         },
     }
+
     Ok(())
 }
 
-fn line_count(file_path: &str) -> io::Result<usize> {
-    let file = File::open(file_path)?;
-    let reader = BufReader::new(file);
-
-    Ok(reader.lines().count())
-}
-
-fn lines_count_stdin(buffer: String) -> usize {
-    let reader = BufReader::new(buffer.as_bytes());
+/// Count the total number of lines in the provided buffer.
+fn line_count(buffer: Vec<u8>) -> usize {
+    let reader: BufReader<&[u8]> = BufReader::new(buffer.as_ref());
 
     reader.lines().count()
 }
 
-fn byte_count(file_path: &str) -> io::Result<usize> {
-    let file = File::open(file_path)?;
-    let reader = BufReader::new(file);
-
-    Ok(reader.bytes().count())
-}
-
-fn byte_count_stdin(buffer: String) -> usize {
-    let reader = BufReader::new(buffer.as_bytes());
+/// Count the total number of bytes in the provided buffer.
+fn byte_count(buffer: Vec<u8>) -> usize {
+    let reader: BufReader<&[u8]> = BufReader::new(buffer.as_ref());
 
     reader.bytes().count()
 }
@@ -187,8 +183,9 @@ mod tests {
         let buffer = b"foo\nbar\nbaz";
         let flags = Flags::LinesCount(2);
         let mut out = Vec::new();
+        let count = line_count(buffer.to_vec());
 
-        read_stream(&flags, BufReader::new(&buffer[..]), &mut out, 3).unwrap();
+        read_stream(&flags, BufReader::new(&buffer[..]), &mut out, count).unwrap();
 
         assert_eq!(String::from_utf8(out).unwrap(), "bar\nbaz\n".to_string());
     }
@@ -198,8 +195,9 @@ mod tests {
         let buffer = b"foo\nbar\nbaz";
         let flags = Flags::BytesCount(2);
         let mut out = Vec::new();
+        let count = byte_count(buffer.to_vec());
 
-        read_stream(&flags, BufReader::new(&buffer[..]), &mut out, 11).unwrap();
+        read_stream(&flags, BufReader::new(&buffer[..]), &mut out, count).unwrap();
 
         assert_eq!(String::from_utf8(out).unwrap(), "az".to_string());
     }
