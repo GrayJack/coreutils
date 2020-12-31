@@ -7,12 +7,12 @@ build = "build.rs"
 edition = "2018"
 description = """
 This filter displays the last count lines or bytes of each specified FILE, or \
-of the standard input if no files are specified. If count is omitted it \
-defaults to 10.
+of the standard input if no files are specified or "-" is given as a \
+file name. If count is omitted it defaults to 10.
 
 If more than a single file is specified, each file is preceded by a header \
 consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
-""" # Edit this
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

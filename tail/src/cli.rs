@@ -14,7 +14,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(Arg::with_name("FILE").help("File(s) to use.").multiple(true))
         .arg(
             Arg::with_name("bytes")
-                .help("Display the byte counts.")
+                .help("The total number of bytes to display from the end of the file.")
                 .long("bytes")
                 .short("c")
                 .value_name("N")
@@ -22,7 +22,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("lines")
-                .help("Display the newline counts.")
+                .help("The total number of lines to display from the end of the file.")
                 .long("lines")
                 .short("n")
                 .value_name("N")

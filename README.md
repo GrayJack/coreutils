@@ -107,7 +107,7 @@ cargo install --path .
 |  split   |      X      |         |       |
 |   stat   |      X      |         |       |
 |   stty   |      X      |         |       |
-|   tail   |      X      |         |       |
+|   tail   |             |    X    |       |
 |   tee    |      X      |         |       |
 |   test   |      X      |         |       |
 |   time   |      X      |         |       |
