@@ -16,7 +16,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("SEPERATOR")
                 .short("s")
                 .long("separator")
-                .help("use STRING to separate numbers")
+                .help("Use STRING to separate numbers.")
                 .hide_default_value(true)
                 .default_value("\n"),
         )
@@ -24,7 +24,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("WIDTH")
                 .short("w")
                 .long("equal-width")
-                .help("equalize width by padding with leading zeroes")
+                .visible_alias("fixed-width")
+                .help("Equalize the widths of all numbers by padding with zeros as necessary.")
+                .long_help(
+                    "Equalize the widths of all numbers by padding with zeros as \
+                     necessary.\n\nThis option has no effect with the -f option.",
+                )
                 .takes_value(false),
         )
 }
