@@ -11,9 +11,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
-        .arg(
-            Arg::with_name("FILE").help("File(s) to use.").multiple(true)
-        )
+        .arg(Arg::with_name("FILE").help("File(s) to use.").multiple(true))
         .arg(
             Arg::with_name("bytes")
                 .help("Display the byte counts.")

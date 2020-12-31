@@ -98,16 +98,16 @@ fn tail(flags: &Flags, input_list: Vec<Input>) -> io::Result<()> {
                     writeln!(writer, "==> standard input <==")?;
                 }
 
-                let stdin = io::stdin();
-                let reader = BufReader::new(stdin.lock());
+                let mut buffer = String::new();
+                let mut stdin = io::stdin();
+                stdin.read_to_string(&mut buffer)?;
 
-                // let count = match flags {
-                //     Flags::LinesCount(_) => line_count(file)?,
-                //     Flags::BytesCount(_) => byte_count(file)?,
-                // };
+                let reader = BufReader::new(buffer.as_bytes());
 
-                let count = 2;
-
+                let count = match flags {
+                    Flags::LinesCount(_) => lines_count_stdin(buffer.clone()),
+                    Flags::BytesCount(_) => byte_count_stdin(buffer.clone()),
+                };
 
                 read_stream(flags, reader, &mut writer, count)?;
             },
@@ -159,11 +159,23 @@ fn line_count(file_path: &str) -> io::Result<usize> {
     Ok(reader.lines().count())
 }
 
+fn lines_count_stdin(buffer: String) -> usize {
+    let reader = BufReader::new(buffer.as_bytes());
+
+    reader.lines().count()
+}
+
 fn byte_count(file_path: &str) -> io::Result<usize> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
 
     Ok(reader.bytes().count())
+}
+
+fn byte_count_stdin(buffer: String) -> usize {
+    let reader = BufReader::new(buffer.as_bytes());
+
+    reader.bytes().count()
 }
 
 #[cfg(test)]
