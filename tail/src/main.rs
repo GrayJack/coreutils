@@ -151,7 +151,7 @@ fn read_stream<R: Read, W: Write>(
             reader.fill_buf()?;
             reader.consume(difference);
 
-            reader.take(*bytes_count as u64).read_to_end(&mut buffer)?;
+            reader.read_to_end(&mut buffer)?;
 
             writer.write_all(&buffer)?;
         },
