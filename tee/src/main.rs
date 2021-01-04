@@ -42,7 +42,8 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
         Ok(_) => {},
         Err(err) => {
             eprintln!("tee: {}", err);
-            process::exit(1);
+            exit_code = 1;
+            return exit_code;
         },
     }
 
@@ -87,7 +88,7 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
     exit_code
 }
 
-/// Copies an input buffer reader to an output buffer reader.
+/// Writes the contents of input buffer reader to the provided writer.
 fn tee<R: Read, W: Write>(mut reader: BufReader<R>, writer: &mut W) -> io::Result<()> {
     let mut buffer = Vec::new();
     reader.read_to_end(&mut buffer)?;
