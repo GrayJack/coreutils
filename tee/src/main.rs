@@ -62,7 +62,7 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
             let reader: BufReader<&[u8]> = BufReader::new(input.as_ref());
             let mut writer = BufWriter::new(file);
 
-            match tee(reader, &mut writer) {
+            match copy_buffer(reader, &mut writer) {
                 Ok(_) => {},
                 Err(err) => {
                     eprintln!("tee: {}", err);
@@ -76,7 +76,7 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
 
         let mut writer = BufWriter::new(io::stdout());
 
-        match tee(reader, &mut writer) {
+        match copy_buffer(reader, &mut writer) {
             Ok(_) => {},
             Err(err) => {
                 eprintln!("tee: {}", err);
@@ -89,7 +89,7 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
 }
 
 /// Writes the contents of input buffer reader to the provided writer.
-fn tee<R: Read, W: Write>(mut reader: BufReader<R>, writer: &mut W) -> io::Result<()> {
+fn copy_buffer<R: Read, W: Write>(mut reader: BufReader<R>, writer: &mut W) -> io::Result<()> {
     let mut buffer = Vec::new();
     reader.read_to_end(&mut buffer)?;
     writer.write_all(&buffer)?;
@@ -110,16 +110,17 @@ impl Flags {
         Flags { append, ignore }
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn tee_test() {
+    fn copy_buffer_test() {
         let buffer = b"foo";
         let mut out = Vec::new();
 
-        tee(BufReader::new(&buffer[..]), &mut out).unwrap();
+        copy_buffer(BufReader::new(&buffer[..]), &mut out).unwrap();
 
         assert_eq!(String::from_utf8(out).unwrap(), "foo".to_string());
     }
