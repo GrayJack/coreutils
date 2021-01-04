@@ -109,3 +109,17 @@ impl Flags {
         Flags { append, ignore }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tee_test() {
+        let buffer = b"foo";
+        let mut out = Vec::new();
+
+        tee(BufReader::new(&buffer[..]), &mut out).unwrap();
+
+        assert_eq!(String::from_utf8(out).unwrap(), "foo".to_string());
+    }
+}
