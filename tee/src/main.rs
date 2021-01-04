@@ -4,19 +4,30 @@ use std::{
     process,
 };
 
-use clap::ArgMatches;
+use clap::{ArgMatches, Values};
 
 mod cli;
 
 fn main() {
     let matches = cli::create_app().get_matches();
     let flags = Flags::from_matches(&matches);
+    let file_arg = matches.values_of("FILE");
+
+    let exit_code = process_input(file_arg, &flags);
+
+    if exit_code != 0 {
+        process::exit(exit_code);
+    }
+}
+
+/// Processes the input and output based on the provided flags.
+fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
     let mut exit_code = 0;
 
     let mut files: Vec<&str> = Vec::new();
 
     if flags.append {
-        files = match matches.values_of("FILE") {
+        files = match file_arg {
             Some(matches) => matches.collect(),
             None => {
                 eprintln!("tee: no files provided");
@@ -73,11 +84,10 @@ fn main() {
         };
     }
 
-    if exit_code != 0 {
-        process::exit(exit_code);
-    }
+    exit_code
 }
 
+/// Copies an input buffer reader to an output buffer reader.
 fn tee<R: Read, W: Write>(mut reader: BufReader<R>, writer: &mut W) -> io::Result<()> {
     let mut buffer = Vec::new();
     reader.read_to_end(&mut buffer)?;
