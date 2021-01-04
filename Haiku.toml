@@ -39,6 +39,7 @@ members = [
     "seq",
     "sleep",
     "sort",
+    "tail",
     "touch",
     "true",
     "tty",
