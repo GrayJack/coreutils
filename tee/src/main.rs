@@ -112,16 +112,4 @@ impl Flags {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn copy_buffer_test() {
-        let buffer = b"foo";
-        let mut out = Vec::new();
-
-        copy_buffer(BufReader::new(&buffer[..]), &mut out).unwrap();
-
-        assert_eq!(String::from_utf8(out).unwrap(), "foo".to_string());
-    }
-}
+mod tests;

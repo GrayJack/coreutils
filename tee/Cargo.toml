@@ -13,6 +13,7 @@ Read from standard input and write to standard output or files.
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
+assert_cmd = "1.0.2"
 
 [build-dependencies]
 clap = "^2.33.0"
