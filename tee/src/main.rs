@@ -31,7 +31,8 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
             Some(matches) => matches.collect(),
             None => {
                 eprintln!("tee: no files provided");
-                process::exit(1);
+                exit_code = 1;
+                return exit_code;
             },
         };
     }
@@ -49,7 +50,7 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
 
     if flags.append {
         for path in files {
-            let file = match OpenOptions::new().read(true).write(true).create(true).open(path) {
+            let file = match OpenOptions::new().write(true).create(true).open(path) {
                 Ok(file) => file,
                 Err(err) => {
                     eprintln!("tee: {}", err);

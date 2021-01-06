@@ -14,8 +14,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("FILE")
                 .help("File(s) to write to.")
-                .multiple(true)
-                .required_if("append", "true"),
+                .multiple(true),
         )
         .arg(
             Arg::with_name("append")
