@@ -50,7 +50,7 @@ fn process_input(file_arg: Option<Values>, flags: &Flags) -> i32 {
 
     if flags.append {
         for path in files {
-            let file = match OpenOptions::new().write(true).create(true).open(path) {
+            let file = match OpenOptions::new().write(true).create(true).append(true).open(path) {
                 Ok(file) => file,
                 Err(err) => {
                     eprintln!("tee: {}", err);

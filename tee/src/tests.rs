@@ -51,7 +51,7 @@ fn tee_append_stdin_to_file() -> Result<(), Box<dyn Error>> {
     cmd.arg("-a").arg(temp_file.path()).write_stdin(buffer).output()?;
 
     let mut file = File::open(temp_file)?;
-    let mut file_buffer = String::from("Test\n");
+    let mut file_buffer = String::new();
     file.read_to_string(&mut file_buffer)?;
 
     assert_eq!("Test\nHello World!".to_owned(), file_buffer);
