@@ -113,7 +113,7 @@ cargo install --path .
 |   stat   |      X      |         |      |
 |   stty   |      X      |         |      |
 |   tail   |             |    X    |      |
-|   tee    |      X      |         |      |
+|   tee    |             |    X    |      |
 |   test   |      X      |         |      |
 |   time   |      X      |         |      |
 |  touch   |             |    X    |      |
