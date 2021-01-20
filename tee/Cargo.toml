@@ -13,8 +13,10 @@ Read from standard input and write to standard output or files.
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
-assert_cmd = "1.0.2"
-tempfile = "3.1.0"
 
 [build-dependencies]
 clap = "^2.33.0"
+
+[dev-dependencies]
+assert_cmd = "1.0.2"
+tempfile = "3.1.0"
