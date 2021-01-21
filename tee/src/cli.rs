@@ -18,4 +18,5 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("a")
                 .long("append"),
         )
+        .arg(Arg::with_name("ignore").help("Ignore interrupt signals.").short("i").long("ignore"))
 }

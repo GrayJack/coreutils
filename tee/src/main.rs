@@ -6,12 +6,18 @@ use std::{
 
 use clap::{ArgMatches, Values};
 
+use coreutils_core::libc::{signal, SIGINT, SIG_IGN};
+
 mod cli;
 
 fn main() {
     let matches = cli::create_app().get_matches();
     let flags = Flags::from_matches(&matches);
     let file_arg = matches.values_of("FILE");
+
+    if flags.ignore {
+        unsafe { signal(SIGINT, SIG_IGN) };
+    }
 
     let exit_code = process_input(file_arg, &flags);
 
