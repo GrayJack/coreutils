@@ -17,7 +17,7 @@ fn tee_copy_buffer() {
 fn tee_copy_stdin_to_stdout() -> Result<(), Box<dyn Error>> {
     let buffer = "Hello World!";
 
-    let mut cmd = Command::cargo_bin("tee")?;
+    let mut cmd = Command::cargo_bin("tee").expect("Failed retrieve binary");
     cmd.write_stdin(buffer).assert().stdout(buffer);
 
     Ok(())
@@ -26,9 +26,9 @@ fn tee_copy_stdin_to_stdout() -> Result<(), Box<dyn Error>> {
 #[test]
 fn tee_copy_stdin_to_file() -> Result<(), Box<dyn Error>> {
     let buffer = "Hello World!";
-    let temp_file = NamedTempFile::new()?;
+    let temp_file = NamedTempFile::new().expect("Failed to create temp file");
 
-    let mut cmd = Command::cargo_bin("tee")?;
+    let mut cmd = Command::cargo_bin("tee").expect("Failed retrieve binary");
     cmd.arg("-a").arg(temp_file.path()).write_stdin(buffer).output()?;
 
     let mut file = File::open(temp_file)?;
@@ -43,11 +43,11 @@ fn tee_copy_stdin_to_file() -> Result<(), Box<dyn Error>> {
 #[test]
 fn tee_append_stdin_to_file() -> Result<(), Box<dyn Error>> {
     let buffer = "Hello World!";
-    let mut temp_file = NamedTempFile::new()?;
+    let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
 
     temp_file.write_all(b"Test\n")?;
 
-    let mut cmd = Command::cargo_bin("tee")?;
+    let mut cmd = Command::cargo_bin("tee").expect("Failed retrieve binary");
     cmd.arg("-a").arg(temp_file.path()).write_stdin(buffer).output()?;
 
     let mut file = File::open(temp_file)?;
