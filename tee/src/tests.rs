@@ -26,7 +26,7 @@ fn tee_copy_stdin_to_stdout() -> Result<(), Box<dyn Error>> {
 #[test]
 fn tee_copy_stdin_to_file() -> Result<(), Box<dyn Error>> {
     let buffer = "Hello World!";
-    let temp_file = NamedTempFile::new().expect("Failed to create temp file");
+    let temp_file = NamedTempFile::new()?;
 
     let mut cmd = Command::new("tee");
     cmd.arg("-a").arg(temp_file.path()).write_stdin(buffer).output()?;
@@ -43,7 +43,7 @@ fn tee_copy_stdin_to_file() -> Result<(), Box<dyn Error>> {
 #[test]
 fn tee_append_stdin_to_file() -> Result<(), Box<dyn Error>> {
     let buffer = "Hello World!";
-    let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+    let mut temp_file = NamedTempFile::new()?;
 
     temp_file.write_all(b"Test\n")?;
 
