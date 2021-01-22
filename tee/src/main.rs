@@ -15,7 +15,7 @@ fn main() {
     let flags = Flags::from_matches(&matches);
     let file_arg = matches.values_of("FILE");
 
-    if flags.ignore {
+    if flags.ignore_interrupts {
         unsafe { signal(SIGINT, SIG_IGN) };
     }
 
@@ -106,15 +106,15 @@ fn copy_buffer<R: Read, W: Write>(mut reader: BufReader<R>, writer: &mut W) -> i
 
 struct Flags {
     pub append: bool,
-    pub ignore: bool,
+    pub ignore_interrupts: bool,
 }
 
 impl Flags {
     pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
         let append = matches.is_present("append");
-        let ignore = matches.is_present("ignore");
+        let ignore_interrupts = matches.is_present("ignore");
 
-        Flags { append, ignore }
+        Flags { append, ignore_interrupts }
     }
 }
 
