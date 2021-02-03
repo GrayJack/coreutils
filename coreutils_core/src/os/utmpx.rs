@@ -611,7 +611,7 @@ macro_rules! utmpxkind_impl_from {
                 }
             }
 
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             impl TryFrom<$t> for UtmpxKind {
                 type Error = Error;
                 #[inline]
@@ -722,7 +722,7 @@ macro_rules! utmpxkind_impl_from {
                 }
             }
 
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             impl TryFrom<UtmpxKind> for $t {
                 type Error = Error;
                 #[inline]

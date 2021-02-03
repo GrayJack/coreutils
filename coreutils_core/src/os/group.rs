@@ -1,6 +1,6 @@
 //! Module to deal more easily with UNIX groups.
 
-#[cfg(target_os = "solaris")]
+#[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use std::os::raw::c_int;
 use std::{
     convert::TryFrom,
