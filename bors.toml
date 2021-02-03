@@ -7,7 +7,7 @@ status = [
     "freebsd (ubuntu-latest, stable)",
     "netbsd (ubuntu-latest, 1.45.0)",
     "netbsd (ubuntu-latest, stable)",
-    "illumos (ubuntu-latest, 1.45.0)",
+    "illumos (ubuntu-latest, 1.47.0)",
     "illumos (ubuntu-latest, stable)",
     "solaris (ubuntu-latest, 1.45.0)",
     "solaris (ubuntu-latest, stable)",
