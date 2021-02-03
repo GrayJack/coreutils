@@ -1,0 +1,23 @@
+[package]
+name = "tee"
+version = "0.1.0"
+authors = ["Jeremy Jackson <git@jeremyvii.com>"]
+license = "MPL-2.0-no-copyleft-exception"
+build = "build.rs"
+edition = "2018"
+description = """
+Read from standard input and write to standard output or files.
+"""
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["wrap_help"] }
+coreutils_core = { path = "../coreutils_core" }
+
+[build-dependencies]
+clap = "^2.33.0"
+
+[dev-dependencies]
+assert_cmd = "1.0.2"
+tempfile = "3.1.0"
