@@ -1,0 +1,25 @@
+name: Illumos
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: illumos
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [1.45.0, stable]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+        profile: minimal
+        components: clippy
+        target: x86_64-unknown-illumos
+    - name: Check Illumos
+      run: |
+        cp Illumos.toml Cargo.toml
+        cargo check --verbose --target x86_64-unknown-illumos
