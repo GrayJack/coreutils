@@ -104,7 +104,7 @@ impl MvFlags {
 }
 
 
-fn move_files(sources: Vec<PathBuf>, target: &PathBuf, flags: &MvFlags) -> bool {
+fn move_files(sources: Vec<PathBuf>, target: &Path, flags: &MvFlags) -> bool {
     if !target.is_dir() {
         eprintln!("mv: '{}' is not a directory", target.display());
         return false;
@@ -127,7 +127,7 @@ fn move_files(sources: Vec<PathBuf>, target: &PathBuf, flags: &MvFlags) -> bool 
     success
 }
 
-fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
+fn rename_file(curr: &Path, new: &Path, flags: &MvFlags) -> bool {
     if new.exists() {
         match &flags.overwrite {
             OverwriteMode::Force => {},
@@ -180,7 +180,7 @@ fn rename_file(curr: &PathBuf, new: &PathBuf, flags: &MvFlags) -> bool {
     }
 }
 
-fn file_older(f: &PathBuf, ff: &PathBuf) -> bool {
+fn file_older(f: &Path, ff: &Path) -> bool {
     let f_attrs = match fs::metadata(f) {
         Ok(attrs) => attrs,
         Err(msg) => {
