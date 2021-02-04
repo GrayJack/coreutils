@@ -72,7 +72,7 @@ fn main() {
 
 fn set_groups_from_list(groups_list: &str) -> io::Result<()> {
     let groups: Vec<&str> = groups_list.split(',').collect();
-    Ok(set_groups(&groups)?)
+    set_groups(&groups)
 }
 
 fn set_user_from_userspec(userspec: &str) -> io::Result<()> {
