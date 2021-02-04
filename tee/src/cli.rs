@@ -11,7 +11,15 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
-        .arg(Arg::with_name("FILE").help("File(s) to write to.").multiple(true))
+        .arg(
+            Arg::with_name("FILE")
+                .help("File(s) to write to.")
+                .long_help(
+                    "File(s) to write to.\n\nIf file is a single dash (`-`), it shall refer to a \
+                     file named `-`.",
+                )
+                .multiple(true),
+        )
         .arg(
             Arg::with_name("append")
                 .help("Append the output to the files.")
