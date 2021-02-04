@@ -47,15 +47,15 @@ impl RmDirFlags {
 #[derive(Debug)]
 struct RmdirError(PathBuf, io::Error);
 
-fn rmdir(dir: &PathBuf, flags: RmDirFlags) -> Result<(), RmdirError> {
+fn rmdir(dir: &Path, flags: RmDirFlags) -> Result<(), RmdirError> {
     let full_dir = match dir.canonicalize() {
         Ok(f) => f,
-        Err(err) => return Err(RmdirError(dir.clone(), err)),
+        Err(err) => return Err(RmdirError(dir.to_path_buf(), err)),
     };
 
     if flags.parents {
         let empty_path = Path::new("");
-        let mut path = dir.clone();
+        let mut path = dir.to_path_buf();
         loop {
             let full_path = match dir.canonicalize() {
                 Ok(f) => f,
