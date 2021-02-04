@@ -4,7 +4,7 @@ use std::{
     env::current_dir,
     fs::{self, FileType, Permissions},
     io,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process,
 };
 
@@ -228,7 +228,7 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
 }
 
 fn rm_dir_all(
-    file: &PathBuf, relative: &str, filetype: FileType, permissions: &Permissions, flags: RmFlags,
+    file: &Path, relative: &str, filetype: FileType, permissions: &Permissions, flags: RmFlags,
 ) -> io::Result<()> {
     let file_type = fs::symlink_metadata(file)?.file_type();
     if file_type.is_symlink() {
@@ -242,7 +242,7 @@ fn rm_dir_all(
             };
 
             if is_affirmative {
-                match fs::remove_file(file.as_path()) {
+                match fs::remove_file(file) {
                     Ok(()) => {
                         if flags.verbose {
                             println!("removed {}", file.display());
@@ -269,7 +269,7 @@ fn rm_dir_all(
 }
 
 fn rm_dir_all_recursive(
-    file: &PathBuf, relative: &str, filetype: FileType, permissions: &Permissions, flags: RmFlags,
+    file: &Path, relative: &str, filetype: FileType, permissions: &Permissions, flags: RmFlags,
 ) -> io::Result<()> {
     if flags.interactive {
         let msg = format!("rm: Descend into directory '{}'? [Y/n]: ", relative);
