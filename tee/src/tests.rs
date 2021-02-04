@@ -14,13 +14,11 @@ fn tee_copy_buffer() {
 }
 
 #[test]
-fn tee_copy_stdin_to_stdout() -> Result<(), Box<dyn Error>> {
+fn tee_copy_stdin_to_stdout() {
     let buffer = "Hello World!";
 
     let mut cmd = Command::new("tee");
     cmd.write_stdin(buffer).assert().stdout(buffer);
-
-    Ok(())
 }
 
 #[test]
