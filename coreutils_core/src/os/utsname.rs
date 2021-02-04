@@ -44,7 +44,7 @@ impl UtsName {
 
         let uts_name = unsafe { uts_name.assume_init() };
 
-        Ok(UtsName::try_from(uts_name)?)
+        UtsName::try_from(uts_name)
     }
 
     /// Get system name.
