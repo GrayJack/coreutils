@@ -4,7 +4,7 @@ use std::{
         ffi::OsStrExt,
         fs::{FileTypeExt, MetadataExt, PermissionsExt},
     },
-    path::PathBuf,
+    path::{Path, PathBuf},
     string::String,
 };
 
@@ -155,7 +155,7 @@ impl File {
     }
 
     /// Check if a path is an executable file
-    pub fn is_executable(path: &PathBuf) -> bool {
+    pub fn is_executable(path: &Path) -> bool {
         let mut result = false;
 
         let metadata = fs::symlink_metadata(path);
@@ -173,7 +173,7 @@ impl File {
     /// Gets the file name from a `PathBuf`
     ///
     /// Will return `Error` if the path terminates at '..'.
-    pub fn path_buf_to_file_name(path: &PathBuf) -> io::Result<BString> {
+    pub fn path_buf_to_file_name(path: &Path) -> io::Result<BString> {
         let file_name = match path.file_name() {
             Some(file_name) => file_name,
             None => {
@@ -187,7 +187,7 @@ impl File {
     /// Retrieves the metadata from a `PathBuf`.
     ///
     /// Symbolic links will be followed if the `-H` flag is present.
-    pub fn metadata(path: &PathBuf, flags: &Flags) -> io::Result<fs::Metadata> {
+    pub fn metadata(path: &Path, flags: &Flags) -> io::Result<fs::Metadata> {
         if flags.no_dereference { fs::metadata(path) } else { fs::symlink_metadata(path) }
     }
 
