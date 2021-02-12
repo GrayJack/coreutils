@@ -3,6 +3,8 @@ use std::{
     io,
 };
 
+use coreutils_core::time;
+
 use super::*;
 
 #[test]
