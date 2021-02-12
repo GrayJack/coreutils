@@ -13,7 +13,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .settings(&[ColoredHelp])
         .arg(Arg::with_name("FIRST INCREMENT LAST").required(true).multiple(true))
         .arg(
-            Arg::with_name("SEPERATOR")
+            Arg::with_name("SEPARATOR")
                 .short("s")
                 .long("separator")
                 .help("Use STRING to separate numbers.")

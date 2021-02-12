@@ -14,5 +14,8 @@ Display numbers from FIRST to LAST, in steps of INCREMENT.
 clap = { version = "^2.33.0", features = ["wrap_help"] }
 sugars = "^3.0.0"
 
+[dev-dependencies]
+assert_cmd = "1.0.2"
+
 [build-dependencies]
 clap = "^2.33.0"

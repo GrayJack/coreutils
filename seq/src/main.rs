@@ -11,13 +11,13 @@ fn main() {
             eprintln!("seq: extra operand '{}'\n Try 'seq --help' for more information.", args[3]);
             process::exit(1);
         }
-        let seperator = matches.value_of("SEPERATOR").map(String::from).unwrap();
+        let separator = matches.value_of("SEPARATOR").map(String::from).unwrap();
         let decimals = max_decimal_digits(&args);
         let padding = if matches.is_present("WIDTH") { Some(max_digits(&args)) } else { None };
         let (first, inc, last) = find_operands(&args);
-        let valid_range = (first < last && inc > 0.0) || (first > last && inc < 0.0);
+        let valid_range = (first <= last && inc > 0.0) || (first >= last && inc < 0.0);
         if valid_range {
-            let seq = Seq::new(first, inc, last, decimals, seperator, padding);
+            let seq = Seq::new(first, inc, last, decimals, separator, padding);
             for val in seq.into_iter() {
                 print!("{}", val);
             }
@@ -142,6 +142,7 @@ impl Iterator for SeqIterator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use assert_cmd::Command;
 
     #[test]
     fn should_find_max_decimal_digits() {
@@ -231,5 +232,14 @@ mod tests {
                 .collect::<Vec<String>>(),
             to_string(vec!["01", "06", "11", "16"])
         );
+    }
+
+    #[test]
+    fn should_output_with_same_first_and_last() {
+        let mut cmd = Command::new("seq");
+        cmd.args(&["1"]).assert().stdout("1\n");
+
+        let mut cmd = Command::new("seq");
+        cmd.args(&["2", "2"]).assert().stdout("2\n");
     }
 }
