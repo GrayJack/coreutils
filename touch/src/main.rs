@@ -5,8 +5,8 @@ use std::{
 };
 
 use clap::ArgMatches;
-use filetime::{set_file_atime, set_file_mtime, set_file_times, set_symlink_file_times, FileTime};
 use coreutils_core::time::PrimitiveDateTime;
+use filetime::{set_file_atime, set_file_mtime, set_file_times, set_symlink_file_times, FileTime};
 
 mod cli;
 // TODO: add Unit tests for touch
