@@ -76,7 +76,7 @@ pub trait IsTty: AsRawFd {
     ///
     /// ## Example
     /// ```rust
-    /// # use coreutils_core::os::tty::IsTTY;
+    /// # use coreutils_core::os::tty::IsTty;
     /// # use std::io;
     /// let istty = io::stdin().is_tty();
     /// ```
