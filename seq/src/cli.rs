@@ -11,7 +11,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp])
-        .arg(Arg::with_name("FIRST INCREMENT LAST").required(true).multiple(true))
+        .usage("seq [FLAGS] [OPTIONS] [FIRST [INCREMENT]] <LAST>")
+        .arg(Arg::with_name("FIRST INCREMENT LAST").required(true).hidden(true))
         .arg(
             Arg::with_name("SEPARATOR")
                 .short("s")
