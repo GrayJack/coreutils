@@ -8,7 +8,7 @@ use std::{
 
 use coreutils_core::{
     libc::{signal, ENOENT, SIGHUP, SIG_IGN},
-    os::tty::IsTTY,
+    os::tty::IsTty,
 };
 
 mod cli;

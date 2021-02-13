@@ -4,7 +4,7 @@ use std::{
 };
 
 use coreutils_core::{
-    os::tty::{tty_dimensions, IsTTY},
+    os::tty::{tty_dimensions, IsTty},
     BString, ByteSlice,
 };
 

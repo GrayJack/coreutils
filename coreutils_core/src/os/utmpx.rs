@@ -291,7 +291,7 @@ impl From<utmpx> for Utmpx {
 
         let ut_type = match UtmpxKind::try_from(c_utmpx.ut_type) {
             Ok(ut) => ut,
-            Err(err) => panic!(format!("{}", err)),
+            Err(err) => panic!("{}", err),
         };
 
         let timeval = TimeVal {

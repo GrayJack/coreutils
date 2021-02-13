@@ -9,7 +9,7 @@ use coreutils_core::os::utmpx::{
     UtmpxSet as UtmpSet,
 };
 use coreutils_core::{
-    libc::S_IWGRP, os::tty::TTYName, time::OffsetDateTime as DateTime, ByteSlice,
+    libc::S_IWGRP, os::tty::TtyName, time::OffsetDateTime as DateTime, ByteSlice,
 };
 
 use clap::ArgMatches;
@@ -183,7 +183,7 @@ fn filter_entries(uts: &UtmpSet, flags: WhoFlags) -> Vec<&Utmpx> {
 
     if flags.associated_stdin {
         let curr_tty_name = {
-            let tty = match TTYName::new(&io::stdin()) {
+            let tty = match TtyName::new(&io::stdin()) {
                 Ok(t) => t,
                 Err(err) => {
                     eprintln!("who: failed to get current tty: {}", err);

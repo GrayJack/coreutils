@@ -1,6 +1,6 @@
 use std::{io, process};
 
-use coreutils_core::os::tty::{Error::*, IsTTY, TTYName};
+use coreutils_core::os::tty::{Error::*, IsTty, TtyName};
 
 mod cli;
 
@@ -11,12 +11,12 @@ fn main() {
 
     let silent_flag = matches.is_present("silent");
 
-    let res = TTYName::new(&desc_stdin);
+    let res = TtyName::new(&desc_stdin);
 
     if !silent_flag {
         match res {
             Ok(tty) => println!("{}", tty),
-            Err(err @ NotTTY) => eprintln!("tty: {}", err),
+            Err(err @ NotTty) => eprintln!("tty: {}", err),
             Err(err) => {
                 eprintln!("tty: {}", err);
                 process::exit(1)
