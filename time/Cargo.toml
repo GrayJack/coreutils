@@ -1,0 +1,14 @@
+[package]
+name = "time"
+version = "0.1.0"
+authors = ["Vaibhav Yenamandra <v@calloc.net>"]
+license = "MPL-2.0-no-copyleft-exception"
+build = "build.rs"
+edition = "2018"
+description = "time a simple command"
+
+[dependencies]
+clap = { version = "^2.33.0", features = ["wrap_help"] }
+
+[build-dependencies]
+clap = { version = "^2.33.0" }
