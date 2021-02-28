@@ -33,19 +33,19 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 }
 
 #[derive(Debug)]
-pub struct Args {
+pub struct TimeOpts {
     pub output_fmt: OutputFormat,
     pub executable: String,
     pub exec_args:  Vec<String>,
 }
 
-impl Args {
-    pub fn new() -> Args {
+impl TimeOpts {
+    pub fn new() -> TimeOpts {
         let args = create_app().get_matches();
         let command =
             args.value_of("COMMAND").expect("`COMMAND` value cannot be `None`, it is required.");
 
-        Args {
+        TimeOpts {
             output_fmt: if args.is_present("posix") {
                 OutputFormat::Posix
             } else {
