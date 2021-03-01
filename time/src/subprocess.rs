@@ -1,0 +1,56 @@
+/// Module for creating, and interacting with child processes
+use std::process::{exit, Command, ExitStatus, Stdio};
+use std::{
+    io,
+    time::{Duration, Instant},
+};
+
+type SubprocessTiming = (ExitStatus, Duration);
+
+/// Wrapper around `std::process::exit` that prints the error's
+/// message to stderr before quitting.
+///
+/// Will try to propagate the error code set in the err if available
+pub fn exit_with_msg(err: std::io::Error) -> ! {
+    eprintln!("{}", err);
+    exit(err.raw_os_error().unwrap_or(1))
+}
+
+/// Wrapper for creating, spawning and waiting on `std::process::Command`
+/// Returns the `std::process::ExitStatus` of the `std::process::Command`
+/// that was run
+pub fn timed_run(cmd_vec: &Vec<String>) -> io::Result<SubprocessTiming> {
+    let mut cmd = Command::new(&cmd_vec[0]);
+    cmd.args(&cmd_vec[1..]);
+    cmd.stdin(Stdio::inherit()).stdout(Stdio::inherit()).stderr(Stdio::inherit());
+
+    let start_time = Instant::now();
+    let status = cmd.spawn()?.wait()?;
+    Ok((status, start_time.elapsed()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{timed_run, Duration};
+
+    #[test]
+    fn invalid_command_returns_errno_when_set() {
+        if let Err(err) = timed_run(&vec!["does-not-exist".to_string()]) {
+            assert!(err.raw_os_error() == Some(2))
+        } else {
+            assert!(false, "Subprocess did not fail as expected")
+        }
+    }
+
+    #[test]
+    fn correct_duration_when_sleeping() {
+        if let Ok((status, duration)) = timed_run(&vec!["sleep".to_string(), "0.1".to_string()]) {
+            assert!(status.code() == Some(0));
+            assert!(duration > Duration::from_millis(100));
+            // TODO Is this a good tolerance for the duration?
+            assert!(duration < Duration::from_millis(200));
+        } else {
+            assert!(false, "Failed to run command");
+        }
+    }
+}
