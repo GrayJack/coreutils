@@ -6,6 +6,7 @@ pub mod process;
 pub mod time;
 pub mod tty;
 pub mod utsname;
+pub mod resource;
 
 // Specific Modules
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
