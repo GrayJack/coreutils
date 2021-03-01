@@ -35,8 +35,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 #[derive(Debug)]
 pub struct TimeOpts {
     pub output_fmt: OutputFormat,
-    pub executable: String,
-    pub exec_args:  Vec<String>,
+    pub command:    Vec<String>,
 }
 
 impl TimeOpts {
@@ -51,10 +50,13 @@ impl TimeOpts {
             } else {
                 OutputFormat::Default
             },
-            executable: command.to_owned(),
-            exec_args:  match args.values_of("arguments") {
-                Some(vs) => vs.into_iter().map(|item| item.to_owned()).collect(),
-                None => vec![],
+            command:    match args.values_of("arguments") {
+                Some(vs) => {
+                    let mut cmd = vec![command.to_owned()];
+                    cmd.extend(vs.into_iter().map(|item| item.to_owned()));
+                    cmd
+                },
+                None => vec![command.to_owned()],
             },
         }
     }
