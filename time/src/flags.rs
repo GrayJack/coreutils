@@ -1,7 +1,6 @@
 //! Command line options that are supported by `time`
 
-use crate::cli::create_app;
-use crate::output::OutputFormatter;
+use crate::{cli::create_app, output::OutputFormatter};
 
 // Condense CLI args as a struct
 #[derive(Debug)]
@@ -13,9 +12,8 @@ pub struct TimeOpts {
 }
 
 impl TimeOpts {
-    pub fn from_matches() -> Self {
-        Self::new(create_app().get_matches())
-    }
+    pub fn from_matches() -> Self { Self::new(create_app().get_matches()) }
+
     pub fn new(args: clap::ArgMatches) -> Self {
         let command =
             args.value_of("COMMAND").expect("`COMMAND` value cannot be `None`, it is required.");
@@ -26,7 +24,7 @@ impl TimeOpts {
             } else {
                 OutputFormatter::Default
             },
-            command:    match args.values_of("ARGUMENT") {
+            command: match args.values_of("ARGUMENT") {
                 Some(vs) => {
                     let mut cmd = vec![command.to_owned()];
                     cmd.extend(vs.into_iter().map(|item| item.to_owned()));
@@ -40,7 +38,7 @@ impl TimeOpts {
 
 #[cfg(test)]
 mod tests {
-    use super::{TimeOpts, OutputFormatter, create_app};
+    use super::{create_app, OutputFormatter, TimeOpts};
 
     #[test]
     fn parsing_valid_command_with_args() {

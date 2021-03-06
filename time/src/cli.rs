@@ -23,9 +23,8 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 
     let command = Arg::with_name("COMMAND").help("Command or utility to run.").required(true);
 
-    let arguments = Arg::with_name("ARGUMENT")
-        .help("Optional arguments to pass to <COMMAND>.")
-        .multiple(true);
+    let arguments =
+        Arg::with_name("ARGUMENT").help("Optional arguments to pass to <COMMAND>.").multiple(true);
 
     app.args(&[posix_fmt, command, arguments])
 }

@@ -1,6 +1,6 @@
 mod cli;
-mod output;
 mod flags;
+mod output;
 mod subprocess;
 
 use coreutils_core::os::resource::{get_rusage, ResourceConsumer};
