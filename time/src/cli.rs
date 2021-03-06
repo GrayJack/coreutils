@@ -25,11 +25,9 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 
     let arguments = Arg::with_name("ARGUMENT")
         .help("Optional arguments to pass to <COMMAND>.")
-        .multiple(true)
-        .number_of_values(1)
-        .empty_values(false);
+        .multiple(true);
 
-    app.arg(posix_fmt).arg(command).arg(arguments)
+    app.args(&[posix_fmt, command, arguments])
 }
 
 #[derive(Debug)]
@@ -50,7 +48,7 @@ impl TimeOpts {
             } else {
                 OutputFormat::Default
             },
-            command:    match args.values_of("arguments") {
+            command:    match args.values_of("ARGUMENT") {
                 Some(vs) => {
                     let mut cmd = vec![command.to_owned()];
                     cmd.extend(vs.into_iter().map(|item| item.to_owned()));
