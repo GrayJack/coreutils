@@ -163,5 +163,5 @@ Without them this project would not be what it is today.
 - [@Albibek](https://github.com/Albibek) - _Sergey Noskov_
 - [@palfrey](https://github.com/palfrey) - _Tom Parker-Shemilt_
 - [@tobbez](https://github.com/tobbez) - _Torbjörn Lönnemark_
-- [@vaibhav-y](https://github.com/vaibhav-y) - _Vaibhav Yenamandra_
+- [@envp](https://github.com/envp) - _Vaibhav Yenamandra_
 - [@muskuloes](https://github.com/muskuloes) - _Victor Tuekam_
