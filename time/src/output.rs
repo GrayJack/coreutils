@@ -2,6 +2,11 @@
 
 use coreutils_core::os::{resource::RUsage, TimeVal};
 
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+pub use macos::default_formatter;
+
 #[derive(Debug, PartialEq)]
 pub enum OutputFormatter {
     Default,
@@ -23,9 +28,4 @@ impl OutputFormatter {
             },
         }
     }
-}
-
-#[cfg(target_os = "macos")]
-fn default_formatter(_rusage: &RUsage, wall_time: f64, user_time: f64, sys_time: f64) -> String {
-    format!("        {:.2} real         {:.2} user         {:.2} sys", wall_time, user_time, sys_time)
 }
