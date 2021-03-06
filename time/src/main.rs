@@ -15,4 +15,5 @@ fn main() {
     let usage = get_rusage(ResourceConsumer::Children);
 
     eprintln!("{}", opts.printer.format_stats(&usage, &duration));
+    std::process::exit(exit_status.code().unwrap_or(1));
 }

@@ -13,7 +13,19 @@ type SubprocessTiming = (ExitStatus, Duration);
 /// Will try to propagate the error code set in the err if available
 pub fn exit_with_msg(err: std::io::Error) -> ! {
     eprintln!("{}", err);
-    exit(err.raw_os_error().unwrap_or(1))
+
+    // Translate the exit code according to POSIX spec
+    // 1-125: for errors internal to `time`
+    // 126  : Command was found but could not be invoked (PermissionError)
+    // 127  : Command was not found
+    exit(match err.kind() {
+        io::ErrorKind::PermissionDenied => 126,
+        io::ErrorKind::NotFound => 127,
+        // Translate other error code to 0-124 and shift right by 1
+        // Internal exit codes are typically arbitrary enough that they be
+        // considered limited to developer use-only
+        _ => 1 + (err.raw_os_error().unwrap_or(0) % 125),
+    })
 }
 
 /// Wrapper for creating, spawning and waiting on `std::process::Command`
