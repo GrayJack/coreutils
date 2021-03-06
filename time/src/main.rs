@@ -13,4 +13,6 @@ fn main() {
     };
 
     let usage = get_rusage(ResourceConsumer::Children);
+
+    eprintln!("{}", opts.printer.format_stats(&usage, &duration));
 }

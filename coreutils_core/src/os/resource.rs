@@ -16,9 +16,9 @@ pub enum ResourceConsumer {
 
 #[derive(Debug)]
 pub struct RUsage {
-    timing: Timing,
-    mem: MemoryUsage,
-    io: IOUsage
+    pub timing: Timing,
+    pub mem: MemoryUsage,
+    pub io: IOUsage
 }
 
 #[derive(Debug)]
