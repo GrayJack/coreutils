@@ -1,7 +1,9 @@
 //! Module abstracting interactions with getrusage(2)
 //!
 //! Also holds utility functions for summarizing the data returned by getrusage(2)
-use libc::{getrusage, rusage, c_int, RUSAGE_SELF, RUSAGE_CHILDREN};
+#[cfg(not(target_os = "fuchsia"))]
+use libc::getrusage;
+use libc::{rusage, c_int, RUSAGE_SELF, RUSAGE_CHILDREN};
 use super::TimeVal;
 
 /// Interface for `RUSAGE_*` constants from libc.
@@ -97,8 +99,14 @@ impl RUsage {
 /// Safely wrap `libc::getrusage`
 pub fn get_rusage(target: ResourceConsumer) -> RUsage {
     let mut usage: rusage = unsafe { std::mem::zeroed() };
+
+    #[cfg(not(target_os = "fuchsia"))]
+    // Fuchsia doesn't have a getrusage syscall, but provides the rusage struct.
+    // The default is to abort with an error message so that callers don't end
+    // up with invalid data.
     unsafe {
         getrusage(target as c_int, &mut usage);
     }
+
     RUsage::from(usage)
 }

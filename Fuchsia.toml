@@ -41,7 +41,7 @@ members = [
     "sort",
     "tail",
     "tee",
-    "time",
+    # "time",
     "touch",
     "true",
     "tty",
