@@ -32,21 +32,23 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 
 #[derive(Debug)]
 pub struct TimeOpts {
-    pub output_fmt: OutputFormat,
+    pub output_fmt: OutputFormatter,
     pub command:    Vec<String>,
 }
 
 impl TimeOpts {
-    pub fn new() -> TimeOpts {
-        let args = create_app().get_matches();
+    pub fn from_matches() -> Self {
+        Self::new(create_app().get_matches())
+    }
+    pub fn new(args: clap::ArgMatches) -> Self {
         let command =
             args.value_of("COMMAND").expect("`COMMAND` value cannot be `None`, it is required.");
 
         TimeOpts {
             output_fmt: if args.is_present("posix") {
-                OutputFormat::Posix
+                OutputFormatter::Posix
             } else {
-                OutputFormat::Default
+                OutputFormatter::Default
             },
             command:    match args.values_of("ARGUMENT") {
                 Some(vs) => {
@@ -60,8 +62,31 @@ impl TimeOpts {
     }
 }
 
-#[derive(Debug)]
-pub enum OutputFormat {
+#[derive(Debug, PartialEq)]
+pub enum OutputFormatter {
     Default,
     Posix,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{TimeOpts, OutputFormatter, create_app};
+
+    #[test]
+    fn parsing_valid_command_with_args() {
+        let args = vec!["test-time", "cmd-to-run", "arg1", "arg2", "arg3"];
+        let opts = TimeOpts::new(create_app().get_matches_from(args));
+
+        assert_eq!(4, opts.command.len());
+        assert_eq!(vec!["cmd-to-run", "arg1", "arg2", "arg3"], opts.command);
+        assert_eq!(OutputFormatter::Default, opts.output_fmt);
+    }
+
+    #[test]
+    fn parse_valid_command_with_posix_spec() {
+        let args = vec!["test-time", "cmd-to-run", "arg1", "arg2", "arg3", "-p"];
+        let opts = TimeOpts::new(create_app().get_matches_from(args));
+
+        assert_eq!(OutputFormatter::Posix, opts.output_fmt);
+    }
 }
