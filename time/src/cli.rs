@@ -18,7 +18,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
              %f\nTimer accuracy is arbitrary, but will always be counted in seconds.",
         )
         .short("p")
-        .long("--posix")
         .takes_value(false);
 
     let command = Arg::with_name("COMMAND").help("Command or utility to run.").required(true);
