@@ -3,10 +3,10 @@ pub mod group;
 pub mod login_name;
 pub mod passwd;
 pub mod process;
+pub mod resource;
 pub mod time;
 pub mod tty;
 pub mod utsname;
-pub mod resource;
 
 // Specific Modules
 #[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
