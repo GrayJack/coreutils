@@ -6,8 +6,6 @@ use super::TimeVal;
 use libc::getrusage;
 use libc::{c_int, rusage, RUSAGE_CHILDREN, RUSAGE_SELF};
 
-use std::convert::From;
-
 /// Interface for `RUSAGE_*` constants from libc.
 ///
 /// TODO This is an incomplete set of constants. It is currently missing
