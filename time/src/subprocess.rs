@@ -43,7 +43,7 @@ pub fn timed_run(cmd_vec: &Vec<String>) -> io::Result<SubprocessTiming> {
 
 #[cfg(test)]
 mod tests {
-    use super::{timed_run, Duration};
+    use super::timed_run;
 
     #[test]
     fn invalid_command_returns_errno_when_set() {
@@ -51,18 +51,6 @@ mod tests {
             assert!(err.raw_os_error() == Some(2))
         } else {
             assert!(false, "Subprocess did not fail as expected")
-        }
-    }
-
-    #[test]
-    fn correct_duration_when_sleeping() {
-        if let Ok((status, duration)) = timed_run(&vec!["sleep".to_string(), "0.1".to_string()]) {
-            assert!(status.code() == Some(0));
-            assert!(duration > Duration::from_millis(100));
-            // TODO Is this a good tolerance for the duration?
-            assert!(duration < Duration::from_millis(200));
-        } else {
-            assert!(false, "Failed to run command");
         }
     }
 }
