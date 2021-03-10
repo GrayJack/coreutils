@@ -3,6 +3,7 @@ pub mod group;
 pub mod login_name;
 pub mod passwd;
 pub mod process;
+pub mod resource;
 pub mod time;
 pub mod tty;
 pub mod utsname;
