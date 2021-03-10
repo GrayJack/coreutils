@@ -23,7 +23,9 @@ pub mod syscall {
 
 /// Get the routing table of the current process.
 #[inline]
-pub fn get_routing_table() -> c_int { unsafe { syscall::getrtable() } }
+pub fn get_routing_table() -> c_int {
+    unsafe { syscall::getrtable() }
+}
 
 /// Set the routing table of `rtableid`.
 ///

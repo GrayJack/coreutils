@@ -1,8 +1,7 @@
 use std::process;
 
-use coreutils_core::os::{group::Group, passwd::Passwd};
-
 use clap::ArgMatches;
+use coreutils_core::os::{group::Group, passwd::Passwd};
 
 mod cli;
 
@@ -91,33 +90,33 @@ fn main() {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 struct IdFlags<'a> {
-    audit:   bool,
+    audit: bool,
     by_name: Option<&'a str>,
-    file:    bool,
-    group:   bool,
-    groups:  bool,
-    pretty:  bool,
-    name:    bool,
-    real:    bool,
-    rtable:  bool,
-    user:    bool,
-    zero:    bool,
+    file: bool,
+    group: bool,
+    groups: bool,
+    pretty: bool,
+    name: bool,
+    real: bool,
+    rtable: bool,
+    user: bool,
+    zero: bool,
 }
 
 impl<'a> IdFlags<'a> {
     fn from_matches(matches: &'a ArgMatches<'_>) -> Self {
         IdFlags {
-            audit:   matches.is_present("audit"),
+            audit: matches.is_present("audit"),
             by_name: matches.value_of("USER"),
-            file:    matches.is_present("file"),
-            group:   matches.is_present("group"),
-            groups:  matches.is_present("groups"),
-            name:    matches.is_present("name"),
-            pretty:  matches.is_present("pretty") | matches.is_present("human"),
-            real:    matches.is_present("real"),
-            rtable:  matches.is_present("rtable"),
-            user:    matches.is_present("user"),
-            zero:    matches.is_present("zero"),
+            file: matches.is_present("file"),
+            group: matches.is_present("group"),
+            groups: matches.is_present("groups"),
+            name: matches.is_present("name"),
+            pretty: matches.is_present("pretty") | matches.is_present("human"),
+            real: matches.is_present("real"),
+            rtable: matches.is_present("rtable"),
+            user: matches.is_present("user"),
+            zero: matches.is_present("zero"),
         }
     }
 

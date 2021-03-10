@@ -40,11 +40,11 @@ fn main() {
 // -f is ignored before -s
 #[derive(Default)]
 struct Flags {
-    show_count:       bool,          // -c | --show_count
-    supress_unique:   bool,          // -d | --repeated
-    supress_repeated: bool,          // -u | --unique
-    skip_bytes:       Option<usize>, // -s | --skip-chars=N
-    skip_fields:      Option<usize>, // -f | --skip-fields=N
+    show_count: bool,           // -c | --show_count
+    supress_unique: bool,       // -d | --repeated
+    supress_repeated: bool,     // -u | --unique
+    skip_bytes: Option<usize>,  // -s | --skip-chars=N
+    skip_fields: Option<usize>, // -f | --skip-fields=N
 }
 // skip_utf8_chars:  Option<usize>, // --skip-utf8=N
 
@@ -64,14 +64,14 @@ impl Flags {
         };
 
         Flags {
-            show_count:       matches.is_present("show_count"),
-            supress_unique:   matches.is_present("repeated"),
+            show_count: matches.is_present("show_count"),
+            supress_unique: matches.is_present("repeated"),
             supress_repeated: matches.is_present("unique"),
-            skip_bytes:       try_parse_arg_to_usize(
+            skip_bytes: try_parse_arg_to_usize(
                 matches.value_of("skip-chars"),
                 "--skip-chars: Invalid number of bytes to skip",
             ),
-            skip_fields:      try_parse_arg_to_usize(
+            skip_fields: try_parse_arg_to_usize(
                 matches.value_of("skip-fields"),
                 "--skip-fields: Invalid number of fields to skip",
             ),
@@ -225,7 +225,9 @@ mod tests {
     }
 
     // Test utility, return empty Flags (all set to false or None)
-    fn flags_none() -> Flags { Flags::default() }
+    fn flags_none() -> Flags {
+        Flags::default()
+    }
 
     #[test]
     fn test_uniq_basic_usage() {

@@ -47,9 +47,9 @@ pub struct AuditMask {
 #[repr(C)]
 pub struct AuditTerminalId {
     #[cfg(target_os = "freebsd")]
-    pub port:    u32,
+    pub port: u32,
     #[cfg(target_os = "macos")]
-    pub port:    dev_t,
+    pub port: dev_t,
     pub machine: u32,
 }
 
@@ -75,13 +75,13 @@ pub struct AuditTerminalIdAddr {
 #[repr(C)]
 pub struct AuditInfo {
     /// Audit user ID
-    pub ai_auid:   AuditUserId,
+    pub ai_auid: AuditUserId,
     /// Audit masks.
-    pub ai_mask:   AuditMask,
+    pub ai_mask: AuditMask,
     /// Terminal ID.
     pub ai_termid: AuditTerminalId,
     /// Audit session ID.
-    pub ai_asid:   AuditSessionId,
+    pub ai_asid: AuditSessionId,
 }
 
 impl Display for AuditInfo {
@@ -103,15 +103,15 @@ impl Display for AuditInfo {
 #[repr(C)]
 pub struct AuditInfoAddr {
     /// Audit user ID.
-    pub ai_auid:   AuditUserId,
+    pub ai_auid: AuditUserId,
     /// Audit masks.
-    pub ai_mask:   AuditMask,
+    pub ai_mask: AuditMask,
     /// Terminal ID.
     pub ai_termid: AuditTerminalIdAddr,
     /// Audit session ID.
-    pub ai_asid:   AuditSessionId,
+    pub ai_asid: AuditSessionId,
     /// Audit session flags.
-    pub ai_flags:  u64,
+    pub ai_flags: u64,
 }
 
 impl Display for AuditInfoAddr {

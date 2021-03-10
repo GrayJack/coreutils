@@ -7,7 +7,6 @@ use coreutils_core::{
     os::tty::{tty_dimensions, IsTty},
     BString, ByteSlice,
 };
-
 use io::Stdout;
 use term_grid::{Alignment, Cell, Direction, Filling, Grid, GridOptions};
 
@@ -116,8 +115,8 @@ pub(crate) fn grid(
     for file in &files {
         grid.add(Cell {
             alignment: Alignment::Left,
-            contents:  file.file_name(FileColor::Show),
-            width:     file.file_name(FileColor::Hide).len(),
+            contents: file.file_name(FileColor::Show),
+            width: file.file_name(FileColor::Hide).len(),
         });
     }
 

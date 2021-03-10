@@ -41,26 +41,34 @@ fn main() {
 
 struct Options {
     line_terminator: u8,
-    complement:      bool,
+    complement: bool,
 }
 
 #[derive(PartialEq, Debug)]
 struct Error(String, i32);
 
 impl From<ParseIntError> for Error {
-    fn from(_err: ParseIntError) -> Self { Error("not an integer".to_string(), 2) }
+    fn from(_err: ParseIntError) -> Self {
+        Error("not an integer".to_string(), 2)
+    }
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Self { Error(format!("{}", err), 1) }
+    fn from(err: io::Error) -> Self {
+        Error(format!("{}", err), 1)
+    }
 }
 
 impl From<string::FromUtf8Error> for Error {
-    fn from(err: string::FromUtf8Error) -> Self { Error(format!("{}", err), 1) }
+    fn from(err: string::FromUtf8Error) -> Self {
+        Error(format!("{}", err), 1)
+    }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
 type Result<T> = result::Result<T, Error>;
@@ -198,7 +206,9 @@ struct Bytes {
 }
 
 impl Bytes {
-    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Self { Bytes { range_set } }
+    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Self {
+        Bytes { range_set }
+    }
 }
 
 impl Cutter for Bytes {
@@ -222,7 +232,9 @@ struct Chars {
 }
 
 impl Chars {
-    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Self { Chars { range_set } }
+    fn new(range_set: RangeSet, _matches: &ArgMatches) -> Self {
+        Chars { range_set }
+    }
 }
 
 impl Cutter for Chars {

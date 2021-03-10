@@ -1,10 +1,9 @@
 use std::{path::Path, str::FromStr};
 
+use clap::ArgMatches;
 use coreutils_core::time::{
     Date, Duration, OffsetDateTime as DateTime, PrimitiveDateTime, Time, UtcOffset,
 };
-
-use clap::ArgMatches;
 
 mod cli;
 

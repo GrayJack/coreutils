@@ -9,7 +9,9 @@ pub enum OutputFormatter {
 }
 
 /// Express `coreutils_core::os::TimeVal` into `f64` seconds
-fn as_secs_f64(tv: TimeVal) -> f64 { tv.tv_sec as f64 + (tv.tv_usec as f64) / 1_000_000.0 }
+fn as_secs_f64(tv: TimeVal) -> f64 {
+    tv.tv_sec as f64 + (tv.tv_usec as f64) / 1_000_000.0
+}
 
 impl OutputFormatter {
     pub fn format_stats(self, rusage: &RUsage, duration: &std::time::Duration) -> String {

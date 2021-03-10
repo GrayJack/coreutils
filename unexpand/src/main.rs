@@ -75,7 +75,7 @@ fn main() {
 
 #[derive(Debug)]
 struct Unexpand {
-    all:  bool,
+    all: bool,
     tabs: TabStops,
 }
 

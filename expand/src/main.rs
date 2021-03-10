@@ -78,7 +78,7 @@ fn main() {
 }
 
 struct Expand {
-    initial:  bool,
+    initial: bool,
     tabstops: TabStops,
 }
 

@@ -1,5 +1,3 @@
-use clap::ArgMatches;
-use coreutils_core::input::*;
 use std::{
     env::current_dir,
     fs::{self, FileType, Permissions},
@@ -7,6 +5,9 @@ use std::{
     path::{Path, PathBuf},
     process,
 };
+
+use clap::ArgMatches;
+use coreutils_core::input::*;
 
 mod cli;
 

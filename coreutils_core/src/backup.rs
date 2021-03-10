@@ -40,12 +40,13 @@
 //! numbered backups, it will continue to make numbered backups. If it finds simple
 //! backups, it will continue to make simple backups.
 
-use regex::Regex;
 use std::{
     fs,
     io::{Error, ErrorKind},
     path::{Path, PathBuf},
 };
+
+use regex::Regex;
 
 /// Convenience Enum to represent the different backup modes. See module documentation for
 /// an in-depth overview of what each backup mode means/does.
@@ -68,7 +69,9 @@ impl BackupMode {
     /// Creates an instance of [`BackupMode`] from a string slice. Any invalid input will
     /// result in [`BackupMode::Existing`] to be returned.
     #[inline]
-    pub fn from_string(string: impl AsRef<str>) -> Self { Self::from(string.as_ref()) }
+    pub fn from_string(string: impl AsRef<str>) -> Self {
+        Self::from(string.as_ref())
+    }
 }
 
 impl From<&str> for BackupMode {
@@ -139,13 +142,11 @@ pub fn create_existing_backup(file: &Path, suffix: &str) -> Result<PathBuf, Erro
     let mut has_numbered_backup = false;
     let regex = Regex::new(r"~\d+~").unwrap();
     let parent = file.parent().unwrap();
-    for entry in parent.read_dir().unwrap() {
-        if let Ok(entry) = entry {
-            if let Some(ext) = entry.path().extension() {
-                if regex.is_match(ext.to_str().unwrap()) {
-                    has_numbered_backup = true;
-                    break;
-                }
+    for entry in parent.read_dir()?.flatten() {
+        if let Some(ext) = entry.path().extension() {
+            if regex.is_match(ext.to_str().unwrap()) {
+                has_numbered_backup = true;
+                break;
             }
         }
     }

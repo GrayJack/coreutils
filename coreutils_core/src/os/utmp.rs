@@ -10,93 +10,111 @@ use std::{
     slice,
 };
 
-use super::Time;
-
+use bstr::{BStr, BString, ByteSlice};
 use libc::{c_char, utmp};
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_short, exit_status as ExitStatus};
 #[cfg(any(target_os = "netbsd", target_os = "solaris", target_os = "illumos"))]
 use libc::{endutent, getutent, setutent};
-
-use bstr::{BStr, BString, ByteSlice};
 use time::OffsetDateTime as DataTime;
 
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use super::utmpx::UtmpxKind;
+use super::Time;
 
 /// A struct that represents a __user__ account, where user can be humam users or other
 /// parts of the system that requires the usage of account structure, like some daemons.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmp {
     /// User login name
-    user:    BString,
+    user: BString,
     /// Device name (console/tty, lnxx)
-    line:    BString,
+    line: BString,
     /// The time entry was created
-    time:    Time,
+    time: Time,
     /// Host name
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
-    host:    BString,
+    host: BString,
     /// Entry ID
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
-    id:      BString,
+    id: BString,
     /// Process ID
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
-    pid:     c_short,
+    pid: c_short,
     /// Entry type
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     ut_type: UtmpxKind,
     /// Exit status
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
-    exit:    ExitStatus,
+    exit: ExitStatus,
 }
 
 impl Utmp {
     /// Creates a [`Utmp`] from the c structure [`utmp`].
     #[inline]
-    pub fn from_c_utmp(utm: utmp) -> Self { Self::from(utm) }
+    pub fn from_c_utmp(utm: utmp) -> Self {
+        Self::from(utm)
+    }
 
     /// Get user name.
     #[inline]
-    pub fn user(&self) -> &BStr { self.user.as_bstr() }
+    pub fn user(&self) -> &BStr {
+        self.user.as_bstr()
+    }
 
     /// Get host name.
     #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
     #[inline]
-    pub fn host(&self) -> &BStr { self.host.as_bstr() }
+    pub fn host(&self) -> &BStr {
+        self.host.as_bstr()
+    }
 
     /// Get `/etc/inittab` id.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub fn id(&self) -> &BStr { self.id.as_bstr() }
+    pub fn id(&self) -> &BStr {
+        self.id.as_bstr()
+    }
 
     /// Get the device name of the entry. (usually a tty or console)
     #[inline]
-    pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
+    pub fn device_name(&self) -> &BStr {
+        self.line.as_bstr()
+    }
 
     /// Get the time the entry was created.
     #[inline]
-    pub const fn time(&self) -> Time { self.time }
+    pub const fn time(&self) -> Time {
+        self.time
+    }
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure.
     #[inline]
-    pub fn login_time(&self) -> DataTime { DataTime::from_unix_timestamp(self.time) }
+    pub fn login_time(&self) -> DataTime {
+        DataTime::from_unix_timestamp(self.time)
+    }
 
     /// Get the process ID of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub const fn pid(&self) -> c_short { self.pid }
+    pub const fn pid(&self) -> c_short {
+        self.pid
+    }
 
     /// Get the entry type.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub const fn entry_type(&self) -> UtmpxKind { self.ut_type }
+    pub const fn entry_type(&self) -> UtmpxKind {
+        self.ut_type
+    }
 
     /// Get the exit status of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub const fn exit_status(&self) -> ExitStatus { self.exit }
+    pub const fn exit_status(&self) -> ExitStatus {
+        self.exit
+    }
 }
 
 impl From<utmp> for Utmp {
@@ -198,15 +216,21 @@ impl UtmpSet {
     /// # Errors
     /// If a internal call set a errno (I/O OS error), an error variant will be returned.
     #[inline]
-    pub fn system() -> io::Result<Self> { Self::from_file("/var/run/utmp") }
+    pub fn system() -> io::Result<Self> {
+        Self::from_file("/var/run/utmp")
+    }
 
     /// Returns `true` if collection nas no elements.
     #[inline]
-    pub fn is_empty(&self) -> bool { self.0.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 
     /// Creates a iterator over it's entries.
     #[inline]
-    pub fn iter(&self) -> hash_set::Iter<'_, Utmp> { self.0.iter() }
+    pub fn iter(&self) -> hash_set::Iter<'_, Utmp> {
+        self.0.iter()
+    }
 }
 
 impl IntoIterator for UtmpSet {
@@ -214,7 +238,9 @@ impl IntoIterator for UtmpSet {
     type Item = Utmp;
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter { self.0.into_iter() }
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
 }
 
 /// Iterator over [`Utmp`]

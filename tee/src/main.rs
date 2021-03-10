@@ -5,7 +5,6 @@ use std::{
 };
 
 use clap::{ArgMatches, Values};
-
 use coreutils_core::libc::{signal, SIGINT, SIG_IGN};
 
 mod cli;

@@ -179,7 +179,7 @@ enum Section {
 }
 
 struct SectionDelimiters {
-    body:   String,
+    body: String,
     header: String,
     footer: String,
 }
@@ -188,7 +188,7 @@ impl SectionDelimiters {
     fn new(delimiter: String) -> SectionDelimiters {
         SectionDelimiters {
             header: delimiter.repeat(3),
-            body:   delimiter.repeat(2),
+            body: delimiter.repeat(2),
             footer: delimiter,
         }
     }

@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct TabStops {
-    pub(crate) offset:    Option<usize>,
+    pub(crate) offset: Option<usize>,
     pub(crate) repetable: Option<usize>,
     pub(crate) positions: Vec<usize>,
 }
@@ -29,7 +29,7 @@ impl TabStops {
                     }
 
                     return Ok(TabStops {
-                        offset:    None,
+                        offset: None,
                         repetable: Some(value),
                         positions: vec![],
                     });

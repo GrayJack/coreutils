@@ -85,31 +85,45 @@ fn new_values_with_prefix() {
 
 #[test]
 #[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending() { TabStops::new(Some("2,1")).unwrap(); }
+fn new_panic_ascending() {
+    TabStops::new(Some("2,1")).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "unexpand: tab sizes must be ascending")]
-fn new_panic_ascending2() { TabStops::new(Some("2,2")).unwrap(); }
+fn new_panic_ascending2() {
+    TabStops::new(Some("2,2")).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero() { TabStops::new(Some("0")).unwrap(); }
+fn new_panic_zero() {
+    TabStops::new(Some("0")).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "unexpand: tab size cannot be 0")]
-fn new_panic_zero_values() { TabStops::new(Some("0,1")).unwrap(); }
+fn new_panic_zero_values() {
+    TabStops::new(Some("0,1")).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "unexpand: error parsing arguments")]
-fn new_panic_wrong_type() { TabStops::new(Some("a")).unwrap(); }
+fn new_panic_wrong_type() {
+    TabStops::new(Some("a")).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "unexpand: error parsing arguments")]
-fn new_panic_wrong_type_multipe_with_prefix() { TabStops::new(Some("a, +b")).unwrap(); }
+fn new_panic_wrong_type_multipe_with_prefix() {
+    TabStops::new(Some("a, +b")).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "unexpand: error parsing arguments")]
-fn new_panic_wrong_type_multipe() { TabStops::new(Some("a, b")).unwrap(); }
+fn new_panic_wrong_type_multipe() {
+    TabStops::new(Some("a, b")).unwrap();
+}
 
 #[test]
 fn is_tab_stop_repetable() {

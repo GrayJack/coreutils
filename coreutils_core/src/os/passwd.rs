@@ -12,6 +12,10 @@ use std::{
     result::Result as StdResult,
 };
 
+use bstr::{BStr, BString, ByteSlice};
+use libc::{geteuid, getpwnam_r, getpwuid_r, getuid, passwd};
+
+use self::Error::*;
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 use super::Fields;
 #[cfg(not(any(
@@ -26,12 +30,6 @@ use super::{
     group::{Error as GrError, Groups},
     Gid, Uid,
 };
-
-use self::Error::*;
-
-use libc::{geteuid, getpwnam_r, getpwuid_r, getuid, passwd};
-
-use bstr::{BStr, BString, ByteSlice};
 
 /// This struct holds information about a passwd of UNIX/UNIX-like systems.
 ///
@@ -104,17 +102,23 @@ impl StdError for Error {
 
 impl From<GrError> for Error {
     #[inline]
-    fn from(err: GrError) -> Error { Group(Box::new(err)) }
+    fn from(err: GrError) -> Error {
+        Group(Box::new(err))
+    }
 }
 
 impl From<NulError> for Error {
     #[inline]
-    fn from(err: NulError) -> Self { Cstring(err) }
+    fn from(err: NulError) -> Self {
+        Cstring(err)
+    }
 }
 
 impl From<Error> for IoError {
     #[inline]
-    fn from(err: Error) -> Self { Self::new(io::ErrorKind::Other, err) }
+    fn from(err: Error) -> Self {
+        Self::new(io::ErrorKind::Other, err)
+    }
 }
 
 /// This struct holds the information of a user in UNIX/UNIX-like systems.
@@ -123,19 +127,19 @@ impl From<Error> for IoError {
 #[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Hash)]
 pub struct Passwd {
     /// User login name.
-    name:     BString,
+    name: BString,
     /// User encrypted password.
-    passwd:   BString,
+    passwd: BString,
     /// User ID.
-    user_id:  Uid,
+    user_id: Uid,
     /// User primary Group ID.
     group_id: Gid,
     /// User full name.
-    gecos:    BString,
+    gecos: BString,
     /// User directory.
-    dir:      BString,
+    dir: BString,
     /// User login shell
-    shell:    BString,
+    shell: BString,
     /// Password change time
     #[cfg(not(any(
         target_os = "linux",
@@ -144,7 +148,7 @@ pub struct Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    change:   Time,
+    change: Time,
     /// User access class
     #[cfg(not(any(
         target_os = "linux",
@@ -153,7 +157,7 @@ pub struct Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    class:    BString,
+    class: BString,
     /// Account expiration
     #[cfg(not(any(
         target_os = "linux",
@@ -162,14 +166,14 @@ pub struct Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    expire:   Time,
+    expire: Time,
     /// Fields filled in
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    fields:   Fields,
+    fields: Fields,
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
-    age:      BString,
+    age: BString,
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
-    comment:  BString,
+    comment: BString,
 }
 
 impl Passwd {
@@ -341,31 +345,45 @@ impl Passwd {
 
     /// Returns the [`Passwd`] (user) login name.
     #[inline]
-    pub fn name(&self) -> &BStr { self.name.as_bstr() }
+    pub fn name(&self) -> &BStr {
+        self.name.as_bstr()
+    }
 
     /// Returns the [`Passwd`] (user) encrypted password.
     #[inline]
-    pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
+    pub fn passwd(&self) -> &BStr {
+        self.passwd.as_bstr()
+    }
 
     /// Returns the [`Passwd`] (user) user ID.
     #[inline]
-    pub fn uid(&self) -> Uid { self.user_id }
+    pub fn uid(&self) -> Uid {
+        self.user_id
+    }
 
     /// Returns the [`Passwd`] (user) primary group ID.
     #[inline]
-    pub fn gid(&self) -> Gid { self.group_id }
+    pub fn gid(&self) -> Gid {
+        self.group_id
+    }
 
     /// Returns the [`Passwd`] (user) full name.
     #[inline]
-    pub fn gecos(&self) -> &BStr { self.gecos.as_bstr() }
+    pub fn gecos(&self) -> &BStr {
+        self.gecos.as_bstr()
+    }
 
     /// Returns the [`Passwd`] (user) directory.
     #[inline]
-    pub fn dir(&self) -> &BStr { self.dir.as_bstr() }
+    pub fn dir(&self) -> &BStr {
+        self.dir.as_bstr()
+    }
 
     /// Returns the [`Passwd`] (user) shell.
     #[inline]
-    pub fn shell(&self) -> &BStr { self.shell.as_bstr() }
+    pub fn shell(&self) -> &BStr {
+        self.shell.as_bstr()
+    }
 
     /// Returns the [`Passwd`] (user) access class.
     #[inline]
@@ -376,7 +394,9 @@ impl Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    pub fn class(&self) -> &BStr { &self.class.as_bstr() }
+    pub fn class(&self) -> &BStr {
+        &self.class.as_bstr()
+    }
 
     /// Returns the [`Passwd`] (user) last password change time.
     #[inline]
@@ -387,7 +407,9 @@ impl Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    pub fn last_password_change(&self) -> Time { self.change }
+    pub fn last_password_change(&self) -> Time {
+        self.change
+    }
 
     /// Returns the [`Passwd`] (user) expiration time.
     #[inline]
@@ -398,12 +420,16 @@ impl Passwd {
         target_os = "solaris",
         target_os = "illumos"
     )))]
-    pub fn expire(&self) -> Time { self.expire }
+    pub fn expire(&self) -> Time {
+        self.expire
+    }
 
     /// Returns the [`Passwd`] (user) fields filled in.
     #[inline]
     #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
-    pub fn fields(&self) -> Fields { self.fields }
+    pub fn fields(&self) -> Fields {
+        self.fields
+    }
 
     /// Returns [`Groups`] that the [`Passwd`] (user) belongs to.
     ///

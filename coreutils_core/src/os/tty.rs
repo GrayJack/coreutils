@@ -7,11 +7,9 @@ use std::{
     os::unix::io::AsRawFd,
 };
 
-use libc::{ioctl, ttyname, winsize, TIOCGWINSZ};
-
 // use crate::file_descriptor::FileDescriptor;
-
 use bstr::{BStr, BString, ByteSlice};
+use libc::{ioctl, ttyname, winsize, TIOCGWINSZ};
 
 /// Possible errors while trying to get a TTY name
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -62,12 +60,16 @@ impl TtyName {
 
     /// Extracts a bstring slice containing the entire [`BString`].
     #[inline]
-    pub fn as_bstr(&self) -> &BStr { self.0.as_bstr() }
+    pub fn as_bstr(&self) -> &BStr {
+        self.0.as_bstr()
+    }
 }
 
 impl Display for TtyName {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { Display::fmt(&self.0, f) }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        Display::fmt(&self.0, f)
+    }
 }
 
 /// Convenience trait to use [`is_tty`] function as method
@@ -85,7 +87,9 @@ pub trait IsTty: AsRawFd {
 
 impl<T: AsRawFd> IsTty for T {
     #[inline]
-    fn is_tty(&self) -> bool { is_tty(self) }
+    fn is_tty(&self) -> bool {
+        is_tty(self)
+    }
 }
 
 /// Check if the given `file_descriptor` is a TTY.

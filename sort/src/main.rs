@@ -81,9 +81,9 @@ fn print_line(line: Buffer, flags: &mut SortFlags) -> Result<(), SortError> {
 }
 
 struct SortFlags {
-    merge_only:  bool,
+    merge_only: bool,
     output_name: String,
-    output:      Box<dyn Write>,
+    output: Box<dyn Write>,
 }
 
 impl SortFlags {
@@ -104,7 +104,7 @@ impl SortFlags {
 #[derive(Debug)]
 struct SortError {
     path: String,
-    ty:   SortErrorTy,
+    ty: SortErrorTy,
 }
 
 impl SortError {
@@ -147,9 +147,11 @@ impl error::Error for SortError {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::fs;
+
     use tempfile::NamedTempFile;
+
+    use super::*;
 
     macro_rules! create_temp_files {
         () => {{
@@ -200,9 +202,9 @@ mod tests {
 
     fn default_flags() -> SortFlags {
         SortFlags {
-            merge_only:  false,
+            merge_only: false,
             output_name: "stdout".to_string(),
-            output:      Box::new(BufWriter::new(io::stdout())),
+            output: Box::new(BufWriter::new(io::stdout())),
         }
     }
 

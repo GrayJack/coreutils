@@ -53,16 +53,24 @@ pub type Susec = suseconds_t;
 
 /// Get the current running process user effective group id.
 #[inline]
-pub fn get_effective_gid() -> Uid { unsafe { getegid() } }
+pub fn get_effective_gid() -> Uid {
+    unsafe { getegid() }
+}
 
 /// Get the current running process user real group id.
 #[inline]
-pub fn get_real_gid() -> Uid { unsafe { getgid() } }
+pub fn get_real_gid() -> Uid {
+    unsafe { getgid() }
+}
 
 /// Get the current running process user effective user id.
 #[inline]
-pub fn get_effective_uid() -> Uid { unsafe { geteuid() } }
+pub fn get_effective_uid() -> Uid {
+    unsafe { geteuid() }
+}
 
 /// Get the current running process user real user id.
 #[inline]
-pub fn get_real_uid() -> Uid { unsafe { getuid() } }
+pub fn get_real_uid() -> Uid {
+    unsafe { getuid() }
+}

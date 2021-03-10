@@ -31,9 +31,9 @@ pub fn exit_with_msg(err: std::io::Error) -> ! {
 /// Wrapper for creating, spawning and waiting on `std::process::Command`
 /// Returns the `std::process::ExitStatus` of the `std::process::Command`
 /// that was run
-pub fn timed_run(cmd_vec: &Vec<String>) -> io::Result<SubprocessTiming> {
-    let mut cmd = Command::new(&cmd_vec[0]);
-    cmd.args(&cmd_vec[1..]);
+pub fn timed_run(cmd_slice: &[String]) -> io::Result<SubprocessTiming> {
+    let mut cmd = Command::new(&cmd_slice[0]);
+    cmd.args(&cmd_slice[1..]);
     cmd.stdin(Stdio::inherit()).stdout(Stdio::inherit()).stderr(Stdio::inherit());
 
     let start_time = Instant::now();
@@ -47,10 +47,10 @@ mod tests {
 
     #[test]
     fn invalid_command_returns_errno_when_set() {
-        if let Err(err) = timed_run(&vec!["does-not-exist".to_string()]) {
+        if let Err(err) = timed_run(&["does-not-exist".to_string()]) {
             assert!(err.raw_os_error() == Some(2))
         } else {
-            assert!(false, "Subprocess did not fail as expected")
+            panic!("Subprocess did not fail as expected")
         }
     }
 }

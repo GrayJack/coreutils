@@ -3,9 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use coreutils_core::{backup::*, input::*};
-
 use clap::ArgMatches;
+use coreutils_core::{backup::*, input::*};
 
 mod cli;
 

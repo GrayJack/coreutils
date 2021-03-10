@@ -31,7 +31,7 @@ fn main() {
 struct RmDirFlags {
     verbose: bool,
     parents: bool,
-    ignore:  bool,
+    ignore: bool,
 }
 
 impl RmDirFlags {
@@ -39,7 +39,7 @@ impl RmDirFlags {
         RmDirFlags {
             verbose: matches.is_present("verbose"),
             parents: matches.is_present("parents"),
-            ignore:  matches.is_present("ignore-fail-nonempty"),
+            ignore: matches.is_present("ignore-fail-nonempty"),
         }
     }
 }

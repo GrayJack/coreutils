@@ -54,12 +54,12 @@ fn parse_float(s: &str) -> f64 {
 }
 
 struct Seq {
-    first:     f64,
-    inc:       f64,
-    last:      f64,
-    decimals:  usize,
+    first: f64,
+    inc: f64,
+    last: f64,
+    decimals: usize,
     seperator: String,
-    padding:   Option<usize>,
+    padding: Option<usize>,
 }
 
 impl Seq {
@@ -98,7 +98,7 @@ impl IntoIterator for Seq {
 }
 
 struct SeqIterator {
-    seq:     Seq,
+    seq: Seq,
     current: f64,
 }
 
@@ -141,8 +141,9 @@ impl Iterator for SeqIterator {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert_cmd::Command;
+
+    use super::*;
 
     #[test]
     fn should_find_max_decimal_digits() {

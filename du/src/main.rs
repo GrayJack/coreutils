@@ -428,10 +428,14 @@ fn get_bytes(metadata: &Metadata, use_apparent_size: bool) -> u64 {
 }
 
 #[cfg(not(target_family = "unix"))]
-fn get_bytes(metadata: &Metadata, use_apparent_size: bool) -> u64 { metadata.len() }
+fn get_bytes(metadata: &Metadata, use_apparent_size: bool) -> u64 {
+    metadata.len()
+}
 
 #[cfg(target_family = "unix")]
-fn get_inode() -> u64 { 1 }
+fn get_inode() -> u64 {
+    1
+}
 
 #[cfg(not(target_family = "unix"))]
 fn get_inode() -> u64 {

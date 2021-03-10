@@ -1,7 +1,8 @@
 //! Helper functions to deal with FIFO special file.
 
-use libc::{self, mode_t};
 use std::{ffi::CString, io, io::Error, path::Path};
+
+use libc::{self, mode_t};
 
 /// Creates FIFO special file with name `filepath` with `mode` permissions.
 /// Inspired by crate `unix_named_pipe`

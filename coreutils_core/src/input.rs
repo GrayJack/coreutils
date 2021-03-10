@@ -27,14 +27,16 @@ use std::{io, io::prelude::*};
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct Input<'a> {
-    msg:     Option<&'a str>,
+    msg: Option<&'a str>,
     err_msg: Option<&'a str>,
 }
 
 impl<'a> Input<'a> {
     /// Initializes a new Input builder.
     #[inline]
-    pub const fn new() -> Self { Input { msg: None, err_msg: None } }
+    pub const fn new() -> Self {
+        Input { msg: None, err_msg: None }
+    }
 
     /// Specifies the message to display to the user.
     #[inline]
@@ -80,10 +82,7 @@ impl<'a> Input<'a> {
     /// Gets the input value the user entered as a [`String`].
     #[inline]
     pub fn get(&self) -> Option<String> {
-        match self.get_input() {
-            Some(input) => Some(input.trim().to_string()),
-            None => None,
-        }
+        self.get_input().map(|input| input.trim().to_string())
     }
 
     /// Verifies whether the user input is considered an 'affirmative' answer.

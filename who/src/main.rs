@@ -1,5 +1,6 @@
 use std::{io, os::unix::fs::MetadataExt, path::PathBuf, process};
 
+use clap::ArgMatches;
 #[cfg(target_os = "openbsd")]
 use coreutils_core::os::utmp::{Utmp, UtmpSet};
 #[cfg(not(target_os = "openbsd"))]
@@ -11,8 +12,6 @@ use coreutils_core::os::utmpx::{
 use coreutils_core::{
     libc::S_IWGRP, os::tty::TtyName, time::OffsetDateTime as DateTime, ByteSlice,
 };
-
-use clap::ArgMatches;
 
 mod cli;
 

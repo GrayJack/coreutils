@@ -2,11 +2,13 @@ use super::*;
 
 struct TestReader<'a> {
     buf: &'a str,
-    i:   usize,
+    i: usize,
 }
 
 impl<'a> TestReader<'a> {
-    fn new(s: &'a str) -> Self { TestReader { buf: s, i: 0 } }
+    fn new(s: &'a str) -> Self {
+        TestReader { buf: s, i: 0 }
+    }
 }
 
 impl Read for TestReader<'_> {

@@ -8,14 +8,12 @@ use std::{
     string::String,
 };
 
+use ansi_term::Color;
+use chrono::{DateTime, Local, TimeZone};
 use coreutils_core::{
     os::{group::Group, passwd::Passwd, tty::is_tty},
     BStr, BString,
 };
-
-use ansi_term::Color;
-
-use chrono::{DateTime, Local, TimeZone};
 
 use crate::flags::Flags;
 
@@ -83,10 +81,14 @@ impl File {
     }
 
     /// Retrieves the number of hard links pointing to a file as a string
-    pub fn hard_links(&self) -> String { self.metadata.nlink().to_string() }
+    pub fn hard_links(&self) -> String {
+        self.metadata.nlink().to_string()
+    }
 
     /// Retrieves the inode number as a string
-    pub fn inode(&self) -> String { self.metadata.ino().to_string() }
+    pub fn inode(&self) -> String {
+        self.metadata.ino().to_string()
+    }
 
     /// Retrieves the file's user name as a string. If the `-n` flag is set,
     /// the the user's ID is returned
@@ -115,7 +117,9 @@ impl File {
     }
 
     /// Retrieve the file's size, in bytes, as a string
-    pub fn size(&self) -> String { self.metadata.len().to_string() }
+    pub fn size(&self) -> String {
+        self.metadata.len().to_string()
+    }
 
     /// Retrieves the file's timestamp as a string
     ///
@@ -168,7 +172,9 @@ impl File {
     }
 
     /// Checks if a string looks like a hidden unix file name
-    pub fn is_hidden(name: &BStr) -> bool { name.to_string().starts_with('.') }
+    pub fn is_hidden(name: &BStr) -> bool {
+        name.to_string().starts_with('.')
+    }
 
     /// Gets the file name from a `PathBuf`
     ///

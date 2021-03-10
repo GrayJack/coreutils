@@ -5,14 +5,12 @@ use std::{
     os::raw::c_int,
 };
 
-pub use libc::PRIO_PROCESS;
-use libc::{getpriority, setpriority};
-
-#[cfg(not(any(target_os = "freebsd", target_os = "dragonfly")))]
-use libc::id_t;
-
 #[cfg(target_os = "linux")]
 use libc::c_uint;
+#[cfg(not(any(target_os = "freebsd", target_os = "dragonfly")))]
+use libc::id_t;
+pub use libc::PRIO_PROCESS;
+use libc::{getpriority, setpriority};
 
 /// This function returns the highest priority (lowest numerical value) enjoyed by any of
 /// the specified processes if successful.

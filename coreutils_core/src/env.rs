@@ -34,12 +34,16 @@ impl Display for Error {
 
 impl From<VarError> for Error {
     #[inline]
-    fn from(err: VarError) -> Self { Self::Var(err) }
+    fn from(err: VarError) -> Self {
+        Self::Var(err)
+    }
 }
 
 impl From<IoError> for Error {
     #[inline]
-    fn from(err: IoError) -> Self { Self::Io(err) }
+    fn from(err: IoError) -> Self {
+        Self::Io(err)
+    }
 }
 
 impl StdError for Error {

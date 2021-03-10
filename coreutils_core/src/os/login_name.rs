@@ -2,11 +2,10 @@
 
 use std::ffi::CStr;
 
+use bstr::BString;
 // libc crate doesnt have getlogin_r, cuserid on linux target
 // use libc::{getlogin, getlogin_r, cuserid};
 use libc::getlogin;
-
-use bstr::BString;
 
 /// Returns the the name of the user logged in on the controlling terminal of the process
 /// if found.

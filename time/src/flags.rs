@@ -12,7 +12,9 @@ pub struct TimeOpts {
 }
 
 impl TimeOpts {
-    pub fn from_matches() -> Self { Self::new(create_app().get_matches()) }
+    pub fn from_matches() -> Self {
+        Self::new(create_app().get_matches())
+    }
 
     pub fn new(args: clap::ArgMatches) -> Self {
         let command =

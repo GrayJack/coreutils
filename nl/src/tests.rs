@@ -1,6 +1,8 @@
 use super::*;
 
-fn get_default_args() -> NlArgs { NlArgs::from_matches(&ArgMatches::default()) }
+fn get_default_args() -> NlArgs {
+    NlArgs::from_matches(&ArgMatches::default())
+}
 
 #[test]
 fn verify_default_args() {

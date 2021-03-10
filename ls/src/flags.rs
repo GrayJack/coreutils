@@ -1,8 +1,7 @@
 use std::io;
 
-use coreutils_core::os::tty::is_tty;
-
 use clap::ArgMatches;
+use coreutils_core::os::tty::is_tty;
 
 /// Represents the command line arguments available to `ls`
 #[derive(Default, Copy, Clone)]
@@ -75,8 +74,8 @@ impl Flags {
             dereference,
             file_status_modification,
             hide_control_chars,
-            inode,
             indicator,
+            inode,
             last_accessed,
             list,
             no_dereference,
@@ -108,5 +107,7 @@ impl Flags {
     }
 
     /// Whether or not to show hidden files and directories
-    pub fn show_hidden(&self) -> bool { self.all || self.almost_all || self.no_sort }
+    pub fn show_hidden(&self) -> bool {
+        self.all || self.almost_all || self.no_sort
+    }
 }

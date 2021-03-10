@@ -1,10 +1,11 @@
 //! Module abstracting interactions with getrusage(2)
 //!
 //! Also holds utility functions for summarizing the data returned by getrusage(2)
-use super::TimeVal;
 #[cfg(not(target_os = "fuchsia"))]
 use libc::getrusage;
 use libc::{c_int, rusage, RUSAGE_CHILDREN, RUSAGE_SELF};
+
+use super::TimeVal;
 
 /// Interface for `RUSAGE_*` constants from libc.
 ///
@@ -19,8 +20,8 @@ pub enum ResourceConsumer {
 #[derive(Debug)]
 pub struct RUsage {
     pub timing: Timing,
-    pub mem:    MemoryUsage,
-    pub io:     IOUsage,
+    pub mem: MemoryUsage,
+    pub io: IOUsage,
 }
 
 #[derive(Debug)]
@@ -28,7 +29,7 @@ pub struct Timing {
     /// User CPU time used
     pub user_time: TimeVal,
     /// System CPU time used
-    pub sys_time:  TimeVal,
+    pub sys_time: TimeVal,
 }
 
 #[derive(Debug)]
@@ -56,7 +57,7 @@ pub struct MemoryUsage {
 #[derive(Debug)]
 pub struct IOUsage {
     /// Number of block input operations
-    pub num_block_in:  u64,
+    pub num_block_in: u64,
     /// Number of block output operations
     pub num_block_out: u64,
     /// Unmaintained on linux: Number of IPC messages recieved
@@ -64,14 +65,14 @@ pub struct IOUsage {
     /// Unmaintained on linux: Number of IPC messages sent
     pub num_sock_send: u64,
     /// Unmaintained: Number of signals recieved
-    pub num_signals:   u64,
+    pub num_signals: u64,
 }
 
 impl From<rusage> for RUsage {
     fn from(ru: rusage) -> Self {
         RUsage {
             timing: Timing { user_time: ru.ru_utime, sys_time: ru.ru_stime },
-            mem:    MemoryUsage {
+            mem: MemoryUsage {
                 max_rss: ru.ru_maxrss as u64,
                 num_minor_page_flt: ru.ru_minflt as u64,
                 num_major_page_flt: ru.ru_majflt as u64,
@@ -82,12 +83,12 @@ impl From<rusage> for RUsage {
                 unshared_stack_size: ru.ru_isrss as u64,
                 num_swaps: ru.ru_nswap as u64,
             },
-            io:     IOUsage {
-                num_block_in:  ru.ru_inblock as u64,
+            io: IOUsage {
+                num_block_in: ru.ru_inblock as u64,
                 num_block_out: ru.ru_oublock as u64,
                 num_sock_recv: ru.ru_msgrcv as u64,
                 num_sock_send: ru.ru_msgsnd as u64,
-                num_signals:   ru.ru_nsignals as u64,
+                num_signals: ru.ru_nsignals as u64,
             },
         }
     }

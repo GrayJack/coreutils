@@ -30,8 +30,7 @@ use std::{
     mem, slice,
 };
 
-use super::{Pid, TimeVal};
-
+use bstr::{BStr, BString, ByteSlice};
 #[cfg(any(target_os = "linux", target_os = "netbsd"))]
 use libc::__exit_status as ExitStatus;
 #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
@@ -49,10 +48,9 @@ use libc::utmpxname;
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_int, c_short, exit_status as ExitStatus};
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
-
-use bstr::{BStr, BString, ByteSlice};
-
 use time::{Duration, OffsetDateTime as DateTime};
+
+use super::{Pid, TimeVal};
 
 /// Error type for [`UtmpxKind`] conversion.
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -115,15 +113,15 @@ pub enum UtmpxKind {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utmpx {
     /// User login name.
-    user:    BString,
+    user: BString,
     /// Host name.
-    host:    BString,
+    host: BString,
     /// Process id creating the entry.
-    pid:     Pid,
+    pid: Pid,
     /// Record identifier. (/etc/inittab id)
-    id:      BString,
+    id: BString,
     /// Device name. (console/tty, lnxx)
-    line:    BString,
+    line: BString,
     /// Type of the entry.
     ut_type: UtmpxKind,
     /// The time entry was created.
@@ -134,7 +132,7 @@ pub struct Utmpx {
         target_os = "solaris",
         target_os = "illumos"
     ))]
-    exit:    ExitStatus,
+    exit: ExitStatus,
     /// Session ID. (used for windowing)
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     session: c_int,
@@ -152,39 +150,53 @@ pub struct Utmpx {
     #[cfg(target_os = "linux")]
     addr_v6: [i32; 4],
     #[cfg(target_os = "netbsd")]
-    ss:      libc::sockaddr_storage,
+    ss: libc::sockaddr_storage,
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
-    syslen:  c_short,
+    syslen: c_short,
 }
 
 impl Utmpx {
     /// Get user name.
     #[inline]
-    pub fn user(&self) -> &BStr { self.user.as_bstr() }
+    pub fn user(&self) -> &BStr {
+        self.user.as_bstr()
+    }
 
     /// Get host name.
     #[inline]
-    pub fn host(&self) -> &BStr { self.host.as_bstr() }
+    pub fn host(&self) -> &BStr {
+        self.host.as_bstr()
+    }
 
     /// Get the process ID.
     #[inline]
-    pub const fn process_id(&self) -> Pid { self.pid }
+    pub const fn process_id(&self) -> Pid {
+        self.pid
+    }
 
     /// Get the record ID.
     #[inline]
-    pub fn id(&self) -> &BStr { self.id.as_bstr() }
+    pub fn id(&self) -> &BStr {
+        self.id.as_bstr()
+    }
 
     /// Get the device name of the entry (usually a tty or console).
     #[inline]
-    pub fn device_name(&self) -> &BStr { self.line.as_bstr() }
+    pub fn device_name(&self) -> &BStr {
+        self.line.as_bstr()
+    }
 
     /// Get the type kind if the entry.
     #[inline]
-    pub const fn entry_type(&self) -> UtmpxKind { self.ut_type }
+    pub const fn entry_type(&self) -> UtmpxKind {
+        self.ut_type
+    }
 
     /// Get the time where the entry was created. (often login time)
     #[inline]
-    pub const fn timeval(&self) -> TimeVal { self.timeval }
+    pub const fn timeval(&self) -> TimeVal {
+        self.timeval
+    }
 
     /// Get the time where the entry was created (often login time) in a more complete
     /// structure.
@@ -197,22 +209,30 @@ impl Utmpx {
     /// Get the session ID of the entry.
     #[cfg(all(target_os = "linux", any(target_arch = "x86_64")))]
     #[inline]
-    pub const fn session(&self) -> c_int { self.session }
+    pub const fn session(&self) -> c_int {
+        self.session
+    }
 
     /// Get the session ID of the entry.
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     #[inline]
-    pub const fn session(&self) -> c_int { self.session }
+    pub const fn session(&self) -> c_int {
+        self.session
+    }
 
     /// Get the session ID of the entry.
     #[cfg(all(target_os = "linux", not(any(target_arch = "x86_64"))))]
     #[inline]
-    pub const fn session(&self) -> c_long { self.session }
+    pub const fn session(&self) -> c_long {
+        self.session
+    }
 
     /// Get the session ID of the entry.
     #[cfg(any(target_os = "netbsd", target_os = "dragonfly"))]
     #[inline]
-    pub const fn session(&self) -> u16 { self.session }
+    pub const fn session(&self) -> u16 {
+        self.session
+    }
 
     /// Get the IP address of the entry.
     #[cfg(target_os = "linux")]
@@ -243,7 +263,9 @@ impl Utmpx {
         target_os = "illumos"
     ))]
     #[inline]
-    pub const fn exit_status(&self) -> ExitStatus { self.exit }
+    pub const fn exit_status(&self) -> ExitStatus {
+        self.exit
+    }
 }
 
 impl From<utmpx> for Utmpx {
@@ -295,7 +317,7 @@ impl From<utmpx> for Utmpx {
         };
 
         let timeval = TimeVal {
-            tv_sec:  c_utmpx.ut_tv.tv_sec as time_t,
+            tv_sec: c_utmpx.ut_tv.tv_sec as time_t,
             tv_usec: c_utmpx.ut_tv.tv_usec as suseconds_t,
         };
 
@@ -464,15 +486,21 @@ impl UtmpxSet {
 
     /// Returns `true` if collection nas no elements.
     #[inline]
-    pub fn is_empty(&self) -> bool { self.0.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 
     /// Creates a iterator over it's entries.
     #[inline]
-    pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> { self.0.iter() }
+    pub fn iter(&self) -> hash_set::Iter<'_, Utmpx> {
+        self.0.iter()
+    }
 
     /// Size of the collection.
     #[inline]
-    pub fn len(&self) -> usize { self.0.len() }
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 impl IntoIterator for UtmpxSet {
@@ -480,7 +508,9 @@ impl IntoIterator for UtmpxSet {
     type Item = Utmpx;
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter { self.0.into_iter() }
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
 }
 
 /// A iterator over the [`Utmpx`].

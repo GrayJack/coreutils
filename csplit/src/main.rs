@@ -240,7 +240,9 @@ struct Pattern {
 }
 
 impl Pattern {
-    fn new(matcher: Box<dyn Matcher>) -> Pattern { Pattern { repeat: 1, count: 1, matcher } }
+    fn new(matcher: Box<dyn Matcher>) -> Pattern {
+        Pattern { repeat: 1, count: 1, matcher }
+    }
 
     /// Check if line matches.
     ///
@@ -295,11 +297,15 @@ trait Matcher: fmt::Debug {
 struct NeverMatcher;
 
 impl NeverMatcher {
-    fn new() -> NeverMatcher { NeverMatcher {} }
+    fn new() -> NeverMatcher {
+        NeverMatcher {}
+    }
 }
 
 impl Matcher for NeverMatcher {
-    fn match_line(&mut self, _lineno: usize, _line: &str) -> (bool, bool) { (false, false) }
+    fn match_line(&mut self, _lineno: usize, _line: &str) -> (bool, bool) {
+        (false, false)
+    }
 
     fn process_line(&mut self, filer: &mut Filer, _lineno: usize, line: &str) -> Result<()> {
         filer.write_line(line)
@@ -341,9 +347,9 @@ impl Matcher for LineMatcher {
 /// Match a line if it matches the regular expression.
 #[derive(Debug)]
 struct RegexMatcher {
-    regex:      Regex,
-    skip:       bool,
-    offset:     i32,
+    regex: Regex,
+    skip: bool,
+    offset: i32,
     line_match: Option<usize>,
 }
 

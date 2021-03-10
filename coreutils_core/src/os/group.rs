@@ -1,5 +1,7 @@
 //! Module to deal more easily with UNIX groups.
 
+#[cfg(target_os = "macos")]
+use std::convert::TryInto;
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use std::os::raw::c_int;
 use std::{
@@ -14,16 +16,12 @@ use std::{
     slice::Iter,
 };
 
-#[cfg(target_os = "macos")]
-use std::convert::TryInto;
-
+use bstr::{BStr, BString, ByteSlice};
 use libc::{getegid, getgrgid_r, getgrnam_r, getgroups, group};
 #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
 use libc::{getgrouplist, getpwnam_r};
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{sysconf, _SC_NGROUPS_MAX};
-
-use bstr::{BStr, BString, ByteSlice};
 
 use self::Error::*;
 use super::{passwd::Error as PwError, Gid};
@@ -91,17 +89,23 @@ impl StdError for Error {
 
 impl From<NulError> for Error {
     #[inline]
-    fn from(err: NulError) -> Self { Cstring(err) }
+    fn from(err: NulError) -> Self {
+        Cstring(err)
+    }
 }
 
 impl From<PwError> for Error {
     #[inline]
-    fn from(err: PwError) -> Self { Passwd(Box::new(err)) }
+    fn from(err: PwError) -> Self {
+        Passwd(Box::new(err))
+    }
 }
 
 impl From<Error> for IoError {
     #[inline]
-    fn from(err: Error) -> Self { Self::new(io::ErrorKind::Other, err) }
+    fn from(err: Error) -> Self {
+        Self::new(io::ErrorKind::Other, err)
+    }
 }
 
 /// This struct holds information about a group of UNIX/UNIX-like systems.
@@ -110,13 +114,13 @@ impl From<Error> for IoError {
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Group {
     /// Group name.
-    name:   BString,
+    name: BString,
     /// Group ID.
-    id:     Gid,
+    id: Gid,
     /// Group encrypted password.
     passwd: BString,
     /// Group list of members.
-    mem:    Members,
+    mem: Members,
 }
 
 impl Group {
@@ -244,19 +248,27 @@ impl Group {
 
     /// Returns the `Group` name.
     #[inline]
-    pub fn name(&self) -> &BStr { self.name.as_bstr() }
+    pub fn name(&self) -> &BStr {
+        self.name.as_bstr()
+    }
 
     /// Returns the `Group` id.
     #[inline]
-    pub fn id(&self) -> Gid { self.id }
+    pub fn id(&self) -> Gid {
+        self.id
+    }
 
     /// Returns the `Group` encrypted password.
     #[inline]
-    pub fn passwd(&self) -> &BStr { self.passwd.as_bstr() }
+    pub fn passwd(&self) -> &BStr {
+        self.passwd.as_bstr()
+    }
 
     /// Returns the `Group` list of members.
     #[inline]
-    pub fn mem(&self) -> &Members { &self.mem }
+    pub fn mem(&self) -> &Members {
+        &self.mem
+    }
 }
 
 impl TryFrom<group> for Group {
@@ -315,7 +327,9 @@ pub struct Groups {
 impl Groups {
     /// Creates a empty new [`Groups`].
     #[inline]
-    pub const fn new() -> Self { Groups { inner: Vec::new() } }
+    pub const fn new() -> Self {
+        Groups { inner: Vec::new() }
+    }
 
     /// Get all the process caller groups.
     ///
@@ -468,19 +482,27 @@ impl Groups {
 
     /// Insert a [`Group`] on [`Groups`].
     #[inline]
-    pub fn push(&mut self, value: Group) { self.inner.push(value); }
+    pub fn push(&mut self, value: Group) {
+        self.inner.push(value);
+    }
 
     /// Return `true` if [`Groups`] contains 0 elements.
     #[inline]
-    pub fn is_empty(&self) -> bool { self.inner.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
 
     /// Transform [`Groups`] to a Vector of [`Group`].
     #[inline]
-    pub fn into_vec(self) -> Vec<Group> { self.inner }
+    pub fn into_vec(self) -> Vec<Group> {
+        self.inner
+    }
 
     /// Creates a iterator over it's entries.
     #[inline]
-    pub fn iter(&self) -> Iter<'_, Group> { self.inner.iter() }
+    pub fn iter(&self) -> Iter<'_, Group> {
+        self.inner.iter()
+    }
 }
 
 impl IntoIterator for Groups {
@@ -488,7 +510,9 @@ impl IntoIterator for Groups {
     type Item = Group;
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter { self.inner.into_iter() }
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.into_iter()
+    }
 }
 
 
@@ -500,10 +524,10 @@ impl From<Group> for group {
             gr.mem.iter().map(|s| s.clone().as_mut_ptr() as *mut c_char).collect();
 
         group {
-            gr_name:   gr.name.as_mut_ptr() as *mut c_char,
-            gr_gid:    gr.id,
+            gr_name: gr.name.as_mut_ptr() as *mut c_char,
+            gr_gid: gr.id,
             gr_passwd: gr.passwd.as_mut_ptr() as *mut c_char,
-            gr_mem:    vec.as_mut_ptr(),
+            gr_mem: vec.as_mut_ptr(),
         }
     }
 }

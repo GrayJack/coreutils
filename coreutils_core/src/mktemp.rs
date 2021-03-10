@@ -17,7 +17,9 @@ pub struct Mktemp {
 
 impl Display for Mktemp {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.pad(&self.path) }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.pad(&self.path)
+    }
 }
 
 /// Creates a temporary file based on the given `template`.

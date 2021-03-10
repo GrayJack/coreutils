@@ -72,12 +72,16 @@ impl std::fmt::Display for Error {
 
 impl From<io::Error> for Error {
     #[inline]
-    fn from(err: io::Error) -> Self { Self::Io(err) }
+    fn from(err: io::Error) -> Self {
+        Self::Io(err)
+    }
 }
 
 impl From<std::time::SystemTimeError> for Error {
     #[inline]
-    fn from(err: std::time::SystemTimeError) -> Self { Self::Time(err) }
+    fn from(err: std::time::SystemTimeError) -> Self {
+        Self::Time(err)
+    }
 }
 
 /// Get the time the system started.

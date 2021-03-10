@@ -281,10 +281,14 @@ fn sort(files: &mut Files, flags: &Flags) {
 }
 
 /// Sort a list of files by last accessed time
-fn sort_by_access_time(file: &File) -> i64 { file.metadata.atime() }
+fn sort_by_access_time(file: &File) -> i64 {
+    file.metadata.atime()
+}
 
 /// Sort a list of files by last change of file status information
-fn sort_by_last_changed_time(file: &File) -> i64 { file.metadata.ctime() }
+fn sort_by_last_changed_time(file: &File) -> i64 {
+    file.metadata.ctime()
+}
 
 /// Sort a list of files by file name alphabetically
 fn sort_by_name(file: &File) -> String {
@@ -292,7 +296,11 @@ fn sort_by_name(file: &File) -> String {
 }
 
 /// Sort a list of files by size
-fn sort_by_size(file: &File) -> u64 { file.metadata.len() }
+fn sort_by_size(file: &File) -> u64 {
+    file.metadata.len()
+}
 
 /// Sort a list of directories by modification time
-fn sort_by_time(file: &File) -> i64 { file.metadata.mtime() }
+fn sort_by_time(file: &File) -> i64 {
+    file.metadata.mtime()
+}

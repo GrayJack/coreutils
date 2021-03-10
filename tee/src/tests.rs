@@ -1,7 +1,9 @@
-use super::*;
-use assert_cmd::Command;
 use std::{error::Error, fs::File};
+
+use assert_cmd::Command;
 use tempfile::NamedTempFile;
+
+use super::*;
 
 #[test]
 fn tee_copy_buffer() {

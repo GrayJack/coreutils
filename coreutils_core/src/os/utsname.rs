@@ -13,15 +13,15 @@ use libc::{c_char, uname, utsname};
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UtsName {
     /// Name of the operating system implementation.
-    sysname:    BString,
+    sysname: BString,
     /// Network name of this machine.
-    nodename:   BString,
+    nodename: BString,
     /// Release level of the operating system. (Often the kernel version)
-    release:    BString,
+    release: BString,
     /// Version level of the operating system.
-    version:    BString,
+    version: BString,
     /// Machine hardware platform.
-    machine:    BString,
+    machine: BString,
     /// NIS or YP domain name.
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
     domainname: BString,
@@ -49,28 +49,40 @@ impl UtsName {
 
     /// Get system name.
     #[inline]
-    pub fn system_name(&self) -> &BStr { self.sysname.as_bstr() }
+    pub fn system_name(&self) -> &BStr {
+        self.sysname.as_bstr()
+    }
 
     /// Get host name of the machine.
     #[inline]
-    pub fn node_name(&self) -> &BStr { self.nodename.as_bstr() }
+    pub fn node_name(&self) -> &BStr {
+        self.nodename.as_bstr()
+    }
 
     /// Get the release level of the operating system.
     #[inline]
-    pub fn release(&self) -> &BStr { self.release.as_bstr() }
+    pub fn release(&self) -> &BStr {
+        self.release.as_bstr()
+    }
 
     /// Get the version level of this release of the operating system.
     #[inline]
-    pub fn version(&self) -> &BStr { self.version.as_bstr() }
+    pub fn version(&self) -> &BStr {
+        self.version.as_bstr()
+    }
 
     /// Get the type of the current hardware platform.
     #[inline]
-    pub fn machine(&self) -> &BStr { self.machine.as_bstr() }
+    pub fn machine(&self) -> &BStr {
+        self.machine.as_bstr()
+    }
 
     /// Get the NIS or YP domain name.
     #[inline]
     #[cfg(any(target_os = "linux", target_os = "fuchsia"))]
-    pub fn domain_name(&self) -> &BStr { self.domainname.as_bstr() }
+    pub fn domain_name(&self) -> &BStr {
+        self.domainname.as_bstr()
+    }
 }
 
 impl TryFrom<utsname> for UtsName {

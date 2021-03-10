@@ -1,5 +1,6 @@
-use self::BlocksizeSuffix::*;
 use std::{fmt, slice::Iter};
+
+use self::BlocksizeSuffix::*;
 
 // Reference:
 // https://www.gnu.org/software/coreutils/manual/html_node/Block-size.html#Block-size
@@ -99,13 +100,15 @@ impl BlocksizeSuffix {
 
 #[derive(Debug)]
 pub struct Blocksize {
-    value:  u64,
+    value: u64,
     suffix: Option<BlocksizeSuffix>,
     use_si: bool,
 }
 
 impl Blocksize {
-    pub fn new() -> Self { Blocksize { value: init_blocksize(), suffix: None, use_si: false } }
+    pub fn new() -> Self {
+        Blocksize { value: init_blocksize(), suffix: None, use_si: false }
+    }
 
     pub fn from_str(size: &str) -> Result<Self, BlocksizeError> {
         let init = Blocksize::new();
@@ -171,7 +174,9 @@ impl Blocksize {
         Ok(self)
     }
 
-    pub fn use_si(&mut self) { self.use_si = true; }
+    pub fn use_si(&mut self) {
+        self.use_si = true;
+    }
 
     pub fn use_largest_suffix(self) -> Self {
         let total = self.value();
@@ -180,9 +185,13 @@ impl Blocksize {
         Blocksize { value: total / suffix.map_or(1, |s| s.value()), suffix, use_si: self.use_si }
     }
 
-    pub fn value(&self) -> u64 { self.value * self.suffix.map_or(1, |s| s.value()) }
+    pub fn value(&self) -> u64 {
+        self.value * self.suffix.map_or(1, |s| s.value())
+    }
 
-    pub fn human_readable(&self) -> String { format!("{}", self) }
+    pub fn human_readable(&self) -> String {
+        format!("{}", self)
+    }
 
     pub fn suffix_str(&self) -> &'static str {
         match self.suffix {
@@ -198,4 +207,6 @@ impl fmt::Display for Blocksize {
     }
 }
 
-fn init_blocksize() -> u64 { 1024 }
+fn init_blocksize() -> u64 {
+    1024
+}
