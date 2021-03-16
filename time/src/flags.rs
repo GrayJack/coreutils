@@ -1,5 +1,7 @@
 //! Command line options that are supported by `time`
 
+use clap::ArgMatches;
+
 use crate::{cli::create_app, output::OutputFormatter};
 
 // Condense CLI args as a struct
@@ -16,24 +18,18 @@ impl TimeOpts {
         Self::new(create_app().get_matches())
     }
 
-    pub fn new(args: clap::ArgMatches) -> Self {
-        let command =
-            args.value_of("COMMAND").expect("`COMMAND` value cannot be `None`, it is required.");
-
+    pub fn new(args: ArgMatches) -> Self {
         TimeOpts {
             printer: if args.is_present("posix") {
                 OutputFormatter::Posix
             } else {
                 OutputFormatter::Default
             },
-            command: match args.values_of("ARGUMENT") {
-                Some(vs) => {
-                    let mut cmd = vec![command.to_owned()];
-                    cmd.extend(vs.into_iter().map(|item| item.to_owned()));
-                    cmd
-                },
-                None => vec![command.to_owned()],
-            },
+            command: args
+                .values_of("COMMAND")
+                .expect("`COMMAND` value cannot be `None`, it is required.")
+                .map(str::to_owned)
+                .collect(),
         }
     }
 }
@@ -54,7 +50,7 @@ mod tests {
 
     #[test]
     fn parse_valid_command_with_posix_spec() {
-        let args = vec!["test-time", "cmd-to-run", "arg1", "arg2", "arg3", "-p"];
+        let args = vec!["test-time", "-p", "cmd-to-run", "arg1", "arg2", "arg3"];
         let opts = TimeOpts::new(create_app().get_matches_from(args));
 
         assert_eq!(OutputFormatter::Posix, opts.printer);

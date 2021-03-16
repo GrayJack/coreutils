@@ -1,5 +1,7 @@
 use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
+    crate_authors, crate_description, crate_name, crate_version, App,
+    AppSettings::{ColoredHelp, TrailingVarArg},
+    Arg,
 };
 
 pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
@@ -10,12 +12,12 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .help_message("Display help information.")
         .version_message("Display version information.")
         .help_short("?")
-        .settings(&[ColoredHelp])
-        .arg(Arg::with_name("COMMAND").help("Command or utility to run.").required(true))
+        .settings(&[ColoredHelp, TrailingVarArg])
         .arg(
-            Arg::with_name("ARGUMENT")
-                .help("Optional arguments to pass to <COMMAND>.")
-                .multiple(true),
+            Arg::with_name("COMMAND")
+                .help("Command to run and it's arguments.")
+                .multiple(true)
+                .required(true),
         )
         .arg(
             Arg::with_name("posix")
@@ -25,7 +27,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      seconds.",
                 )
                 .long("posix")
-                .short("p")
-                .takes_value(false),
+                .short("p"),
         )
 }
