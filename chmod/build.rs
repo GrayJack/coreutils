@@ -16,9 +16,9 @@ fn main() {
         },
     };
 
-    app.gen_completions("template", Shell::Zsh, out_dir.clone());
-    app.gen_completions("template", Shell::Fish, out_dir.clone());
-    app.gen_completions("template", Shell::Bash, out_dir.clone());
-    app.gen_completions("template", Shell::PowerShell, out_dir.clone());
-    app.gen_completions("template", Shell::Elvish, out_dir);
+    app.gen_completions("chmod", Shell::Zsh, out_dir.clone());
+    app.gen_completions("chmod", Shell::Fish, out_dir.clone());
+    app.gen_completions("chmod", Shell::Bash, out_dir.clone());
+    app.gen_completions("chmod", Shell::PowerShell, out_dir.clone());
+    app.gen_completions("chmod", Shell::Elvish, out_dir);
 }
