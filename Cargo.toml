@@ -8,6 +8,7 @@ codegen-units = 1
 members = [
     "basename",
     "cat",
+    "chmod",
     "chroot",
     "clear",
     # "coreutils_core",
