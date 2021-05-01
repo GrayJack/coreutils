@@ -15,7 +15,7 @@ fn verify_default_args() {
     assert_eq!(args.line_increment, 1);
     assert_eq!(args.join_blank_lines, 1);
     assert_eq!(args.number_format, Format::Rn);
-    assert_eq!(args.no_renumber, false);
+    assert!(!args.no_renumber);
     assert_eq!(args.number_separator, String::from("\t"));
     assert_eq!(args.starting_line_number, 1);
     assert_eq!(args.number_width, 6);

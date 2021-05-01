@@ -13,8 +13,8 @@ fn touch_create_empty_files() {
 
     touch(&files, flags);
 
-    assert_eq!(metadata("file1.rs").is_ok(), true);
-    assert_eq!(metadata("file2.rs").is_ok(), true);
+    assert!(metadata("file1.rs").is_ok());
+    assert!(metadata("file2.rs").is_ok());
     remove_test_files(&files).unwrap();
 }
 

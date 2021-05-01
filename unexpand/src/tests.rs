@@ -137,37 +137,37 @@ fn is_tab_stop_repetable() {
 #[test]
 fn is_tab_stop_values() {
     let instance = TabStops::new(Some("1, 2, 4")).unwrap();
-    assert_eq!(instance.is_tab_stop(1), true);
-    assert_eq!(instance.is_tab_stop(2), true);
-    assert_eq!(instance.is_tab_stop(3), false);
-    assert_eq!(instance.is_tab_stop(4), true);
+    assert!(instance.is_tab_stop(1));
+    assert!(instance.is_tab_stop(2));
+    assert!(!instance.is_tab_stop(3));
+    assert!(instance.is_tab_stop(4));
 
     for i in 5..50 {
-        assert_eq!(instance.is_tab_stop(i), false);
+        assert!(!instance.is_tab_stop(i));
     }
 }
 
 #[test]
 fn is_tab_stop_with_offset() {
     let instance = TabStops::new(Some("1,+8")).unwrap();
-    assert_eq!(instance.is_tab_stop(1), true);
-    assert_eq!(instance.is_tab_stop(2), false);
-    assert_eq!(instance.is_tab_stop(8), false);
-    assert_eq!(instance.is_tab_stop(9), true);
-    assert_eq!(instance.is_tab_stop(16), false);
-    assert_eq!(instance.is_tab_stop(17), true);
-    assert_eq!(instance.is_tab_stop(18), false);
+    assert!(instance.is_tab_stop(1));
+    assert!(!instance.is_tab_stop(2));
+    assert!(!instance.is_tab_stop(8));
+    assert!(instance.is_tab_stop(9));
+    assert!(!instance.is_tab_stop(16));
+    assert!(instance.is_tab_stop(17));
+    assert!(!instance.is_tab_stop(18));
 }
 
 #[test]
 fn is_tab_stop_with_values_and_repetable() {
     let instance = TabStops::new(Some("1, 2, /8")).unwrap();
-    assert_eq!(instance.is_tab_stop(1), true);
-    assert_eq!(instance.is_tab_stop(2), true);
-    assert_eq!(instance.is_tab_stop(3), false);
-    assert_eq!(instance.is_tab_stop(8), true);
-    assert_eq!(instance.is_tab_stop(9), false);
-    assert_eq!(instance.is_tab_stop(16), true);
+    assert!(instance.is_tab_stop(1));
+    assert!(instance.is_tab_stop(2));
+    assert!(!instance.is_tab_stop(3));
+    assert!(instance.is_tab_stop(8));
+    assert!(!instance.is_tab_stop(9));
+    assert!(instance.is_tab_stop(16));
 }
 
 #[test]
