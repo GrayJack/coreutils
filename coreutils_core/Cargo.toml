@@ -1,7 +1,10 @@
 [package]
 name = "coreutils_core"
 version = "0.1.1"
-authors = ["GrayJack <gr41.j4ck@gmail.com>", "Gab David <g.bianchetdavid@gmail.com>"]
+authors = [
+    "GrayJack <gr41.j4ck@gmail.com>",
+    "Gab David <g.bianchetdavid@gmail.com>",
+]
 description = "A crate with abstractions to implement UNIX core utilities"
 readme = "README.md"
 license = "MPL-2.0-no-copyleft-exception"
@@ -14,15 +17,22 @@ categories = ["os", "os::unix-apis", "os::macos-apis"]
 edition = "2018"
 
 [package.metadata.docs.rs]
-targets = ["x86_64-unknown-linux-gnu", "x86_64-unknown-freebsd",
-    "x86_64-unknown-netbsd", "x86_64-apple-darwin", "x86_64-sun-solaris",
-    "x86_64-fuchsia", "aarch64-unknown-linux-gnu", "i686-unknown-linux-gnu"]
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-freebsd",
+    "x86_64-unknown-netbsd",
+    "x86_64-apple-darwin",
+    "x86_64-sun-solaris",
+    "x86_64-fuchsia",
+    "aarch64-unknown-linux-gnu",
+    "i686-unknown-linux-gnu",
+]
 
 [dependencies]
-libc = { version = "~0.2.69", features = ["extra_traits"] }
-bstr = "~0.2.14"
+libc = { version = "~0.2.94", features = ["extra_traits"] }
+bstr = "~0.2.16"
 # bstr = {path = "/home/grayjack/MySources/RustProjects/bstr"}
-regex = "^1.4.2"
+regex = "^1.5.2"
 time = "= 0.2.22"
 
 [features]

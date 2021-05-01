@@ -1,7 +1,6 @@
 [profile.release]
 lto = "thin"
 codegen-units = 1
-# target_cpu = "native"
 # panic = "abort"
 
 [workspace]
@@ -10,7 +9,6 @@ members = [
     "cat",
     "chroot",
     "clear",
-    # "coreutils_core",
     "csplit",
     "cut",
     "date",
@@ -55,4 +53,4 @@ members = [
     "who",
     "whoami",
     "yes",
-]
+] # "coreutils_core",
