@@ -133,13 +133,13 @@ fn collect(file: &str, flags: &Flags) -> Files {
                     },
                 };
 
-                if !File::is_hidden(&file.name.as_bstr()) || flags.show_hidden() {
+                if !File::is_hidden(file.name.as_bstr()) || flags.show_hidden() {
                     result.push(file);
                 }
             }
 
             if !flags.no_sort {
-                sort(&mut result, &flags);
+                sort(&mut result, flags);
             }
         },
         Err(err) => {
@@ -239,7 +239,7 @@ fn recursive_output(file: &str, writer: &mut BufWriter<io::Stdout>, flags: &Flag
                         if path.is_dir() {
                             let file_string = path.to_string_lossy().to_string();
 
-                            exit_code = recursive_output(&file_string, writer, &flags);
+                            exit_code = recursive_output(&file_string, writer, flags);
                         }
                     },
                     Err(err) => {

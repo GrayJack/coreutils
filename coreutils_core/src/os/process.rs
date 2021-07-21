@@ -58,7 +58,7 @@ pub fn set_user(user: &str) -> io::Result<()> {
 /// variant will be returned.
 #[inline]
 pub fn set_groups(groups: &[&str]) -> io::Result<()> {
-    let groups = Groups::from_group_list(&groups)?;
+    let groups = Groups::from_group_list(groups)?;
     let groups: Vec<Gid> = groups.iter().map(|g| g.id()).collect();
 
     #[allow(clippy::useless_conversion)]

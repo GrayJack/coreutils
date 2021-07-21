@@ -47,5 +47,5 @@ fn du_parse_blocksize_si_system() {
 #[test]
 fn du_parse_time_style_pattern() {
     let year_only_style = "+%Y";
-    assert_eq!(TimeStyleOption::Format("%Y"), parse_time_style(Some(&year_only_style)));
+    assert_eq!(TimeStyleOption::Format("%Y"), parse_time_style(Some(year_only_style)));
 }

@@ -101,14 +101,14 @@ fn build_patterns(patterns: Vec<&str>) -> Result<Vec<Pattern>> {
     let mut result = Vec::new();
     for pattern in patterns {
         match pattern.chars().clone().next() {
-            Some('0'..='9') => result.push(Pattern::new(LineMatcher::parse(&pattern)?)),
+            Some('0'..='9') => result.push(Pattern::new(LineMatcher::parse(pattern)?)),
             Some(ch @ '/') | Some(ch @ '%') => {
-                result.push(Pattern::new(RegexMatcher::parse(&pattern, ch)?))
+                result.push(Pattern::new(RegexMatcher::parse(pattern, ch)?))
             },
 
             Some('{') => {
                 if let Some(pat) = result.last_mut() {
-                    pat.repeat = parse_repeat(&pattern)?;
+                    pat.repeat = parse_repeat(pattern)?;
                 } else {
                     return Err(Error::InvalidPattern(pattern.to_string()));
                 }

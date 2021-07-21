@@ -49,7 +49,7 @@ fn touch(files: &[&str], flags: TouchFlags) {
             }
         }
         if let Ok(file_metadata) = file_metadata {
-            update_time(&filename, new_atime, new_mtime, &file_metadata, flags);
+            update_time(filename, new_atime, new_mtime, &file_metadata, flags);
         }
     }
 }
@@ -158,9 +158,9 @@ fn update_time(
     path: &str, new_atime: FileTime, new_mtime: FileTime, meta: &Metadata, flags: TouchFlags,
 ) {
     match (flags.access_time, flags.mod_time) {
-        (true, false) => update_access_time(&path, new_atime, meta, flags.no_deref),
-        (false, true) => update_modification_time(&path, new_mtime, meta, flags.no_deref),
-        (true, true) => update_both_time(&path, new_atime, new_mtime, flags.no_deref),
+        (true, false) => update_access_time(path, new_atime, meta, flags.no_deref),
+        (false, true) => update_modification_time(path, new_mtime, meta, flags.no_deref),
+        (true, true) => update_both_time(path, new_atime, new_mtime, flags.no_deref),
 
         // Unreachable because when creating `TouchFlags` if both are false, we change both to true
         // since de default behaviour is to change both. So (false, false) will never happen, and if

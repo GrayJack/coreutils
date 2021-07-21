@@ -143,7 +143,7 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
 
         if filetype.is_file() {
             if !flags.force && (flags.interactive ^ permissions.readonly()) {
-                let is_affirmative = match ask(filetype, &permissions, &relative[index], flags) {
+                let is_affirmative = match ask(filetype, &permissions, relative[index], flags) {
                     Ok(i) => i,
                     Err(_) => {
                         eprintln!("rm: failed to get input when interactive of write protected");
@@ -178,11 +178,10 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
             }
         } else if filetype.is_dir() {
             if flags.recursive {
-                rm_dir_all(file, &relative[index], filetype, &permissions, flags)?;
+                rm_dir_all(file, relative[index], filetype, &permissions, flags)?;
             } else if flags.dirs {
                 if !flags.force && (flags.interactive ^ permissions.readonly()) {
-                    let is_affirmative = match ask(filetype, &permissions, &relative[index], flags)
-                    {
+                    let is_affirmative = match ask(filetype, &permissions, relative[index], flags) {
                         Ok(i) => i,
                         Err(_) => {
                             eprintln!(
@@ -234,7 +233,7 @@ fn rm_dir_all(
     let file_type = fs::symlink_metadata(file)?.file_type();
     if file_type.is_symlink() {
         if !flags.force && (flags.interactive ^ permissions.readonly()) {
-            let is_affirmative = match ask(filetype, &permissions, &relative, flags) {
+            let is_affirmative = match ask(filetype, permissions, relative, flags) {
                 Ok(i) => i,
                 Err(_) => {
                     eprintln!("rm: failed to get input when interactive of write protected");
@@ -331,7 +330,7 @@ fn rm_dir_all_recursive(
     }
 
     if !flags.force && (flags.interactive ^ permissions.readonly()) {
-        let is_affirmative = match ask(filetype, &permissions, &relative, flags) {
+        let is_affirmative = match ask(filetype, permissions, relative, flags) {
             Ok(i) => i,
             Err(_) => {
                 eprintln!("rm: failed to get input when interactive of write protected");

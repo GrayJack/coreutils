@@ -21,6 +21,7 @@ impl<'a> TimeStyleOption<'a> {
     }
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug)]
 pub enum TimeOption {
     MTime,

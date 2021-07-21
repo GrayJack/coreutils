@@ -289,7 +289,7 @@ fn process_path(path: &str, flags_opts: &DuFlagsAndOptions, total_ref: &mut u64)
         .into_iter()
         .filter_map(|entry| entry.ok())
         .filter(|entry| {
-            flags_opts.exclude_pattern.as_ref().map_or(true, |p| !p.matches_path(&entry.path()))
+            flags_opts.exclude_pattern.as_ref().map_or(true, |p| !p.matches_path(entry.path()))
         })
         .for_each(|entry| {
             current_depth = entry.depth();
@@ -455,7 +455,7 @@ fn process_time(
         }
     }
 
-    let display_time = get_display_time(&meta, &time);
+    let display_time = get_display_time(meta, time);
 
     if display_time > subdir_times_r[depth] {
         // replace subdir max value
