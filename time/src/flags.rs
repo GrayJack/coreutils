@@ -22,6 +22,14 @@ impl TimeOpts {
         TimeOpts {
             printer: if args.is_present("posix") {
                 OutputFormatter::Posix
+            } else if args.is_present("use_csh_fmt") {
+                OutputFormatter::CSH
+            } else if args.is_present("use_tcsh_fmt") {
+                OutputFormatter::TCSH
+            } else if args.is_present("format_string") {
+                OutputFormatter::FmtString(
+                    args.value_of("format_string").expect("Empty format string").to_owned(),
+                )
             } else {
                 OutputFormatter::Default
             },
