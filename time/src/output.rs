@@ -1,15 +1,63 @@
-//! Output interface for `time`
+//! The Output interface for `time` is detailed in this module
 
 use std::fmt::Write;
 
 use coreutils_core::os::{resource::RUsage, TimeVal};
 
+/// The `OutputFormatter` is how `time` controls the printing
+/// of timing and resource usage information
+/// Timer accuracy is arbitrary, but will always be counted in seconds.
 #[derive(Debug, PartialEq)]
 pub enum OutputFormatter {
+    /// Display time output in the default format:
+    /// `    %E real %U user %S sys`
     Default,
+
+    /// Display time output in POSIX specified format as:
+    /// ```
+    ///     real %E
+    ///     user %U
+    ///     sys %S
+    /// ```
     Posix,
+
+    /// Display time output in the csh(1) default format:
+    /// ```
+    /// %Uu %Ss %E %P %X+%Dk %I+%Oio %Fpf+%Ww
+    /// ```
     CSH,
+
+    /// Display time output in the tcsh(1) default format:
+    /// ```
+    /// %Uu %Ss %E %P\t%X+%Dk %I+%Oio %Fpf+%Ww
+    /// ```
     TCSH,
+
+    /// Use a custom format string to render the output using printf-style
+    /// `%<specifier>` markers. Supported markers are:
+    /// ```
+    ///     %U    The time the process spent in user mode in cpu seconds.
+    ///     %S    The time the process spent in kernel mode in cpu seconds.
+    ///     %E    The elapsed (wall clock) time in seconds.
+    ///     %P    The CPU percentage computed as (%U + %S) / %E.
+    ///     %W    Number of times the process was swapped.
+    ///     %X    The average amount in (shared) text space used in Kbytes.
+    ///     %D    The average amount in (unshared) data/stack space used in
+    ///           Kbytes.
+    ///     %K    The total space used (%X + %D) in Kbytes.
+    ///     %M    The maximum memory the process had in use at any time in
+    ///           Kbytes.
+    ///     %F    The number of major page faults (page needed to be brought
+    ///           from disk).
+    ///     %R    The number of minor page faults.
+    ///     %I    The number of input operations.
+    ///     %O    The number of output operations.
+    ///     %r    The number of socket messages received.
+    ///     %s    The number of socket messages sent.
+    ///     %k    The number of signals received.
+    ///     %w    The number of voluntary context switches (waits).
+    ///     %c    The number of involuntary context switches.
+    /// ```
     FmtString(String),
 }
 
@@ -18,7 +66,8 @@ fn as_secs_f64(tv: TimeVal) -> f64 {
     tv.tv_sec as f64 + (tv.tv_usec as f64) / 1e+6
 }
 
-// Convenience struct for passing 3 floating point parameters
+/// Convenience struct for passing 3 floating point parameters
+/// each of which represents a time delta in seconds
 struct TimeTriple {
     pub user_time: f64,
     pub sys_time: f64,
@@ -26,6 +75,12 @@ struct TimeTriple {
 }
 
 impl OutputFormatter {
+    /// Format the rusage and timing information into a `String`
+    ///
+    /// # Arguments
+    ///
+    /// * `rusage` - Resource usage of the process being timed
+    /// * `duration` - Time taken by the process being timed
     pub fn format_stats(self, rusage: &RUsage, duration: &std::time::Duration) -> String {
         let timings: TimeTriple = TimeTriple {
             user_time: as_secs_f64(rusage.timing.user_time),
