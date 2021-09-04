@@ -102,8 +102,30 @@ fn configure_extensions<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
         .long("rusage")
         .short("l");
 
+    let human_readable = Arg::with_name("human_readable")
+        .conflicts_with("posix")
+        .help("Time durations are printed in hours, minutes, seconds")
+        .long("human-readable")
+        .short("h");
+
+    let output_path = Arg::with_name("output_path")
+        .takes_value(true)
+        .help("Write the output to file instead of stderr.\
+              If file exists and the -a flag is not specified,\
+              the file will be overwritten.")
+        .long("output-path")
+        .short("o");
+
+    let append_output = Arg::with_name("append_output")
+        .help("If the -o flag is used, append to specified file rather that\
+              overwrite it. Otherwise this option has no effect")
+        .long("append-output")
+        .short("a");
+
     if cfg!(target_os = "netbsd") {
         app.args(&[use_csh_fmt, format_string, dump_rusage, use_tcsh_fmt])
+    } else if cfg!(target_os = "freebsd") {
+        app.args(&[append_output, dump_rusage, human_readable, output_path])
     } else {
         app
     }
