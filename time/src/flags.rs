@@ -4,7 +4,10 @@ use std::{fs::OpenOptions, io, path::PathBuf};
 
 use clap::ArgMatches;
 
-use crate::{cli::create_app, output::FormatterKind, output::OutputFormatter};
+use crate::{
+    cli::create_app,
+    output::{FormatterKind, OutputFormatter},
+};
 
 // Condense CLI args as a struct
 #[derive(Debug)]
@@ -54,10 +57,7 @@ impl TimeOpts {
                 } else {
                     FormatterKind::Default
                 };
-                OutputFormatter {
-                    kind,
-                    human_readable: args.is_present("human_readable")
-                }
+                OutputFormatter { kind, human_readable: args.is_present("human_readable") }
             },
             command: args
                 .values_of("COMMAND")

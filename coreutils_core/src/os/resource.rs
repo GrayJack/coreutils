@@ -78,7 +78,7 @@ impl From<rusage> for RUsage {
         RUsage {
             timing: Timing {
                 user_time: timeval_to_duration(ru.ru_utime),
-                sys_time: timeval_to_duration(ru.ru_stime)
+                sys_time: timeval_to_duration(ru.ru_stime),
             },
             mem: MemoryUsage {
                 max_rss: ru.ru_maxrss as u64,
