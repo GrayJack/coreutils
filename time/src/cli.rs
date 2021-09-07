@@ -108,7 +108,7 @@ fn configure_extensions<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
         .long("human-readable")
         .short("h");
 
-    let output_path = Arg::with_name("output_path")
+    let output_path = Arg::with_name("output_file")
         .takes_value(true)
         .help("Write the output to file instead of stderr.\
               If file exists and the -a flag is not specified,\
@@ -116,16 +116,18 @@ fn configure_extensions<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
         .long("output-path")
         .short("o");
 
-    let append_output = Arg::with_name("append_output")
+    let append_output = Arg::with_name("append_mode")
         .help("If the -o flag is used, append to specified file rather that\
               overwrite it. Otherwise this option has no effect")
-        .long("append-output")
+        .long("append-mode")
         .short("a");
 
     if cfg!(target_os = "netbsd") {
         app.args(&[use_csh_fmt, format_string, dump_rusage, use_tcsh_fmt])
-    } else if cfg!(target_os = "freebsd") {
+    } else if cfg!(any(target_os = "freebsd", target_os = "dragonflybsd", target_os = "macos")) {
         app.args(&[append_output, dump_rusage, human_readable, output_path])
+    } else if cfg!(any(target_os = "openbsd", target_os = "macos")) {
+        app.arg(dump_rusage)
     } else {
         app
     }
