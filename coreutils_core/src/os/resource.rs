@@ -70,7 +70,12 @@ pub struct IOUsage {
 }
 
 fn timeval_to_duration(t: TimeVal) -> Duration {
-    Duration::new(t.tv_sec, t.tv_usec * 1_000)
+    // This type cast is realistically safe because the number of
+    // microseconds in a second cannot exceed `1e+6`, which at
+    // most would be `1e+9` nanoseconds, which fits in i32
+    // If this panics something really went wrong in the underlying
+    // C-api that returned this timeval
+    Duration::new(t.tv_sec as i64, t.tv_usec as i32 * 1_000)
 }
 
 impl From<rusage> for RUsage {
