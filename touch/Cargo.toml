@@ -15,7 +15,7 @@ associated with standard output.
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
 filetime = "~0.2.9"
-time = "= 0.2.22"
+time = "= 0.2.23"
 
 [build-dependencies]
 clap = "^2.33.0"
