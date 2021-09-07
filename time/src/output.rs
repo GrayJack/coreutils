@@ -1,8 +1,8 @@
 //! The Output interface for `time` is detailed in this module
 
-use coreutils_core::time::Duration;
 use std::fmt::Write;
-use coreutils_core::os::resource::RUsage;
+
+use coreutils_core::{os::resource::RUsage, time::Duration};
 
 /// The `FormatterKind` enum is how `time` controls the printing
 /// of timing and resource usage information

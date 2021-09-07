@@ -1,5 +1,7 @@
 //! Command line options that are supported by `time`
 
+use std::{fs::OpenOptions, io, path::PathBuf};
+
 use clap::ArgMatches;
 
 use crate::{cli::create_app, output::FormatterKind, output::OutputFormatter};
@@ -11,11 +13,29 @@ pub struct TimeOpts {
     pub printer: OutputFormatter,
     /// Command as seen on the CLI
     pub command: Vec<String>,
+    /// Where the output should be written to
+    pub destination: Option<PathBuf>,
+    /// Should the destination be appended to?
+    pub append: bool,
 }
 
 impl TimeOpts {
     pub fn from_matches() -> Self {
         Self::new(create_app().get_matches())
+    }
+
+    pub fn get_output_stream(&self) -> Result<Box<dyn io::Write>, io::Error> {
+        match &self.destination {
+            Some(dest) => {
+                let file = if self.append {
+                    OpenOptions::new().append(true).create(true).open(dest)
+                } else {
+                    OpenOptions::new().write(true).truncate(true).create(true).open(dest)
+                };
+                file.map(|f| Box::new(f) as Box<dyn io::Write>)
+            },
+            None => Ok(Box::new(io::stderr())),
+        }
     }
 
     pub fn new(args: ArgMatches) -> Self {
@@ -44,6 +64,12 @@ impl TimeOpts {
                 .expect("`COMMAND` to run is required")
                 .map(str::to_owned)
                 .collect(),
+            destination: match args.value_of("output_file") {
+                Some("-") => None,
+                Some(dest) => Some(PathBuf::from(dest)),
+                None => None,
+            },
+            append: args.is_present("append_mode"),
         }
     }
 }

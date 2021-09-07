@@ -14,6 +14,14 @@ fn main() {
 
     let usage = get_rusage(ResourceConsumer::Children);
 
-    eprintln!("{}", opts.printer.format_stats(&usage, &duration));
+    let written = match opts.get_output_stream() {
+        Ok(mut stream) => {
+            let data = opts.printer.format_stats(&usage, &duration);
+            stream.write(data.as_bytes())
+        },
+        Err(err) => Err(err),
+    };
+
+    written.err().map(subprocess::exit_with_msg);
     std::process::exit(exit_status.code().unwrap_or(1));
 }
