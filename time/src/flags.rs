@@ -2,7 +2,7 @@
 
 use clap::ArgMatches;
 
-use crate::{cli::create_app, output::OutputFormatter};
+use crate::{cli::create_app, output::FormatterKind, output::OutputFormatter};
 
 // Condense CLI args as a struct
 #[derive(Debug)]
@@ -20,22 +20,28 @@ impl TimeOpts {
 
     pub fn new(args: ArgMatches) -> Self {
         TimeOpts {
-            printer: if args.is_present("posix") {
-                OutputFormatter::Posix
-            } else if args.is_present("use_csh_fmt") {
-                OutputFormatter::CSH
-            } else if args.is_present("use_tcsh_fmt") {
-                OutputFormatter::TCSH
-            } else if args.is_present("format_string") {
-                OutputFormatter::FmtString(
-                    args.value_of("format_string").expect("Empty format string").to_owned(),
-                )
-            } else {
-                OutputFormatter::Default
+            printer: {
+                let kind = if args.is_present("posix") {
+                    FormatterKind::Posix
+                } else if args.is_present("use_csh_fmt") {
+                    FormatterKind::CSH
+                } else if args.is_present("use_tcsh_fmt") {
+                    FormatterKind::TCSH
+                } else if args.is_present("format_string") {
+                    FormatterKind::FmtString(
+                        args.value_of("format_string").expect("Empty format string").to_owned(),
+                    )
+                } else {
+                    FormatterKind::Default
+                };
+                OutputFormatter {
+                    kind,
+                    human_readable: args.is_present("human_readable")
+                }
             },
             command: args
                 .values_of("COMMAND")
-                .expect("`COMMAND` value cannot be `None`, it is required.")
+                .expect("`COMMAND` to run is required")
                 .map(str::to_owned)
                 .collect(),
         }
@@ -44,7 +50,7 @@ impl TimeOpts {
 
 #[cfg(test)]
 mod tests {
-    use super::{create_app, OutputFormatter, TimeOpts};
+    use super::{create_app, FormatterKind, TimeOpts};
 
     #[test]
     fn parsing_valid_command_with_args() {
@@ -53,7 +59,7 @@ mod tests {
 
         assert_eq!(4, opts.command.len());
         assert_eq!(vec!["cmd-to-run", "arg1", "arg2", "arg3"], opts.command);
-        assert_eq!(OutputFormatter::Default, opts.printer);
+        assert_eq!(FormatterKind::Default, opts.printer.kind);
     }
 
     #[test]
@@ -61,6 +67,6 @@ mod tests {
         let args = vec!["test-time", "-p", "cmd-to-run", "arg1", "arg2", "arg3"];
         let opts = TimeOpts::new(create_app().get_matches_from(args));
 
-        assert_eq!(OutputFormatter::Posix, opts.printer);
+        assert_eq!(FormatterKind::Posix, opts.printer.kind);
     }
 }

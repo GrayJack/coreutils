@@ -1,14 +1,14 @@
 //! The Output interface for `time` is detailed in this module
 
+use coreutils_core::time::Duration;
 use std::fmt::Write;
+use coreutils_core::os::resource::RUsage;
 
-use coreutils_core::os::{resource::RUsage, TimeVal};
-
-/// The `OutputFormatter` is how `time` controls the printing
+/// The `FormatterKind` enum is how `time` controls the printing
 /// of timing and resource usage information
 /// Timer accuracy is arbitrary, but will always be counted in seconds.
 #[derive(Debug, PartialEq)]
-pub enum OutputFormatter {
+pub enum FormatterKind {
     /// Display time output in the default format:
     /// `    %E real %U user %S sys`
     Default,
@@ -61,17 +61,20 @@ pub enum OutputFormatter {
     FmtString(String),
 }
 
-/// Express `coreutils_core::os::TimeVal` into `f64` seconds
-fn as_secs_f64(tv: TimeVal) -> f64 {
-    tv.tv_sec as f64 + (tv.tv_usec as f64) / 1e+6
+
+/// The `OutputFormatter` collects all information required by `time`
+/// to format the child process's measurments
+#[derive(Debug)]
+pub struct OutputFormatter {
+    pub kind: FormatterKind,
+    pub human_readable: bool,
 }
 
-/// Convenience struct for passing 3 floating point parameters
-/// each of which represents a time delta in seconds
+/// Convenience struct for passing 3 duration parameters
 struct TimeTriple {
-    pub user_time: f64,
-    pub sys_time: f64,
-    pub wall_time: f64,
+    pub user_time: Duration,
+    pub sys_time: Duration,
+    pub wall_time: Duration,
 }
 
 impl OutputFormatter {
@@ -81,23 +84,25 @@ impl OutputFormatter {
     ///
     /// * `rusage` - Resource usage of the process being timed
     /// * `duration` - Time taken by the process being timed
-    pub fn format_stats(self, rusage: &RUsage, duration: &std::time::Duration) -> String {
+    pub fn format_stats(self, rusage: &RUsage, duration: &Duration) -> String {
         let timings: TimeTriple = TimeTriple {
-            user_time: as_secs_f64(rusage.timing.user_time),
-            sys_time: as_secs_f64(rusage.timing.sys_time),
-            wall_time: duration.as_secs_f64(),
+            user_time: rusage.timing.user_time,
+            sys_time: rusage.timing.sys_time,
+            wall_time: *duration,
         };
-        match self {
-            OutputFormatter::Default => default_formatter(rusage, timings),
-            OutputFormatter::Posix => {
+        match self.kind {
+            FormatterKind::Default => default_formatter(rusage, timings),
+            FormatterKind::Posix => {
                 format!(
                     "real {:.2}\nuser {:.2}\nsys  {:.2}",
-                    timings.wall_time, timings.user_time, timings.sys_time
+                    timings.wall_time.as_seconds_f64(),
+                    timings.user_time.as_seconds_f64(),
+                    timings.sys_time.as_seconds_f64()
                 )
             },
-            OutputFormatter::CSH => csh_formatter(rusage, timings),
-            OutputFormatter::TCSH => tcsh_formatter(rusage, timings),
-            OutputFormatter::FmtString(spec) => custom_formatter(rusage, timings, &spec),
+            FormatterKind::CSH => csh_formatter(rusage, timings),
+            FormatterKind::TCSH => tcsh_formatter(rusage, timings),
+            FormatterKind::FmtString(spec) => custom_formatter(rusage, timings, &spec),
         }
     }
 }
@@ -105,7 +110,9 @@ impl OutputFormatter {
 fn default_formatter(_: &RUsage, timings: TimeTriple) -> String {
     format!(
         "{:.2} real {:.2} user {:.2} sys",
-        timings.wall_time, timings.user_time, timings.sys_time
+        timings.wall_time.as_seconds_f64(),
+        timings.user_time.as_seconds_f64(),
+        timings.sys_time.as_seconds_f64()
     )
 }
 
@@ -115,7 +122,7 @@ fn render_percent_spec(rusage: &RUsage, timings: &TimeTriple, spec: u8) -> Optio
     match spec {
         b'c' => Some(rusage.mem.num_invol_ctx_switch.to_string()),
         b'D' => Some(rusage.mem.unshared_data_size.to_string()),
-        b'E' => Some(format!("{:.2}", timings.wall_time)),
+        b'E' => Some(format!("{:.2}", timings.wall_time.as_seconds_f64())),
         b'F' => Some(rusage.mem.num_major_page_flt.to_string()),
         b'I' => Some(rusage.io.num_block_in.to_string()),
         b'K' => Some(
@@ -128,26 +135,21 @@ fn render_percent_spec(rusage: &RUsage, timings: &TimeTriple, spec: u8) -> Optio
         b'M' => Some(rusage.mem.max_rss.to_string()),
         b'O' => Some(rusage.mem.max_rss.to_string()),
         b'P' => {
-            if timings.wall_time == 0_f64 {
+            if timings.wall_time.is_zero() {
                 Some(String::from("0.0%"))
             } else {
-                Some(format!("{:.2}", (timings.user_time + timings.sys_time) / timings.wall_time))
+                let cpu_time: Duration = timings.user_time + timings.sys_time;
+                Some(format!("{:.2}", 100 * cpu_time / timings.wall_time))
             }
         },
         b'R' => Some(rusage.mem.num_minor_page_flt.to_string()),
         b'r' => Some(rusage.io.num_sock_recv.to_string()),
-        b'S' => Some(format!("{:.2}", timings.sys_time)),
+        b'S' => Some(format!("{:.2}", timings.sys_time.as_seconds_f64())),
         b's' => Some(rusage.io.num_sock_send.to_string()),
-        b'U' => Some(format!("{:.2}", timings.user_time)),
+        b'U' => Some(format!("{:.2}", timings.user_time.as_seconds_f64())),
         b'W' => Some(rusage.mem.num_swaps.to_string()),
         b'w' => Some(rusage.mem.num_vol_ctx_switch.to_string()),
-        b'X' => {
-            if timings.wall_time == 0_f64 {
-                Some(String::from("0.0%"))
-            } else {
-                Some(rusage.mem.shared_mem_size.to_string())
-            }
-        },
+        b'X' => Some(rusage.mem.shared_mem_size.to_string()),
         _ => None,
     }
 }
@@ -229,9 +231,9 @@ fn custom_formatter(rusage: &RUsage, timings: TimeTriple, format_spec: &str) -> 
 fn csh_formatter(rusage: &RUsage, timings: TimeTriple) -> String {
     format!(
         "{:.2}u {:.2}s {:.2} {:.2} {}+{}k {}+{}io {}pf+{}w",
-        timings.user_time,
-        timings.sys_time,
-        timings.wall_time,
+        timings.user_time.as_seconds_f64(),
+        timings.sys_time.as_seconds_f64(),
+        timings.wall_time.as_seconds_f64(),
         (timings.user_time + timings.sys_time) / timings.wall_time,
         rusage.mem.shared_mem_size,
         rusage.mem.unshared_stack_size,
@@ -245,10 +247,10 @@ fn csh_formatter(rusage: &RUsage, timings: TimeTriple) -> String {
 fn tcsh_formatter(rusage: &RUsage, timings: TimeTriple) -> String {
     format!(
         "{:.2}u {:.2}s {:.2} {:.2}\t{}+{}k {}+{}io {}pf+{}w",
-        timings.user_time,
-        timings.sys_time,
-        timings.wall_time,
-        (timings.user_time + timings.sys_time) / timings.wall_time,
+        timings.user_time.as_seconds_f64(),
+        timings.sys_time.as_seconds_f64(),
+        timings.wall_time.as_seconds_f64(),
+        100 * (timings.user_time + timings.sys_time) / timings.wall_time,
         rusage.mem.shared_mem_size,
         rusage.mem.unshared_stack_size,
         rusage.io.num_block_in,
