@@ -124,7 +124,7 @@ fn configure_extensions<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
 
     if cfg!(target_os = "netbsd") {
         app.args(&[use_csh_fmt, format_string, dump_rusage, use_tcsh_fmt])
-    } else if cfg!(any(target_os = "freebsd", target_os = "dragonflybsd", target_os = "macos")) {
+    } else if cfg!(any(target_os = "freebsd", target_os = "dragonflybsd")) {
         app.args(&[append_output, dump_rusage, human_readable, output_path])
     } else if cfg!(any(target_os = "openbsd", target_os = "macos")) {
         app.arg(dump_rusage)
