@@ -17,9 +17,9 @@ pub struct TimeOpts {
     /// Command as seen on the CLI
     pub command: Vec<String>,
     /// Where the output should be written to
-    pub destination: Option<PathBuf>,
+    destination: Option<PathBuf>,
     /// Should the destination be appended to?
-    pub append: bool,
+    append: bool,
 }
 
 impl TimeOpts {
