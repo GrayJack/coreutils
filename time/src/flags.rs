@@ -47,9 +47,9 @@ impl TimeOpts {
                 let kind = if args.is_present("posix") {
                     FormatterKind::Posix
                 } else if args.is_present("use_csh_fmt") {
-                    FormatterKind::CSH
+                    FormatterKind::Csh
                 } else if args.is_present("use_tcsh_fmt") {
-                    FormatterKind::TCSH
+                    FormatterKind::TCsh
                 } else if args.is_present("format_string") {
                     FormatterKind::FmtString(
                         args.value_of("format_string").expect("Empty format string").to_owned(),

@@ -25,13 +25,13 @@ pub enum FormatterKind {
     /// ```
     /// %Uu %Ss %E %P %X+%Dk %I+%Oio %Fpf+%Ww
     /// ```
-    CSH,
+    Csh,
 
     /// Display time output in the tcsh(1) default format:
     /// ```
     /// %Uu %Ss %E %P\t%X+%Dk %I+%Oio %Fpf+%Ww
     /// ```
-    TCSH,
+    TCsh,
 
     /// Use a custom format string to render the output using printf-style
     /// `%<specifier>` markers. Supported markers are:
@@ -100,8 +100,8 @@ impl OutputFormatter {
                     timings.sys_time.as_seconds_f64()
                 )
             },
-            FormatterKind::CSH => csh_formatter(rusage, timings),
-            FormatterKind::TCSH => tcsh_formatter(rusage, timings),
+            FormatterKind::Csh => csh_formatter(rusage, timings),
+            FormatterKind::TCsh => tcsh_formatter(rusage, timings),
             FormatterKind::FmtString(spec) => custom_formatter(rusage, timings, &spec),
         }
     }
