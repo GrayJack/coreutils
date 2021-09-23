@@ -22,6 +22,8 @@ fn main() {
         Err(err) => Err(err),
     };
 
-    written.err().map(subprocess::exit_with_msg);
+    if let Err(err) = written {
+        subprocess::exit_with_msg(err);
+    }
     std::process::exit(exit_status.code().unwrap_or(1));
 }
