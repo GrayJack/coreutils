@@ -41,7 +41,7 @@ const POSIX_FMT_HELP: &str = indoc! {"
         real %f
         user %f
         sys %f
-    Timer accuracy is arbitrary, but will always be counted in seconds.
+    Timer accuracy is arbitrary, but will always be counted in seconds
 "};
 
 const TCSH_FMT_HELP: &str = indoc! {"
@@ -51,84 +51,93 @@ const TCSH_FMT_HELP: &str = indoc! {"
 "};
 
 pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
-    let app = App::new(crate_name!())
+    App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
+        .help_message("Display help information")
+        .version_message("Display version information")
         .help_short("?")
         .settings(&[ColoredHelp, TrailingVarArg])
         .arg(
             Arg::with_name("COMMAND")
-                .help("Command to run and it's arguments.")
+                .help("Command to run and it's arguments")
                 .multiple(true)
                 .required(true),
         )
-        .arg(Arg::with_name("posix").help(POSIX_FMT_HELP).long("posix").short("p"));
-    configure_extensions(app)
-}
-
-#[rustfmt::skip]
-fn configure_extensions<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
-    let use_csh_fmt = Arg::with_name("use_csh_fmt")
-        .conflicts_with_all(&["posix"])
-        .help(CSH_FMT_HELP)
-        .long("csh-format")
-        .short("c");
-    let format_string = Arg::with_name("format_string")
-        .conflicts_with_all(&["posix", "use_csh_fmt"])
-        .takes_value(true)
-        .validator(|s: String| -> Result<(), String> {
-            if s.is_empty() || !s.is_ascii() {
-                Err(String::from("Format string must be non-empty ASCII"))
-            } else {
-                Ok(())
-            }
-        })
-        .help(FMT_ARG_HELP)
-        .long("format")
-        .short("f");
-    let use_tcsh_fmt = Arg::with_name("use_tcsh_fmt")
-        .conflicts_with_all(&["posix", "use_csh_fmt", "format_string"])
-        .help(TCSH_FMT_HELP)
-        .long("tcsh-format")
-        .short("t");
-
-    let dump_rusage = Arg::with_name("dump_rusage")
-        .conflicts_with_all(&["posix"])
-        .help("Lists resource utilization information. The contents of \
-              the\ncommand process's rusage structure are printed")
-        .long("rusage")
-        .short("l");
-
-    let human_readable = Arg::with_name("human_readable")
-        .conflicts_with("posix")
-        .help("Time durations are printed in hours, minutes, seconds")
-        .long("human-readable")
-        .short("h");
-
-    let output_path = Arg::with_name("output_file")
-        .takes_value(true)
-        .help("Write the output to file instead of stderr.\
-              If file exists and the -a flag is not specified,\
-              the file will be overwritten.")
-        .long("output-path")
-        .short("o");
-
-    let append_output = Arg::with_name("append_mode")
-        .help("If the -o flag is used, append to specified file rather that\
-              overwrite it. Otherwise this option has no effect")
-        .long("append-mode")
-        .short("a");
-
-    if cfg!(target_os = "netbsd") {
-        app.args(&[use_csh_fmt, format_string, dump_rusage, use_tcsh_fmt])
-    } else if cfg!(any(target_os = "freebsd", target_os = "dragonflybsd")) {
-        app.args(&[append_output, dump_rusage, human_readable, output_path])
-    } else if cfg!(any(target_os = "openbsd", target_os = "macos")) {
-        app.arg(dump_rusage)
-    } else {
-        app
-    }
+        .arg(Arg::with_name("posix").help(POSIX_FMT_HELP).long("posix").short("p"))
+        .arg(
+            Arg::with_name("use_csh_fmt")
+                .conflicts_with_all(&["posix"])
+                .help("Display time output in POSIX format")
+                .long_help(CSH_FMT_HELP)
+                .long("csh-format")
+                .short("c"),
+        )
+        .arg(
+            Arg::with_name("format_string")
+                .conflicts_with_all(&["posix", "use_csh_fmt"])
+                .value_name("FORMAT_STRING")
+                .validator(|s: String| -> Result<(), String> {
+                    if s.is_empty() || !s.is_ascii() {
+                        Err(String::from("Format string must be non-empty ASCII"))
+                    } else {
+                        Ok(())
+                    }
+                })
+                .help("Specify a time format using the csh(1) time builtin syntax")
+                .long_help(FMT_ARG_HELP)
+                .long("format")
+                .short("f"),
+        )
+        .arg(
+            Arg::with_name("use_tcsh_fmt")
+                .conflicts_with_all(&["posix", "use_csh_fmt", "format_string"])
+                .help(
+                    "Displays information in the format used by default the time builtin of \
+                     tcsh(1)",
+                )
+                .long_help(TCSH_FMT_HELP)
+                .long("tcsh-format")
+                .short("t"),
+        )
+        .arg(
+            Arg::with_name("dump_rusage")
+                .conflicts_with_all(&["posix"])
+                .help("Lists resource utilization information")
+                .long_help(
+                    "Lists resource utilization information. The contents of the\ncommand \
+                     process's rusage structure are printed",
+                )
+                .long("rusage")
+                .short("l"),
+        )
+        .arg(
+            Arg::with_name("human_readable")
+                .conflicts_with("posix")
+                .help("Time durations are printed in hours, minutes, seconds")
+                .long("human-readable")
+                .short("h"),
+        )
+        .arg(
+            Arg::with_name("output_file")
+                .value_name("OUTPUT_FILE")
+                .help("Write the output to file instead of stderr")
+                .long_help(
+                    "Write the output to file instead of stderr.
+                     If file exists and the -a flag is not specified,the file will be overwritten",
+                )
+                .long("output-path")
+                .short("o"),
+        )
+        .arg(
+            Arg::with_name("append_mode")
+                .help("If the -o flag is used, append to the specified file")
+                .long_help(
+                    "If the -o flag is used, append to specified file rather than overwrite it. \
+                     Otherwise this option has no effect",
+                )
+                .long("append-mode")
+                .short("a"),
+        )
 }
