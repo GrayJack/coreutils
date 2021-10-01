@@ -1,9 +1,8 @@
+use std::io;
 /// Module for creating, and interacting with child processes
 use std::process::{exit, Command, ExitStatus, Stdio};
-use std::{
-    io,
-    time::{Duration, Instant},
-};
+
+use coreutils_core::time::{Duration, Instant};
 
 type SubprocessTiming = (ExitStatus, Duration);
 

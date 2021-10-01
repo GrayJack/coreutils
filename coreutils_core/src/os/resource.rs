@@ -4,6 +4,7 @@
 #[cfg(not(target_os = "fuchsia"))]
 use libc::getrusage;
 use libc::{c_int, rusage, RUSAGE_CHILDREN, RUSAGE_SELF};
+use time::Duration;
 
 use super::TimeVal;
 
@@ -27,9 +28,9 @@ pub struct RUsage {
 #[derive(Debug)]
 pub struct Timing {
     /// User CPU time used
-    pub user_time: TimeVal,
+    pub user_time: Duration,
     /// System CPU time used
-    pub sys_time: TimeVal,
+    pub sys_time: Duration,
 }
 
 #[derive(Debug)]
@@ -68,10 +69,22 @@ pub struct IOUsage {
     pub num_signals: u64,
 }
 
+fn timeval_to_duration(t: TimeVal) -> Duration {
+    // This type cast is realistically safe because the number of
+    // microseconds in a second cannot exceed `1e+6`, which at
+    // most would be `1e+9` nanoseconds, which fits in i32
+    // If this panics something really went wrong in the underlying
+    // C-api that returned this timeval
+    Duration::new(t.tv_sec as i64, t.tv_usec as i32 * 1_000)
+}
+
 impl From<rusage> for RUsage {
     fn from(ru: rusage) -> Self {
         RUsage {
-            timing: Timing { user_time: ru.ru_utime, sys_time: ru.ru_stime },
+            timing: Timing {
+                user_time: timeval_to_duration(ru.ru_utime),
+                sys_time: timeval_to_duration(ru.ru_stime),
+            },
             mem: MemoryUsage {
                 max_rss: ru.ru_maxrss as u64,
                 num_minor_page_flt: ru.ru_minflt as u64,

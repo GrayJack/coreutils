@@ -33,7 +33,7 @@ libc = { version = "~0.2.94", features = ["extra_traits"] }
 bstr = "~0.2.16"
 # bstr = {path = "/home/grayjack/MySources/RustProjects/bstr"}
 regex = "^1.5.2"
-time = "= 0.2.22"
+time = "= 0.2.23"
 
 [features]
 default = []
