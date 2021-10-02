@@ -1,5 +1,7 @@
 #[derive(Debug)]
 pub struct TabStops {
+    // field for future feature
+    #[allow(dead_code)]
     pub(crate) offset: Option<usize>,
     pub(crate) repetable: Option<usize>,
     pub(crate) positions: Vec<usize>,

@@ -260,8 +260,10 @@ fn rfc3339_format_str(value: &str) -> &str {
 fn set_os_time(datetime: DateTime) -> Result<(), String> {
     use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
 
-    let time =
-        TimeVal { tv_sec: datetime.timestamp() as Time, tv_usec: datetime.microsecond() as Susec };
+    let time = TimeVal {
+        tv_sec: datetime.unix_timestamp() as Time,
+        tv_usec: datetime.microsecond() as Susec,
+    };
 
     match set_time_of_day(time) {
         Ok(_) => Ok(()),

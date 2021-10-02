@@ -57,8 +57,12 @@ impl DisplayValue {
 struct DuFlagsAndOptions<'a> {
     pub show_all: bool,
     pub use_apparent_size: bool,
+    // field for future feature
+    #[allow(dead_code)]
     pub count_links: bool,
     pub dereference: bool,
+    // field for future feature
+    #[allow(dead_code)]
     pub dereference_args: bool,
     pub print_human_readable: bool,
     pub use_si: bool,

@@ -41,7 +41,7 @@ const POSIX_FMT_HELP: &str = indoc! {"
         real %f
         user %f
         sys %f
-    Timer accuracy is arbitrary, but will always be counted in seconds
+    Timer accuracy is arbitrary, but will always be counted in seconds.
 "};
 
 const TCSH_FMT_HELP: &str = indoc! {"
@@ -55,13 +55,13 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information")
-        .version_message("Display version information")
+        .help_message("Display help information.")
+        .version_message("Display version information.")
         .help_short("?")
         .settings(&[ColoredHelp, TrailingVarArg])
         .arg(
             Arg::with_name("COMMAND")
-                .help("Command to run and it's arguments")
+                .help("Command to run and it's arguments.")
                 .multiple(true)
                 .required(true),
         )
@@ -69,7 +69,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .arg(
             Arg::with_name("use_csh_fmt")
                 .conflicts_with_all(&["posix"])
-                .help("Display time output in POSIX format")
+                .help("Display time output in POSIX format.")
                 .long_help(CSH_FMT_HELP)
                 .long("csh-format")
                 .short("c"),
@@ -85,7 +85,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                         Ok(())
                     }
                 })
-                .help("Specify a time format using the csh(1) time builtin syntax")
+                .help("Specify a time format using the csh(1) time builtin syntax.")
                 .long_help(FMT_ARG_HELP)
                 .long("format")
                 .short("f"),
@@ -95,7 +95,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .conflicts_with_all(&["posix", "use_csh_fmt", "format_string"])
                 .help(
                     "Displays information in the format used by default the time builtin of \
-                     tcsh(1)",
+                     tcsh(1).",
                 )
                 .long_help(TCSH_FMT_HELP)
                 .long("tcsh-format")
@@ -107,7 +107,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Lists resource utilization information")
                 .long_help(
                     "Lists resource utilization information. The contents of the\ncommand \
-                     process's rusage structure are printed",
+                     process's rusage structure are printed.",
                 )
                 .long("rusage")
                 .short("l"),
@@ -125,7 +125,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Write the output to file instead of stderr")
                 .long_help(
                     "Write the output to file instead of stderr.
-                     If file exists and the -a flag is not specified,the file will be overwritten",
+                     If file exists and the -a flag is not specified,the file will be overwritten.",
                 )
                 .long("output-path")
                 .short("o"),
@@ -135,7 +135,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("If the -o flag is used, append to the specified file")
                 .long_help(
                     "If the -o flag is used, append to specified file rather than overwrite it. \
-                     Otherwise this option has no effect",
+                     Otherwise this option has no effect.",
                 )
                 .long("append-mode")
                 .short("a"),

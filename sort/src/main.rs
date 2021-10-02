@@ -183,7 +183,7 @@ mod tests {
                 $file1.path().to_str().unwrap(),
                 $file2.path().to_str().unwrap(),
                 $file3.path().to_str().unwrap(),
-            ]);
+            ])
         };
         ($file1:ident, $file2:ident, $file3:ident, $output_path:ident) => {
             cli::create_app().get_matches_from(vec![
@@ -193,10 +193,10 @@ mod tests {
                 $file1.path().to_str().unwrap(),
                 $file2.path().to_str().unwrap(),
                 $file3.path().to_str().unwrap(),
-            ]);
+            ])
         };
         ($filePathAsString:ident) => {
-            cli::create_app().get_matches_from(vec!["sort", $filePathAsString]);
+            cli::create_app().get_matches_from(vec!["sort", $filePathAsString])
         };
     }
 
