@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [1.46.0, stable]
+        rust: [nightly]
+        # rust: [1.46.0, stable]
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
@@ -16,12 +17,12 @@ jobs:
         toolchain: ${{ matrix.rust }}
         override: true
         profile: minimal
-        target: x86_64-unknown-dragonfly
+        components: rust-src
+        # target: x86_64-unknown-dragonfly
     - name: Setup TOML
       run: cp DragonflyBSD.toml Cargo.toml
     - name: Check DragonflyBSD
       uses: actions-rs/cargo@v1
       with:
-        use-cross: true
         command: check
-        args: --target x86_64-unknown-dragonfly
+        args: --target x86_64-unknown-dragonfly -Z build-std
