@@ -226,6 +226,12 @@ impl UtmpSet {
         self.0.is_empty()
     }
 
+    /// Size of the collection.
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
     /// Creates a iterator over it's entries.
     #[inline]
     pub fn iter(&self) -> hash_set::Iter<'_, Utmp> {
