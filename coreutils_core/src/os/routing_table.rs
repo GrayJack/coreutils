@@ -1,10 +1,6 @@
 //! Module for abstractions for routing table system calls on OpenBSD.
 
-use std::{
-    fmt::{self, Display},
-    io,
-    os::raw::c_int,
-};
+use std::{io, os::raw::c_int};
 
 // TODO(GrayJack): Make a pull request to expose that on libc crate
 pub mod syscall {

@@ -249,6 +249,6 @@ fn rtable_logic() {}
 
 #[cfg(target_os = "openbsd")]
 fn rtable_logic() {
-    use coreutils_core::routing_table::get_routing_table;
+    use coreutils_core::os::routing_table::get_routing_table;
     println!("{}", get_routing_table());
 }

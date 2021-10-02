@@ -1,14 +1,19 @@
 //! Module for time related abstractions more close to the OS.
-use std::{io, mem::MaybeUninit, ptr};
+#[cfg(not(target_os = "haiku"))]
+use std::ptr;
+use std::{io, mem::MaybeUninit};
 
 use libc::localtime_r;
 
-use super::{Time, TimeVal, Tm};
+#[cfg(not(target_os = "haiku"))]
+use super::TimeVal;
+use super::{Time, Tm};
 
 /// Set the system time as `timeval`
 ///
 /// # Errors
 /// If a internal call set a errno (I/O OS error), an error variant will be returned.
+#[cfg(not(target_os = "haiku"))]
 #[inline]
 pub fn set_time_of_day(timeval: TimeVal) -> io::Result<()> {
     let result = unsafe { libc::settimeofday(&timeval as *const TimeVal, ptr::null()) };
