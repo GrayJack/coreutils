@@ -4,11 +4,10 @@ on: [push]
 
 jobs:
   check:
-    name: haiku
-    runs-on: ${{ matrix.os }}
+    name: Haiku
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [1.46.0, stable]
     steps:
     - uses: actions/checkout@v2
@@ -17,9 +16,11 @@ jobs:
         toolchain: ${{ matrix.rust }}
         override: true
         profile: minimal
-        components: clippy
         target: x86_64-unknown-haiku
+    - name: Setup TOML
+      run: cp Haiku.toml Cargo.toml
     - name: Check Haiku
-      run: |
-        cp Haiku.toml Cargo.toml
-        cargo check --verbose --target x86_64-unknown-haiku
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --target x86_64-unknown-haiku
