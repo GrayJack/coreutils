@@ -152,7 +152,7 @@ fn print_header(flags: WhoFlags) {
 fn filter_entries<'a>(uts: &'a UtmpSet, flags: WhoFlags) -> Vec<&'a Utmp> {
     if flags.associated_stdin {
         let curr_tty_name = {
-            let tty = match TTYName::new(&io::stdin()) {
+            let tty = match TtyName::new(&io::stdin()) {
                 Ok(t) => t,
                 Err(err) => {
                     eprintln!("who: failed to get current tty: {}", err);

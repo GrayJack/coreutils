@@ -4,7 +4,7 @@ use std::process;
 #[cfg(not(any(target_os = "openbsd")))]
 use coreutils_core::os::utmpx::{UtmpxKind, UtmpxSet as UtmpSet};
 #[cfg(any(target_os = "openbsd"))]
-use coreutils_core::os::{utmp::UtmpSet, ByteSlice};
+use coreutils_core::{os::utmp::UtmpSet, ByteSlice};
 
 mod cli;
 
