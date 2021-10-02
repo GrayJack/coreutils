@@ -121,7 +121,7 @@ pub fn tty_dimensions(file_descriptor: &impl AsRawFd) -> Option<(u16, u16)> {
 
     let tiocgwinsz = TIOCGWINSZ;
 
-    #[cfg(target_os = "freebsd")]
+    #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
     let tiocgwinsz: u64 = tiocgwinsz.into();
 
     if unsafe { ioctl(file_descriptor.as_raw_fd(), tiocgwinsz, &mut size) } == -1 {
