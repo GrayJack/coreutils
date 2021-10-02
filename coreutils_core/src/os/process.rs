@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+#[cfg(not(any(target_os = "fuchsia")))]
 pub mod priority;
 
 /// Change the root of the running process to `newroot`.

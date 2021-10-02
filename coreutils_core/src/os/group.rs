@@ -2,7 +2,7 @@
 
 #[cfg(target_os = "macos")]
 use std::convert::TryInto;
-#[cfg(any(target_os = "solaris", target_os = "illumos"))]
+#[cfg(any(target_os = "solaris", target_os = "illumos", target_os = "haiku"))]
 use std::os::raw::c_int;
 use std::{
     convert::TryFrom,
@@ -17,8 +17,10 @@ use std::{
 };
 
 use bstr::{BStr, BString, ByteSlice};
+#[cfg(target_os = "haiku")]
+use libc::getpwnam_r;
 use libc::{getegid, getgrgid_r, getgrnam_r, getgroups, group};
-#[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
+#[cfg(not(any(target_os = "solaris", target_os = "illumos", target_os = "haiku")))]
 use libc::{getgrouplist, getpwnam_r};
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{sysconf, _SC_NGROUPS_MAX};
@@ -30,6 +32,13 @@ use super::{passwd::Error as PwError, Gid};
 extern "C" {
     fn _getgroupsbymember(
         username: *const c_char, glist: *mut Gid, maxids: c_int, numgids: c_int,
+    ) -> c_int;
+}
+
+#[cfg(target_os = "haiku")]
+extern "C" {
+    fn getgrouplist(
+        username: *const c_char, base_group: Gid, group_list: *mut Gid, group_count: *mut c_int,
     ) -> c_int;
 }
 
