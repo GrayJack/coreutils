@@ -3,7 +3,7 @@ use clap::{
 };
 
 pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
-    App::new(crate_name!())
+    let app = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
@@ -38,21 +38,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("utc")
                 .visible_alias("universal")
                 .short("u"),
-        )
-        .arg(
-            Arg::with_name("no_set")
-                .help("Do not try to set the date.")
-                .long("no-set")
-                .visible_alias("convert")
-                .short("j")
-                .overrides_with("set"),
-        )
-        .arg(
-            Arg::with_name("set")
-                .help("Try to set the date.")
-                .long("set")
-                .short("s")
-                .overrides_with("no_set"),
         )
         .arg(
             Arg::with_name("rfc2822")
@@ -133,7 +118,28 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                     "ns",
                 ])
                 .overrides_with_all(&["iso8601", "rfc2822"]),
+        );
+
+    if cfg!(not(target_os = "haiku")) {
+        app.arg(
+            Arg::with_name("set")
+                .help("Try to set the date.")
+                .long("set")
+                .short("s")
+                .overrides_with("no_set"),
         )
+        .arg(
+            Arg::with_name("no_set")
+                .help("Do not try to set the date.")
+                .long("no-set")
+                .visible_alias("convert")
+                .short("j")
+                .overrides_with("set"),
+        )
+    } else {
+        app
+    }
+
     // There is no good way to implement it right now
     // .arg(
     //     Arg::with_name("format")

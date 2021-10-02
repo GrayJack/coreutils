@@ -23,6 +23,7 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
     let iso8601 = matches.value_of("iso8601");
     let rfc2822 = matches.value_of("rfc2822");
     let rfc3339 = matches.value_of("rfc3339");
+    #[cfg(not(target_os = "haiku"))]
     let is_set = matches.is_present("set") && !matches.is_present("no_set");
 
     let utc_off = if matches.is_present("utc") {
@@ -72,6 +73,7 @@ fn date(matches: &ArgMatches) -> Result<(), String> {
 
     let date = build_datetime(date_str, utc_off, matches.value_of("reference"))?;
 
+    #[cfg(not(target_os = "haiku"))]
     if is_set {
         set_os_time(date)?;
     }
@@ -257,6 +259,7 @@ fn rfc3339_format_str(value: &str) -> &str {
 }
 
 /// Sets the os datetime to `datetime`
+#[cfg(not(target_os = "haiku"))]
 fn set_os_time(datetime: DateTime) -> Result<(), String> {
     use coreutils_core::os::{time::set_time_of_day, Susec, Time, TimeVal};
 
