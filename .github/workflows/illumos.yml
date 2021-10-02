@@ -4,11 +4,10 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: illumos
-    runs-on: ${{ matrix.os }}
+    name: Illumos
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [1.47.0, stable]
     steps:
     - uses: actions/checkout@v2
@@ -19,7 +18,11 @@ jobs:
         profile: minimal
         components: clippy
         target: x86_64-unknown-illumos
+    - name: Setup TOML
+      run: cp Illumos.toml Cargo.toml
     - name: Check Illumos
-      run: |
-        cp Illumos.toml Cargo.toml
-        cargo check --verbose --target x86_64-unknown-illumos
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: check
+        args: --target x86_64-unknown-illumos

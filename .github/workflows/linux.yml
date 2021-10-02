@@ -4,11 +4,10 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: linux
-    runs-on: ${{ matrix.os }}
+    name: Linux
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [1.46.0, stable, beta, nightly]
     steps:
     - uses: actions/checkout@v2
@@ -24,16 +23,20 @@ jobs:
     - name: Setup TOML
       run: cp Linux.toml Cargo.toml
     - name: Check Linux (x86_64 GNU)
-      run: cargo check --verbose
-    # - name: Check Linux (x86_64 MUSL)
-    #   run: cargo check --verbose --target x86_64-unknown-linux-musl
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
     - name: Check Linux (i686 GNU)
-      run: cargo check --verbose --target i686-unknown-linux-gnu
-    # - name: Check Linux (i686 MUSL)
-    #   run: cargo check --verbose --target i686-unknown-linux-musl
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --target i686-unknown-linux-gnu
     - name: Check Linux (aarch64 GNU)
-      run: cargo check --verbose --target aarch64-unknown-linux-gnu
-    # - name: Check Linux (aarch64 MUSL)
-    #   run: cargo check --verbose --target aarch64-unknown-linux-musl
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --target aarch64-unknown-linux-gnu
     - name: Run tests
-      run: cargo test --verbose
+      uses: actions-rs/cargo@v1
+      with:
+        command: test

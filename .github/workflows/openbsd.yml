@@ -4,11 +4,10 @@ on: [push]
 
 jobs:
   build:
-    name: openbsd
-    runs-on: ${{ matrix.os }}
+    name: OpenBSD
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [1.46.0, stable]
     steps:
     - uses: actions/checkout@v2
@@ -17,9 +16,12 @@ jobs:
         toolchain: ${{ matrix.rust }}
         override: true
         profile: minimal
-        components: clippy
         target: x86_64-unknown-openbsd
-    - name: Check OpenBSD --target x86_64-unknown-openbsd
-      run: |
-        cp OpenBSD.toml Cargo.toml
-        cargo check --verbose
+    - name: Setup TOML
+      run: cp OpenBSD.toml Cargo.toml
+    - name: Check OpenBSD
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: check
+        args: --target x86_64-unknown-openbsd

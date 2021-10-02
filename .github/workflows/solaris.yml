@@ -4,11 +4,10 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: solaris
-    runs-on: ${{ matrix.os }}
+    name: Solaris
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [1.46.0, stable]
     steps:
     - uses: actions/checkout@v2
@@ -17,9 +16,11 @@ jobs:
         toolchain: ${{ matrix.rust }}
         override: true
         profile: minimal
-        components: clippy
         target: x86_64-sun-solaris
+    - name: Setup TOML
+      run: cp Solaris.toml Cargo.toml
     - name: Check Solaris
-      run: |
-        cp Solaris.toml Cargo.toml
-        cargo check --verbose --target x86_64-sun-solaris
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --target x86_64-sun-solaris
