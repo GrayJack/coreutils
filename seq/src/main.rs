@@ -15,13 +15,14 @@ fn main() {
         let decimals = max_decimal_digits(&args);
         let padding = if matches.is_present("WIDTH") { Some(max_digits(&args)) } else { None };
         let (first, inc, last) = find_operands(&args);
+        let terminator = matches.value_of("TERMINATOR").unwrap_or("\n");
         let valid_range = (first <= last && inc > 0.0) || (first >= last && inc < 0.0);
         if valid_range {
             let seq = Seq::new(first, inc, last, decimals, separator, padding);
             for val in seq.into_iter() {
                 print!("{}", val);
             }
-            println!();
+            print!("\n{}", terminator);
         }
     } else {
         eprintln!("seq: missing operand\n Try 'seq --help' for more information.");
@@ -42,7 +43,7 @@ fn find_operands(args: &[&str]) -> (f64, f64, f64) {
             }
 
             (parse_float(args[0]), inc, parse_float(args[2]))
-        },
+        }
     }
 }
 
@@ -126,7 +127,7 @@ impl Iterator for SeqIterator {
                     }
 
                     padded
-                },
+                }
                 _ => value,
             };
 
