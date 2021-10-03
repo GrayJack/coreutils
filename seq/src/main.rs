@@ -243,4 +243,12 @@ mod tests {
         let mut cmd = Command::new("seq");
         cmd.args(&["2", "2"]).assert().stdout("2\n");
     }
+
+    #[test]
+    fn test_parsing_input() {
+        let app = cli::create_app().get_matches_from(vec!["seq", "1", "1", "4"]);
+        let values = app.values_of("FIRST INCREMENT LAST");
+        assert!(values.is_some());
+        assert_eq!(values.unwrap().collect::<Vec<&str>>(), vec!["1", "1", "4"])
+    }
 }

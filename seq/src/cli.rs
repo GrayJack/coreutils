@@ -12,7 +12,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
         .help_short("?")
         .settings(&[ColoredHelp])
         .usage("seq [FLAGS] [OPTIONS] [FIRST [INCREMENT]] <LAST>")
-        .arg(Arg::with_name("FIRST INCREMENT LAST").required(true).hidden(true))
+        .arg(Arg::with_name("FIRST INCREMENT LAST").multiple(true).required(true).hidden(true))
         .arg(
             Arg::with_name("SEPARATOR")
                 .short("s")
