@@ -22,7 +22,7 @@ fn main() {
             for val in seq.into_iter() {
                 print!("{}", val);
             }
-            print!("\n{}", terminator);
+            print!("{}", terminator);
         }
     } else {
         eprintln!("seq: missing operand\n Try 'seq --help' for more information.");
@@ -43,7 +43,7 @@ fn find_operands(args: &[&str]) -> (f64, f64, f64) {
             }
 
             (parse_float(args[0]), inc, parse_float(args[2]))
-        }
+        },
     }
 }
 
@@ -127,7 +127,7 @@ impl Iterator for SeqIterator {
                     }
 
                     padded
-                }
+                },
                 _ => value,
             };
 

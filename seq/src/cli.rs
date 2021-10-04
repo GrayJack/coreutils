@@ -25,7 +25,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("TERMINATOR")
                 .short("t")
                 .long("terminator")
-                .help("Terminator of the values")
+                .help("Terminator of the values.")
                 .hide_default_value(true)
                 .default_value("\n"),
         )
