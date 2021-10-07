@@ -31,6 +31,7 @@ members = [
     "nice",
     "nl",
     "nohup",
+    "printf",
     "pwd",
     "rm",
     "rmdir",
