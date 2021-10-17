@@ -15,7 +15,7 @@ pub mod load;
 #[cfg(any(target_os = "netbsd", target_os = "openbsd", target_os = "solaris"))]
 pub mod utmp;
 
-#[cfg(not(any(target_os = "fuchsia", target_os = "haiku", target_os = "openbsd")))]
+#[cfg(not(any(target_os = "fuchsia", target_os = "openbsd")))]
 pub mod utmpx;
 
 #[cfg(any(target_os = "freebsd", target_os = "macos"))]

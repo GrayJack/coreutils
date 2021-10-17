@@ -47,10 +47,21 @@ use libc::c_long;
 use libc::utmpxname;
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_int, c_short, exit_status as ExitStatus};
+#[cfg(not(target_os = "haiku"))]
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
+#[cfg(target_os = "haiku")]
+use libc::{suseconds_t, time_t, utmpx};
 use time::{Duration, OffsetDateTime as DateTime};
 
 use super::{Pid, TimeVal};
+
+// FIXME: Remove this and haiku specific lib loading after [libc PR](https://github.com/rust-lang/libc/pull/2460) is accepted and released.
+#[cfg(target_os = "haiku")]
+extern "C" {
+    fn getutxent() -> *mut utmpx;
+    fn setutxent();
+    fn endutxent();
+}
 
 /// Error type for [`UtmpxKind`] conversion.
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -688,6 +699,25 @@ macro_rules! utmpxkind_impl_from {
                 }
             }
 
+            #[cfg(target_os = "haiku")]
+            impl TryFrom<$t> for UtmpxKind {
+                type Error = Error;
+                #[inline]
+                fn try_from(num: $t) -> Result<Self, Error> {
+                    match num {
+                        0 => Ok(Self::Empty),
+                        1 => Ok(Self::BootTime),
+                        2 => Ok(Self::OldTime),
+                        3 => Ok(Self::NewTime),
+                        4 => Ok(Self::UserProcess),
+                        5 => Ok(Self::InitProcess),
+                        6 => Ok(Self::LoginProcess),
+                        7 => Ok(Self::DeadProcess),
+                        _ => Err(Error::OsNoNumber),
+                    }
+                }
+            }
+
             // UtmpxKind to number
             #[cfg(target_os = "freebsd")]
             impl TryFrom<UtmpxKind> for $t {
@@ -794,6 +824,25 @@ macro_rules! utmpxkind_impl_from {
                         UtmpxKind::Signature => Ok(10),
                         #[cfg(target_os = "macos")]
                         UtmpxKind::ShutdownProcess => Ok(11),
+                        _ => Err(Error::OsNoKind),
+                    }
+                }
+            }
+
+            #[cfg(target_os = "haiku")]
+            impl TryFrom<UtmpxKind> for $t {
+                type Error = Error;
+                #[inline]
+                fn try_from(utype: UtmpxKind) -> Result<Self, Error> {
+                    match utype {
+                        UtmpxKind::Empty => Ok(0),
+                        UtmpxKind::BootTime => Ok(1),
+                        UtmpxKind::OldTime => Ok(2),
+                        UtmpxKind::NewTime => Ok(3),
+                        UtmpxKind::UserProcess => Ok(4),
+                        UtmpxKind::InitProcess => Ok(5),
+                        UtmpxKind::LoginProcess => Ok(6),
+                        UtmpxKind::DeadProcess => Ok(7),
                         _ => Err(Error::OsNoKind),
                     }
                 }
