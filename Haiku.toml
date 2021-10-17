@@ -47,7 +47,7 @@ members = [
     "unexpand",
     "uniq",
     "unlink",
-    # "uptime",
+    "uptime",
     "users",
     "wc",
     "who",
