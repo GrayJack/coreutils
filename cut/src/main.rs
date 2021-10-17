@@ -123,8 +123,7 @@ struct RangeSet {
 impl RangeSet {
     fn from_string(string: &str) -> Result<Self> {
         // Split the string at commas and parse the pieces as ranges.
-        let ranges =
-            string.split(',').map(|rng| Range::from_string(rng)).collect::<Result<Vec<Range>>>()?;
+        let ranges = string.split(',').map(Range::from_string).collect::<Result<Vec<Range>>>()?;
         Ok(Self::from_vec(ranges))
     }
 

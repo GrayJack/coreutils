@@ -1,5 +1,5 @@
 [profile.release]
-lto = "fat"
+lto = "thin"
 codegen-units = 1
 # panic = "abort"
 
@@ -7,7 +7,7 @@ codegen-units = 1
 members = [
     "basename",
     "cat",
-    # "chroot",
+    "chroot",
     "clear",
     "csplit",
     "cut",
@@ -28,7 +28,7 @@ members = [
     "mkfifo",
     "mktemp",
     "mv",
-    # "nice",
+    "nice",
     "nl",
     "nohup",
     "pwd",
@@ -48,9 +48,9 @@ members = [
     "uniq",
     "unlink",
     # "uptime",
-    # "users",
+    "users",
     "wc",
-    # "who",
+    "who",
     "whoami",
     "yes",
 ]
