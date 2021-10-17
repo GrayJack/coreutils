@@ -5,7 +5,7 @@ use std::{process, result::Result, str::FromStr};
 use clap::Values;
 
 const ARG_UNDERFLOW_ERROR: i32 = 64;
-const ARG_UNPARSABLE_ERROR: i32 = 64;
+const ARG_UNPARSABLE_ERROR: i32 = 63;
 
 fn main() {
     let matches = cli::create_app().get_matches();
