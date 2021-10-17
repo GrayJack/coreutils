@@ -102,7 +102,7 @@ cargo install --path .
 |    od    |      X      |         |      |
 |  paste   |      X      |         |      |
 |  patch   |      X      |         |      |
-|  printf  |      X      |         |      |
+|  printf  |             |         |  X   |
 |   pwd    |             |         |  X   |
 |    rm    |             |         |  x   |
 |  rmdir   |             |         |  X   |
