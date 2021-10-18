@@ -5,9 +5,7 @@ use std::{io, mem::MaybeUninit};
 
 use libc::localtime_r;
 
-#[cfg(not(target_os = "haiku"))]
-use super::TimeVal;
-use super::{Time, Tm};
+use super::{Time, TimeVal, Tm};
 
 /// Set the system time as `timeval`
 ///
@@ -90,7 +88,7 @@ impl From<std::time::SystemTimeError> for Error {
 }
 
 /// Get the time the system started.
-#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+#[cfg(not(target_os = "fuchsia"))]
 #[cfg_attr(feature = "inline-more", inline)]
 pub fn boottime() -> Result<TimeVal, Error> {
     #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
@@ -144,6 +142,11 @@ pub fn boottime() -> Result<TimeVal, Error> {
         }
     }
 
+    #[cfg(target_os = "haiku")]
+    {
+        Err(Error::TargetNotSupported)
+    }
+
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]
     {
         Err(Error::TargetNotSupported)
@@ -151,7 +154,7 @@ pub fn boottime() -> Result<TimeVal, Error> {
 }
 
 /// Get the time the system is up since boot.
-#[cfg(not(any(target_os = "fuchsia", target_os = "haiku")))]
+#[cfg(not(target_os = "fuchsia"))]
 #[cfg_attr(feature = "inline-more", inline)]
 pub fn uptime() -> Result<TimeVal, Error> {
     #[cfg(not(any(target_os = "solaris", target_os = "illumos")))]
@@ -204,6 +207,26 @@ pub fn uptime() -> Result<TimeVal, Error> {
             },
             _ => Err(Error::Io(io::Error::last_os_error())),
         }
+    }
+
+    #[cfg(target_os = "haiku")]
+    {
+        use libc::system_time;
+
+        const USECS_PER_SEC: i64 = 1_000_000;
+        // Not sure how safe it is, but all usages that I(GrayJack) saw on C and C++ code didn't
+        // handle no error cases
+        let uptime_usecs = unsafe { system_time() };
+        let mut uptime_secs = uptime_usecs / USECS_PER_SEC;
+        let uptime_usecs = uptime_usecs % USECS_PER_SEC;
+        if uptime_usecs >= (USECS_PER_SEC / 2) {
+            uptime_secs += 1;
+        }
+
+        uptime.tv_sec = uptime_secs;
+        uptime.tv_usec = uptime_usecs as _;
+
+        Ok(uptime)
     }
 
     #[cfg(any(target_os = "solaris", target_os = "illumos"))]

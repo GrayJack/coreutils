@@ -8,7 +8,7 @@ use coreutils_core::os::utmpx::{
     UtmpxSet as UtmpSet,
 };
 use coreutils_core::{
-    os::{load::load_average, time as ostime},
+    os::time as ostime,
     time::{OffsetDateTime as DateTime, UtcOffset},
 };
 
@@ -85,13 +85,25 @@ fn main() {
         return;
     }
 
-    println!(
-        "{} {} {} {}",
-        fmt_time(),
-        fmt_uptime(up_time, pretty_flag),
-        fmt_number_users(num_users),
-        fmt_load()
-    )
+    #[cfg(target_os = "haiku")]
+    {
+        println!(
+            "{} {} {}",
+            fmt_time(),
+            fmt_uptime(up_time, pretty_flag),
+            fmt_number_users(num_users),
+        )
+    }
+    #[cfg(not(target_os = "haiku"))]
+    {
+        println!(
+            "{} {} {} {}",
+            fmt_time(),
+            fmt_uptime(up_time, pretty_flag),
+            fmt_number_users(num_users),
+            fmt_load()
+        )
+    }
 }
 
 fn uptime(boot_time: DateTime) -> Result<i64, ostime::Error> {
@@ -113,7 +125,10 @@ fn fmt_time() -> String {
     format!(" {:02}:{:02}:{:02}", now.hour(), now.minute(), now.second())
 }
 
+#[cfg(not(target_os = "haiku"))]
 fn fmt_load() -> String {
+    use coreutils_core::os::load::load_average;
+
     match load_average() {
         None => {
             eprintln!("uptime: Failed to get load average");
