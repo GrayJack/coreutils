@@ -1,255 +1,181 @@
-use std::process;
-
+mod args;
 mod cli;
+mod float;
+
+use std::{
+    cell::RefCell,
+    fmt::{self, Display, Write},
+    process,
+};
+
+use args::Args;
 
 fn main() {
     let matches = cli::create_app().get_matches();
-
-    if let Some(values) = matches.values_of("FIRST INCREMENT LAST") {
-        let args: Vec<&str> = values.collect();
-        if args.len() > 3 {
-            eprintln!("seq: extra operand '{}'\n Try 'seq --help' for more information.", args[3]);
+    let args = match Args::parse(&matches) {
+        Ok(args) => args,
+        Err(error) => {
+            eprintln!("seq: {}", error);
             process::exit(1);
-        }
-        let separator = matches.value_of("SEPARATOR").map(String::from).unwrap();
-        let decimals = max_decimal_digits(&args);
-        let padding = if matches.is_present("WIDTH") { Some(max_digits(&args)) } else { None };
-        let (first, inc, last) = find_operands(&args);
-        let terminator = matches.value_of("TERMINATOR").unwrap_or("\n");
-        let valid_range = (first <= last && inc > 0.0) || (first >= last && inc < 0.0);
-        if valid_range {
-            let seq = Seq::new(first, inc, last, decimals, separator, padding);
-            for val in seq.into_iter() {
-                print!("{}", val);
-            }
-            print!("{}", terminator);
-        }
-    } else {
-        eprintln!("seq: missing operand\n Try 'seq --help' for more information.");
-        process::exit(1);
-    }
-}
-
-fn find_operands(args: &[&str]) -> (f64, f64, f64) {
-    match args.len() {
-        1 => (1.0, 1.0, parse_float(args[0])),
-        2 => (parse_float(args[0]), 1.0, parse_float(args[1])),
-        _ => {
-            let inc = parse_float(args[1]);
-
-            if inc == 0.0 {
-                eprintln!("seq: invalid zero increment value");
-                process::exit(1);
-            }
-
-            (parse_float(args[0]), inc, parse_float(args[2]))
         },
-    }
+    };
+
+    let seq = Seq::new(&args);
+    print!("{}", seq);
 }
 
-fn parse_float(s: &str) -> f64 {
-    s.parse::<f64>().unwrap_or_else(|_| {
-        eprintln!("seq: invalid floating point argument: {}", s);
-        process::exit(1);
-    })
-}
 
-struct Seq {
+#[derive(Debug)]
+struct Seq<'a> {
     first: f64,
-    inc: f64,
+    increment: f64,
     last: f64,
     decimals: usize,
-    seperator: String,
     padding: Option<usize>,
+    separator: &'a str,
+    terminator: &'a str,
+    buffer: RefCell<String>,
 }
 
-impl Seq {
-    fn new(
-        first: f64, inc: f64, last: f64, decimals: usize, seperator: String, padding: Option<usize>,
-    ) -> Seq {
-        Seq { first, inc, last, decimals, seperator, padding }
-    }
 
-    fn is_complete(&self, value: f64) -> bool {
-        self.inc > 0.0 && value > self.last || self.inc < 0.0 && value < self.last
-    }
-}
-
-fn max_decimal_digits(args: &[&str]) -> usize {
-    // args will never be empty and all elements are already validated as f64
-    args.iter()
-        .map(|v| v.len() - v.find('.').map(|pos| pos + 1).unwrap_or_else(|| v.len()))
-        .max()
-        .unwrap()
-}
-
-fn max_digits(args: &[&str]) -> usize {
-    // args will never be empty and each element is already validated as f64
-    args.iter().map(|v| v.find('.').unwrap_or_else(|| v.len())).max().unwrap()
-}
-
-impl IntoIterator for Seq {
-    type IntoIter = SeqIterator;
-    type Item = String;
-
-    fn into_iter(self) -> Self::IntoIter {
-        let current = self.first;
-        SeqIterator { seq: self, current }
-    }
-}
-
-struct SeqIterator {
-    seq: Seq,
-    current: f64,
-}
-
-impl Iterator for SeqIterator {
-    type Item = String;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.seq.is_complete(self.current) {
-            None
-        } else {
-            let value = format!("{:.*}", self.seq.decimals, self.current);
-            let digits = value.find('.').unwrap_or_else(|| value.len());
-
-            let mut value = match self.seq.padding {
-                Some(width) if width > digits => {
-                    let mut padded = String::with_capacity(value.len() + (width - digits));
-
-                    if let Some(val) = value.strip_prefix('-') {
-                        padded.push('-');
-                        padded.push_str(&"0".repeat(width - digits));
-                        padded.push_str(val);
-                    } else {
-                        padded.push_str(&"0".repeat(width - digits));
-                        padded.push_str(&value);
-                    }
-
-                    padded
-                },
-                _ => value,
-            };
-
-            if !self.seq.is_complete(self.current + self.seq.inc) {
-                value.push_str(&self.seq.seperator);
-            }
-            self.current += self.seq.inc;
-            Some(value)
+impl<'a> Seq<'a> {
+    fn new(args: &Args<'a>) -> Self {
+        Self {
+            first: args.first,
+            increment: args.increment,
+            last: args.last,
+            decimals: args.decimals,
+            padding: args.padding,
+            separator: args.separator,
+            terminator: args.terminator,
+            buffer: Default::default(),
         }
     }
+
+    fn is_finished(&self, value: f64) -> bool {
+        if self.increment > 0.0 { value > self.last } else { value < self.last }
+    }
+
+    fn format<W: Write>(&self, mut writer: W, value: f64) -> fmt::Result {
+        let mut buffer = self.buffer.borrow_mut();
+
+        buffer.clear();
+        write!(buffer, "{:.*}", self.decimals, value)?;
+
+        let digits = float::count_integer_digits(&buffer);
+
+        if let Some(padding) = self.padding {
+            if padding > digits {
+                buffer.clear();
+
+                let value = if value < 0.0 {
+                    buffer.push('-');
+                    value.abs()
+                } else {
+                    value
+                };
+
+                buffer.extend(std::iter::repeat('0').take(padding - digits));
+
+                write!(buffer, "{:.*}", self.decimals, value)?;
+            }
+        }
+
+        writer.write_str(&buffer)
+    }
 }
+
+
+impl<'a> Display for Seq<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut current = self.first;
+
+        if self.is_finished(current) {
+            return Ok(());
+        }
+
+        let mut buffer = String::new();
+        self.format(&mut buffer, current)?;
+        f.write_str(&buffer)?;
+
+        current += self.increment;
+
+        while !self.is_finished(current) {
+            buffer.clear();
+            self.format(&mut buffer, current)?;
+            write!(f, "{}{}", self.separator, buffer)?;
+
+            current += self.increment;
+        }
+
+        // If the number past self.last prints equal to self.last, and prints differently
+        // from the previous number, then we should print it. This avoids problems with
+        // rounding.
+
+        let mut last = String::with_capacity(buffer.len());
+        self.format(&mut last, self.last)?;
+
+        if last != buffer {
+            // Last was not already printed.
+            buffer.clear();
+            self.format(&mut buffer, current)?;
+
+            if buffer == last {
+                // The final number prints the same as last.
+                write!(f, "{}{}", self.separator, buffer)?;
+            }
+        }
+
+        f.write_str(self.terminator)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
-    use assert_cmd::Command;
-
     use super::*;
 
-    #[test]
-    fn should_find_max_decimal_digits() {
-        assert_eq!(max_decimal_digits(&["1.22", "1.3", "1"]), 2);
-        assert_eq!(max_decimal_digits(&["1", "1.3", "1.1"]), 1);
-        assert_eq!(max_decimal_digits(&["1"]), 0);
+
+    fn seq(
+        first: f64, increment: f64, last: f64, decimals: usize, padding: Option<usize>,
+    ) -> Seq<'static> {
+        Seq {
+            first,
+            increment,
+            last,
+            decimals,
+            padding,
+            separator: ",",
+            terminator: ";",
+            buffer: Default::default(),
+        }
     }
 
-    #[test]
-    fn should_find_max_digits() {
-        assert_eq!(max_digits(&["1.22", "12.3", "1"]), 2);
-        assert_eq!(max_digits(&["1.22", "12.3", "123"]), 3);
-        assert_eq!(max_digits(&["1.22", "-152.3", "123"]), 4);
-    }
-
-    #[test]
-    fn should_find_operands() {
-        assert_eq!(find_operands(&["2", "3", "10"]), (2.0, 3.0, 10.0));
-        assert_eq!(find_operands(&["2", "10"]), (2.0, 1.0, 10.0));
-        assert_eq!(find_operands(&["3"]), (1.0, 1.0, 3.0));
-    }
-
-    fn to_string(xs: Vec<&str>) -> Vec<String> {
-        xs.into_iter().map(|v: &str| v.to_owned()).collect::<Vec<String>>()
-    }
-
-    #[test]
-    fn should_generate_sequence2() {
-        assert_eq!(
-            Seq::new(1.0, 1.0, 1.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1"])
-        );
-    }
 
     #[test]
     fn should_generate_sequence() {
-        assert_eq!(
-            Seq::new(1.0, 1.0, 1.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1"])
-        );
+        assert_eq!(seq(1.0, 1.0, 1.0, 0, None).to_string(), "1;");
+
+        assert_eq!(seq(2.0, 1.0, 2.0, 0, None).to_string(), "2;");
+
+        assert_eq!(seq(1.0, 1.0, 3.0, 0, None).to_string(), "1,2,3;");
+
+        assert_eq!(seq(1.0, 1.0, 3.0, 1, None).to_string(), "1.0,2.0,3.0;");
+
+        assert_eq!(seq(1.0, 0.2, 2.0, 1, None).to_string(), "1.0,1.2,1.4,1.6,1.8,2.0;");
 
         assert_eq!(
-            Seq::new(1.0, 1.0, 3.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1", "2", "3"])
+            // #133
+            seq(0.1, 0.01, 0.2, 2, None).to_string(),
+            "0.10,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20;"
         );
 
-        assert_eq!(
-            Seq::new(1.0, 1.0, 3.0, 0, ",".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1,", "2,", "3"])
-        );
+        assert_eq!(seq(1.0, 0.2, 2.0, 3, None).to_string(), "1.000,1.200,1.400,1.600,1.800,2.000;");
 
-        assert_eq!(
-            Seq::new(1.0, 1.0, 3.0, 1, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1.0", "2.0", "3.0"])
-        );
+        assert_eq!(seq(-2.0, 1.0, 2.0, 0, None).to_string(), "-2,-1,0,1,2;");
 
-        assert_eq!(
-            Seq::new(1.0, 0.2, 2.0, 1, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1.0", "1.2", "1.4", "1.6", "1.8", "2.0"])
-        );
+        assert_eq!(seq(-1.0, -5.0, -15.0, 0, Some(4)).to_string(), "-001,-006,-011;");
 
-        assert_eq!(
-            Seq::new(1.0, 0.2, 2.0, 3, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1.000", "1.200", "1.400", "1.600", "1.800", "2.000"])
-        );
-
-        assert_eq!(
-            Seq::new(-2.0, 1.0, 2.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["-2", "-1", "0", "1", "2"])
-        );
-
-        assert_eq!(
-            Seq::new(-1.0, -5.0, -15.0, 0, "".to_owned(), Some(4))
-                .into_iter()
-                .collect::<Vec<String>>(),
-            to_string(vec!["-001", "-006", "-011"])
-        );
-
-        assert_eq!(
-            Seq::new(1.0, 1.0, 3.0, 0, "".to_owned(), None).into_iter().collect::<Vec<String>>(),
-            to_string(vec!["1", "2", "3"])
-        );
-
-        assert_eq!(
-            Seq::new(1.0, 5.0, 16.0, 0, "".to_owned(), Some(2))
-                .into_iter()
-                .collect::<Vec<String>>(),
-            to_string(vec!["01", "06", "11", "16"])
-        );
-    }
-
-    #[test]
-    fn should_output_with_same_first_and_last() {
-        let mut cmd = Command::new("seq");
-        cmd.args(&["1"]).assert().stdout("1\n");
-
-        let mut cmd = Command::new("seq");
-        cmd.args(&["2", "2"]).assert().stdout("2\n");
-    }
-
-    #[test]
-    fn test_parsing_input() {
-        let app = cli::create_app().get_matches_from(vec!["seq", "1", "1", "4"]);
-        let values = app.values_of("FIRST INCREMENT LAST");
-        assert!(values.is_some());
-        assert_eq!(values.unwrap().collect::<Vec<&str>>(), vec!["1", "1", "4"])
+        assert_eq!(seq(1.0, 5.0, 16.0, 0, Some(2)).to_string(), "01,06,11,16;");
     }
 }
