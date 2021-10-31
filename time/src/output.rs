@@ -118,23 +118,23 @@ fn default_formatter(_: &RUsage, timings: TimeTriple) -> String {
 
 /// Render the <specifier> in %<specifier>, return a pair of boolean and the rendered
 /// The boolean signals if the specifier was rendered
-fn render_percent_spec(rusage: &RUsage, timings: &TimeTriple, spec: u8) -> Option<String> {
+fn render_percent_spec(rusage: &RUsage, timings: &TimeTriple, spec: char) -> Option<String> {
     match spec {
-        b'c' => Some(rusage.mem.num_invol_ctx_switch.to_string()),
-        b'D' => Some(rusage.mem.unshared_data_size.to_string()),
-        b'E' => Some(format!("{:.2}", timings.wall_time.as_seconds_f64())),
-        b'F' => Some(rusage.mem.num_major_page_flt.to_string()),
-        b'I' => Some(rusage.io.num_block_in.to_string()),
-        b'K' => Some(
+        'c' => Some(rusage.mem.num_invol_ctx_switch.to_string()),
+        'D' => Some(rusage.mem.unshared_data_size.to_string()),
+        'E' => Some(format!("{:.2}", timings.wall_time.as_seconds_f64())),
+        'F' => Some(rusage.mem.num_major_page_flt.to_string()),
+        'I' => Some(rusage.io.num_block_in.to_string()),
+        'K' => Some(
             (rusage.mem.shared_mem_size
                 + rusage.mem.unshared_data_size
                 + rusage.mem.unshared_stack_size)
                 .to_string(),
         ),
-        b'k' => Some(rusage.io.num_signals.to_string()),
-        b'M' => Some(rusage.mem.max_rss.to_string()),
-        b'O' => Some(rusage.mem.max_rss.to_string()),
-        b'P' => {
+        'k' => Some(rusage.io.num_signals.to_string()),
+        'M' => Some(rusage.mem.max_rss.to_string()),
+        'O' => Some(rusage.mem.max_rss.to_string()),
+        'P' => {
             if timings.wall_time.is_zero() {
                 Some(String::from("0.0%"))
             } else {
@@ -142,14 +142,14 @@ fn render_percent_spec(rusage: &RUsage, timings: &TimeTriple, spec: u8) -> Optio
                 Some(format!("{:.2}", 100 * cpu_time / timings.wall_time))
             }
         },
-        b'R' => Some(rusage.mem.num_minor_page_flt.to_string()),
-        b'r' => Some(rusage.io.num_sock_recv.to_string()),
-        b'S' => Some(format!("{:.2}", timings.sys_time.as_seconds_f64())),
-        b's' => Some(rusage.io.num_sock_send.to_string()),
-        b'U' => Some(format!("{:.2}", timings.user_time.as_seconds_f64())),
-        b'W' => Some(rusage.mem.num_swaps.to_string()),
-        b'w' => Some(rusage.mem.num_vol_ctx_switch.to_string()),
-        b'X' => Some(rusage.mem.shared_mem_size.to_string()),
+        'R' => Some(rusage.mem.num_minor_page_flt.to_string()),
+        'r' => Some(rusage.io.num_sock_recv.to_string()),
+        'S' => Some(format!("{:.2}", timings.sys_time.as_seconds_f64())),
+        's' => Some(rusage.io.num_sock_send.to_string()),
+        'U' => Some(format!("{:.2}", timings.user_time.as_seconds_f64())),
+        'W' => Some(rusage.mem.num_swaps.to_string()),
+        'w' => Some(rusage.mem.num_vol_ctx_switch.to_string()),
+        'X' => Some(rusage.mem.shared_mem_size.to_string()),
         _ => None,
     }
 }
@@ -157,11 +157,13 @@ fn render_percent_spec(rusage: &RUsage, timings: &TimeTriple, spec: u8) -> Optio
 /// Wraps a character iterator over a string,
 /// and unescapes escaped ASCII control sequences as it comes across them.
 ///
-/// A simple example of this would be rendering escaped newline and tab chars
+/// A simple example of this would be rendering escaped newline and tab chars:
+///
 /// ```rust
 /// let s = StringEscapeDecoder::from(&"a\\nb\\tc")
 /// assert_eq!("a\nb\tc", a.collect());
 /// ```
+///
 /// See: https://en.wikipedia.org/wiki/Escape_sequences_in_C#Table_of_escape_sequences
 struct StringEscapeDecoder<'a> {
     data: std::iter::Peekable<std::str::Chars<'a>>,
@@ -225,57 +227,12 @@ impl<'a> std::iter::Iterator for StringEscapeDecoder<'a> {
     }
 }
 
-/// Internal: Unescapes a backslash escaped string
-/// See: https://en.wikipedia.org/wiki/Escape_sequences_in_C#Table_of_escape_sequences
-fn decode_escaped_string(value: String) -> String {
-    let mut iter = value.bytes().peekable();
-    let mut output = String::new();
-
-    while let Some(ch) = iter.next() {
-        if ch == b'\\' {
-            if let Some(next_ch) = iter.peek() {
-                // Find out which of the escape codes was used to decide
-                // which byte to write next. If none of the escape codes match,
-                // write the backslash that was going to be skipped instead
-                let (decode_successful, byte_to_write): (bool, u8) = match next_ch {
-                    b'a' => (true, 0x07),
-                    b'b' => (true, 0x08),
-                    b'e' => (true, 0x1B),
-                    b'f' => (true, 0x0C),
-                    b'n' => (true, 0x0A),
-                    b'r' => (true, 0x0D),
-                    b't' => (true, 0x09),
-                    b'v' => (true, 0x0B),
-                    b'\\' => (true, 0x5C),
-                    b'\'' => (true, 0x27),
-                    b'\"' => (true, 0x22),
-                    b'?' => (true, 0x3F),
-                    _ => (false, b'\\'),
-                };
-
-                write!(output, "{}", byte_to_write as char).expect("Failed to unescape string");
-                // If a byte was decoded, skip over it.
-                // Otherwise, write out the backslash
-                if decode_successful {
-                    iter.next();
-                }
-            } else {
-                panic!("Invalid escape '\\' at end of input");
-            }
-        } else {
-            write!(output, "{}", ch as char).expect("Failed to unescape string");
-        }
-    }
-    output
-}
-
 fn custom_formatter(rusage: &RUsage, timings: TimeTriple, format_spec: &str) -> String {
     let mut target = String::new();
-    let unescaped_spec = decode_escaped_string(format_spec.to_owned());
-    let mut format_spec_iterator = unescaped_spec.bytes().peekable();
+    let mut format_spec_iterator = StringEscapeDecoder::from(format_spec).peekable();
 
     while let Some(ch) = format_spec_iterator.next() {
-        if ch != b'%' {
+        if ch != '%' {
             write!(&mut target, "{}", ch as char).expect("Failed to write to format buffer");
         } else {
             match format_spec_iterator.peek() {
