@@ -84,24 +84,22 @@ impl OutputFormatter {
     ///
     /// * `rusage` - Resource usage of the process being timed
     /// * `duration` - Time taken by the process being timed
-    pub fn format_stats(self, rusage: &RUsage, duration: &Duration) -> String {
+    pub fn format_stats(self, rusage: &RUsage, duration: &Duration) -> Option<String> {
         let timings: TimeTriple = TimeTriple {
             user_time: rusage.timing.user_time,
             sys_time: rusage.timing.sys_time,
             wall_time: *duration,
         };
         match self.kind {
-            FormatterKind::Default => default_formatter(rusage, timings),
-            FormatterKind::Posix => {
-                format!(
-                    "real {:.2}\nuser {:.2}\nsys  {:.2}",
-                    timings.wall_time.as_seconds_f64(),
-                    timings.user_time.as_seconds_f64(),
-                    timings.sys_time.as_seconds_f64()
-                )
-            },
-            FormatterKind::Csh => csh_formatter(rusage, timings),
-            FormatterKind::TCsh => tcsh_formatter(rusage, timings),
+            FormatterKind::Default => Some(default_formatter(rusage, timings)),
+            FormatterKind::Posix => Some(format!(
+                "real {:.2}\nuser {:.2}\nsys  {:.2}",
+                timings.wall_time.as_seconds_f64(),
+                timings.user_time.as_seconds_f64(),
+                timings.sys_time.as_seconds_f64()
+            )),
+            FormatterKind::Csh => Some(csh_formatter(rusage, timings)),
+            FormatterKind::TCsh => Some(tcsh_formatter(rusage, timings)),
             FormatterKind::FmtString(spec) => custom_formatter(rusage, timings, &spec),
         }
     }
@@ -227,33 +225,32 @@ impl<'a> std::iter::Iterator for StringEscapeDecoder<'a> {
     }
 }
 
-fn custom_formatter(rusage: &RUsage, timings: TimeTriple, format_spec: &str) -> String {
+fn custom_formatter(rusage: &RUsage, timings: TimeTriple, format_spec: &str) -> Option<String> {
     let mut target = String::new();
     let mut format_spec_iterator = StringEscapeDecoder::from(format_spec).peekable();
 
     while let Some(ch) = format_spec_iterator.next() {
         if ch != '%' {
-            write!(&mut target, "{}", ch as char).expect("Failed to write to format buffer");
+            write!(&mut target, "{}", ch as char).ok()?;
         } else {
             match format_spec_iterator.peek() {
                 Some(&specifier) => {
                     if let Some(text) = render_percent_spec(rusage, &timings, specifier) {
-                        write!(&mut target, "{}", text).expect("Failed to write to format buffer");
+                        write!(&mut target, "{}", text).ok()?;
                     } else {
                         // If the %<char> wasn't rendered, dump it out as it was seen
-                        write!(&mut target, "%{}", specifier as char)
-                            .expect("Failed to write to format buffer");
+                        write!(&mut target, "%{}", specifier as char).ok()?;
                     }
                     // Skip this character, we have dealt with the result of .peek()
                     format_spec_iterator.next();
                 },
                 None => {
-                    write!(&mut target, "%").expect("Failed to write to format buffer");
+                    write!(&mut target, "%").ok()?;
                 },
             }
         }
     }
-    target
+    Some(target)
 }
 
 fn csh_formatter(rusage: &RUsage, timings: TimeTriple) -> String {
