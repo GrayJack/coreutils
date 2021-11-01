@@ -184,19 +184,19 @@ fn parse_format(format_string: &str, args: Option<Values>) -> Result<String, i32
 }
 
 fn to<T: FromStr>(string: &str) -> Result<T, i32> {
-    if let Ok(to_type) = string.parse::<T>() {
+    if let Ok(to_type) = string.parse() {
         return Ok(to_type);
     }
 
-    return Err(ARG_UNPARSABLE_ERROR);
+    Err(ARG_UNPARSABLE_ERROR)
 }
 
 fn get_arg<T: FromStr>(args: &mut Option<Values>) -> Result<T, i32> {
     if let Some(args) = args {
         if let Some(arg) = args.next() {
-            return to::<T>(arg);
+            return to(arg);
         }
     }
 
-    return Err(ARG_UNDERFLOW_ERROR);
+    Err(ARG_UNDERFLOW_ERROR)
 }
