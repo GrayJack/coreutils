@@ -29,7 +29,7 @@ targets = [
 ]
 
 [dependencies]
-libc = { version = "~0.2.104", features = ["extra_traits"] }
+libc = { version = "~0.2.105", features = ["extra_traits"] }
 bstr = "~0.2.16"
 regex = "^1.5.2"
 time = "= 0.2.23"

@@ -47,21 +47,10 @@ use libc::c_long;
 use libc::utmpxname;
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use libc::{c_int, c_short, exit_status as ExitStatus};
-#[cfg(not(target_os = "haiku"))]
 use libc::{endutxent, getutxent, setutxent, suseconds_t, time_t, utmpx};
-#[cfg(target_os = "haiku")]
-use libc::{suseconds_t, time_t, utmpx};
 use time::{Duration, OffsetDateTime as DateTime};
 
 use super::{Pid, TimeVal};
-
-// FIXME: Remove this and haiku specific lib loading after [libc PR](https://github.com/rust-lang/libc/pull/2460) is accepted and released.
-#[cfg(target_os = "haiku")]
-extern "C" {
-    fn getutxent() -> *mut utmpx;
-    fn setutxent();
-    fn endutxent();
-}
 
 /// Error type for [`UtmpxKind`] conversion.
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]

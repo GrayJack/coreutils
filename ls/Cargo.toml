@@ -12,7 +12,7 @@ description = "List information about the FILEs (the current directory by defaul
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
-unix_mode = "0.1.1"
+unix_mode = "= 0.1.2"
 chrono = "0.4"
 ansi_term = "0.12.1"
 term_grid = "0.2.0"
