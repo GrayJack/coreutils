@@ -6,8 +6,9 @@
 /// A simple example of this would be rendering escaped newline and tab chars:
 ///
 /// ```rust
-/// let s = StringEscapeDecoder::from(&"a\\nb\\tc")
-/// assert_eq!("a\nb\tc", a.collect());
+/// use coreutils_core::strings::StringEscapeDecoder;
+/// let s = StringEscapeDecoder::from("a\\nb\\tc");
+/// assert_eq!("a\nb\tc", s.collect::<String>());
 /// ```
 ///
 /// See: https://en.wikipedia.org/wiki/Escape_sequences_in_C#Table_of_escape_sequences
@@ -36,19 +37,19 @@ impl<'a> std::iter::Iterator for StringEscapeDecoder<'a> {
         match self.data.next() {
             Some('\\') => {
                 let (consume_next, char_to_emit) = match self.data.peek() {
-                    Some('0') => (true, /* '\0' */ 0x00 as char),
-                    Some('a') => (true, /* '\a' */ 0x07 as char),
-                    Some('b') => (true, /* '\b' */ 0x08 as char),
-                    Some('e') => (true, /* '\e' */ 0x1B as char),
-                    Some('f') => (true, /* '\f' */ 0x0C as char),
+                    Some('0') => (true, /* '\0' */ '\x00'),
+                    Some('a') => (true, /* '\a' */ '\x07'),
+                    Some('b') => (true, /* '\b' */ '\x08'),
+                    Some('e') => (true, /* '\e' */ '\x1B'),
+                    Some('f') => (true, /* '\f' */ '\x0C'),
                     Some('n') => (true, '\n'),
                     Some('r') => (true, '\r'),
                     Some('t') => (true, '\t'),
-                    Some('v') => (true, /* '\v' */ 0x0B as char),
+                    Some('v') => (true, /* '\v' */ '\x0B'),
                     Some('\\') => (true, '\\'),
                     Some('\'') => (true, '\''),
                     Some('"') => (true, '"'),
-                    Some('?') => (true, /* '\?' */ 0x3F as char),
+                    Some('?') => (true, /* '\?' */ '\x3F'),
                     // If the next character isn't a known ASCII escape code,
                     // or doesn't exist: Return the current '\\'
                     _ => (false, '\\'),
@@ -74,3 +75,41 @@ impl<'a> std::iter::Iterator for StringEscapeDecoder<'a> {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::StringEscapeDecoder as SED;
+
+    #[test]
+    fn no_effect_on_empty_string() {
+        let decoded = SED::from("").collect::<String>();
+        assert_eq!("", decoded);
+    }
+
+    #[test]
+    fn no_effect_when_there_are_no_escapes() {
+        let decoded = SED::from("definitely no escapes to decode").collect::<String>();
+        assert_eq!("definitely no escapes to decode", decoded);
+    }
+
+    #[test]
+    fn decodes_ascii_byte_sequence() {
+        let escaped_control_chars = vec![
+            "\\0", "\\a", "\\b", "\\e", "\\f", "\\n", "\\r", "\\t", "\\v", "\\", "\'", "\\\"",
+            "\\?",
+        ];
+        let expected_control_chars = vec![
+            '\x00', '\x07', '\x08', '\x1B', '\x0C', '\n', '\r', '\t', '\x0B', '\\', '\'', '"', '?',
+        ];
+        for (idx, escaped_char) in escaped_control_chars.iter().enumerate() {
+            let control_char = expected_control_chars[idx];
+            let input = format!("delim{}seperated{}list", escaped_char, escaped_char);
+            let expected = format!("delim{}seperated{}list", control_char, control_char);
+            let output: String = SED::from(input.as_str()).collect();
+
+            assert_eq!(expected, output, "Failed to decode: {}", input);
+        }
+
+        let decoded = SED::from("delim\\0seperated\\0list").collect::<String>();
+        assert_eq!("delim\0seperated\0list", decoded);
+    }
+}
