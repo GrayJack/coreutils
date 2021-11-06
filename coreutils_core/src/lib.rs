@@ -11,3 +11,4 @@ pub mod input;
 pub mod mkfifo;
 pub mod mktemp;
 pub mod os;
+pub mod strings;

@@ -17,7 +17,7 @@ fn main() {
     let written = match opts.get_output_stream() {
         Ok(mut stream) => {
             let data = opts.printer.format_stats(&usage, &duration);
-            stream.write(data.as_bytes())
+            stream.write(data.unwrap().as_bytes())
         },
         Err(err) => Err(err),
     };

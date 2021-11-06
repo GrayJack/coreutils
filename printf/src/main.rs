@@ -3,6 +3,7 @@ mod cli;
 use std::{process, result::Result, str::FromStr};
 
 use clap::Values;
+use coreutils_core::strings::StringEscapeDecoder;
 
 const ARG_UNDERFLOW_ERROR: i32 = 64;
 const ARG_UNPARSABLE_ERROR: i32 = 63;
@@ -20,11 +21,8 @@ fn main() {
 }
 
 fn parse_format(format_string: &str, args: Option<Values>) -> Result<String, i32> {
-    let format_string: Vec<char> = format_string.chars().collect();
+    let format_string: Vec<char> = StringEscapeDecoder::from(format_string).collect();
     let mut args = args;
-
-    println!("Format: {:?}", &format_string);
-    println!("Args: {:?}", &args);
 
     let mut parts = vec![];
     let mut chars = vec![];
@@ -32,26 +30,6 @@ fn parse_format(format_string: &str, args: Option<Values>) -> Result<String, i32
 
     while fmt_index < format_string.len() {
         match format_string[fmt_index] {
-            '\\' => {
-                // Escape sequence
-                fmt_index += 1;
-                match format_string[fmt_index] {
-                    'a' => chars.push('\x07'),
-                    'b' => chars.push('\x08'),
-                    'f' => chars.push('\x0C'),
-                    'n' => chars.push('\n'),
-                    'r' => chars.push('\r'),
-                    't' => chars.push('\t'),
-                    'v' => chars.push('\x0D'),
-                    '\'' => chars.push('\''),
-                    '\\' => chars.push('\\'),
-                    _ => {
-                        // Write a byte whose value is the 1-, 2-, or 3-digit octal number
-                        // num.  Multibyte characters can be constructed using multiple
-                        // \num sequences.
-                    },
-                }
-            },
             '%' => {
                 // Format sequence
                 fmt_index += 1;
