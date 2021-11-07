@@ -78,13 +78,13 @@ impl Style {
             Some(reg) => {
                 if let Some(r) = reg.strip_prefix('p') {
                     let regex = Regex::new(r).unwrap_or_else(|err| {
-                        eprintln!("{}", err.to_string());
+                        eprintln!("{}", err);
                         std::process::exit(1);
                     });
 
                     Style::Regex(regex)
                 } else {
-                    eprintln!("nl: invalid body numbering style: ‘{}’", reg[1..].to_string());
+                    eprintln!("nl: invalid body numbering style: ‘{}’", &reg[1..]);
                     std::process::exit(1);
                 }
             },
