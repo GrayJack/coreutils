@@ -2,7 +2,6 @@ pub(crate) fn count_integer_digits(float: &str) -> usize {
     float.find('.').unwrap_or_else(|| float.len())
 }
 
-
 pub(crate) fn count_decimal_digits(float: &str) -> usize {
     let len = float.len();
 
@@ -10,7 +9,6 @@ pub(crate) fn count_decimal_digits(float: &str) -> usize {
 
     len - decimal
 }
-
 
 #[cfg(test)]
 mod tests {

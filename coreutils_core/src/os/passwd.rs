@@ -1,7 +1,6 @@
 //! Module to deal more easily with UNIX passwd.
 
 use std::{
-    convert::TryFrom,
     error::Error as StdError,
     ffi::{CStr, CString, NulError},
     fmt::{self, Display},

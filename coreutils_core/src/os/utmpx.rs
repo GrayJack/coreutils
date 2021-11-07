@@ -11,7 +11,6 @@ use std::ffi::CString;
 use std::net::{self, IpAddr};
 use std::{
     collections::{hash_set, HashSet},
-    convert::TryFrom,
     error::Error as StdError,
     fmt::{self, Display},
     io,

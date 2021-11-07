@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Vaibhav Yenamandra <v@calloc.net>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = "Run COMMAND, then display the system resource usage."
 
 [dependencies]

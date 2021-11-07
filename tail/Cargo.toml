@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Jeremy Jackson <git@jeremyvii.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = """
 This filter displays the last count lines or bytes of each specified FILE, or \
 of the standard input if no files are specified or "-" is given as a \

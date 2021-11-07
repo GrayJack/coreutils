@@ -1,6 +1,4 @@
 //! Account database module
-#[cfg(any(target_os = "solaris", target_os = "illumos"))]
-use std::convert::{TryFrom, TryInto};
 use std::{
     collections::{hash_set, HashSet},
     fs::{self, File},

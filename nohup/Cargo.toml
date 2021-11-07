@@ -1,10 +1,14 @@
 [package]
 name = "nohup"
 version = "0.1.0"
-authors = ["FedericoPonzi <federico.ponzi92@gmail.com>", "Eric Shimizu Karbstein <gr41.j4ck@gmail.com>"]
+authors = [
+    "FedericoPonzi <federico.ponzi92@gmail.com>",
+    "Eric Shimizu Karbstein <gr41.j4ck@gmail.com>",
+]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = """
 Run COMMAND and ignore SIGHUP signals. If standard input is a terminal,
 redirect it from an unreadable file.

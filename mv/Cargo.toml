@@ -4,12 +4,13 @@ version = "0.1.0"
 authors = ["Gab David <g.bianchetdavid@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = "Move or rename files."
 
 [dependencies]
 clap = { version = "^2.33.0", features = ["wrap_help"] }
-coreutils_core = {path = "../coreutils_core"}
+coreutils_core = { path = "../coreutils_core" }
 
 [build-dependencies]
 clap = "^2.33.0"

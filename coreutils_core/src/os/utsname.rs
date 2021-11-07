@@ -1,6 +1,5 @@
 //! Module for system information.
 use std::{
-    convert::TryFrom,
     fmt::{self, Display},
     io,
     mem::MaybeUninit,

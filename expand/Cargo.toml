@@ -1,10 +1,14 @@
 [package]
 name = "expand"
 version = "0.1.0"
-authors = ["muskuloes <19honor@gmail.com>", "Bojan Durdevic <bojan88@gmail.com>"]
+authors = [
+    "muskuloes <19honor@gmail.com>",
+    "Bojan Durdevic <bojan88@gmail.com>",
+]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = """
 Convert tabs in each FILE to spaces, writing to standard output.
 

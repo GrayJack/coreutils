@@ -8,13 +8,13 @@ authors = [
 description = "A crate with abstractions to implement UNIX core utilities"
 readme = "README.md"
 license = "MPL-2.0-no-copyleft-exception"
-# license-file = "LICENSE"
 repository = "https://github.com/GrayJack/coreutils/coreutils_core"
 documentation = "https://docs.rs/coreutils_core"
 homepage = "https://crates.io/crates/coreutils_core"
 keywords = ["unix", "coreutils"]
 categories = ["os", "os::unix-apis", "os::macos-apis"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 
 [package.metadata.docs.rs]
 targets = [
