@@ -30,7 +30,7 @@ fn main() {
         move_files(sources, &PathBuf::from(&flags.target_directory), &flags)
     } else if !flags.no_target_directory && sources.last().unwrap().is_dir() {
         let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
+        move_files(sources[..sources.len() - 1].to_vec(), target, &flags)
     } else if sources.len() == 2 {
         rename_file(&sources[0], &sources[1], &flags)
     } else if sources.len() == 1 {
@@ -38,7 +38,7 @@ fn main() {
         false
     } else {
         let target = sources.last().unwrap();
-        move_files(sources[..sources.len() - 1].to_vec(), &target.to_path_buf(), &flags)
+        move_files(sources[..sources.len() - 1].to_vec(), target, &flags)
     };
 
     if !success {

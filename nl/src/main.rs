@@ -32,9 +32,7 @@ fn main() {
                     return String::from("-");
                 }
 
-                file.split_whitespace()
-                    .map(|s| cwd.join(s.to_string()).to_str().unwrap().to_string())
-                    .collect()
+                file.split_whitespace().map(|s| cwd.join(s).to_str().unwrap().to_string()).collect()
             })
             .collect(),
         None => vec!["-".to_string()],
@@ -78,13 +76,13 @@ impl Style {
             Some(reg) => {
                 if let Some(r) = reg.strip_prefix('p') {
                     let regex = Regex::new(r).unwrap_or_else(|err| {
-                        eprintln!("{}", err.to_string());
+                        eprintln!("{}", err);
                         std::process::exit(1);
                     });
 
                     Style::Regex(regex)
                 } else {
-                    eprintln!("nl: invalid body numbering style: ‘{}’", reg[1..].to_string());
+                    eprintln!("nl: invalid body numbering style: ‘{}’", &reg[1..]);
                     std::process::exit(1);
                 }
             },

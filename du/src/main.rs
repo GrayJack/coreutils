@@ -503,16 +503,14 @@ fn filter_and_print(
     root: &str, path: &Display, value: DisplayValue, time: Option<DuTime>,
     flags_opts: &DuFlagsAndOptions, depth: usize, is_dir: bool,
 ) {
-    let print_entry: bool;
-
-    if is_dir {
-        print_entry = satisfies_threshold(&value, &flags_opts.threshold)
+    let print_entry = if is_dir {
+        satisfies_threshold(&value, &flags_opts.threshold)
             && flags_opts.max_depth.map_or(true, |max| depth <= max)
     } else {
-        print_entry = (flags_opts.show_all || path.to_string() == root)
+        (flags_opts.show_all || path.to_string() == root)
             && satisfies_threshold(&value, &flags_opts.threshold)
             && flags_opts.max_depth.map_or(true, |max| depth <= max)
-    }
+    };
 
     if print_entry {
         if let Some(t) = time {
