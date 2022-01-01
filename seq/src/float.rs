@@ -1,5 +1,5 @@
 pub(crate) fn count_integer_digits(float: &str) -> usize {
-    float.find('.').unwrap_or_else(|| float.len())
+    float.find('.').unwrap_or(float.len())
 }
 
 
