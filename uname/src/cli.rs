@@ -1,18 +1,14 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("all")
+            Arg::new("all")
                 .help(
                     "Display all information. Behave as though the options -o, -m, -n, -r, -s, \
                      and -v were specified.",
@@ -22,48 +18,48 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      and -v were specified.",
                 )
                 .long("all")
-                .short("a"),
+                .short('a'),
         )
         .arg(
-            Arg::with_name("sysname")
+            Arg::new("sysname")
                 .help("Display the name of the operating system implementation. (default)")
                 .long("sysname")
-                .short("s"),
+                .short('s'),
         )
         .arg(
-            Arg::with_name("nodename")
+            Arg::new("nodename")
                 .help("Display the name of the system to standard output.")
                 .long("nodename")
-                .short("n"),
+                .short('n'),
         )
         .arg(
-            Arg::with_name("release")
+            Arg::new("release")
                 .help("Display the current release level of the operating system.")
                 .long("release")
-                .short("r"),
+                .short('r'),
         )
         .arg(
-            Arg::with_name("osversion")
+            Arg::new("osversion")
                 .help("Display the version level of this release of the operating system.")
                 .long("os-version")
-                .short("v"),
+                .short('v'),
         )
         .arg(
-            Arg::with_name("machine")
+            Arg::new("machine")
                 .help("Display the type of the current hardware platform.")
                 .long("machine")
-                .short("m"),
+                .short('m'),
         )
         .arg(
-            Arg::with_name("processor")
+            Arg::new("processor")
                 .help("Display the machine processor architecture name.")
                 .long("processor")
-                .short("p"),
+                .short('p'),
         )
         .arg(
-            Arg::with_name("os")
+            Arg::new("os")
                 .help("Display the operating system.")
                 .long("operating-system")
-                .short("o"),
+                .short('o'),
         )
 }
