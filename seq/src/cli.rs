@@ -1,45 +1,39 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
-        .usage("seq [FLAGS] [OPTIONS] [FIRST [INCREMENT]] <LAST>")
-        .arg(Arg::with_name("FIRST INCREMENT LAST").multiple(true).required(true).hidden(true))
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
+        .override_usage("seq [OPTIONS] [FIRST [INCREMENT]] <LAST>")
+        .arg(Arg::new("FIRST INCREMENT LAST").required(true).multiple_occurrences(true).hide(true))
         .arg(
-            Arg::with_name("SEPARATOR")
-                .short("s")
-                .long("separator")
+            Arg::new("separator")
                 .help("Use STRING to separate numbers.")
-                .hide_default_value(true)
+                .long("separator")
+                .short('s')
                 .default_value("\n"),
         )
         .arg(
-            Arg::with_name("TERMINATOR")
-                .short("t")
-                .long("terminator")
+            Arg::new("terminator")
                 .help("Terminator of the values.")
-                .hide_default_value(true)
+                .long("terminator")
+                .short('t')
                 .default_value("\n"),
         )
         .arg(
-            Arg::with_name("WIDTH")
-                .short("w")
-                .long("equal-width")
-                .visible_alias("fixed-width")
+            Arg::new("equal-width")
                 .help("Equalize the widths of all numbers by padding with zeros as necessary.")
                 .long_help(
                     "Equalize the widths of all numbers by padding with zeros as \
                      necessary.\n\nThis option has no effect with the -f option.",
                 )
+                .long("equal-width")
+                .short('w')
+                .visible_alias("fixed-width")
                 .takes_value(false),
         )
 }
