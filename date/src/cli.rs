@@ -1,18 +1,14 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     let app = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("OPERAND")
+            Arg::new("OPERAND")
                 .help(
                     "An operand with a leading plus sign ('+') signals a user-defined format \
                      string which specifies the format in which to display the date and time.",
@@ -28,19 +24,19 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .value_name("+OUTPUT_FMT"),
         )
-        .arg(Arg::with_name("DATE").help("Display time described by STRING, not 'now'.").long_help(
+        .arg(Arg::new("DATE").help("Display time described by STRING, not 'now'.").long_help(
             "Display time described by STRING, not 'now'.\n\nShould be of value \
              [[[[[CC]YY]MM]DD]hh]mm[.SS].",
         ))
         .arg(
-            Arg::with_name("utc")
+            Arg::new("utc")
                 .help("Display Coordinated Universal Time (UTC).")
                 .long("utc")
                 .visible_alias("universal")
-                .short("u"),
+                .short('u'),
         )
         .arg(
-            Arg::with_name("rfc2822")
+            Arg::new("rfc2822")
                 .help("Use RFC 2822 date and time as OUTPUT_FMT.")
                 .long_help(
                     "Use RFC 2822 date and time output format.\n\nThis is equivalent to using \
@@ -50,11 +46,11 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("rfc2822")
                 .visible_alias("rfc-2822")
-                .short("R")
+                .short('R')
                 .overrides_with_all(&["iso8601", "rfc3339"]),
         )
         .arg(
-            Arg::with_name("reference")
+            Arg::new("reference")
                 .help(
                     "Display the date and time of the last modification of filename OR the date \
                      and time represented by seconds since UNIX Epoch.",
@@ -67,11 +63,11 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("reference")
                 .visible_alias("read")
-                .short("r")
+                .short('r')
                 .value_name("FILENAME | SECONDS"),
         )
         .arg(
-            Arg::with_name("iso8601")
+            Arg::new("iso8601")
                 .help("Use ISO 8601 date and time as OUTPUT_FMT.")
                 .long_help(
                     "Use ISO 8601 date and time as OUTPUT_FMT.\n\nFMT may not be omitted, \
@@ -83,7 +79,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("iso8601")
                 .visible_alias("iso-8601")
-                .short("I")
+                .short('I')
                 .value_name("FMT")
                 .possible_values(&[
                     "date", "hour", "hours", "minute", "minutes", "second", "seconds",
@@ -91,7 +87,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .overrides_with_all(&["rfc2822", "rfc3339"]),
         )
         .arg(
-            Arg::with_name("rfc3339")
+            Arg::new("rfc3339")
                 .help("Use RFC 3339 date and time as OUTPUT_FMT.")
                 .long_help(
                     "Use RFC 3339 date and time as OUTPUT_FMT.\n\nFMT may not be omitted, \
@@ -103,7 +99,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("rfc3339")
                 .visible_alias("rfc-3339")
-                .short("S")
+                .short('S')
                 .value_name("FMT")
                 .possible_values(&[
                     "date",
@@ -122,18 +118,18 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 
     if cfg!(not(target_os = "haiku")) {
         app.arg(
-            Arg::with_name("set")
+            Arg::new("set")
                 .help("Try to set the date.")
                 .long("set")
-                .short("s")
+                .short('s')
                 .overrides_with("no_set"),
         )
         .arg(
-            Arg::with_name("no_set")
+            Arg::new("no_set")
                 .help("Do not try to set the date.")
                 .long("no-set")
                 .visible_alias("convert")
-                .short("j")
+                .short('j')
                 .overrides_with("set"),
         )
     } else {
@@ -142,13 +138,13 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
 
     // There is no good way to implement it right now
     // .arg(
-    //     Arg::with_name("format")
+    //     Arg::new("format")
     //         .help(
     //             "Use INPUT_FMT as the format string to parse the DATE provided rather
     // than \              using the default [[[[[CC]YY]MM]DD]hh]mm[.SS] format.",
     //         )
     //         .long("format")
-    //         .short("f")
+    //         .short('f')
     //         .value_name("INPUT_FMT"),
     // )
 }
