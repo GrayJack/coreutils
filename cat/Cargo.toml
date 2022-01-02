@@ -11,7 +11,8 @@ description = "Concatenate and display files."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"
