@@ -1,197 +1,188 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("FILE")
+            Arg::new("FILE")
                 .help("File(s) to list")
                 .required(true)
-                .multiple(true)
+                .multiple_occurrences(true)
                 .default_value("."),
         )
         .arg(
-            Arg::with_name("all")
+            Arg::new("all")
                 .help(
                     "Write out all directory entries, including those whose names begin with a \
                      <period> ( '.' ).",
                 )
-                .short("a")
+                .short('a')
                 .long("all"),
         )
         .arg(
-            Arg::with_name("almost_all")
+            Arg::new("almost_all")
                 .help(
                     "Write out all directory entries, including those whose names begin with a \
                      <period> ( '.' ) but excluding the entries dot and dot-dot (if they exist).",
                 )
-                .short("A")
+                .short('A')
                 .long("almost-all"),
         )
         .arg(
-            Arg::with_name("file_status_modification")
+            Arg::new("file_status_modification")
                 .help(
                     "Use time of last modification of the file status information instead of last \
                      modification of the file itself for sorting -t or writing -l.",
                 )
-                .short("c")
+                .short('c')
                 .long("file-status-modification"),
         )
         .arg(
-            Arg::with_name("order_top_to_bottom")
+            Arg::new("order_top_to_bottom")
                 .help("Write multi-text-column output with entries sorted down the columns.")
-                .short("C")
+                .short('C')
                 .long("order-top-to-bottom"),
         )
         .arg(
-            Arg::with_name("directory")
+            Arg::new("directory")
                 .help("List directories and files themselves, rather than their contents.")
-                .short("d")
+                .short('d')
                 .long("directory"),
         )
         .arg(
-            Arg::with_name("no_sort")
+            Arg::new("no_sort")
                 .help(
                     "Output is not sorted. This option turns on -a. It also negates the effect of \
                      the -r, -S and -t options.",
                 )
-                .short("f")
+                .short('f')
                 .long("no-sort"),
         )
         .arg(
-            Arg::with_name("classify")
+            Arg::new("classify")
                 .help("Append indicator (one of */=>@|) to entries.")
-                .short("F")
+                .short('F')
                 .long("classify"),
         )
         .arg(
-            Arg::with_name("no_dereference")
+            Arg::new("no_dereference")
                 .help("Follow symbolic links listed on the command line.")
-                .short("H")
+                .short('H')
                 .long("no-dereference"),
         )
         .arg(
-            Arg::with_name("block_size")
+            Arg::new("block_size")
                 .help(
                     "Set the block size for the -s option and the per-directory block count \
                      written for the -l, -n, -s, -g, and -o options to 1024 bytes.",
                 )
-                .short("k")
+                .short('k')
                 .long("block-size"),
         )
         .arg(
-            Arg::with_name("comma_separate")
+            Arg::new("comma_separate")
                 .help("Fill width with a comma separated list of entries.")
-                .short("m")
+                .short('m')
                 .long("comma-separate"),
         )
         .arg(
-            Arg::with_name("dereference")
+            Arg::new("dereference")
                 .help(
                     "When showing file information for a symbolic link, show information for the \
                      file the link references rather than for the link itself.",
                 )
-                .short("L")
+                .short('L')
                 .long("dereference"),
         )
         .arg(
-            Arg::with_name("indicator")
+            Arg::new("indicator")
                 .help("Write a <slash> ( '/' ) after each filename if that file is a directory.")
-                .short("p")
+                .short('p')
                 .long("indicator"),
         )
         .arg(
-            Arg::with_name("inode")
+            Arg::new("inode")
                 .help("For each file, write the file's file serial number.")
-                .short("i")
+                .short('i')
                 .long("inode"),
         )
         .arg(
-            Arg::with_name("last_accessed")
+            Arg::new("last_accessed")
                 .help(
                     "Use time of last access instead of last modification of the file for sorting \
                      -t or writing -l.",
                 )
-                .short("u")
+                .short('u')
                 .long("last-accessed"),
         )
-        .arg(Arg::with_name("list").help("Use a long listing format").short("l").long("list"))
+        .arg(Arg::new("list").help("Use a long listing format").short('l').long("list"))
         .arg(
-            Arg::with_name("no_owner")
+            Arg::new("no_owner")
                 .help("Like -l, but do not list owner.")
-                .short("g")
+                .short('g')
                 .long("no-owner"),
         )
         .arg(
-            Arg::with_name("numeric_uid_gid")
+            Arg::new("numeric_uid_gid")
                 .help("Like -l, but list numeric user and group IDs.")
-                .short("n")
+                .short('n')
                 .long("numeric-uid-gid"),
         )
         .arg(
-            Arg::with_name("no_group")
+            Arg::new("no_group")
                 .help("Like -l, but do not list group.")
-                .short("o")
+                .short('o')
                 .long("no-group"),
         )
         .arg(
-            Arg::with_name("hide_control_chars")
+            Arg::new("hide_control_chars")
                 .help(
                     "Force each instance of non-printable filename characters to be written as \
                      the � character. This is the default behavior if the output is to a terminal \
                      device.",
                 )
-                .short("q")
+                .short('q')
                 .long("hide-control-chars"),
         )
+        .arg(Arg::new("reverse").help("Reverse order while sorting.").short('r').long("reverse"))
         .arg(
-            Arg::with_name("reverse")
-                .help("Reverse order while sorting.")
-                .short("r")
-                .long("reverse"),
-        )
-        .arg(
-            Arg::with_name("recursive")
+            Arg::new("recursive")
                 .help("Recursively print subdirectories.")
-                .short("R")
+                .short('R')
                 .long("recursive"),
         )
         .arg(
-            Arg::with_name("size")
+            Arg::new("size")
                 .help("Print the allocated size of each file, in blocks.")
-                .short("s")
+                .short('s')
                 .long("size"),
         )
         .arg(
-            Arg::with_name("sort_size")
+            Arg::new("sort_size")
                 .help("Sort by first file size, largest first.")
-                .short("S")
+                .short('S')
                 .long("sort-size"),
         )
         .arg(
-            Arg::with_name("time")
+            Arg::new("time")
                 .help("Sort by modification time, newest first.")
-                .short("t")
+                .short('t')
                 .long("time"),
         )
         .arg(
-            Arg::with_name("order_left_to_right")
+            Arg::new("order_left_to_right")
                 .help("Sort columns left to right.")
-                .short("x")
+                .short('x')
                 .long("order-left-to-right"),
         )
         .arg(
-            Arg::with_name("one_per_line")
+            Arg::new("one_per_line")
                 .help("Force output to be one entry per line.")
-                .short("1")
+                .short('1')
                 .long("one-per-line"),
         )
 }

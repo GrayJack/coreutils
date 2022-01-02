@@ -36,7 +36,7 @@ pub(crate) struct Flags {
 
 impl Flags {
     /// Create a `Flags` instance from the parsed command line arguments
-    pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
+    pub fn from_matches(matches: &ArgMatches) -> Self {
         let all = matches.is_present("all");
         let almost_all = matches.is_present("almost_all");
         let block_size = matches.is_present("block_size");
