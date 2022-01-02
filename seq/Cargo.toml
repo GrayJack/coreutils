@@ -1,10 +1,14 @@
 [package]
 name = "seq"
 version = "0.1.0"
-authors = ["John Pradeep Vincent <yehohanan7@gmail.com>", "gahag <gabriel.s.b@live.com>"]
+authors = [
+    "John Pradeep Vincent <yehohanan7@gmail.com>",
+    "gahag <gabriel.s.b@live.com>",
+]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = """
 Display numbers from FIRST to LAST, in steps of INCREMENT.
 """

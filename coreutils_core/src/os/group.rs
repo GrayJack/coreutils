@@ -1,11 +1,8 @@
 //! Module to deal more easily with UNIX groups.
 
-#[cfg(target_os = "macos")]
-use std::convert::TryInto;
 #[cfg(any(target_os = "solaris", target_os = "illumos"))]
 use std::os::raw::c_int;
 use std::{
-    convert::TryFrom,
     error::Error as StdError,
     ffi::{CStr, CString, NulError},
     fmt::{self, Display},

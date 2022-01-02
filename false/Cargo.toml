@@ -3,7 +3,8 @@ name = "false"
 version = "0.1.0"
 authors = ["GrayJack <gr41.j4ck@gmail.com>"]
 license = "Unlicense"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = """
 Exit with a status code indicating failure.
 

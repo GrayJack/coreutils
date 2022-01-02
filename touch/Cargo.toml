@@ -3,7 +3,8 @@ name = "touch"
 version = "0.1.0"
 authors = ["Michel Kansou <michel.kansou.vo2group@axa.fr>"]
 license = "MPL-2.0-no-copyleft-exception"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 description = """
 Update the access and modification times of each FILE to the current time.
 

@@ -2,7 +2,6 @@ use std::fmt::{self, Display};
 
 use super::float;
 
-
 #[derive(Debug)]
 pub(crate) enum Error<'a> {
     InvalidIncrement(&'a str),
@@ -10,7 +9,6 @@ pub(crate) enum Error<'a> {
     MissingOperand,
     TrailingOperand(&'a str),
 }
-
 
 impl<'a> Display for Error<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -23,9 +21,7 @@ impl<'a> Display for Error<'a> {
     }
 }
 
-
 impl<'a> std::error::Error for Error<'a> {}
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Args<'a> {
@@ -37,7 +33,6 @@ pub(crate) struct Args<'a> {
     pub separator: &'a str,
     pub terminator: &'a str,
 }
-
 
 impl<'a> Args<'a> {
     pub fn parse(matches: &'a clap::ArgMatches<'a>) -> Result<Self, Error<'a>> {
@@ -119,7 +114,6 @@ impl<'a> Args<'a> {
         arg.parse().map_err(|_| Error::InvalidFloat(arg))
     }
 }
-
 
 #[cfg(test)]
 mod tests {

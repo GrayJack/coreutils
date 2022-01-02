@@ -1,6 +1,4 @@
 //! Account database module
-#[cfg(any(target_os = "solaris", target_os = "illumos"))]
-use std::convert::{TryFrom, TryInto};
 use std::{
     collections::{hash_set, HashSet},
     fs::{self, File},
@@ -159,7 +157,7 @@ impl From<utmp> for Utmp {
         #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let ut_type = match UtmpxKind::try_from(utm.ut_type) {
             Ok(ut) => ut,
-            Err(err) => panic!(format!("{}", err)),
+            Err(err) => panic!("{}", err),
         };
 
         Utmp {
@@ -318,38 +316,38 @@ impl From<Utmp> for utmp {
         let mut ut_line = [0; LINE_SIZE];
         #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         let mut ut_host = [0; HOST_SIZE];
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let mut ut_id = [0; ID_SIZE];
 
         utm.user.iter().enumerate().for_each(|(i, c)| ut_name[i] = *c as c_char);
         utm.line.iter().enumerate().for_each(|(i, c)| ut_line[i] = *c as c_char);
         #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
         utm.host.iter().enumerate().for_each(|(i, c)| ut_host[i] = *c as c_char);
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         utm.id.iter().enumerate().for_each(|(i, c)| ut_id[i] = *c as c_char);
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(any(target_os = "solaris", target_os = "illumos"))]
         let ut_type = match utm.ut_type.try_into() {
             Ok(a) => a,
-            Err(e) => panic!(format!("{}", e)),
+            Err(e) => panic!("{}", e),
         };
 
         utmp {
             #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
             ut_name,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             ut_user: ut_name,
             ut_line,
             ut_time: utm.time,
             #[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
             ut_host,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             ut_id,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             ut_pid: utm.pid,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             ut_type,
-            #[cfg(target_os = "solaris")]
+            #[cfg(any(target_os = "solaris", target_os = "illumos"))]
             ut_exit: utm.exit,
         }
     }
