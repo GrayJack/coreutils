@@ -35,7 +35,7 @@ struct RmDirFlags {
 }
 
 impl RmDirFlags {
-    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Self {
         RmDirFlags {
             verbose: matches.is_present("verbose"),
             parents: matches.is_present("parents"),
