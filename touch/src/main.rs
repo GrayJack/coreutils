@@ -66,7 +66,7 @@ struct TouchFlags<'a> {
 }
 
 impl<'a> TouchFlags<'a> {
-    fn from_matches(matches: &'a ArgMatches<'a>) -> Self {
+    fn from_matches(matches: &'a ArgMatches) -> Self {
         let time_val = matches.value_of("time").unwrap_or("");
         let mut access_time = matches.is_present("accesstime")
             || time_val == "access"
