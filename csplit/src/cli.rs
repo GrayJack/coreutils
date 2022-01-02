@@ -1,23 +1,19 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("FILE")
+            Arg::new("FILE")
                 .help("File to read, or '-' to read from standard input.")
                 .required(true),
         )
         .arg(
-            Arg::with_name("PATTERN")
+            Arg::new("PATTERN")
                 .help("Patterns to use when splitting file.")
                 .long_help("Patterns to use when splitting file.\n\n\
                     PATTERN can be any of:\n\t\
@@ -28,54 +24,54 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                     {*}                repeat preceeding pattern indefinitely\n\n\
                     If an OFFSET is given it should be an integer, either positive or negative. \
                     An offset without sign is assumed to be positive.")
-                .multiple(true),
+                .multiple_occurrences(true),
         )
         .arg(
-            Arg::with_name("prefix")
+            Arg::new("prefix")
                 .help("Prefix to use for written files.")
                 .long("prefix")
-                .short("f")
+                .short('f')
                 .value_name("PREFIX")
                 .default_value("xx"),
         )
         .arg(
-            Arg::with_name("keep")
+            Arg::new("keep")
                 .help("Do not remove output files on error.")
                 .long("keep-files")
-                .short("k"),
+                .short('k'),
         )
         .arg(
-            Arg::with_name("digits")
+            Arg::new("digits")
                 .help("Use the given number of digits for output file name.")
                 .long("digits")
-                .short("n")
+                .short('n')
                 .value_name("DIGITS")
                 .default_value("2"),
         )
         .arg(
-            Arg::with_name("silent")
+            Arg::new("silent")
                 .help("Do not display counts of output file sizes.")
                 .long("silent")
                 .visible_alias("quiet")
-                .short("s"),
+                .short('s'),
         )
     // .arg(
-    //     Arg::with_name("elide-empty")
+    //     Arg::new("elide-empty")
     //         .help("Remove empty output files.")
     //         .long("elide-empty-files")
-    //         .short("z"),
+    //         .short('z'),
     // )
     // .arg(
-    //     Arg::with_name("suppress")
+    //     Arg::new("suppress")
     //         .help("Suppress lines that match a PATTERN.")
     //         .long("suppress-matched")
-    //         .short("x"),
+    //         .short('x'),
     // )
     // .arg(
-    //     Arg::with_name("suffix-format")
+    //     Arg::new("suffix-format")
     //         .help("Format to use for the file suffix")
     //         .long("suffix-format")
-    //         .short("b")
+    //         .short('b')
     //         .value_name("FORMAT")
     //         .default_value("%02d")
     // )
