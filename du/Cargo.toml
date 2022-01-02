@@ -12,9 +12,10 @@ Summarize disk usage for the set FILEs, recursively for directories.
 
 [dependencies]
 chrono = "^0.4.9"
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 walkdir = "^2.3.1"
 glob = "^0.3.0"
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"

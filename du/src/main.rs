@@ -114,7 +114,7 @@ impl<'a> DuFlagsAndOptions<'a> {
     }
 }
 
-fn parse_files<'a>(matches: &'a ArgMatches) -> Vec<&'a str> {
+fn parse_files(matches: &ArgMatches) -> Vec<&str> {
     if let Some(files) = matches.values_of("FILE") {
         return files.collect();
     }
