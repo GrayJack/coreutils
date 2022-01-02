@@ -1,35 +1,26 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("FILE")
+            Arg::new("FILE")
                 .help("File(s) to write to.")
                 .long_help(
                     "File(s) to write to.\n\nIf file is a single dash (`-`), it shall refer to a \
                      file named `-`.",
                 )
-                .multiple(true),
+                .multiple_occurrences(true),
         )
+        .arg(Arg::new("append").help("Append the output to the files.").long("append").short('a'))
         .arg(
-            Arg::with_name("append")
-                .help("Append the output to the files.")
-                .short("a")
-                .long("append"),
-        )
-        .arg(
-            Arg::with_name("ignore_interrupts")
+            Arg::new("ignore_interrupts")
                 .help("Ignore interrupt signals.")
-                .short("i")
-                .long("ignore-interrupts"),
+                .long("ignore-interrupts")
+                .short('i'),
         )
 }
