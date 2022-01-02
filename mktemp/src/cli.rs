@@ -1,18 +1,14 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("TEMPLATE")
+            Arg::new("TEMPLATE")
                 .help("Template to use when creating the temporary file/directory.")
                 .long_help(
                     "Template to use when creating the temporary file/directory.\n\nThe template \
@@ -20,23 +16,23 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 ),
         )
         .arg(
-            Arg::with_name("directory")
+            Arg::new("directory")
                 .help("Make a directory instead of a file.")
                 .long("directory")
-                .short("d"),
+                .short('d'),
         )
         .arg(
-            Arg::with_name("quiet")
+            Arg::new("quiet")
                 .help("Fail silently if an error occurs.")
                 .long_help(
                     "Fail silently if an error occurs. This is useful if a script does not want \
                      error output to go to standard error.",
                 )
                 .long("quiet")
-                .short("q"),
+                .short('q'),
         )
         .arg(
-            Arg::with_name("t")
+            Arg::new("t")
                 .help(
                     "Create the file/directory in the directory specified by the TMPDIR \
                      environment variable if set, otherwise /tmp/.",
@@ -48,10 +44,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      end with X, use it directly as a template.",
                 )
                 .long("single-file-name")
-                .short("t"),
+                .short('t'),
         )
         .arg(
-            Arg::with_name("unsafe")
+            Arg::new("unsafe")
                 .help("Unsafe mode. Use of this option is discouraged.")
                 .long_help(
                     "Operate in \"unsafe\" mode.\n\nThe temp file will be unlinked before mktemp \
@@ -60,6 +56,6 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long("unsafe")
                 .visible_alias("dry-run")
-                .short("u"),
+                .short('u'),
         )
 }
