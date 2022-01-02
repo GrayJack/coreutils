@@ -9,7 +9,8 @@ rust-version = "1.56.1"
 description = "Repeatedly output a line with all specified STRING(s), or 'y'."
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"
