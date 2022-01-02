@@ -93,7 +93,7 @@ struct WhoFlags {
 }
 
 impl WhoFlags {
-    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Self {
         WhoFlags {
             boot: matches.is_present("boot") || matches.is_present("all"),
             dead: matches.is_present("dead") || matches.is_present("all"),
