@@ -13,7 +13,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
         .mut_arg("help", |help| help.help("Display help information.").short('?'))
         .mut_arg("version", |v| v.help("Display version information."))
         .setting(TrailingVarArg)
-        .override_usage("env [FLAGS] [OPTIONS] [--] [NAME=VALUE]... [COMMAND [ARG]...]")
+        .override_usage("env [OPTIONS] [--] [NAME=VALUE]... [COMMAND [ARG]...]")
         .arg(
             Arg::new("OPTIONS")
                 .value_name("[NAME=VALUE]... [COMMAND [ARG]...]")

@@ -15,9 +15,9 @@ Convert tabs in each FILE to spaces, writing to standard output.
 With no FILE, or when FILE is -, read standard input.
 """
 
-
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"
