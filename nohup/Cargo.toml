@@ -23,8 +23,9 @@ output to FILE, use 'nohup COMMAND > FILE'.
 """
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"
