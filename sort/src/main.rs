@@ -89,8 +89,7 @@ struct SortFlags {
 impl SortFlags {
     pub fn from_matches(matches: &ArgMatches) -> Result<Self, SortError> {
         let merge_only = matches.is_present("merge_only");
-        let (output_name, output): (String, Box<dyn Write>) = match matches.value_of("OUTPUT_FILE")
-        {
+        let (output_name, output): (String, Box<dyn Write>) = match matches.value_of("output") {
             Some(path) => match File::create(path) {
                 Ok(file) => (path.to_string(), Box::new(BufWriter::new(file))),
                 Err(err) => return Err(SortError::write(path, err)),
