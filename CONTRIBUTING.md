@@ -69,11 +69,11 @@ Here is a list of steps you should follow (not necessarily in order):
       the flag should match other famous coreutils implementations names (if
       needed, use _clap_'s `.visible_alias()` or `.visible_aliases()` to fill
       this requirement) renaming long options can be discussed in the PR.
-- Every help message should start with upper case letter and end with a dot.
+- Every help message should start with an upper case letter and end with a dot.
 - Exit code is defined by the
   [POSIX standard](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html)
   (extra customization might be required for extensions).
-- We recommend that you create a Pull Request with check boxes (see an
+- We recommend that you create a Pull Request with checkboxes (see an
   [example](https://github.com/GrayJack/coreutils/pull/121)).
 - Update the README with the new status of the tool and contributors section.
 - Create your PR.
@@ -87,19 +87,19 @@ respectful and follow the [Code of Conduct](./CODE_OF_CONFUCT.md)).
 
 - Don't use nightly-only features.
 - The code must be formatted by `rustfmt` using `rustfmt.toml` configuration,
-  otherwise the CI will fail.
+  otherwise, the CI will fail.
   - Install the _toolchain_ with: `rustup toolchain install nightly`, format
     your code with `cargo +nightly fmt` and be sure that
     `cargo +nightly fmt -- --check` doesn't print anything.
-- Main function should be the first block after global use statements and module
-  statements (not module blocks).
+- The main function should be the first block after global use statements and
+  module statements (not module blocks).
 - Documentation should always be included when needed, for functions, methods,
   modules, etc.
 - Tests, when possible, should always be included/updated with your changes.
-- Always comment what you're doing if it's not obvious, should be before the
-  code that need explaining.
+- Always comment on what you're doing if it's not obvious, should be before the
+  code that needs explaining.
 - Try to be conservative about dependencies, only add if it is very necessary or
-  if it will add good amount of ergonomics with few sub-dependencies. (you can
+  if it will add a good amount of ergonomics with few sub-dependencies. (you can
   check the dependency tree using `cargo-tree` crate)
   - As for dependencies versions, use `"~<Version>"` for crates below 1.0 and
     `"^<Version>"` for crates above 1.0.
@@ -108,7 +108,7 @@ respectful and follow the [Code of Conduct](./CODE_OF_CONFUCT.md)).
 
 ## Git Commit Messages
 
-- First line should start with the name of the tool that is being modified,
+- The first line should start with the name of the tool that is being modified,
   followed by `:`.
 - The second line is empty.
 - Reference issues and pull requests goes on the description after the second

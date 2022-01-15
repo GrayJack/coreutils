@@ -6,25 +6,39 @@
 
 <!-- [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGrayJack%2Fcoreutils?ref=badge_large) -->
 
-An in-progress safe implementation of `coreutils` aiming for a minimal and yet complete set of utilities. This project aims at the _POSIX_ specification basic requirements, plus common and useful features present in other implementations of the utility.
+An in-progress safe implementation of `coreutils` aiming for a minimal and yet
+complete set of utilities. This project aims at the _POSIX_ specification basic
+requirements, plus common and useful features present in other implementations
+of the utility.
 
-This project has no intent to be 100% compatible with _GNU's coreutils_, like [Uutils' coreutils](https://github.com/uutils/coreutils), but if it happens to be, it's okay too.
+This project has no intent to be 100% compatible with _GNU's coreutils_, like
+[Uutils' coreutils](https://github.com/uutils/coreutils), but if it happens to
+be, it's okay too.
 
 ## Minimum Rust Version Policy
 
-This project's minimum supported `rustc` version (_MSRV_) is _1.45.0_.
+This project's minimum supported `rustc` version (_MSRV_) is _1.58.0_.
 
-This will not be conservative until we get to a _1.0_ version. So it can be changed at any point in time.
+This will not be conservative until we get to a _1.0_ version. So it can be
+changed at any point in time.
 
-<!-- In general, this project will try to be conservative with respect to the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot). -->
+<!-- In general, this project will try to be conservative concerning the minimum supported version of Rust, but in case of safety reasons it may bump at any time [e.g. `MaybeUninit` stabilization on 1.36.0 fixing huge problems with `std::mem::uninitialized()`] or improvements that affect positively conditional compilation (we use it a lot). -->
 
 ## Compilation tests guarantees
 
-Compilation is tested for Rust Tier 1 and Tier 2 _x86_64 Unix/Unix-like_ platforms (except _Redox_), with _CI_.
+The compilation is tested for Rust Tier 1 and Tier 2 _x86_64 Unix/Unix-like_
+platforms (except _Redox_), with _CI_.
 
-All platforms are tested on _MSRV_ and _stable_ _Rust_, and Tier 1 platforms are also tested on _beta_ and _nightly_ _Rust_ (Tier 2 and 3 only guarantee _stable_ full capacity).
+All platforms are tested on _MSRV_ and _stable_ _Rust_, and Tier 1 platforms are
+also tested on _beta_ and _nightly_ _Rust_ (Tier 2 and 3 only guarantee _stable_
+full capacity).
 
-Also note that Tier 3 Rust tests can fail before it hits the compilation check, since my only option is to use a _Linux_ system, add the target and do `cargo check --target`, and they often are not available as a target for any Tier 1 platforms. If you use one of these platforms and have the right MSRV requirements and it build successfully, let me know, if it fails, open a issue with the compilation error.
+Also, note that Tier 3 Rust tests can fail before it hits the compilation check,
+since my only option is to use a _Linux_ system, add the target, and do
+`cargo check --target`, and they often are not available as a target for any
+Tier 1 platforms. If you use one of these platforms and have the right MSRV
+requirements and it build successfully, let me know, if it fails, open an issue
+with the compilation error.
 
 |   Platform   |  Tier  |                                                                CI Status                                                                 |                    Manual Status                     |
 | :----------: | :----: | :--------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------: |
@@ -41,7 +55,9 @@ Also note that Tier 3 Rust tests can fail before it hits the compilation check, 
 
 ## Compilation
 
-Since not all targets provide full _Unix_ API coverage (they aren't _Unix_ or lack _libc_ crate support), some can provide a `Cargo.toml` that have all utilities that should work on the target.
+Since not all targets provide full _Unix_ API coverage (they aren't _Unix_ or
+lack _libc_ crate support), some can provide a `Cargo.toml` that have all
+utilities that should work on the target.
 
 ### Compilation example for
 
@@ -135,17 +151,22 @@ cargo install --path .
 
 ## Licensing
 
-This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE) (MPL). If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
+This software is licensed under the [Mozilla Public License, v. 2.0](./LICENSE)
+(MPL). If a copy of the MPL was not distributed with this file, you can obtain
+one at http://mozilla.org/MPL/2.0/.
 
 ## Contributing
 
-We appreciate contributions, please check [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to contribute to the project with issue reports, git commits messages, etc.
+We appreciate contributions, please check [CONTRIBUTING.md](./CONTRIBUTING.md)
+for guidelines on how to contribute to the project with issue reports, git
+commits messages, etc.
 
-The document also gives orientation on where to start if you wanna implement a pending tool from scratch.
+The document also gives orientation on where to start if you wanna implement a
+pending tool from scratch.
 
 ## Contributors
 
-Without them this project would not be what it is today.
+Without them, this project would not be what it is today.
 
 - Ashwin-A-K
 - [@bojan88](https://github.com/bojan88) - _Bojan Đurđević_
