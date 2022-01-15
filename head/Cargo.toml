@@ -5,7 +5,7 @@ authors = ["Odin Dutton <odindutton@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = """
 This filter displays the first count lines or bytes of each specified FILE, or \
 of the standard input if no files are specified. If count is omitted it \

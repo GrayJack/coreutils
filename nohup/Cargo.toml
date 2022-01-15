@@ -8,7 +8,7 @@ authors = [
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = """
 Run COMMAND and ignore SIGHUP signals. If standard input is a terminal,
 redirect it from an unreadable file.

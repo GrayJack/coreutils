@@ -5,7 +5,7 @@ authors = ["Bojan Durdevic <bojan88@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = """
 Convert spaces to tabs in each FILE to tabs, writing to standard output.
 

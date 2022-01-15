@@ -5,7 +5,7 @@ authors = ["Julian Kaindl <kaindl745@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = """
 Summarize disk usage for the set FILEs, recursively for directories.
 """
