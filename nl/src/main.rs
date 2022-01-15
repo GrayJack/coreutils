@@ -141,7 +141,7 @@ impl NlArgs {
             std::process::exit(1);
         });
 
-        let starting_line_number_str = matches.value_of("starting_line_number_str").unwrap_or("1");
+        let starting_line_number_str = matches.value_of("starting_line_number").unwrap_or("1");
         let starting_line_number = starting_line_number_str.parse::<i64>().unwrap_or_else(|_err| {
             eprintln!("nl: invalid starting line number: ‘{}’", starting_line_number_str);
             std::process::exit(1);
