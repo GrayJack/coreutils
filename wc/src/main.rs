@@ -69,7 +69,7 @@ impl WcFlags {
         }
     }
 
-    fn from_matches(matches: &ArgMatches<'_>) -> Self {
+    fn from_matches(matches: &ArgMatches) -> Self {
         let print_bytes = matches.is_present("bytes");
         let print_chars = matches.is_present("chars");
         let print_lines = matches.is_present("lines");

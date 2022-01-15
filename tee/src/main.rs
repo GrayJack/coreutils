@@ -109,7 +109,7 @@ struct Flags {
 }
 
 impl Flags {
-    pub fn from_matches(matches: &ArgMatches<'_>) -> Self {
+    pub fn from_matches(matches: &ArgMatches) -> Self {
         let append = matches.is_present("append");
         let ignore_interrupts = matches.is_present("ignore_interrupts");
 

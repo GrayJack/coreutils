@@ -1,53 +1,49 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("FILE")
+            Arg::new("FILE")
                 .help("File(s) to read, or '-' to read from standard input.")
-                .multiple(true)
+                .multiple_occurrences(true)
                 .required(false),
         )
         .arg(
-            Arg::with_name("bytes")
+            Arg::new("bytes")
                 .help("Select only these bytes.")
                 .long_help("Select only these bytes.\n\nThe LIST specifies byte positions.")
                 .long("bytes")
-                .short("b")
+                .short('b')
                 .value_name("LIST")
                 .conflicts_with_all(&["chars", "fields"]),
         )
         .arg(
-            Arg::with_name("chars")
+            Arg::new("chars")
                 .help("Select only these characters.")
                 .long_help(
                     "Select only these characters.\n\nThe LIST specifies character positions.",
                 )
                 .long("characters")
                 .visible_alias("chars")
-                .short("c")
+                .short('c')
                 .value_name("LIST")
                 .conflicts_with_all(&["bytes", "fields"]),
         )
         .arg(
-            Arg::with_name("input-delimiter")
+            Arg::new("input-delimiter")
                 .help("Use DELIM instead of TAB for field delimiter.")
                 .long("delimiter")
-                .short("d")
-                .requires("field")
+                .short('d')
+                .requires("fields")
                 .value_name("DELIM"),
         )
         .arg(
-            Arg::with_name("fields")
+            Arg::new("fields")
                 .help(
                     "Select only these fields. Will display any line that contains no delimiter \
                      character, unless the -s option is specified.",
@@ -60,34 +56,34 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      delimiter character.",
                 )
                 .long("fields")
-                .short("f")
+                .short('f')
                 .conflicts_with_all(&["bytes", "chars"])
                 .value_name("LIST"),
         )
         .arg(
-            Arg::with_name("complement")
+            Arg::new("complement")
                 .help("Complement the set of selected bytes, characters, or fields.")
                 .long("complement")
-                .short("C"),
+                .short('C'),
         )
         .arg(
-            Arg::with_name("only-delimited")
+            Arg::new("only-delimited")
                 .help("Do not display lines not containing delimiters.")
                 .long("only-delimited")
-                .short("s")
+                .short('s')
                 .requires("fields"),
         )
         .arg(
-            Arg::with_name("output-delimiter")
+            Arg::new("output-delimiter")
                 .help("Use STRING as the output delimiter. Defaults to use the input delimiter.")
                 .long("output-delimiter")
-                .short("D")
+                .short('D')
                 .value_name("STRING"),
         )
         .arg(
-            Arg::with_name("zero-terminated")
+            Arg::new("zero-terminated")
                 .help("Line delimiter is NUL. Default is to use newline.")
                 .long("zero-terminated")
-                .short("z"),
+                .short('z'),
         )
 }

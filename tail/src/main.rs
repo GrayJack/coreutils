@@ -3,7 +3,7 @@ use std::{
     io::{self, BufRead, BufReader, BufWriter, Read, Write},
 };
 
-use clap::{value_t, ArgMatches, ErrorKind};
+use clap::{ArgMatches, ErrorKind};
 
 mod cli;
 
@@ -32,11 +32,11 @@ impl Flags {
     ///
     /// This will exit the program early on invalid args
     fn from_matches(matches: &ArgMatches) -> Self {
-        match value_t!(matches, "bytes", usize) {
+        match matches.value_of_t("bytes") {
             Ok(bytes_count) => Flags::BytesCount(bytes_count),
             Err(e) => match e.kind {
                 ErrorKind::ValueValidation => e.exit(),
-                _ => match value_t!(matches, "lines", usize) {
+                _ => match matches.value_of_t("lines") {
                     Ok(l) => Flags::LinesCount(l),
                     Err(e) => match e.kind {
                         ErrorKind::ValueValidation => e.exit(),

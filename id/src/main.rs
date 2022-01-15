@@ -104,7 +104,7 @@ struct IdFlags<'a> {
 }
 
 impl<'a> IdFlags<'a> {
-    fn from_matches(matches: &'a ArgMatches<'_>) -> Self {
+    fn from_matches(matches: &'a ArgMatches) -> Self {
         IdFlags {
             audit: matches.is_present("audit"),
             by_name: matches.value_of("USER"),

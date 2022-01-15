@@ -1,6 +1,5 @@
 use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App,
-    AppSettings::{ColoredHelp, TrailingVarArg},
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::TrailingVarArg,
     Arg,
 };
 use indoc::indoc;
@@ -50,35 +49,34 @@ const TCSH_FMT_HELP: &str = indoc! {"
     with three decimal places for time values.
 "};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp, TrailingVarArg])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
+        .setting(TrailingVarArg)
         .arg(
-            Arg::with_name("COMMAND")
+            Arg::new("COMMAND")
                 .help("Command to run and it's arguments.")
-                .multiple(true)
+                .multiple_occurrences(true)
                 .required(true),
         )
-        .arg(Arg::with_name("posix").help(POSIX_FMT_HELP).long("posix").short("p"))
+        .arg(Arg::new("posix").help(POSIX_FMT_HELP).long("posix").short('p'))
         .arg(
-            Arg::with_name("use_csh_fmt")
+            Arg::new("use_csh_fmt")
                 .conflicts_with_all(&["posix"])
                 .help("Display time output in POSIX format.")
                 .long_help(CSH_FMT_HELP)
                 .long("csh-format")
-                .short("c"),
+                .short('c'),
         )
         .arg(
-            Arg::with_name("format_string")
+            Arg::new("format_string")
                 .conflicts_with_all(&["posix", "use_csh_fmt"])
                 .value_name("FORMAT_STRING")
-                .validator(|s: String| -> Result<(), String> {
+                .validator(|s| -> Result<(), String> {
                     if s.is_empty() || !s.is_ascii() {
                         Err(String::from("Format string must be non-empty ASCII"))
                     } else {
@@ -88,10 +86,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("Specify a time format using the csh(1) time builtin syntax.")
                 .long_help(FMT_ARG_HELP)
                 .long("format")
-                .short("f"),
+                .short('f'),
         )
         .arg(
-            Arg::with_name("use_tcsh_fmt")
+            Arg::new("use_tcsh_fmt")
                 .conflicts_with_all(&["posix", "use_csh_fmt", "format_string"])
                 .help(
                     "Displays information in the format used by default the time builtin of \
@@ -99,10 +97,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 )
                 .long_help(TCSH_FMT_HELP)
                 .long("tcsh-format")
-                .short("t"),
+                .short('t'),
         )
         .arg(
-            Arg::with_name("dump_rusage")
+            Arg::new("dump_rusage")
                 .conflicts_with_all(&["posix"])
                 .help("Lists resource utilization information")
                 .long_help(
@@ -110,17 +108,17 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      process's rusage structure are printed.",
                 )
                 .long("rusage")
-                .short("l"),
+                .short('l'),
         )
         .arg(
-            Arg::with_name("human_readable")
+            Arg::new("human_readable")
                 .conflicts_with("posix")
                 .help("Time durations are printed in hours, minutes, seconds")
                 .long("human-readable")
-                .short("h"),
+                .short('h'),
         )
         .arg(
-            Arg::with_name("output_file")
+            Arg::new("output_file")
                 .value_name("OUTPUT_FILE")
                 .help("Write the output to file instead of stderr")
                 .long_help(
@@ -128,16 +126,16 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      If file exists and the -a flag is not specified,the file will be overwritten.",
                 )
                 .long("output-path")
-                .short("o"),
+                .short('o'),
         )
         .arg(
-            Arg::with_name("append_mode")
+            Arg::new("append_mode")
                 .help("If the -o flag is used, append to the specified file")
                 .long_help(
                     "If the -o flag is used, append to specified file rather than overwrite it. \
                      Otherwise this option has no effect.",
                 )
                 .long("append-mode")
-                .short("a"),
+                .short('a'),
         )
 }

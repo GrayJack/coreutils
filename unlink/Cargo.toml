@@ -5,11 +5,12 @@ authors = ["Torbjörn Lönnemark <tobbez@ryara.net>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = "Call the unlink function to remove a specified FILE."
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"

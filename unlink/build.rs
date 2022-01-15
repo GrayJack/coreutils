@@ -1,12 +1,14 @@
-use std::env;
+use std::{env, fs::File, io::BufWriter};
 
-use clap::Shell;
+use clap::crate_name;
+use clap_generate::{Generator, Shell};
 
 #[path = "src/cli.rs"]
 mod cli;
 
 fn main() {
     let mut app = cli::create_app();
+    app.set_bin_name(crate_name!());
 
     let out_dir = match env::var("OUT_DIR") {
         Ok(dir) => dir,
@@ -16,9 +18,20 @@ fn main() {
         },
     };
 
-    app.gen_completions("unlink", Shell::Zsh, out_dir.clone());
-    app.gen_completions("unlink", Shell::Fish, out_dir.clone());
-    app.gen_completions("unlink", Shell::Bash, out_dir.clone());
-    app.gen_completions("unlink", Shell::PowerShell, out_dir.clone());
-    app.gen_completions("unlink", Shell::Elvish, out_dir);
+
+    let shells = [Shell::Bash, Shell::Elvish, Shell::Fish, Shell::PowerShell, Shell::Zsh];
+
+    for shell in shells {
+        let file_name = format!("{}/{}", out_dir, shell.file_name(app.get_name()));
+        let mut file = BufWriter::new(
+            File::options()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(file_name)
+                .expect("Unable to open file"),
+        );
+
+        shell.generate(&app, &mut file)
+    }
 }

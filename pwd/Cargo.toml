@@ -5,7 +5,7 @@ authors = ["Eric Shimizu Karbstein <gr41.j4ck@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = """
 Display the current directory. If no options are specified, the -p option \
 is assumed.
@@ -14,8 +14,9 @@ is assumed.
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"

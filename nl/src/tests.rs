@@ -1,7 +1,7 @@
 use super::*;
 
 fn get_default_args() -> NlArgs {
-    NlArgs::from_matches(&ArgMatches::default())
+    NlArgs::from_matches(&cli::create_app().get_matches_from(vec!["nl"]))
 }
 
 #[test]

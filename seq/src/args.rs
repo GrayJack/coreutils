@@ -35,7 +35,7 @@ pub(crate) struct Args<'a> {
 }
 
 impl<'a> Args<'a> {
-    pub fn parse(matches: &'a clap::ArgMatches<'a>) -> Result<Self, Error<'a>> {
+    pub fn parse(matches: &'a clap::ArgMatches) -> Result<Self, Error<'a>> {
         let operands: Vec<&str> =
             matches.values_of("FIRST INCREMENT LAST").ok_or(Error::MissingOperand)?.collect();
 
@@ -48,7 +48,7 @@ impl<'a> Args<'a> {
             .max()
             .ok_or(Error::MissingOperand)?;
 
-        let padding = if matches.is_present("WIDTH") {
+        let padding = if matches.is_present("equal-width") {
             let padding = operands
                 .iter()
                 .copied()
@@ -70,11 +70,11 @@ impl<'a> Args<'a> {
             padding,
 
             separator: matches
-                .value_of("SEPARATOR")
+                .value_of("separator")
                 .expect("missing default argument for separator"),
 
             terminator: matches
-                .value_of("TERMINATOR")
+                .value_of("terminator")
                 .expect("missing default argument for terminator"),
         })
     }

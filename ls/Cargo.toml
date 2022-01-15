@@ -5,13 +5,13 @@ authors = ["Jeremy Jackson <git@jeremyvii.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = "List information about the FILEs (the current directory by default)."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 coreutils_core = { path = "../coreutils_core" }
 unix_mode = "= 0.1.2"
 chrono = "0.4"
@@ -19,4 +19,5 @@ ansi_term = "0.12.1"
 term_grid = "0.2.0"
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"

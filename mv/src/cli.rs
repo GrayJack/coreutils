@@ -1,28 +1,24 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("SOURCE")
+            Arg::new("SOURCE")
                 .help("Source files and destination files.")
                 .value_names(&["SOURCE", "DEST"])
-                .multiple(true)
+                .multiple_occurrences(true)
                 .required(true),
         )
         .arg(
-            Arg::with_name("backup")
+            Arg::new("backup")
                 .help("Make a backup of each existing destination file.")
                 .long("backup")
-                .short("b")
+                .short('b')
                 .value_name("TYPE")
                 .env("VERSION_CONTROL")
                 .default_value("existing")
@@ -31,18 +27,18 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 ]),
         )
         .arg(
-            Arg::with_name("force")
+            Arg::new("force")
                 .help("Do not prompt before overwriting.")
                 .long_help(
                     "Do not prompt before overwriting.\n\nThis option overrides any previous -n \
                      or -i options.",
                 )
                 .long("force")
-                .short("f")
+                .short('f')
                 .overrides_with_all(&["noClobber", "interactive"]),
         )
         .arg(
-            Arg::with_name("interactive")
+            Arg::new("interactive")
                 .help("Prompt before overwrite.")
                 .long_help(
                     "Prompt before overwrite.\n\nCause mv to write a prompt to standard out \
@@ -51,63 +47,58 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      option overrides any previous -f or -n options.",
                 )
                 .long("interactive")
-                .short("i")
+                .short('i')
                 .overrides_with_all(&["noClobber", "force"]),
         )
         .arg(
-            Arg::with_name("noClobber")
+            Arg::new("noClobber")
                 .help("Do not overwrite an existing file.")
                 .long_help(
                     "Do not overwrite an existing file.\n\nThis option overrides any previous -f \
                      or -i options.",
                 )
                 .long("no-clobber")
-                .short("n")
+                .short('n')
                 .overrides_with_all(&["force", "interactive"])
                 .conflicts_with("backup"),
         )
         .arg(
-            Arg::with_name("stripTrailingSlashes")
+            Arg::new("stripTrailingSlashes")
                 .help("Remove any trailing slashes from each SOURCE argument.")
                 .long("strip-trailing-slashes")
-                .short("s"),
+                .short('s'),
         )
         .arg(
-            Arg::with_name("suffix")
+            Arg::new("suffix")
                 .help("Override the usual backup suffix.")
                 .long("suffix")
-                .short("S")
+                .short('S')
                 .value_name("STRING")
                 .env("SIMPLE_BACKUP_SUFFIX")
                 .default_value("~"),
         )
         .arg(
-            Arg::with_name("targetDirectory")
+            Arg::new("targetDirectory")
                 .help("Move all SOURCE arguments into DIRECTORY.")
                 .long("target-directory")
-                .short("t")
+                .short('t')
                 .value_name("DIRECTORY")
                 .conflicts_with("noTargetDirectory"),
         )
         .arg(
-            Arg::with_name("noTargetDirectory")
+            Arg::new("noTargetDirectory")
                 .help("Treat DEST as a normal file.")
                 .long("no-target-directory")
-                .short("T"),
+                .short('T'),
         )
         .arg(
-            Arg::with_name("update")
+            Arg::new("update")
                 .help(
                     "Move only when the SOURCE file is newer than the destination file or when \
                      the destination file is missing.",
                 )
                 .long("update")
-                .short("u"),
+                .short('u'),
         )
-        .arg(
-            Arg::with_name("verbose")
-                .help("Explain what is being done.")
-                .long("verbose")
-                .short("v"),
-        )
+        .arg(Arg::new("verbose").help("Explain what is being done.").long("verbose").short('v'))
 }

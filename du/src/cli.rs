@@ -1,48 +1,46 @@
 use clap::{
     crate_authors, crate_description, crate_name, crate_version, App,
-    AppSettings::{AllowNegativeNumbers, ColoredHelp},
-    Arg,
+    AppSettings::AllowNegativeNumbers, Arg,
 };
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp, AllowNegativeNumbers])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
+        .setting(AllowNegativeNumbers)
         .arg(
-            Arg::with_name("FILE")
+            Arg::new("FILE")
                 .help("Files to be used by the program.")
                 .required(false)
-                .multiple(true),
+                .multiple_occurrences(true),
         )
         .arg(
-            Arg::with_name("line-end-null")
+            Arg::new("line-end-null")
                 .help("Ends each output line with NUL, not newline.")
                 .long("null")
-                .short("0"),
+                .short('0'),
         )
         .arg(
-            Arg::with_name("all")
+            Arg::new("all")
                 .help("Display counts for all files, not just directories.")
                 .long("all")
-                .short("a"),
+                .short('a'),
         )
         .arg(
-            Arg::with_name("apparent-size")
+            Arg::new("apparent-size")
                 .help("Display apparent sizes rather than disk usage.")
                 .long_help(
                     "Display apparent sizes rather than disk usage.\n\nThis can be helpful when \
                      operating on compressed volumes or sparse files.",
                 )
                 .long("apparent-size")
-                .short("A"),
+                .short('A'),
         )
         .arg(
-            Arg::with_name("block-size")
+            Arg::new("block-size")
                 .help("Scales sizes by SIZE before displaying them.")
                 .long_help(
                     "Scales sizes by SIZE before displaying them.\n\nCalculate block counts in \
@@ -53,43 +51,43 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      multiple of 512.",
                 )
                 .long("block-size")
-                .short("B")
+                .short('B')
                 .value_name("BLOCKSIZE"),
         )
         .arg(
-            Arg::with_name("bytes")
+            Arg::new("bytes")
                 .help("Equivalent to '--apparent-size --block-size=1'.")
                 .long("bytes")
-                .short("b"),
+                .short('b'),
         )
-        .arg(Arg::with_name("total").help("Produces a grand total.").long("total").short("c"))
+        .arg(Arg::new("total").help("Produces a grand total.").long("total").short('c'))
         .arg(
-            Arg::with_name("dereference-args")
+            Arg::new("dereference-args")
                 .help("Dereference only symlinks that are given as arguments.")
                 .long("dereference-args")
-                .short("D"),
+                .short('D'),
         )
         .arg(
-            Arg::with_name("max-depth")
+            Arg::new("max-depth")
                 .help(
                     "Display the total for a directory only if it is N or fewer levels below the \
                      FILEs",
                 )
                 .long("max-depth")
-                .short("d")
+                .short('d')
                 .value_name("N"),
         )
         .arg(
-            Arg::with_name("dereference-args-alias")
+            Arg::new("dereference-args-alias")
                 .help("Equivalent to '--dereference-args (-D)'")
                 .long("deref-args")
-                .short("H"),
+                .short('H'),
         )
         .arg(
-            Arg::with_name("human-readable")
+            Arg::new("human-readable")
                 .help("Display sizes in a human readable format.")
                 .long("human-readable")
-                .short("h")
+                .short('h')
                 .conflicts_with_all(&[
                     "si",
                     "apparent-size",
@@ -100,10 +98,10 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 ]),
         )
         .arg(
-            Arg::with_name("inodes")
+            Arg::new("inodes")
                 .help("Lists inode usage information instead of block usage.")
                 .long("inodes")
-                .short("i")
+                .short('i')
                 .conflicts_with_all(&[
                     "apparent-size",
                     "block-size",
@@ -113,41 +111,41 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 ]),
         )
         .arg(
-            Arg::with_name("block-size-k")
+            Arg::new("block-size-k")
                 .help("Equivalent to '--block-size=1K'")
                 .long("blocks-k")
-                .short("k"),
+                .short('k'),
         )
         .arg(
-            Arg::with_name("block-size-m")
+            Arg::new("block-size-m")
                 .help("Equivalent to '--block-size=1M'.")
                 .long("blocks-m")
-                .short("m"),
+                .short('m'),
         )
         .arg(
-            Arg::with_name("dereference")
+            Arg::new("dereference")
                 .help("Dereferences all symbolic links.")
                 .long_help(
                     "Dereferences all symbolic links.\n\nThis option overrides any previous -P.",
                 )
                 .long("dereference")
                 .visible_alias("deref")
-                .short("L")
+                .short('L')
                 .overrides_with("no-dereference"),
         )
         .arg(
-            Arg::with_name("no-dereference")
+            Arg::new("no-dereference")
                 .help("Do not follow any symbolic links (it's the default).")
                 .long_help(
                     "Do not follow any symbolic links (it's the default).\n\nThis option \
                      overrides any previous -L.",
                 )
                 .long("no-dereference")
-                .short("P")
+                .short('P')
                 .overrides_with("dereference"),
         )
         .arg(
-            Arg::with_name("count-links")
+            Arg::new("count-links")
                 .help("Counts sizes many times if hard linked.")
                 .long_help(
                     "Counts sizes many times if hard linked.\n\nThe default behavior of du is to \
@@ -156,19 +154,19 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      (and displayed) as many times as they are found.",
                 )
                 .long("count-links")
-                .short("l"),
+                .short('l'),
         )
         .arg(
-            Arg::with_name("separate-dirs")
+            Arg::new("separate-dirs")
                 .help("For directories do not include size of subdirectories.")
                 .long("separate-dirs")
-                .short("S"),
+                .short('S'),
         )
         .arg(
-            Arg::with_name("si")
+            Arg::new("si")
                 .help("Like -h, but uses powers of 1000 not 1024.")
                 .long("si")
-                .short("I")
+                .short('I')
                 .conflicts_with_all(&[
                     "human-readable",
                     "apparent-size",
@@ -179,49 +177,49 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                 ]),
         )
         .arg(
-            Arg::with_name("summarize")
+            Arg::new("summarize")
                 .help("Display only a total for each FILE.")
                 .long("summarize")
-                .short("s")
+                .short('s')
                 .conflicts_with("all"),
         )
         .arg(
-            Arg::with_name("threshold")
+            Arg::new("threshold")
                 .help(
                     "Exclude entries smaller then SIZE if positive or entries greater than SIZE \
                      if negative.",
                 )
                 .long("threshold")
-                .short("t")
+                .short('t')
                 .value_name("SIZE"),
         )
         .arg(
-            Arg::with_name("time")
+            Arg::new("time")
                 .help("Show WORD file timestamp.")
                 .long("time")
-                .short("T")
+                .short('T')
                 .value_name("WORD")
                 .possible_values(&["mtime", "atime", "ctime", "access", "use", "status"]),
         )
         .arg(
-            Arg::with_name("time-style")
+            Arg::new("time-style")
                 .help("Show times using STYLE.")
                 .long("time-style")
-                .short("j")
+                .short('j')
                 .value_name("STYLE")
                 .requires("time"),
         )
         .arg(
-            Arg::with_name("exclude-pattern")
+            Arg::new("exclude-pattern")
                 .help("Exclude files that match PATTERN.")
                 .long("exclude")
-                .short("p")
+                .short('p')
                 .value_name("PATTERN"),
         )
         .arg(
-            Arg::with_name("one-file-system")
+            Arg::new("one-file-system")
                 .help("Skip directories on different file systems.")
                 .long("one-file-system")
-                .short("x"),
+                .short('x'),
         )
 }

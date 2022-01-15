@@ -5,7 +5,7 @@ authors = ["Giacomo Parolini <silverweed1991@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.58.0"
 description = """
 Display newline, word and byte counts for each FILE, and a total line if more than one FILE is \
 specified. A word is a non-zero-length sequence of characters delimited by white space.
@@ -14,7 +14,8 @@ With no FILE, or when FILE is -, read standard input.
 """
 
 [dependencies]
-clap = { version = "^2.33.0", features = ["wrap_help"] }
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
 
 [build-dependencies]
-clap = "^2.33.0"
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"

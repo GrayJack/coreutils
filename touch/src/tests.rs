@@ -7,7 +7,7 @@ use super::*;
 
 #[test]
 fn touch_create_empty_files() {
-    let matches = ArgMatches::new();
+    let matches = super::cli::create_app().get_matches_from(vec!["touch", "file1.rs", "file2.rs"]);
     let flags = TouchFlags::from_matches(&matches);
     let files = vec!["file1.rs", "file2.rs"];
 
@@ -20,7 +20,7 @@ fn touch_create_empty_files() {
 
 #[test]
 fn touch_update_existing_files() {
-    let matches = ArgMatches::new();
+    let matches = super::cli::create_app().get_matches_from(vec!["touch", "file3.rs", "file4.rs"]);
     let flags = TouchFlags::from_matches(&matches);
     let files = vec!["file3.rs", "file4.rs"];
 

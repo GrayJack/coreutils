@@ -1,27 +1,25 @@
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::ColoredHelp, Arg,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp])
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
         .arg(
-            Arg::with_name("FILE").help("File(s) to use, or '-' to use from stdin.").multiple(true),
+            Arg::new("FILE")
+                .help("File(s) to use, or '-' to use from stdin.")
+                .multiple_occurrences(true),
         )
         .arg(
-            Arg::with_name("initial")
+            Arg::new("initial")
                 .help("Do not convert tabs after non blanks.")
                 .long("initial")
-                .short("i"),
+                .short('i'),
         )
         .arg(
-            Arg::with_name("tabs")
+            Arg::new("tabs")
                 .help(
                     "Have tabs N characters apart instead of 8 OR Comma separated LIST of tab \
                      positions.",
@@ -35,7 +33,7 @@ pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
                      first column.",
                 )
                 .long("tabs")
-                .short("t")
+                .short('t')
                 .value_name("N or LIST"),
         )
 }

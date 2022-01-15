@@ -1,48 +1,46 @@
 use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App,
-    AppSettings::{ColoredHelp, TrailingVarArg},
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings::TrailingVarArg,
     Arg,
 };
 
 // Note that this case needed custom usage string. So any future modification need to pay
 // attention to it and modify if necessary
-pub(crate) fn create_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn create_app<'help>() -> App<'help> {
     App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .help_message("Display help information.")
-        .version_message("Display version information.")
-        .help_short("?")
-        .settings(&[ColoredHelp, TrailingVarArg])
-        .usage("env [FLAGS] [OPTIONS] [--] [NAME=VALUE]... [COMMAND [ARG]...]")
+        .mut_arg("help", |help| help.help("Display help information.").short('?'))
+        .mut_arg("version", |v| v.help("Display version information."))
+        .setting(TrailingVarArg)
+        .override_usage("env [OPTIONS] [--] [NAME=VALUE]... [COMMAND [ARG]...]")
         .arg(
-            Arg::with_name("OPTIONS")
+            Arg::new("OPTIONS")
                 .value_name("[NAME=VALUE]... [COMMAND [ARG]...]")
                 .help(
                     "Environement variables in the form of NAME=VALUE and the COMMAND to run with \
                      its arguments.",
                 )
-                .multiple(true),
+                .multiple_occurrences(true),
         )
         .arg(
-            Arg::with_name("ignore_environment")
+            Arg::new("ignore_environment")
                 .help("Start with an empty environment")
                 .long("ignore-environment")
-                .short("i"),
+                .short('i'),
         )
         .arg(
-            Arg::with_name("null")
+            Arg::new("null")
                 .help("End each output line with NUL, not newline.")
                 .long("null")
-                .short("0"),
+                .short('0'),
         )
         .arg(
-            Arg::with_name("unset")
+            Arg::new("unset")
                 .help("Remove variable from the environment")
                 .long("unset")
-                .short("u")
+                .short('u')
                 .value_name("NAME")
-                .multiple(true),
+                .multiple_values(true),
         )
 }
