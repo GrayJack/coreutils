@@ -1,7 +1,7 @@
 # Code of Conduct
 
 - We are committed to providing a friendly, safe and welcoming environment for
-  all, regardless of the level of experience, gender identity and expression,
+  all, regardless of the level of experience, gender identity, and expression,
   sexual orientation, disability, personal appearance, body size, race,
   ethnicity, age, religion, nationality, or other similar characteristics.
 - Please avoid using overtly sexual aliases or other nicknames that might
