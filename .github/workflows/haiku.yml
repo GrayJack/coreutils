@@ -11,18 +11,12 @@ jobs:
         rust: [nightly]
         # rust: [1.46.0, stable]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - name: Checkout sources
+      uses: actions/checkout@v3
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
         components: rust-src
-        # target: x86_64-unknown-haiku
-    - name: Setup TOML
-      run: cp Haiku.toml Cargo.toml
     - name: Check Haiku
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --target x86_64-unknown-haiku -Z build-std
+      run: cargo check --target x86_64-unknown-haiku --manifest-path ./Haiku.toml -Z build-std

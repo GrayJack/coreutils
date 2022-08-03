@@ -10,19 +10,13 @@ jobs:
       matrix:
         rust: [1.58.0, stable]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - name: Checkout sources
+      uses: actions/checkout@v3
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
         components: clippy
         target: x86_64-unknown-illumos
-    - name: Setup TOML
-      run: cp Illumos.toml Cargo.toml
     - name: Check Illumos
-      uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: check
-        args: --target x86_64-unknown-illumos
+      run: cargo check --target x86_64-unknown-illumos --manifest-path ./Illumos.toml

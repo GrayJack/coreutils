@@ -10,33 +10,21 @@ jobs:
       matrix:
         rust: [1.58.0, stable, beta, nightly]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - name: Checkout sources
+      uses: actions/checkout@v3
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
         components: clippy
         target: aarch64-unknown-linux-gnu
     - name: Add more targets
       run: rustup target add i686-unknown-linux-gnu
-    - name: Setup TOML
-      run: cp Linux.toml Cargo.toml
     - name: Check Linux (x86_64 GNU)
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
+      run: cargo check --manifest-path ./Linux.toml
     - name: Check Linux (i686 GNU)
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --target i686-unknown-linux-gnu
+      run: cargo check --target i686-unknown-linux-gnu --manifest-path ./Linux.toml
     - name: Check Linux (aarch64 GNU)
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --target aarch64-unknown-linux-gnu
+      run: cargo check --target aarch64-unknown-linux-gnu --manifest-path ./Linux.toml
     - name: Run tests
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
+      run: cargo test --manifest-path ./Linux.toml

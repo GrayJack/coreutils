@@ -11,18 +11,12 @@ jobs:
         rust: [nightly]
         # rust: [1.46.0, stable]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - name: Checkout sources
+      uses: actions/checkout@v3
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
         components: rust-src
-        # target: x86_64-unknown-dragonfly
-    - name: Setup TOML
-      run: cp DragonflyBSD.toml Cargo.toml
     - name: Check DragonflyBSD
-      uses: actions-rs/cargo@v1
-      with:
-        command: check
-        args: --target x86_64-unknown-dragonfly -Z build-std
+      run: cargo check --target x86_64-unknown-dragonfly --manifest-path ./DragonflyBSD.toml -Z build-std
