@@ -18,9 +18,11 @@ jobs:
         toolchain: ${{ matrix.rust }}
     - name: Add more targets
       run: rustup target add aarch64-apple-darwin
+    - name: Setup TOML
+      run: cp MacOS.toml Cargo.toml
     - name: Check MacOS (x86_64)
-      run: cargo check --manifest-path ./MacOS.toml
+      run: cargo check
     - name: Check MacOS (aarch64)
-      run: cargo check --target aarch64-apple-darwin --manifest-path ./MacOS.toml
+      run: cargo check --target aarch64-apple-darwin
     - name: Run tests
-      run: cargo test --manifest-path ./MacOS.toml
+      run: cargo test

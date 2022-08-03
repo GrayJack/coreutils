@@ -17,5 +17,7 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         target: x86_64-unknown-netbsd
+    - name: Setup TOML
+      run: cp NetBSD.toml Cargo.toml
     - name: Check NetBSD
-      run: cargo check --target x86_64-unknown-netbsd --manifest-path ./NetBSD.toml
+      run: cargo check --target x86_64-unknown-netbsd

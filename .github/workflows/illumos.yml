@@ -18,5 +18,7 @@ jobs:
         toolchain: ${{ matrix.rust }}
         components: clippy
         target: x86_64-unknown-illumos
+    - name: Setup TOML
+      run: cp Illumos.toml Cargo.toml
     - name: Check Illumos
-      run: cargo check --target x86_64-unknown-illumos --manifest-path ./Illumos.toml
+      run: cargo check --target x86_64-unknown-illumos

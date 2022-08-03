@@ -18,5 +18,7 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         components: rust-src
+    - name: Setup TOML
+      run: cp OpenBSD.toml Cargo.toml
     - name: Check OpenBSD
-      run: cargo check --target x86_64-unknown-openbsd --manifest-path ./OpenBSD.toml -Z build-std
+      run: cargo check --target x86_64-unknown-openbsd -Z build-std

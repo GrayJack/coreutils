@@ -17,5 +17,7 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         target: x86_64-unknown-freebsd
+    - name: Setup TOML
+      run: cp FreeBSD.toml Cargo.toml
     - name: Check FreeBSD
-      run: cargo check --target x86_64-unknown-freebsd --manifest-path ./FreeBSD.toml
+      run: cargo check --target x86_64-unknown-freebsd

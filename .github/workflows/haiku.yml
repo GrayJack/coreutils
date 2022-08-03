@@ -18,5 +18,7 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         components: rust-src
+    - name: Setup TOML
+      run: cp Haiku.toml Cargo.toml
     - name: Check Haiku
-      run: cargo check --target x86_64-unknown-haiku --manifest-path ./Haiku.toml -Z build-std
+      run: cargo check --target x86_64-unknown-haiku -Z build-std

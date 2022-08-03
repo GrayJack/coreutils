@@ -20,11 +20,13 @@ jobs:
         target: aarch64-unknown-linux-gnu
     - name: Add more targets
       run: rustup target add i686-unknown-linux-gnu
+    - name: Setup TOML
+      run: cp Linux.toml Cargo.toml
     - name: Check Linux (x86_64 GNU)
-      run: cargo check --manifest-path ./Linux.toml
+      run: cargo check
     - name: Check Linux (i686 GNU)
-      run: cargo check --target i686-unknown-linux-gnu --manifest-path ./Linux.toml
+      run: cargo check --target i686-unknown-linux-gnu
     - name: Check Linux (aarch64 GNU)
-      run: cargo check --target aarch64-unknown-linux-gnu --manifest-path ./Linux.toml
+      run: cargo check --target aarch64-unknown-linux-gnu
     - name: Run tests
-      run: cargo test --manifest-path ./Linux.toml
+      run: cargo test

@@ -17,5 +17,7 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         target: x86_64-sun-solaris
+    - name: Setup TOML
+      run: cp Solaris.toml Cargo.toml
     - name: Check Solaris
-      run: cargo check --target x86_64-sun-solaris --manifest-path ./Solaris.toml
+      run: cargo check --target x86_64-sun-solaris

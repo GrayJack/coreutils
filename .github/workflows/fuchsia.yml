@@ -17,10 +17,12 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         target: x86_64-fuchsia
+    - name: Setup TOML
+      run: cp Fuchsia.toml Cargo.toml
     - name: Add more targets
       run: rustup target add aarch64-fuchsia
     - name: Check Fuchsia (x86_64)
-      run: cargo check --target x86_64-fuchsia --manifest-path ./Fuchsia.toml
+      run: cargo check --target x86_64-fuchsia
     - name: Check Fuchsia (aarch64)
-      run: cargo check --target aarch64-fuchsia --manifest-path ./Fuchsia.toml
+      run: cargo check --target aarch64-fuchsia
 
