@@ -9,13 +9,12 @@ status = [
     "NetBSD (stable)",
     "Illumos (1.58.0)",
     "Illumos (stable)",
-    "Solaris (1.58.0)",
-    "Solaris (stable)",
+    # "Solaris (nightly)",
     "Fuchsia (1.58.0)",
     "Fuchsia (stable)",
-    "DragonflyBSD (nightly)",
+    # "DragonflyBSD (nightly)",
     "OpenBSD (nightly)",
-    "Haiku (nightly)",
+    # "Haiku (nightly)",
     "Format",
 ]
 delete_merged_branches = true
