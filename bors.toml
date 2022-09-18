@@ -9,12 +9,13 @@ status = [
     "NetBSD (stable)",
     "Illumos (1.61.0)",
     "Illumos (stable)",
-    # "Solaris (nightly)",
     "Fuchsia (1.61.0)",
     "Fuchsia (stable)",
-    # "DragonflyBSD (nightly)",
     "OpenBSD (nightly)",
+    # "Solaris (nightly)",
+    # "DragonflyBSD (nightly)",
     # "Haiku (nightly)",
     "Format",
 ]
+commit_title = "chore: Merge ${PR_REFS}"
 delete_merged_branches = true
