@@ -103,7 +103,7 @@ fn rmdir(dir: &Path, flags: RmDirFlags) -> Result<(), RmdirError> {
             println!("rmdir: removing directory '{}'", full_dir.display());
         }
 
-        match fs::remove_dir_all(&dir) {
+        match fs::remove_dir_all(dir) {
             Ok(_) => {
                 if flags.verbose {
                     println!("rmdir: removed all {} directory content", full_dir.display());
@@ -116,7 +116,7 @@ fn rmdir(dir: &Path, flags: RmDirFlags) -> Result<(), RmdirError> {
             println!("rmdir: removing directory '{}'", full_dir.display());
         }
 
-        match fs::remove_dir(&dir) {
+        match fs::remove_dir(dir) {
             Ok(_) => {
                 if flags.verbose {
                     println!("rmdir: removed directory {}", full_dir.display());

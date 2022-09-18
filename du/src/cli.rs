@@ -199,7 +199,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
                 .long("time")
                 .short('T')
                 .value_name("WORD")
-                .possible_values(&["mtime", "atime", "ctime", "access", "use", "status"]),
+                .possible_values(["mtime", "atime", "ctime", "access", "use", "status"]),
         )
         .arg(
             Arg::new("time-style")

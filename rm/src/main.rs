@@ -152,7 +152,7 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
                 };
 
                 if is_affirmative {
-                    match fs::remove_file(&file) {
+                    match fs::remove_file(file) {
                         Ok(()) => {
                             if flags.verbose {
                                 println!("removed {}", file.display());
@@ -165,7 +165,7 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
                     };
                 }
             } else {
-                match fs::remove_file(&file) {
+                match fs::remove_file(file) {
                     Ok(()) => {
                         if flags.verbose {
                             println!("removed {}", file.display());
@@ -192,7 +192,7 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
                     };
 
                     if is_affirmative {
-                        match fs::remove_dir(&file) {
+                        match fs::remove_dir(file) {
                             Ok(()) => {
                                 if flags.verbose {
                                     println!("removed {}", file.display());
@@ -205,7 +205,7 @@ fn rm(files: &[PathBuf], relative: &[&str], flags: RmFlags) -> io::Result<()> {
                         };
                     }
                 } else {
-                    match fs::remove_dir(&file) {
+                    match fs::remove_dir(file) {
                         Ok(()) => {
                             if flags.verbose {
                                 println!("removed {}", file.display());
@@ -280,7 +280,7 @@ fn rm_dir_all_recursive(
         }
     }
 
-    for child in fs::read_dir(&file)? {
+    for child in fs::read_dir(file)? {
         let child = child?;
         let child_permissions = child.metadata()?.permissions();
         let child_type = child.file_type()?;
@@ -339,7 +339,7 @@ fn rm_dir_all_recursive(
         };
 
         if is_affirmative {
-            match fs::remove_dir(&file) {
+            match fs::remove_dir(file) {
                 Ok(()) => {
                     if flags.verbose {
                         println!("removed {}", file.display());
@@ -349,7 +349,7 @@ fn rm_dir_all_recursive(
             }
         }
     } else {
-        match fs::remove_dir(&file) {
+        match fs::remove_dir(file) {
             Ok(()) => {
                 if flags.verbose {
                     println!("removed {}", file.display());

@@ -137,7 +137,7 @@ mod tests {
 
     #[test]
     fn test_parsing_input() {
-        test_input(&["seq", "1", "1", "4"], &Args {
+        test_input(["seq", "1", "1", "4"], &Args {
             first: 1.0,
             increment: 1.0,
             last: 4.0,
@@ -147,7 +147,7 @@ mod tests {
             terminator: "\n",
         });
 
-        test_input(&["seq", "2", "10"], &Args {
+        test_input(["seq", "2", "10"], &Args {
             first: 2.0,
             increment: 1.0,
             last: 10.0,
@@ -157,7 +157,7 @@ mod tests {
             terminator: "\n",
         });
 
-        test_input(&["seq", "3"], &Args {
+        test_input(["seq", "3"], &Args {
             first: 1.0,
             increment: 1.0,
             last: 3.0,

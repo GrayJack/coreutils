@@ -22,7 +22,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
                 .value_name("TYPE")
                 .env("VERSION_CONTROL")
                 .default_value("existing")
-                .possible_values(&[
+                .possible_values([
                     "none", "off", "numbered", "t", "existing", "nil", "simple", "never",
                 ]),
         )

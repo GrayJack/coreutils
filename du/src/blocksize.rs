@@ -115,11 +115,11 @@ impl Blocksize {
 
         let value = size
             .chars()
-            .take_while(|c| c.is_digit(10))
+            .take_while(|c| c.is_ascii_digit())
             .map(|c| c.to_digit(10).map(u64::from).unwrap())
             .fold(0u64, |acc, d| acc * 10 + d);
 
-        let suffix = &size.chars().skip_while(|c| c.is_digit(10)).collect::<String>();
+        let suffix = &size.chars().skip_while(|c| c.is_ascii_digit()).collect::<String>();
 
         match init.with_suffix(suffix) {
             Ok(blocksize) => {

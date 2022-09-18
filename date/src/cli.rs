@@ -81,7 +81,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
                 .visible_alias("iso-8601")
                 .short('I')
                 .value_name("FMT")
-                .possible_values(&[
+                .possible_values([
                     "date", "hour", "hours", "minute", "minutes", "second", "seconds",
                 ])
                 .overrides_with_all(&["rfc2822", "rfc3339"]),
@@ -101,7 +101,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
                 .visible_alias("rfc-3339")
                 .short('S')
                 .value_name("FMT")
-                .possible_values(&[
+                .possible_values([
                     "date",
                     "hour",
                     "hours",
