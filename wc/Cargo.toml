@@ -5,7 +5,7 @@ authors = ["Giacomo Parolini <silverweed1991@gmail.com>"]
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
-rust-version = "1.58.0"
+rust-version = "1.61.0"
 description = """
 Display newline, word and byte counts for each FILE, and a total line if more than one FILE is \
 specified. A word is a non-zero-length sequence of characters delimited by white space.
