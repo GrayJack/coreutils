@@ -52,15 +52,15 @@ fn touch_update_only_access_time() {
 
     let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
 
-    File::create(&files[0]).unwrap();
+    File::create(files[0]).unwrap();
 
-    let mut file1_metadata = metadata(&files[0]).unwrap();
+    let mut file1_metadata = metadata(files[0]).unwrap();
     let file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
     // update and create files
     touch(&files, flags);
 
-    file1_metadata = metadata(&files[0]).unwrap();
+    file1_metadata = metadata(files[0]).unwrap();
     let new_file1_atime = FileTime::from_last_access_time(&file1_metadata);
 
     // check that first file access time has changed
@@ -76,15 +76,15 @@ fn touch_update_only_modification_time() {
 
     let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
 
-    File::create(&files[0]).unwrap();
+    File::create(files[0]).unwrap();
 
-    let mut file1_metadata = metadata(&files[0]).unwrap();
+    let mut file1_metadata = metadata(files[0]).unwrap();
     let file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
     // update and create files
     touch(&files, flags);
 
-    file1_metadata = metadata(&files[0]).unwrap();
+    file1_metadata = metadata(files[0]).unwrap();
     let new_file1_mtime = FileTime::from_last_modification_time(&file1_metadata);
 
     // check that first file modification time has changed
@@ -106,7 +106,7 @@ fn touch_update_time_with_date() {
 
     let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
 
-    File::create(&files[0]).unwrap();
+    File::create(files[0]).unwrap();
 
     // update and create files
     touch(&files, flags);
@@ -141,7 +141,7 @@ fn touch_update_time_with_timestamp() {
 
     let files: Vec<_> = matches.values_of("FILE").unwrap().collect();
 
-    File::create(&files[0]).unwrap();
+    File::create(files[0]).unwrap();
 
     // update and create files
     touch(&files, flags);
@@ -165,7 +165,7 @@ fn touch_update_time_with_timestamp() {
 
 fn remove_test_files(files: &[&str]) -> io::Result<()> {
     for filename in files {
-        remove_file(&filename)?;
+        remove_file(filename)?;
     }
     Ok(())
 }

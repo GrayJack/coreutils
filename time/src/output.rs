@@ -7,7 +7,7 @@ use coreutils_core::{os::resource::RUsage, strings::StringEscapeDecoder, time::D
 /// The `FormatterKind` enum is how `time` controls the printing
 /// of timing and resource usage information
 /// Timer accuracy is arbitrary, but will always be counted in seconds.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum FormatterKind {
     /// Display time output in the default format:
     /// `    %E real %U user %S sys`

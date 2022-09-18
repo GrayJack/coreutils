@@ -394,7 +394,7 @@ impl Passwd {
         target_os = "illumos"
     )))]
     pub fn class(&self) -> &BStr {
-        &self.class.as_bstr()
+        self.class.as_bstr()
     }
 
     /// Returns the [`Passwd`] (user) last password change time.

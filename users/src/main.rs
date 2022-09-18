@@ -12,7 +12,7 @@ fn main() {
     let matches = cli::create_app().get_matches();
 
     let uts = if let Some(file) = matches.value_of("FILE") {
-        match UtmpSet::from_file(&file) {
+        match UtmpSet::from_file(file) {
             Ok(u) => u,
             #[cfg(not(any(target_os = "openbsd")))]
             Err(_) => UtmpSet::system(),

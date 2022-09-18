@@ -70,6 +70,7 @@ fn parse_code(
 
 /// Print the scape codes from `string`.
 /// `output` is where it is going to be printed.
+#[allow(clippy::unused_peekable)] // False positive
 fn print_escape(string: &str, mut output: impl Write) -> io::Result<bool> {
     let mut stop = false;
     let mut buff = ['\\'; 2];

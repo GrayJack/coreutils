@@ -98,7 +98,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
                 .short('n')
                 .value_name("FORMAT")
                 .default_value("rn")
-                .possible_values(&["ln", "rn", "rz"]),
+                .possible_values(["ln", "rn", "rz"]),
         )
         .arg(
             Arg::new("no_renumber")

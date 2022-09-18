@@ -24,7 +24,7 @@ fn dirname(path: &str) -> String {
     let p = Path::new(path);
     match p.parent() {
         Some(dir) => {
-            if dir.components().next() == None {
+            if dir.components().next().is_none() {
                 ".".to_string()
             } else {
                 dir.to_string_lossy().to_string()

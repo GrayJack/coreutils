@@ -61,7 +61,7 @@ pub(crate) fn create_app<'help>() -> App<'help> {
                 .long("time")
                 .short('T')
                 .value_name("WORD")
-                .possible_values(&["access", "atime", "modify", "mtime", "use"]),
+                .possible_values(["access", "atime", "modify", "mtime", "use"]),
         )
         .arg(
             Arg::new("date")
