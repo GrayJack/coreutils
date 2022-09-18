@@ -17,7 +17,7 @@ jobs:
       uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        components: rust-src, x86_64-unknown-dragonfly
+        components: rust-src
     - name: Setup TOML
       run: cp DragonflyBSD.toml Cargo.toml
     - name: Check DragonflyBSD
