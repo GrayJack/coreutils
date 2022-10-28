@@ -10,18 +10,18 @@ pub(crate) fn create_app<'help>() -> App<'help> {
         .arg(
             Arg::new("1")
                 .short('1')
-                .help("suppress lines unique to file1)")
+                .help("Suppress lines unique to file1.")
                 
         )
         .arg(
             Arg::new("2")
                 .short('2')
-                .help("suppress lines unique to file2)")
+                .help("Suppress lines unique to file2.")
         )
         .arg(
             Arg::new("3")
                 .short('3')
-                .help("suppress lines common to both files)")
+                .help("Suppress lines common to both files.")
         )
         .arg(
             Arg::new("file_1")

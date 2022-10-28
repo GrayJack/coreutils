@@ -55,4 +55,5 @@ members = [
     "whoami",
     "yes",
     "comm",
+    "join",
 ] # "coreutils_core",
