@@ -53,7 +53,7 @@ fn main() {
                 ErrorKind::PermissionDenied => {
                     eprintln!("comm: {}: Permission denied", file1)
                 },
-                _ => eprintln!("comm: {}: Unknown error", file1),
+                _ => eprintln!("comm: {}, {}", e, file1),
             }
         },
     };
@@ -79,7 +79,7 @@ fn main() {
                 ErrorKind::PermissionDenied => {
                     eprintln!("comm: {}: Permission denied", file2)
                 },
-                _ => eprintln!("comm: {}: Unknown error", file2),
+                _ => eprintln!("comm: {}, {}", e, file2),
             }
         },
     };

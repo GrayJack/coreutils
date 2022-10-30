@@ -1,7 +1,7 @@
 [package]
 name = "comm" # Edit this
 version = "0.1.0"
-authors = ["shisuimadara adyityasingh@gmail.com"] # Edit this
+authors = ["shisuimadara <adyityasingh@gmail.com>"] # Edit this
 license = "MPL-2.0-no-copyleft-exception"
 build = "build.rs"
 edition = "2021"
