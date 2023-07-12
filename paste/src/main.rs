@@ -120,10 +120,7 @@ struct PasteFlags {
 impl PasteFlags {
     pub fn from_matches(matches: &ArgMatches) -> Self {
         PasteFlags {
-            delimiters: match matches.get_one::<String>("delimiters") {
-                None => Option::None,
-                Some(list) => Option::Some(list.chars().collect()),
-            },
+            delimiters: matches.get_one::<String>("delimiters").map(|list| list.chars().collect()),
             serial: matches.is_present("serial"),
             zero_terminated: matches.is_present("zero-terminated"),
         }
