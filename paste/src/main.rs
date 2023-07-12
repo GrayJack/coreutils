@@ -97,6 +97,7 @@ fn paste(
     Ok(())
 }
 
+// Pop the last element from `buf` if it equals `tgt`
 fn pop_if_last<T>(buf: &mut Vec<T>, tgt: T) -> bool
 where
     T: Copy + std::cmp::PartialEq,
