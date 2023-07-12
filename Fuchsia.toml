@@ -33,6 +33,7 @@ members = [
     # "nice",
     "nl",
     "nohup",
+    "paste",
     "printf",
     "pwd",
     "rm",

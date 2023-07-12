@@ -1,0 +1,22 @@
+[package]
+name = "paste"
+version = "0.1.0"
+authors = ["Wojciech Graj <wojtek.graj.2004@gmail.com>"]
+license = "MPL-2.0-no-copyleft-exception"
+build = "build.rs"
+edition = "2021"
+rust-version = "1.61.0"
+description = """
+Concatenate lines from files, delimited by TABs.
+
+Use - as a FILE to read from standard input. An absence of FILEs will be treated as -.
+"""
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "3.0.0", features = ["cargo", "wrap_help"] }
+
+[build-dependencies]
+clap = { version = "3.0.0", features = ["cargo"] }
+clap_generate = "3.0.0"
