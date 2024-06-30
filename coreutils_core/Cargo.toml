@@ -1,6 +1,6 @@
 [package]
 name = "coreutils_core"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
     "GrayJack <gr41.j4ck@gmail.com>",
     "Gab David <g.bianchetdavid@gmail.com>",
@@ -8,7 +8,7 @@ authors = [
 description = "A crate with abstractions to implement UNIX core utilities"
 readme = "README.md"
 license = "MPL-2.0-no-copyleft-exception"
-repository = "https://github.com/GrayJack/coreutils/coreutils_core"
+repository = "https://github.com/GrayJack/coreutils/tree/devcoreutils_core"
 documentation = "https://docs.rs/coreutils_core"
 homepage = "https://crates.io/crates/coreutils_core"
 keywords = ["unix", "coreutils"]

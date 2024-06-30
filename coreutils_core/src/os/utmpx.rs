@@ -14,7 +14,7 @@ use std::{
     error::Error as StdError,
     fmt::{self, Display},
     io,
-    path::Path,
+    path::{Path, PathBuf},
 };
 #[cfg(not(any(
     target_os = "linux",
@@ -195,6 +195,15 @@ impl Utmpx {
     #[inline]
     pub const fn timeval(&self) -> TimeVal {
         self.timeval
+    }
+    
+    /// Check if the device name of the entry is really active. Works around a quirk of
+    /// BSD systems where the entry type would be USER_PROCESS after it gets killed.
+    #[inline]
+    pub fn is_active(&self) -> bool {
+        let mut path = PathBuf::from("/dev");
+        path.push(&self.line.to_string());
+        path.exists()
     }
 
     /// Get the time where the entry was created (often login time) in a more complete
