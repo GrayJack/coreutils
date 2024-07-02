@@ -116,7 +116,7 @@ cargo install --path .
 |    nl    |             |         |  X   |
 |  nohup   |             |         |  X   |
 |    od    |      X      |         |      |
-|  paste   |      X      |         |      |
+|  paste   |             |         |  X   |
 |  patch   |      X      |         |      |
 |  printf  |             |         |  X   |
 |   pwd    |             |         |  X   |
@@ -172,6 +172,7 @@ Without them, this project would not be what it is today.
 - [@bojan88](https://github.com/bojan88) - _Bojan Đurđević_
 - [@Celeo](https://github.com/Celeo) - _Celeo_
 - [@FedericoPonzi](https://github.com/FedericoPonzi) - _Federico Ponzi_
+- [@wojciech-graj](https://github.com/wojciech-graj) - _Wojciech Graj_
 - [@Larisho](https://github.com/Larisho) - _Gab David_
 - [@silverweed](https://github.com/silverweed) - _Giacomo Parolini_
 - [@marcospb19](https://github.com/marcospb19) - _João M. Bezerra_
