@@ -173,7 +173,7 @@ Without them, this project would not be what it is today.
 - [@Celeo](https://github.com/Celeo) - _Celeo_
 - [@FedericoPonzi](https://github.com/FedericoPonzi) - _Federico Ponzi_
 - [@Larisho](https://github.com/Larisho) - _Gab David_
-- [@silverweed](https://github.com/silverweed) - _Giacomo Parolini_
+- [@silverweed](https://github.com/silverweed)
 - [@marcospb19](https://github.com/marcospb19) - _João M. Bezerra_
 - [@kegesch](https://github.com/kegesch) - _Jonas Geschke_
 - Ladysamantha

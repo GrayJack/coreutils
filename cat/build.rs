@@ -27,6 +27,7 @@ fn main() {
                 .read(true)
                 .write(true)
                 .create(true)
+                .truncate(false)
                 .open(file_name)
                 .expect("Unable to open file"),
         );

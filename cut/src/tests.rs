@@ -13,8 +13,8 @@ macro_rules! assert_matches {
 #[test]
 fn range_from_string() {
     assert_eq!(Range::from_string("2"), Ok(Range(1, 2)));
-    assert_eq!(Range::from_string("-2"), Ok(Range(usize::min_value(), 2)));
-    assert_eq!(Range::from_string("2-"), Ok(Range(1, usize::max_value())));
+    assert_eq!(Range::from_string("-2"), Ok(Range(usize::MIN, 2)));
+    assert_eq!(Range::from_string("2-"), Ok(Range(1, usize::MAX)));
     assert_eq!(Range::from_string("2-5"), Ok(Range(1, 5)));
 
     assert_matches!(Range::from_string(""), Err(Error(_, _)));
@@ -27,10 +27,7 @@ fn range_from_string() {
 #[test]
 fn rangeset_from_string() {
     assert_eq!(RangeSet::from_string("2"), Ok(RangeSet { points: vec![Range(1, 2)] }));
-    assert_eq!(
-        RangeSet::from_string("-2"),
-        Ok(RangeSet { points: vec![Range(usize::min_value(), 2)] })
-    );
+    assert_eq!(RangeSet::from_string("-2"), Ok(RangeSet { points: vec![Range(usize::MIN, 2)] }));
     assert_eq!(RangeSet::from_string("2,3"), Ok(RangeSet { points: vec![Range(1, 3)] }));
     assert_eq!(RangeSet::from_string("2-3"), Ok(RangeSet { points: vec![Range(1, 3)] }));
     assert_eq!(RangeSet::from_string("2-3,3-5,4-6"), Ok(RangeSet { points: vec![Range(1, 6)] }));
@@ -41,11 +38,11 @@ fn rangeset_from_string() {
     );
     assert_eq!(
         RangeSet::from_string("2,5-"),
-        Ok(RangeSet::from_vec(vec![Range(1, 2), Range(4, usize::max_value())]))
+        Ok(RangeSet::from_vec(vec![Range(1, 2), Range(4, usize::MAX)]))
     );
     assert_eq!(
         RangeSet::from_string("-2,5-"),
-        Ok(RangeSet { points: vec![Range(usize::min_value(), 2), Range(4, usize::max_value())] })
+        Ok(RangeSet { points: vec![Range(usize::MIN, 2), Range(4, usize::MAX)] })
     );
 }
 
@@ -57,29 +54,20 @@ fn complement_rangeset_helper(ranges: Vec<Range>, expected: Vec<Range>) {
 
 #[test]
 fn completment_rangeset() {
-    complement_rangeset_helper(vec![Range(usize::min_value(), usize::max_value())], vec![]);
-    complement_rangeset_helper(vec![Range(usize::min_value(), 5)], vec![Range(
-        5,
-        usize::max_value(),
-    )]);
-    complement_rangeset_helper(vec![Range(5, usize::max_value())], vec![Range(
-        usize::min_value(),
-        5,
-    )]);
-    complement_rangeset_helper(vec![Range(1, 5)], vec![
-        Range(usize::min_value(), 1),
-        Range(5, usize::max_value()),
-    ]);
+    complement_rangeset_helper(vec![Range(usize::MIN, usize::MAX)], vec![]);
+    complement_rangeset_helper(vec![Range(usize::MIN, 5)], vec![Range(5, usize::MAX)]);
+    complement_rangeset_helper(vec![Range(5, usize::MAX)], vec![Range(usize::MIN, 5)]);
+    complement_rangeset_helper(vec![Range(1, 5)], vec![Range(usize::MIN, 1), Range(5, usize::MAX)]);
     complement_rangeset_helper(vec![Range(1, 5), Range(8, 12)], vec![
-        Range(usize::min_value(), 1),
+        Range(usize::MIN, 1),
         Range(5, 8),
-        Range(12, usize::max_value()),
+        Range(12, usize::MAX),
     ]);
-    complement_rangeset_helper(vec![Range(usize::min_value(), 5), Range(8, 12)], vec![
+    complement_rangeset_helper(vec![Range(usize::MIN, 5), Range(8, 12)], vec![
         Range(5, 8),
-        Range(12, usize::max_value()),
+        Range(12, usize::MAX),
     ]);
-    complement_rangeset_helper(vec![Range(5, 8), Range(12, usize::max_value())], vec![
+    complement_rangeset_helper(vec![Range(5, 8), Range(12, usize::MAX)], vec![
         Range(0, 5),
         Range(8, 12),
     ]);

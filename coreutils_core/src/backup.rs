@@ -105,7 +105,7 @@ impl From<&str> for BackupMode {
 pub fn create_numbered_backup(file: &Path) -> Result<PathBuf, Error> {
     let mut index = 1_u64;
     loop {
-        if index == std::u64::MAX {
+        if index == u64::MAX {
             return Err(Error::new(
                 ErrorKind::AlreadyExists,
                 "Cannot create backup: too many backup files",

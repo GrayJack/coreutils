@@ -149,9 +149,8 @@ extern "C" {
 #[inline]
 pub fn audit_info() -> io::Result<AuditInfo> {
     let mut auditinfo: MaybeUninit<AuditInfo> = MaybeUninit::zeroed();
-    let address = auditinfo.as_mut_ptr() as *mut AuditInfo;
 
-    if unsafe { getaudit(address) } == -1 {
+    if unsafe { getaudit(auditinfo.as_mut_ptr()) } == -1 {
         return Err(io::Error::last_os_error());
     }
 

@@ -3,7 +3,7 @@
 //! Also holds utility functions for summarizing the data returned by getrusage(2)
 #[cfg(not(target_os = "fuchsia"))]
 use libc::getrusage;
-use libc::{c_int, rusage, RUSAGE_CHILDREN, RUSAGE_SELF};
+use libc::{RUSAGE_CHILDREN, RUSAGE_SELF, c_int, rusage};
 use time::Duration;
 
 use super::TimeVal;
@@ -69,6 +69,7 @@ pub struct IOUsage {
     pub num_signals: u64,
 }
 
+#[allow(clippy::unnecessary_cast, reason = "OS divergence")]
 fn timeval_to_duration(t: TimeVal) -> Duration {
     // This type cast is realistically safe because the number of
     // microseconds in a second cannot exceed `1e+6`, which at

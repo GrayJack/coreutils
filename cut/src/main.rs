@@ -97,11 +97,11 @@ impl Range {
             return Err(Error("invalid range with no endpoint".to_string(), 2));
         }
 
-        let lower = if v[0].is_empty() { usize::min_value() } else { v[0].parse::<usize>()? - 1 };
+        let lower = if v[0].is_empty() { usize::MIN } else { v[0].parse::<usize>()? - 1 };
         let upper = if v.len() == 1 {
             lower + 1
         } else if v[1].is_empty() {
-            usize::max_value()
+            usize::MAX
         } else {
             v[1].parse::<usize>()?
         };
@@ -166,8 +166,8 @@ impl RangeSet {
             }
             carry = range.1;
         }
-        if carry < usize::max_value() {
-            points.push(Range(carry, usize::max_value()));
+        if carry < usize::MAX {
+            points.push(Range(carry, usize::MAX));
         }
         self.points = points;
     }
